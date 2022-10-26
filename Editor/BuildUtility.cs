@@ -3,7 +3,7 @@ using System.Linq;
 using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
-using UnityEngine;
+using UnityEditor.Build.Pipeline;
 
 namespace SpatialSys.UnitySDK
 {
@@ -22,8 +22,7 @@ namespace SpatialSys.UnitySDK
                 if (Directory.Exists(dir))
                     Directory.Delete(dir, true);
                 Directory.CreateDirectory(dir);
-
-                BuildPipeline.BuildAssetBundles(dir, BuildAssetBundleOptions.None, target);
+                CompatibilityBuildPipeline.BuildAssetBundles(dir, BuildAssetBundleOptions.None, target);
             }
 
             // TODO: Upload bundles to SAPI

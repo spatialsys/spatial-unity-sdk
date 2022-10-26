@@ -3,7 +3,9 @@
     "rootNamespace": "SpatialSys.UnitySDK.Editor",
     "references": [
         "SpatialSys.UnitySDK",
-        "ToolbarExtender.Editor"
+        "ToolbarExtender.Editor",
+        "Unity.ScriptableBuildPipeline",
+        "Unity.ScriptableBuildPipeline.Editor"
     ],
     "includePlatforms": [
         "Editor"

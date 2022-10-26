@@ -1,7 +1,10 @@
 {
   "name": "io.spatial.unitysdk",
+  "dependencies": {
+    "com.unity.scriptablebuildpipeline": "1.20.1"
+  },
   "displayName": "Spatial Unity SDK",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "unity": "2021.3",
   "description": "This package allows creators to build 3D environments using the Unity editor and publish them to Spatial",
   "keywords": [
