@@ -1,0 +1,19 @@
+{
+    "name": "SpatialSys.UnitySDK.Editor",
+    "rootNamespace": "SpatialSys.UnitySDK.Editor",
+    "references": [
+        "SpatialSys.UnitySDK",
+        "ToolbarExtender.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
