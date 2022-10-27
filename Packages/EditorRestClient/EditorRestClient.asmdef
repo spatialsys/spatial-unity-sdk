@@ -1,13 +1,9 @@
 {
-    "name": "SpatialSys.UnitySDK.Editor",
-    "rootNamespace": "SpatialSys.UnitySDK.Editor",
+    "name": "EditorRestClient",
+    "rootNamespace": "",
     "references": [
-        "SpatialSys.UnitySDK",
-        "ToolbarExtender.Editor",
-        "Unity.ScriptableBuildPipeline",
-        "Unity.ScriptableBuildPipeline.Editor",
         "CSharpPromise",
-        "EditorRestClient"
+        "Unity.EditorCoroutines.Editor"
     ],
     "includePlatforms": [
         "Editor"
