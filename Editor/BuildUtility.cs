@@ -15,7 +15,7 @@ namespace SpatialSys.UnitySDK.Editor
         public static string BUILD_DIR = "Exports";
         public static string PACKAGE_EXPORT_PATH = Path.Combine(BUILD_DIR, "spaces.unitypackage");
 
-        public static IPromise BuildAndUploadForPlaySpace()
+        public static IPromise BuildAndUploadForSandbox()
         {
             // TODO: Ensure WebGL bundle is installed.
             const BuildTarget TARGET = BuildTarget.WebGL;
@@ -24,10 +24,10 @@ namespace SpatialSys.UnitySDK.Editor
                 Directory.Delete(bundleDir, recursive: true);
             Directory.CreateDirectory(bundleDir);
 
-            CompatibilityAssetBundleManifest bundleManifest = CompatibilityBuildPipeline.BuildAssetBundles(bundleDir, BuildAssetBundleOptions.None, TARGET);
+            CompatibilityAssetBundleManifest bundleManifest = CompatibilityBuildPipeline.BuildAssetBundles(bundleDir, BuildAssetBundleOptions.ForceRebuildAssetBundle, TARGET);
 
             if (bundleManifest == null)
-                return Promise.Rejected(new System.Exception("Failed to build asset bundle for play space"));
+                return Promise.Rejected(new System.Exception("Failed to build asset bundle for sandbox"));
 
             string[] bundleNames = bundleManifest.GetAllAssetBundles();
             if (bundleNames == null || bundleNames.Length == 0)
@@ -45,7 +45,7 @@ namespace SpatialSys.UnitySDK.Editor
                 return Promise.Rejected(new System.Exception("Asset bundle for the target scene was not built"));
 
             // TODO: Make cancellable
-            UnityEditor.EditorUtility.DisplayProgressBar("Uploading play space bundle", "Please wait...", 0.5f);
+            UnityEditor.EditorUtility.DisplayProgressBar("Uploading sandbox asset bundle", "Please wait...", 0.5f);
 
             return SpatialAPI.UploadTestEnvironment()
                 .Then(resp => {

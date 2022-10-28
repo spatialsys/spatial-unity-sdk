@@ -37,9 +37,9 @@ namespace SpatialSys.UnitySDK.Editor
                         "▶️ Test Current Space",
                         validBundle ? $"Builds the bundle ({_testBundleName}) for testing in the Spatial web app" : "No open scenes are tagged as an asset bundle"
                     )) &&
-                    UnityEditor.EditorUtility.DisplayDialog("Testing Space", $"You are about to export this bundle {_testBundleName} to the Spatial play space.", "Continue", "Cancel"))
+                    UnityEditor.EditorUtility.DisplayDialog("Testing Space", $"You are about to export this bundle {_testBundleName} to the Spatial sandbox.", "Continue", "Cancel"))
                 {
-                    BuildUtility.BuildAndUploadForPlaySpace();
+                    BuildUtility.BuildAndUploadForSandbox();
                 }
             }
 
