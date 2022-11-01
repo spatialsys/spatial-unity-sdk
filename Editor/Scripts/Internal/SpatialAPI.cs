@@ -6,7 +6,7 @@ namespace SpatialSys.UnitySDK.Editor
 {
     public static class SpatialAPI
     {
-        private const string API_ORIGIN = "http://localhost:3443";
+        private const string API_ORIGIN = "https://api.staging.spatial.io"; // TODO: update to prod
         private static string _authToken = "";
 
         static SpatialAPI()

@@ -11,5 +11,6 @@ namespace SpatialSys.UnitySDK
 
         public SpatialSeatHotspot[] seats;
         public SpatialEntrancePoint[] entrancePoints;
+        public SpatialEmptyFrame[] emptyFrames;
     }
 }

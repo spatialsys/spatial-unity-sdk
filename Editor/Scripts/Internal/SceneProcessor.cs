@@ -37,6 +37,7 @@ namespace SpatialSys.UnitySDK
             //save components to environmentData
             data.seats = GameObject.FindObjectsOfType<SpatialSeatHotspot>();
             data.entrancePoints = GameObject.FindObjectsOfType<SpatialEntrancePoint>();
+            data.emptyFrames = GameObject.FindObjectsOfType<SpatialEmptyFrame>();
         }
     }
 }

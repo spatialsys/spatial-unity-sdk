@@ -81,5 +81,10 @@ namespace SpatialSys.UnitySDK.Editor
 
             return path;
         }
+
+        public static void OpenSandboxInBrowser()
+        {
+            Application.OpenURL("https://staging.spatial.io/sandbox"); // TODO: change to prod
+        }
     }
 }

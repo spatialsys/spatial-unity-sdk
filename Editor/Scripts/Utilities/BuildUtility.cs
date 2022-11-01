@@ -24,10 +24,15 @@ namespace SpatialSys.UnitySDK.Editor
                 Directory.Delete(bundleDir, recursive: true);
             Directory.CreateDirectory(bundleDir);
 
-            CompatibilityAssetBundleManifest bundleManifest = CompatibilityBuildPipeline.BuildAssetBundles(bundleDir, BuildAssetBundleOptions.ForceRebuildAssetBundle, TARGET);
+            // Compress bundles with LZ4 (ChunkBasedCompression) since web doesn't support LZMA (why isn't this automatic based on build target??)
+            CompatibilityAssetBundleManifest bundleManifest = CompatibilityBuildPipeline.BuildAssetBundles(
+                bundleDir,
+                BuildAssetBundleOptions.ForceRebuildAssetBundle | BuildAssetBundleOptions.ChunkBasedCompression,
+                TARGET
+            );
 
             if (bundleManifest == null)
-                return Promise.Rejected(new System.Exception("Failed to build asset bundle for sandbox"));
+                return Promise.Rejected(new System.Exception("Failed to build asset bundle for sandbox. Check the console for details."));
 
             string[] bundleNames = bundleManifest.GetAllAssetBundles();
             if (bundleNames == null || bundleNames.Length == 0)
@@ -55,6 +60,7 @@ namespace SpatialSys.UnitySDK.Editor
 
                     byte[] data = File.ReadAllBytes(bundlePath);
                     SpatialAPI.UploadFile(resp.uploadUrl, data)
+                        .Then(resp => EditorUtility.OpenSandboxInBrowser())
                         .Catch(exc => UnityEditor.EditorUtility.DisplayDialog("Asset bundle upload network error", exc.Message, "OK"))
                         .Finally(() => UnityEditor.EditorUtility.ClearProgressBar());
                 })
@@ -64,7 +70,7 @@ namespace SpatialSys.UnitySDK.Editor
                 });
         }
 
-        public static void PackageForPublishing()
+        public static IPromise PackageForPublishing()
         {
             string[] scenePaths = BuildUtility.GetAllAssetBundleScenePaths();
 
@@ -76,6 +82,8 @@ namespace SpatialSys.UnitySDK.Editor
             );
 
             // TODO: Upload package to SAPI
+
+            return Promise.Resolved();
         }
 
         private static string[] GetAllAssetBundleScenePaths()

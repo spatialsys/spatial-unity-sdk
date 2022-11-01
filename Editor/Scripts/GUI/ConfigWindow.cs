@@ -5,7 +5,7 @@ namespace SpatialSys.UnitySDK.Editor
 {
     public class ConfigWindow : EditorWindow
     {
-        private const string ACCESS_TOKEN_URL = "https://spatial.io/account";
+        private const string ACCESS_TOKEN_URL = "https://staging.spatial.io/account"; // TODO: update to prod
         private const string WINDOW_PREFERENCES_PREFS_KEY = "SpatialSDK_ConfigWindowPrefs";
 
         public enum TabType
