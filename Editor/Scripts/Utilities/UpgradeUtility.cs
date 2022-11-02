@@ -1,6 +1,4 @@
 using System.Linq;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.PackageManager.Requests;
@@ -14,17 +12,22 @@ namespace SpatialSys.UnitySDK.Editor
     {
         private const string UNITY_SDK_PACKAGE_NAME = "io.spatial.unitysdk";
         private const string LAST_FETCH_DATE_PREFS_KEY = "SpatialSDK_UpgradeUtility_LastFetchDate";
-        private const int FETCH_INTERVAL_HOURS = 2;
+        private const int FETCH_INTERVAL_MINUTES = 120;
+        private const string LAST_AUTO_UPDATE_DATE_PREFS_KEY = "SpatialSDK_UpgradeUtility_LastAutoUpdateDate";
+        private const int AUTO_UPDATE_INTERVAL_MINUTES = 120;
 
-        public static string currentVersion => UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages().FirstOrDefault(p => p.name == UNITY_SDK_PACKAGE_NAME)?.version;
+        public static UnityEditor.PackageManager.PackageInfo packageInfo => UnityEditor.PackageManager.PackageInfo.FindForAssetPath($"Packages/{UNITY_SDK_PACKAGE_NAME}");
+        public static string currentVersion => packageInfo?.version;
+        public static string latestVersion => packageInfo?.versions.latest;
+        public static bool upgradeAvailable => currentVersion != latestVersion;
 
         // Check for upgrade
-        private static ListRequest _listRequest;
+        private static SearchRequest _searchRequest;
         private static Promise<bool> _upgradeCheckPromise;
         private static UnityEditor.PackageManager.PackageInfo _unitySdkPackageInfo;
         public enum UpgradeCheckType
         {
-            Default,
+            Default,    // Only do a full fetch if the last fetch was more than FETCH_INTERVAL_MINUTES ago
             ForceFetch, // Always fetch latest package info from the server
             SoftCheck   // Check without fetching new data
         }
@@ -36,11 +39,27 @@ namespace SpatialSys.UnitySDK.Editor
         static UpgradeUtility()
         {
 #if !SPATIAL_UNITYSDK_DISABLE_UPGRADE_CHECK
-            UpgradeUtility.CheckForUpgrade(UpgradeUtility.UpgradeCheckType.ForceFetch)
-                .Then(upgradeRequired => {
-                    if (upgradeRequired)
-                        ShowUpgradeDialog();
-                });
+            // Do we need to do a suggest update check?
+            bool doSuggestUpdateCheck = true;
+            string lastCheckDateTicks = EditorPrefs.GetString(LAST_AUTO_UPDATE_DATE_PREFS_KEY, null);
+            if (long.TryParse(lastCheckDateTicks, out long lastCheckDateTicksLong))
+            {
+                System.DateTime lastCheckDate = new System.DateTime(lastCheckDateTicksLong);
+                if ((System.DateTime.Now - lastCheckDate).TotalMinutes < AUTO_UPDATE_INTERVAL_MINUTES)
+                    doSuggestUpdateCheck = false;
+            }
+
+            // Only perform upgrade check if we opened the project just now, or if the last check was more than AUTO_UPDATE_INTERVAL_MINUTES ago
+            bool editorWasJustOpened = Time.realtimeSinceStartup < 20;
+            if (!EditorApplication.isPlayingOrWillChangePlaymode && (editorWasJustOpened || doSuggestUpdateCheck))
+            {
+                CheckForUpgrade(UpgradeCheckType.ForceFetch)
+                    .Then(upgradeRequired => {
+                        EditorPrefs.SetString(LAST_AUTO_UPDATE_DATE_PREFS_KEY, System.DateTime.Now.Ticks.ToString());
+                        if (upgradeRequired)
+                            ShowUpgradeDialog();
+                    });
+            }
 #endif
         }
 
@@ -57,16 +76,13 @@ namespace SpatialSys.UnitySDK.Editor
             switch (checkType)
             {
                 case UpgradeCheckType.Default:
-                    fetchPackageInfo = true;
-
                     // Only fetch package info if it's been a while since the last fetch
                     string lastCheckDateTicks = EditorPrefs.GetString(LAST_FETCH_DATE_PREFS_KEY, null);
-                    if (lastCheckDateTicks != null)
+                    if (long.TryParse(lastCheckDateTicks, out long lastCheckDateTicksLong))
                     {
-                        long lastCheckDateTicksLong = long.Parse(lastCheckDateTicks);
                         System.DateTime lastCheckDate = new System.DateTime(lastCheckDateTicksLong);
-                        if ((System.DateTime.Now - lastCheckDate).TotalHours > FETCH_INTERVAL_HOURS)
-                            fetchPackageInfo = true;
+                        if ((System.DateTime.Now - lastCheckDate).TotalMinutes < FETCH_INTERVAL_MINUTES)
+                            fetchPackageInfo = false;
                     }
                     break;
 
@@ -79,40 +95,53 @@ namespace SpatialSys.UnitySDK.Editor
                     break;
             }
 
-            // Check for an upgrade.
-            _upgradeCheckPromise = new Promise<bool>();
-            _listRequest = Client.List(offlineMode: !fetchPackageInfo);
-            EditorApplication.update += ListRequestProgressUpdate;
-            if (fetchPackageInfo)
-                _upgradeCheckPromise.Then(upgradeRequired => EditorPrefs.SetString(LAST_FETCH_DATE_PREFS_KEY, System.DateTime.Now.Ticks.ToString()));
+            // Fast check from cache
+            if (!fetchPackageInfo)
+                return Promise<bool>.Resolved(upgradeAvailable);
 
+            // We're already doing a check, wait for it to complete
+            if (_upgradeCheckPromise != null && _upgradeCheckPromise.CurState == PromiseState.Pending)
+                return _upgradeCheckPromise;
+
+            // Check for an upgrade, but fetch latest data
+            _upgradeCheckPromise = new Promise<bool>();
+            _upgradeCheckPromise.Then(upgradeRequired => EditorPrefs.SetString(LAST_FETCH_DATE_PREFS_KEY, System.DateTime.Now.Ticks.ToString()));
+            _searchRequest = Client.Search(UNITY_SDK_PACKAGE_NAME);
+            EditorApplication.update += SearchRequestProgressUpdate;
             return _upgradeCheckPromise;
 #endif
         }
 
-        private static void ListRequestProgressUpdate()
+        private static void SearchRequestProgressUpdate()
         {
-            if (_listRequest.IsCompleted)
+            if (_searchRequest.IsCompleted)
             {
-                if (_listRequest.Status == StatusCode.Success)
+                try
                 {
-                    // Find spatial sdk package
-                    _unitySdkPackageInfo = _listRequest.Result.FirstOrDefault(p => p.name == UNITY_SDK_PACKAGE_NAME);
-                    if (_unitySdkPackageInfo != null)
+                    if (_searchRequest.Status == StatusCode.Success)
                     {
-                        _upgradeCheckPromise.Resolve(_unitySdkPackageInfo.version != _unitySdkPackageInfo.versions.latest);
+                        // Find spatial sdk package
+                        _unitySdkPackageInfo = _searchRequest.Result.Length > 0 ? _searchRequest.Result[0] : null;
+                        if (_unitySdkPackageInfo != null)
+                        {
+                            _upgradeCheckPromise.Resolve(currentVersion != _unitySdkPackageInfo.versions.latest);
+                        }
+                        else
+                        {
+                            _upgradeCheckPromise.Reject(new System.Exception($"{nameof(UpgradeUtility)}: Spatial SDK package not found"));
+                        }
                     }
                     else
                     {
-                        _upgradeCheckPromise.Reject(new System.Exception($"{nameof(UpgradeUtility)}: Spatial SDK package not found"));
+                        _upgradeCheckPromise.Reject(new System.Exception($"{nameof(UpgradeUtility)}: Error checking for upgrade: " + _searchRequest.Error.message));
                     }
                 }
-                else
+                catch (System.Exception exc)
                 {
-                    _upgradeCheckPromise.Reject(new System.Exception($"{nameof(UpgradeUtility)}: Error checking for upgrade: " + _listRequest.Error.message));
+                    _upgradeCheckPromise.Reject(exc);
                 }
 
-                EditorApplication.update -= ListRequestProgressUpdate;
+                EditorApplication.update -= SearchRequestProgressUpdate;
             }
         }
 
@@ -121,6 +150,10 @@ namespace SpatialSys.UnitySDK.Editor
 #if SPATIAL_UNITYSDK_DISABLE_UPGRADE_CHECK
             return Promise<bool>.Resolved(false);
 #else
+            // We're already doing an upgrade, wait for it to complete
+            if (_upgradePromise != null && _upgradePromise.CurState == PromiseState.Pending)
+                return _upgradePromise;
+
             _upgradePromise = new Promise<bool>();
             CheckForUpgrade(UpgradeCheckType.ForceFetch)
                 .Then(upgradeRequired => {
@@ -145,13 +178,20 @@ namespace SpatialSys.UnitySDK.Editor
         {
             if (_upgradeRequest.IsCompleted)
             {
-                if (_upgradeRequest.Status == StatusCode.Success)
+                try
                 {
-                    _upgradePromise.Resolve(true);
+                    if (_upgradeRequest.Status == StatusCode.Success)
+                    {
+                        _upgradePromise.Resolve(true);
+                    }
+                    else
+                    {
+                        _upgradePromise.Reject(new System.Exception($"{nameof(UpgradeUtility)}: Error upgrading package to latest: " + _upgradeRequest.Error.message));
+                    }
                 }
-                else
+                catch (System.Exception exc)
                 {
-                    _upgradePromise.Reject(new System.Exception($"{nameof(UpgradeUtility)}: Error upgrading package to latest: " + _upgradeRequest.Error.message));
+                    _upgradePromise.Reject(exc);
                 }
 
                 EditorApplication.update -= AddRequestProgressUpdate;
@@ -162,7 +202,7 @@ namespace SpatialSys.UnitySDK.Editor
         {
             if (UnityEditor.EditorUtility.DisplayDialog("Upgrade to latest version?", "A new version of the Spatial SDK is available. Would you like to upgrade?", "Yes", "No"))
             {
-                UpgradeUtility.UpgradeToLatest()
+                UpgradeToLatest()
                     .Then(upgradePerformed => {
                         UnityEditor.EditorUtility.DisplayDialog("Upgrade successful", "The Spatial SDK has been upgraded to the latest version.", "OK");
                     })

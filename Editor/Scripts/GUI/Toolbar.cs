@@ -96,7 +96,8 @@ namespace SpatialSys.UnitySDK.Editor
                 .Then(upgradeRequired => {
                     if (upgradeRequired)
                     {
-                        if (UnityEditor.EditorUtility.DisplayDialog("Upgrade to latest version?", "A new version of the Spatial SDK is available. You will need to upgrade to the latest version to publish or test your environment. Would you like to upgrade now?", "Yes", "No"))
+                        string dialogMessage = "A new version of the Spatial SDK is available. You will need to upgrade to the latest version to publish or test your environment. Would you like to upgrade now?";
+                        if (UnityEditor.EditorUtility.DisplayDialog("Upgrade to latest version?", dialogMessage, "Yes", "No"))
                         {
                             return UpgradeUtility.UpgradeToLatest();
                         }

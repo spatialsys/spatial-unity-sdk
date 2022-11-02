@@ -6,13 +6,14 @@ namespace SpatialSys.UnitySDK.Editor
 {
     public static class SpatialAPI
     {
-        private const string API_ORIGIN = "https://api.staging.spatial.io"; // TODO: update to prod
-        private static string _authToken = "";
+#if SPATIAL_UNITYSDK_STAGING
+        public const string SPATIAL_ORIGIN = "staging.spatial.io";
+#else
+        public const string SPATIAL_ORIGIN = "spatial.io";
+#endif
 
-        static SpatialAPI()
-        {
-            _authToken = EditorUtility.GetSavedAuthToken();
-        }
+        private static readonly string API_ORIGIN = $"https://api.{SPATIAL_ORIGIN}";
+        private static string _authToken => EditorUtility.GetSavedAuthToken();
 
         //------------------------------------------------
         // UPLOAD TEST ENVIRONMENT
