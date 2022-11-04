@@ -6,12 +6,13 @@ using System;
 
 namespace SpatialSys.UnitySDK
 {
-    public class SpatialSDKSceneProcessor
+    public static class SceneProcessor
     {
         [PostProcessSceneAttribute(0)]
         public static void OnPostprocessScene()
         {
             if (Application.isPlaying ||
+                EditorConfig.instance == null ||
                 EditorConfig.instance.environmentVariants == null ||
                 !Array.Exists(EditorConfig.instance.environmentVariants, (variant) => {
                     SceneAsset asset = AssetDatabase.LoadAssetAtPath<SceneAsset>(SceneManager.GetActiveScene().path);
@@ -37,7 +38,11 @@ namespace SpatialSys.UnitySDK
             //save components to environmentData
             data.seats = GameObject.FindObjectsOfType<SpatialSeatHotspot>();
             data.entrancePoints = GameObject.FindObjectsOfType<SpatialEntrancePoint>();
+            data.triggerEvents = GameObject.FindObjectsOfType<SpatialTriggerEvent>();
             data.emptyFrames = GameObject.FindObjectsOfType<SpatialEmptyFrame>();
+            data.avatarTeleporters = GameObject.FindObjectsOfType<SpatialAvatarTeleporter>();
+
+            data.renderingVolumes = GameObject.FindObjectsOfType<UnityEngine.Rendering.Volume>();
         }
     }
 }

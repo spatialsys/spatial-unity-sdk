@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace SpatialSys.UnitySDK
 {
@@ -11,6 +12,10 @@ namespace SpatialSys.UnitySDK
 
         public SpatialSeatHotspot[] seats;
         public SpatialEntrancePoint[] entrancePoints;
+        public SpatialTriggerEvent[] triggerEvents;
         public SpatialEmptyFrame[] emptyFrames;
+        public SpatialAvatarTeleporter[] avatarTeleporters;
+
+        public Volume[] renderingVolumes;
     }
 }

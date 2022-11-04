@@ -45,7 +45,6 @@ namespace SpatialSys.UnitySDK
             }
         }
 
-        public string sku = "";
         public string packageName = "My Package";
         public string description = "My new Spatial SDK package";
         public UsageType usageType = UsageType.Uncategorized;

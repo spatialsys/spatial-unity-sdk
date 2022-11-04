@@ -12,6 +12,7 @@ namespace SpatialSys.UnitySDK.Editor
     public static class Toolbar
     {
         private static string _testBundleName;
+        private static EditorConfig _config;
 
         static Toolbar()
         {
@@ -20,6 +21,7 @@ namespace SpatialSys.UnitySDK.Editor
             EditorSceneManager.sceneOpened += OnSceneOpened;
             EditorSceneManager.sceneClosed += OnSceneClosed;
             UpdateTestBundleName();
+            _config = EditorConfig.instance;
         }
 
         static void OnToolbarGUI()
@@ -29,14 +31,17 @@ namespace SpatialSys.UnitySDK.Editor
             GUI.color = Color.white * 0.75f;
             GUI.contentColor = Color.white * 1.15f;
 
-            bool validBundle = !string.IsNullOrEmpty(_testBundleName);
+            if (_config == null)
+                _config = EditorConfig.instance;
 
-            using (new EditorGUI.DisabledScope(disabled: !validBundle))
+            string cannotTestReason = GetTestButtonErrorString();
+
+            using (new EditorGUI.DisabledScope(disabled: !string.IsNullOrEmpty(cannotTestReason)))
             {
                 // TODO: Add a mini window previewing what's about to be built, which will act as a confirmation as well so the dialog won't be necessary.
                 if (GUILayout.Button(new GUIContent(
                         "▶️ Test Current Space",
-                        validBundle ? $"Builds the bundle ({_testBundleName}) for testing in the Spatial web app" : "No open scenes are tagged as an asset bundle"
+                        !string.IsNullOrEmpty(cannotTestReason) ? cannotTestReason : $"Builds the bundle ({_testBundleName}) for testing in the Spatial web app"
                     )) &&
                     UnityEditor.EditorUtility.DisplayDialog("Testing Space", $"You are about to export this bundle {_testBundleName} to the Spatial sandbox.", "Continue", "Cancel"))
                 {
@@ -53,13 +58,13 @@ namespace SpatialSys.UnitySDK.Editor
                 }
             }
 
-            bool isPublishingAvailable = false;
+            string cannotPublishReason = GetPublishButtonErrorString();
 
-            using (new EditorGUI.DisabledScope(disabled: !isPublishingAvailable))
+            using (new EditorGUI.DisabledScope(disabled: !string.IsNullOrEmpty(cannotPublishReason)))
             {
                 if (GUILayout.Button(new GUIContent(
                         "▲ Publish Space",
-                        isPublishingAvailable ? "Uploads all the source assets to Spatial where it will be compiled for all platforms" : "This feature is coming soon"
+                        !string.IsNullOrEmpty(cannotPublishReason) ? cannotPublishReason : "Uploads all the source assets to Spatial where it will be compiled for all platforms"
                     )) &&
                     UnityEditor.EditorUtility.DisplayDialog(
                         "Publishing Space",
@@ -131,6 +136,26 @@ namespace SpatialSys.UnitySDK.Editor
         private static void UpdateTestBundleName()
         {
             _testBundleName = BuildUtility.GetAssetBundleNameForOpenedScene();
+        }
+
+        private static string GetTestButtonErrorString()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                return "Feature disabled while in play mode";
+            if (string.IsNullOrEmpty(_testBundleName))
+                return "No open scenes are tagged as an asset bundle";
+
+            return null;
+        }
+
+        private static string GetPublishButtonErrorString()
+        {
+            if (_config == null)
+                return "Unable to locate SDK configuration";
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                return "Feature disabled while in play mode";
+
+            return "This feature is coming soon";
         }
     }
 }

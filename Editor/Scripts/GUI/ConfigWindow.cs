@@ -5,7 +5,7 @@ namespace SpatialSys.UnitySDK.Editor
 {
     public class ConfigWindow : EditorWindow
     {
-        private readonly string ACCESS_TOKEN_URL = $"https://{SpatialAPI.SPATIAL_ORIGIN}/account";
+        private static readonly string ACCESS_TOKEN_URL = $"https://{SpatialAPI.SPATIAL_ORIGIN}/account";
         private const string WINDOW_PREFERENCES_PREFS_KEY = "SpatialSDK_ConfigWindowPrefs";
 
         public enum TabType
@@ -54,30 +54,30 @@ namespace SpatialSys.UnitySDK.Editor
         {
             InitializeIfNecessary();
 
-            RenderTabsToolbar();
+            DrawTabsToolbar();
 
             switch (_preferences.selectedTab)
             {
                 case TabType.GettingStarted:
-                    RenderGettingStarted();
+                    DrawGettingStarted();
                     break;
                 case TabType.Authentication:
-                    RenderAuthentication();
+                    DrawAuthentication();
                     break;
                 case TabType.Configuration:
-                    RenderConfiguration();
+                    DrawConfiguration();
                     break;
             }
         }
 
-        private void RenderTabsToolbar()
+        private void DrawTabsToolbar()
         {
             int tabIndex = (int)_preferences.selectedTab;
             tabIndex = GUILayout.Toolbar(tabIndex, _tabNames);
             _preferences.selectedTab = (TabType)tabIndex;
         }
 
-        private void RenderGettingStarted()
+        private void DrawGettingStarted()
         {
             GUILayout.Space(10f);
             EditorGUILayout.LabelField("Welcome to Spatial Unity SDK!", _headerTextStyle);
@@ -102,11 +102,25 @@ namespace SpatialSys.UnitySDK.Editor
                 EditorGUILayout.LabelField(" to retrieve an access token and paste it into the field below.");
             }
             EditorGUILayout.EndHorizontal();
+            EditorGUI.indentLevel++;
+            {
+                DrawAuthTokenInputField();
+            }
+            EditorGUI.indentLevel--;
 
-            RenderAuthentication();
+            GUILayout.Space(10f);
+
+            EditorGUILayout.LabelField("2. Read up on documentation using the button above.");
+            EditorGUILayout.LabelField("3. Build your environment scene.");
+            EditorGUILayout.LabelField("4. Test out your creation inside of Spatial using the 'Test Current Space' button at the top right corner of the editor!");
         }
 
-        private void RenderAuthentication()
+        private void DrawAuthentication()
+        {
+            DrawAuthTokenInputField();
+        }
+
+        private void DrawAuthTokenInputField()
         {
             EditorGUILayout.HelpBox("IMPORTANT: Do NOT share this value with anyone!", MessageType.Warning);
 
@@ -127,7 +141,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
-        private void RenderConfiguration()
+        private void DrawConfiguration()
         {
             if (_config == null || _configEditor == null)
             {
