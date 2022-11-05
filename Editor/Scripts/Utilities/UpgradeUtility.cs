@@ -17,6 +17,7 @@ namespace SpatialSys.UnitySDK.Editor
         private const int AUTO_UPDATE_INTERVAL_MINUTES = 120;
 
         public static UnityEditor.PackageManager.PackageInfo packageInfo => UnityEditor.PackageManager.PackageInfo.FindForAssetPath($"Packages/{UNITY_SDK_PACKAGE_NAME}");
+        public static bool isOfficialVersion => packageInfo.source == PackageSource.Registry;
         public static string currentVersion => packageInfo?.version;
         public static string latestVersion => packageInfo?.versions.latest;
         public static bool upgradeAvailable => currentVersion != latestVersion;

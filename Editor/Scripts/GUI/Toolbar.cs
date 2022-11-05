@@ -88,7 +88,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             if (GUILayout.Button(EditorGUIUtility.IconContent("d_SettingsIcon")))
             {
-                ConfigWindow.Open();
+                ConfigWindow.Open(ConfigWindow.TabType.Configuration);
             }
 
             GUI.color = Color.white;
@@ -140,6 +140,8 @@ namespace SpatialSys.UnitySDK.Editor
 
         private static string GetTestButtonErrorString()
         {
+            if (!EditorUtility.isUsingSupportedUnityVersion)
+                return $"Requires Unity {EditorUtility.CLIENT_UNITY_VERSION} to test in Spatial (currently using {Application.unityVersion})";
             if (EditorApplication.isPlayingOrWillChangePlaymode)
                 return "Feature disabled while in play mode";
             if (string.IsNullOrEmpty(_testBundleName))

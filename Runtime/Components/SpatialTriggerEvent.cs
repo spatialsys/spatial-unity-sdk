@@ -16,8 +16,8 @@ namespace SpatialSys.UnitySDK
             LocalAvatar,
             Anything,
         }
-
         public ListenFor listenFor;
-        public UnityEvent onTrigger;
+        public UnityEvent onEnter;
+        public UnityEvent onExit;
     }
 }

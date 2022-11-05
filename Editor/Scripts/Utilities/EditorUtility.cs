@@ -5,7 +5,10 @@ namespace SpatialSys.UnitySDK.Editor
 {
     public static class EditorUtility
     {
+        public const string CLIENT_UNITY_VERSION = "2021.3.8f1";
         private const string AUTH_TOKEN_KEY = "SpatialSDK_Token";
+
+        public static bool isUsingSupportedUnityVersion => Application.unityVersion == CLIENT_UNITY_VERSION;
 
         public static EditorConfig CreateDefaultConfigurationFile()
         {
@@ -63,7 +66,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static void OpenDocumentationPage()
         {
-            Help.BrowseURL("https://www.notion.so/spatialxr/Spatial-Unity-Creator-Toolset-Documentation-73cc001642764c8bab70722485af5dfc");
+            Help.BrowseURL(UpgradeUtility.packageInfo.documentationUrl);
         }
 
         public static string CreateFolderHierarchy(params string[] folders)

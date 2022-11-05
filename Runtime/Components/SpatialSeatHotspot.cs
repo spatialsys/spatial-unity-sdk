@@ -9,13 +9,11 @@ namespace SpatialSys.UnitySDK
 
         [Tooltip("When checked, avatars will always face a specified direction along the blue axis. Disable this for chairs that you can sit on in any orientation like stools")]
         public bool forceAvatarOrientation = true;
-        [Tooltip("Controls the size of the clickable area. Clicking this area will put an avatar in the seat if its not occupied. Shown with the Green gizmo")]
-        public float clickableRadius = .3f;
 
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(transform.position, clickableRadius);
+            Gizmos.DrawWireSphere(transform.position, .3f);
             if (forceAvatarOrientation)
             {
                 Gizmos.color = Color.blue;

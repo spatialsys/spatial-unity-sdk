@@ -22,14 +22,14 @@ namespace SpatialSys.UnitySDK.Editor
         public static IPromise<UploadTestEnvironmentResponse> UploadTestEnvironment()
         {
             RequestHelper request = CreateRequest();
-            request.Uri = $"{API_ORIGIN}/unity/test-environment";
+            request.Uri = $"{API_ORIGIN}/sandbox/v1/test-environment";
             return RestClient.Post<UploadTestEnvironmentResponse>(request);
         }
 
         [Serializable]
         public struct UploadTestEnvironmentResponse
         {
-            public string uploadUrl;
+            public string url;
             public int version;
             public ulong expiresAt;
         }
@@ -38,12 +38,14 @@ namespace SpatialSys.UnitySDK.Editor
         // UPLOAD FILE
         //------------------------------------------------
 
-        public static IPromise<ResponseHelper> UploadFile(string url, byte[] data)
+        public static IPromise<ResponseHelper> UploadFile(string url, byte[] data, Action<float> progressCallback = null)
         {
             RequestHelper request = new RequestHelper();
             request.Uri = url;
             request.BodyRaw = data;
             request.ContentType = "application/octet-stream";
+            if (progressCallback != null)
+                request.ProgressCallback += progressCallback;
             return RestClient.Put(request);
         }
 
@@ -55,6 +57,9 @@ namespace SpatialSys.UnitySDK.Editor
         {
             RequestHelper request = new RequestHelper();
             request.Headers["Authorization"] = $"Bearer {_authToken}";
+            // Example: UNITYSDK 1.2.3 official GITSHA00
+            // Currently the gitsha is not used, but is included for SAPI compatibility
+            request.Headers["Spatial-User-Agent"] = $"UNITYSDK {UpgradeUtility.currentVersion} {(UpgradeUtility.isOfficialVersion ? "official" : "dev")} 00000000";
             return request;
         }
     }

@@ -5,7 +5,7 @@ namespace SpatialSys.UnitySDK.Editor
 {
     public class ConfigWindow : EditorWindow
     {
-        private static readonly string ACCESS_TOKEN_URL = $"https://{SpatialAPI.SPATIAL_ORIGIN}/account";
+        private static readonly string ACCOUNT_PAGE_URL = $"https://{SpatialAPI.SPATIAL_ORIGIN}/account";
         private const string WINDOW_PREFERENCES_PREFS_KEY = "SpatialSDK_ConfigWindowPrefs";
 
         public enum TabType
@@ -33,10 +33,18 @@ namespace SpatialSys.UnitySDK.Editor
         private EditorConfig _config;
         private UnityEditor.Editor _configEditor;
 
-        public static void Open()
+        public static ConfigWindow Open()
         {
             ConfigWindow window = GetWindow<ConfigWindow>("Spatial SDK Configuration");
             window.Show();
+            return window;
+        }
+
+        public static void Open(TabType startingTab)
+        {
+            ConfigWindow window = Open();
+            window.InitializeIfNecessary();
+            window._preferences.selectedTab = startingTab;
         }
 
         private void OnDisable()
@@ -92,12 +100,14 @@ namespace SpatialSys.UnitySDK.Editor
 
             GUILayout.Space(10f);
 
+            EditorGUILayout.LabelField($"1. Ensure you are on Unity {EditorUtility.CLIENT_UNITY_VERSION}, otherwise testing may not work (you are on {Application.unityVersion})");
+
             EditorGUILayout.BeginHorizontal();
             {
-                EditorGUILayout.LabelField("1. Navigate to", GUILayout.Width(80f));
+                EditorGUILayout.LabelField("2. Navigate to", GUILayout.Width(80f));
 
                 if (EditorGUILayout.LinkButton("this link"))
-                    Help.BrowseURL(ACCESS_TOKEN_URL);
+                    Help.BrowseURL(ACCOUNT_PAGE_URL);
 
                 EditorGUILayout.LabelField(" to retrieve an access token and paste it into the field below.");
             }
@@ -110,19 +120,29 @@ namespace SpatialSys.UnitySDK.Editor
 
             GUILayout.Space(10f);
 
-            EditorGUILayout.LabelField("2. Read up on documentation using the button above.");
-            EditorGUILayout.LabelField("3. Build your environment scene.");
-            EditorGUILayout.LabelField("4. Test out your creation inside of Spatial using the 'Test Current Space' button at the top right corner of the editor!");
+            EditorGUILayout.LabelField("3. Read up on documentation using the button above.");
+            EditorGUILayout.LabelField("4. Build your environment scene.");
+            EditorGUILayout.LabelField("5. Test out your creation inside of Spatial using the 'Test Current Space' button at the top right corner of the editor!");
         }
 
         private void DrawAuthentication()
         {
+            EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
+            {
+                EditorGUILayout.LabelField(EditorGUIUtility.IconContent("console.infoicon.sml"), GUILayout.Width(20f));
+                EditorGUILayout.LabelField("You can retrieve an access token", GUILayout.Width(188f));
+
+                if (EditorGUILayout.LinkButton("here"))
+                    Help.BrowseURL(ACCOUNT_PAGE_URL);
+            }
+            EditorGUILayout.EndHorizontal();
+
             DrawAuthTokenInputField();
         }
 
         private void DrawAuthTokenInputField()
         {
-            EditorGUILayout.HelpBox("IMPORTANT: Do NOT share this value with anyone!", MessageType.Warning);
+            EditorGUILayout.HelpBox("IMPORTANT: Do NOT share this token with anyone!", MessageType.Warning);
 
             _token = _token.Trim();
             string prevToken = _token;

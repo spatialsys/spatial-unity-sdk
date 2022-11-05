@@ -1,3 +1,4 @@
+using UnityEngine;
 using UnityEngine.Build.Pipeline;
 using UnityEngine.SceneManagement;
 using UnityEditor;
@@ -14,6 +15,8 @@ namespace SpatialSys.UnitySDK.Editor
     {
         public static string BUILD_DIR = "Exports";
         public static string PACKAGE_EXPORT_PATH = Path.Combine(BUILD_DIR, "spaces.unitypackage");
+
+        private static float _lastUploadProgress;
 
         public static IPromise BuildAndUploadForSandbox()
         {
@@ -49,8 +52,8 @@ namespace SpatialSys.UnitySDK.Editor
             if (!bundleNamesSet.Contains(bundleNameToUpload))
                 return Promise.Rejected(new System.Exception("Asset bundle for the target scene was not built"));
 
-            // TODO: Make cancellable
-            UnityEditor.EditorUtility.DisplayProgressBar("Uploading sandbox asset bundle", "Please wait...", 0.5f);
+            _lastUploadProgress = -1f;
+            UpdateSandboxUploadProgressBar(0f);
 
             return SpatialAPI.UploadTestEnvironment()
                 .Then(resp => {
@@ -59,15 +62,28 @@ namespace SpatialSys.UnitySDK.Editor
                         throw new System.Exception("Built asset bundle was not found on disk");
 
                     byte[] data = File.ReadAllBytes(bundlePath);
-                    SpatialAPI.UploadFile(resp.uploadUrl, data)
+                    SpatialAPI.UploadFile(resp.url, data, UpdateSandboxUploadProgressBar)
                         .Then(resp => EditorUtility.OpenSandboxInBrowser())
-                        .Catch(exc => UnityEditor.EditorUtility.DisplayDialog("Asset bundle upload network error", exc.Message, "OK"))
+                        .Catch(exc => UnityEditor.EditorUtility.DisplayDialog("Asset bundle upload network error", GetExceptionMessage(exc), "OK"))
                         .Finally(() => UnityEditor.EditorUtility.ClearProgressBar());
                 })
                 .Catch(exc => {
                     UnityEditor.EditorUtility.ClearProgressBar();
-                    UnityEditor.EditorUtility.DisplayDialog("Upload failed", exc.Message, "OK");
+                    UnityEditor.EditorUtility.DisplayDialog("Upload failed", GetExceptionMessage(exc), "OK");
                 });
+        }
+
+        private static void UpdateSandboxUploadProgressBar(float progress)
+        {
+            if (progress <= _lastUploadProgress)
+                return;
+
+            _lastUploadProgress = progress;
+
+            // For some reason, web request progress goes from 0 to 0.5 while uploading, then jumps to 1 at the end. Remap the value to 0 to 1.
+            float remappedProgress = Mathf.Clamp01(progress * 2f);
+            string message = (remappedProgress > 0f) ? $"Uploading... ({Mathf.FloorToInt(remappedProgress * 100f)}%)" : "Please wait...";
+            UnityEditor.EditorUtility.DisplayProgressBar("Uploading sandbox asset bundle", message, remappedProgress);
         }
 
         public static IPromise PackageForPublishing()
@@ -115,6 +131,31 @@ namespace SpatialSys.UnitySDK.Editor
             }
 
             return null;
+        }
+
+        private static string GetExceptionMessage(System.Exception exc)
+        {
+            string additionalMessage = null;
+
+            if (exc is Proyecto26.RequestException requestException)
+            {
+                switch (requestException.StatusCode)
+                {
+                    case 401:
+                        additionalMessage = "Invalid or expired SDK token. Follow steps to re-authenticate by opening \"Spatial SDK/Authentication\" at the top.";
+                        break;
+                    case 400:
+                    case 500:
+                        additionalMessage = "Something went wrong. Contact support@spatial.io for assistance.";
+                        break;
+                }
+            }
+
+            string result = exc.Message;
+            if (!string.IsNullOrEmpty(additionalMessage))
+                result += "\n\n" + additionalMessage;
+
+            return result;
         }
     }
 }
