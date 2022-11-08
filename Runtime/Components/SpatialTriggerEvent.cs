@@ -10,6 +10,7 @@ namespace SpatialSys.UnitySDK
     {
         public override string prettyName => "Trigger Event";
         public override string tooltip => "Invokes the UnityEvent when an object enters the trigger.";
+        public override bool isExperimental => true;
 
         public enum ListenFor
         {

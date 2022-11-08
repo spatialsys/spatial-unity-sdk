@@ -10,12 +10,5 @@ namespace SpatialSys.UnitySDK
         public override string tooltip => "Specify the area in which users will be placed when entering this space. Multiple entrance points can be used in a single scene";
 
         public float radius = 1f;
-
-        private void OnDrawGizmos()
-        {
-            //TODO: to be replaced with pretty gizmos soon
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(transform.position, radius);
-        }
     }
 }

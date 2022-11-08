@@ -6,44 +6,77 @@ using UnityEditor;
 namespace SpatialSys.UnitySDK
 {
     [CustomEditor(typeof(SpatialComponentBase), true), CanEditMultipleObjects]
-    public class SpatialComponentEditor : UnityEditor.Editor
+    public class SpatialComponentDefaultEditor : SpatialComponentEditorBase { }
+    public abstract class SpatialComponentEditorBase : UnityEditor.Editor
     {
         private bool _initialized;
         //used to hide the script field
         private static readonly string[] _excludedProperties = new string[] { "m_Script" };
-        [SerializeField]
-        private Texture2D backgroundTexture;
-        [SerializeField]
-        private Texture2D logoTexture;
+        private Texture2D _backgroundTexture;
+        private Texture2D _warningTexture;
+        private Texture2D _iconTexture;
 
+        private GUIStyle _warningStyle;
+        private GUIContent _warningContent;
         private GUIStyle _areaStyle;
         private GUIStyle _logoStyle;
         private GUIStyle _titleStyle;
         private GUIStyle _subTitleStyle;
 
-        private void InitializeIfNecessary()
+        private void InitializeIfNecessary(SpatialComponentBase target)
         {
             if (_initialized)
             {
                 return;
             }
+            GUIContent c = EditorGUIUtility.ObjectContent(target, target.GetType());
+            if (c.image == null)
+            {
+                _iconTexture = Resources.Load("spatialLogo512") as Texture2D;
+            }
+            else
+            {
+                _iconTexture = (Texture2D)c.image;
+            }
+
+            _backgroundTexture = Resources.Load("TooltipBackground") as Texture2D;
+            _warningTexture = Resources.Load("WarningBackground") as Texture2D;
+
+            _warningStyle = new GUIStyle() {
+                border = new RectOffset(8, 8, 8, 8),
+                padding = new RectOffset(8, 8, 8, 8),
+                fontStyle = FontStyle.Bold,
+                fontSize = 18,
+                wordWrap = true,
+                alignment = TextAnchor.MiddleLeft,
+            };
+            _warningStyle.normal.background = _warningTexture;
+            _warningStyle.active.background = _warningTexture;
+            _warningStyle.normal.textColor = new Color(1, .66f, 0f);
+            _warningStyle.active.textColor = new Color(1, .66f, 0f);
+
+            _warningContent = new GUIContent(" Experimental Feature", Resources.Load("WarningLink") as Texture2D);
 
             _areaStyle = new GUIStyle() {
                 border = new RectOffset(8, 8, 8, 8),
                 padding = new RectOffset(8, 8, 8, 8),
             };
-            _areaStyle.normal.background = backgroundTexture;
+            _areaStyle.normal.background = _backgroundTexture;
             _areaStyle.normal.textColor = Color.white;
 
             _logoStyle = new GUIStyle() {
-                fixedHeight = 32,
-                fixedWidth = 32,
+                fixedHeight = 48,
+                fixedWidth = 48,
+                padding = new RectOffset(0, 0, 0, 0),
+                border = new RectOffset(0, 0, 0, 0),
+                contentOffset = new Vector2(0, -3),
             };
 
             _titleStyle = new GUIStyle() {
                 fontStyle = FontStyle.Bold,
-                fontSize = 24,
+                fontSize = 28,
                 wordWrap = true,
+                contentOffset = new Vector2(0, 3),
             };
             _titleStyle.normal.textColor = Color.white;
 
@@ -57,13 +90,28 @@ namespace SpatialSys.UnitySDK
 
         public override void OnInspectorGUI()
         {
-            InitializeIfNecessary();
             var editorTarget = target as SpatialComponentBase;
+            InitializeIfNecessary(editorTarget);
             serializedObject.Update();
 
+            if (editorTarget.isExperimental)
+            {
+                //TODO: re-implement link below once docs are static
+                if (GUILayout.Button("Experimental Feature", _warningStyle))
+                {
+
+                }
+                /*
+                if (GUILayout.Button(_warningContent, _warningStyle))
+                {
+                    Application.OpenURL("https://www.notion.so/spatialxr/Spatial-Unity-Creator-Toolset-Documentation-1-d4a0b31b838b43d4bde294d964313c1e#e4afcf9beef54f88adb60b4a717ca388");
+                }
+                */
+            }
+            GUILayout.Space(8);
             GUILayout.BeginVertical(_areaStyle);
             GUILayout.BeginHorizontal();
-            GUILayout.Box(logoTexture, _logoStyle);
+            GUILayout.Box(_iconTexture, _logoStyle);
             GUILayout.Space(4);
             GUILayout.Label(editorTarget.prettyName, _titleStyle);
             if (!string.IsNullOrEmpty(editorTarget.documentationURL))
