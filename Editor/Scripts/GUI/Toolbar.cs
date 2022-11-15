@@ -12,7 +12,6 @@ namespace SpatialSys.UnitySDK.Editor
     public static class Toolbar
     {
         private static string _testBundleName;
-        private static EditorConfig _config;
 
         static Toolbar()
         {
@@ -21,7 +20,6 @@ namespace SpatialSys.UnitySDK.Editor
             EditorSceneManager.sceneOpened += OnSceneOpened;
             EditorSceneManager.sceneClosed += OnSceneClosed;
             UpdateTestBundleName();
-            _config = EditorConfig.instance;
         }
 
         static void OnToolbarGUI()
@@ -30,9 +28,6 @@ namespace SpatialSys.UnitySDK.Editor
 
             GUI.color = Color.white * 0.75f;
             GUI.contentColor = Color.white * 1.15f;
-
-            if (_config == null)
-                _config = EditorConfig.instance;
 
             string cannotTestReason = GetTestButtonErrorString();
 
@@ -88,7 +83,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             if (GUILayout.Button(EditorGUIUtility.IconContent("d_SettingsIcon")))
             {
-                ConfigWindow.Open(ConfigWindow.TabType.Configuration);
+                SpatialSDKConfigWindow.OpenWindow("config");
             }
 
             GUI.color = Color.white;
@@ -152,7 +147,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         private static string GetPublishButtonErrorString()
         {
-            if (_config == null)
+            if (EditorConfig.instance == null)
                 return "Unable to locate SDK configuration";
             if (EditorApplication.isPlayingOrWillChangePlaymode)
                 return "Feature disabled while in play mode";

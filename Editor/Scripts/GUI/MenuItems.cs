@@ -5,31 +5,20 @@ namespace SpatialSys.UnitySDK.Editor
 {
     public static class MenuItems
     {
-        private const int HELP_PRIORITY = 100;
-        private const int WINDOW_PRIORITY = 200;
-
-        [MenuItem("Spatial SDK/Help/Documentation", false, HELP_PRIORITY)]
-        public static void OpenDocumentation()
+        [MenuItem("Spatial SDK/Account")]
+        public static void OpenAccount()
         {
-            EditorUtility.OpenDocumentationPage();
+            SpatialSDKConfigWindow.OpenWindow("account");
         }
-
-        [MenuItem("Spatial SDK/Getting Started", false, WINDOW_PRIORITY)]
-        public static void OpenGettingStartedWindow()
+        [MenuItem("Spatial SDK/Configuration")]
+        public static void OpenConfig()
         {
-            ConfigWindow.Open(ConfigWindow.TabType.GettingStarted);
+            SpatialSDKConfigWindow.OpenWindow("config");
         }
-
-        [MenuItem("Spatial SDK/Authentication", false, WINDOW_PRIORITY)]
-        public static void OpenAuthenticationWindow()
+        [MenuItem("Spatial SDK/Help")]
+        public static void OpenHelp()
         {
-            ConfigWindow.Open(ConfigWindow.TabType.Authentication);
-        }
-
-        [MenuItem("Spatial SDK/Configuration", false, WINDOW_PRIORITY)]
-        public static void OpenConfigWindow()
-        {
-            ConfigWindow.Open(ConfigWindow.TabType.Configuration);
+            SpatialSDKConfigWindow.OpenWindow("help");
         }
 
         [MenuItem("Spatial SDK/Check for updates...")]

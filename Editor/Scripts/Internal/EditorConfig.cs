@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 
-namespace SpatialSys.UnitySDK
+namespace SpatialSys.UnitySDK.Editor
 {
     public class EditorConfig : ScriptableObject
     {
@@ -24,24 +24,33 @@ namespace SpatialSys.UnitySDK
             Workplace = 5
         }
 
-        private static EditorConfig _instance = null;
-        public static EditorConfig instance
+        public static EditorConfig instance { get; private set; }
+        static EditorConfig()
         {
-            get
+            EditorApplication.update += DelayedInitialize;
+            EditorApplication.projectChanged += SearchProjectForConfig;
+        }
+
+        /// <summary>
+        /// A workaround to allow us to run Unity functions in the static constructor.
+        /// </summary>
+        private static void DelayedInitialize()
+        {
+            EditorApplication.update -= DelayedInitialize;
+            SearchProjectForConfig();
+        }
+
+        private static void SearchProjectForConfig()
+        {
+            if (instance != null)
+                return;
+
+            string[] configGuids = AssetDatabase.FindAssets($"t:{nameof(EditorConfig)}");
+
+            if (configGuids.Length > 0)
             {
-                if (_instance == null)
-                {
-                    // Just take the first config we find in the project for now.
-                    string[] configGuids = AssetDatabase.FindAssets($"t:{nameof(EditorConfig)}");
-
-                    if (configGuids.Length > 0)
-                    {
-                        string path = AssetDatabase.GUIDToAssetPath(configGuids[0]);
-                        _instance = AssetDatabase.LoadAssetAtPath<EditorConfig>(path);
-                    }
-                }
-
-                return _instance;
+                string path = AssetDatabase.GUIDToAssetPath(configGuids[0]);
+                instance = AssetDatabase.LoadAssetAtPath<EditorConfig>(path);
             }
         }
 

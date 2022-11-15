@@ -8,6 +8,7 @@ namespace SpatialSys.UnitySDK
     {
         public override string prettyName => "Empty Frame";
         public override string tooltip => "Use to specify a location where an empty frame will be created when the space is opened in spatial.";
+        public override string documentationURL => "https://www.notion.so/spatialxr/Empty-Frame-5fe7ce5841144d92a5f43774bd0c4950";
 
         public float size = 1f;
 

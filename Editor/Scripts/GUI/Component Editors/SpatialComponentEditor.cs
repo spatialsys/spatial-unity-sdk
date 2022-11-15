@@ -13,8 +13,10 @@ namespace SpatialSys.UnitySDK
         //used to hide the script field
         private static readonly string[] _excludedProperties = new string[] { "m_Script" };
         private Texture2D _backgroundTexture;
+        private Texture2D _buttonTexture;
         private Texture2D _warningTexture;
         private Texture2D _iconTexture;
+        private Texture2D _docsLinkTexture;
 
         private GUIStyle _warningStyle;
         private GUIContent _warningContent;
@@ -22,6 +24,7 @@ namespace SpatialSys.UnitySDK
         private GUIStyle _logoStyle;
         private GUIStyle _titleStyle;
         private GUIStyle _subTitleStyle;
+        private GUIStyle _helpButtonStyle;
 
         private void InitializeIfNecessary(SpatialComponentBase target)
         {
@@ -40,7 +43,9 @@ namespace SpatialSys.UnitySDK
             }
 
             _backgroundTexture = Resources.Load("TooltipBackground") as Texture2D;
+            _buttonTexture = Resources.Load("ButtonBackground") as Texture2D;
             _warningTexture = Resources.Load("WarningBackground") as Texture2D;
+            _docsLinkTexture = Resources.Load("icon_docsLink") as Texture2D;
 
             _warningStyle = new GUIStyle() {
                 border = new RectOffset(8, 8, 8, 8),
@@ -86,6 +91,17 @@ namespace SpatialSys.UnitySDK
                 richText = true,
             };
             _subTitleStyle.normal.textColor = new Color(1, 1, 1, .75f);
+
+            _helpButtonStyle = new GUIStyle() {
+                border = new RectOffset(8, 8, 8, 8),
+                padding = new RectOffset(4, 4, 4, 4),
+                alignment = TextAnchor.MiddleCenter,
+                fontStyle = FontStyle.Bold,
+                fontSize = 14,
+                fixedWidth = 48,
+            };
+            _helpButtonStyle.active.background = _buttonTexture;
+            _helpButtonStyle.normal.background = _buttonTexture;
         }
 
         public override void OnInspectorGUI()
@@ -96,17 +112,10 @@ namespace SpatialSys.UnitySDK
 
             if (editorTarget.isExperimental)
             {
-                //TODO: re-implement link below once docs are static
                 if (GUILayout.Button("Experimental Feature", _warningStyle))
                 {
-
+                    //open a docs link when we have one.
                 }
-                /*
-                if (GUILayout.Button(_warningContent, _warningStyle))
-                {
-                    Application.OpenURL("https://www.notion.so/spatialxr/Spatial-Unity-Creator-Toolset-Documentation-1-d4a0b31b838b43d4bde294d964313c1e#e4afcf9beef54f88adb60b4a717ca388");
-                }
-                */
             }
             GUILayout.Space(8);
             GUILayout.BeginVertical(_areaStyle);
@@ -117,7 +126,7 @@ namespace SpatialSys.UnitySDK
             if (!string.IsNullOrEmpty(editorTarget.documentationURL))
             {
                 GUILayout.Space(4);
-                if (GUILayout.Button("Help"))
+                if (GUILayout.Button(_docsLinkTexture, _helpButtonStyle))
                 {
                     Application.OpenURL(editorTarget.documentationURL);
                 }

@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 using UnityEditor.Callbacks;
 using System;
 
-namespace SpatialSys.UnitySDK
+namespace SpatialSys.UnitySDK.Editor
 {
     public static class SceneProcessor
     {

@@ -10,7 +10,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static bool isUsingSupportedUnityVersion => Application.unityVersion == CLIENT_UNITY_VERSION;
 
-        public static EditorConfig CreateDefaultConfigurationFile()
+        public static EditorConfig CreateOrGetConfigurationFile()
         {
             string directory = CreateFolderHierarchy("Spatial SDK");
             string filePath = directory + "/SpatialSDK_Config.asset";
