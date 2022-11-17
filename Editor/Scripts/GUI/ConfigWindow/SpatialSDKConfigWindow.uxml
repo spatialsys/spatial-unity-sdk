@@ -16,7 +16,6 @@
             <ui:Button text="Get Access Token" display-tooltip-when-elided="true" name="getToken" class="pillButton" />
             <ui:Label text="Never share your access token with anybody!" display-tooltip-when-elided="false" class="infoText warningText" style="padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0;" />
             <ui:TextField picking-mode="Ignore" label="Access Token" password="true" binding-path="_accessToken" name="authField" readonly="false" usage-hints="None" multiline="false" class="textField" style="height: 70px;" />
-            <ui:Label text="NOTE: Tokens are currently only valid for one hour. We are working on a fix for this." display-tooltip-when-elided="false" class="infoText" style="padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0;" />
         </ui:VisualElement>
         <ui:VisualElement name="config" style="display: none;">
             <ui:VisualElement name="configExists" style="align-items: center; display: flex; flex-shrink: 0; justify-content: space-around; flex-basis: auto;">

@@ -106,8 +106,8 @@ namespace SpatialSys.UnitySDK.Editor
 
         private void UpdateAuthWarning()
         {
-            bool isAuthed = _authToken.Length > 10;
-            rootVisualElement.Q("authWarning").style.display = isAuthed ? DisplayStyle.None : DisplayStyle.Flex;
+            bool validAuthToken = _authToken.StartsWith("sandbox_") && _authToken.Length > 16;
+            rootVisualElement.Q("authWarning").style.display = validAuthToken ? DisplayStyle.None : DisplayStyle.Flex;
         }
 
         private void CreateAndBindConfigAsset()
