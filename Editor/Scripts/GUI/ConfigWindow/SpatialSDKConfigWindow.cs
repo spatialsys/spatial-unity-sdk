@@ -48,8 +48,8 @@ namespace SpatialSys.UnitySDK.Editor
             root.Query<Button>("gotoSupport").First().clicked += () => Application.OpenURL("https://support.spatial.io/hc/en-us");
             root.Query<Button>("gotoDiscord").First().clicked += () => Application.OpenURL("https://discord.com/invite/spatial");
 
-            if (EditorConfig.instance != null)
-                root.Bind(new SerializedObject(EditorConfig.instance));
+            if (PackageConfig.instance != null)
+                root.Bind(new SerializedObject(PackageConfig.instance));
 
             _authToken = EditorUtility.GetSavedAuthToken();
             if (string.IsNullOrEmpty(_authToken))
@@ -93,8 +93,8 @@ namespace SpatialSys.UnitySDK.Editor
 
         private void UpdateConfigTabContents()
         {
-            rootVisualElement.Q(CONFIG_EXISTS_SELECTOR_NAME).style.display = (EditorConfig.instance != null) ? DisplayStyle.Flex : DisplayStyle.None;
-            rootVisualElement.Q(CONFIG_NULL_SELECTOR_NAME).style.display = (EditorConfig.instance == null) ? DisplayStyle.Flex : DisplayStyle.None;
+            rootVisualElement.Q(CONFIG_EXISTS_SELECTOR_NAME).style.display = (PackageConfig.instance != null) ? DisplayStyle.Flex : DisplayStyle.None;
+            rootVisualElement.Q(CONFIG_NULL_SELECTOR_NAME).style.display = (PackageConfig.instance == null) ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         private void SetAuthToken(string token)
@@ -112,7 +112,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         private void CreateAndBindConfigAsset()
         {
-            EditorConfig config = EditorUtility.CreateOrGetConfigurationFile();
+            PackageConfig config = EditorUtility.CreateOrGetConfigurationFile();
             rootVisualElement.Bind(new SerializedObject(config));
         }
     }

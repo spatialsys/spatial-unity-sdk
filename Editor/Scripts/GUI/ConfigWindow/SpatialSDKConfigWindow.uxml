@@ -1,7 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
     <Style src="project://database/Packages/io.spatial.unitysdk/Editor/Scripts/GUI/ConfigWindow/SpatialSDKConfigWindowStyles.uss?fileID=7433441132597879392&amp;guid=2065a753bc3834755a8d2b33b9f9de01&amp;type=3#SpatialSDKConfigWindowStyles" />
     <ui:VisualElement style="border-left-color: rgb(255, 255, 255); border-right-color: rgb(255, 255, 255); border-top-color: rgb(255, 255, 255); border-bottom-color: rgb(255, 255, 255); border-left-width: 0; border-right-width: 0; border-top-width: 0; border-bottom-width: 0; border-top-left-radius: 8px; border-bottom-left-radius: 8px; border-top-right-radius: 8px; border-bottom-right-radius: 8px; margin-left: 8px; margin-right: 8px; margin-top: 8px; margin-bottom: 8px; align-items: center; flex-direction: row; justify-content: center; flex-shrink: 0;">
-        <ui:VisualElement style="background-image: resource(&apos;spatialLogo512&apos;); width: 64px; height: 64px; -unity-background-scale-mode: scale-to-fit;" />
+        <ui:VisualElement style="background-image: url(&apos;project://database/Packages/io.spatial.unitysdk/Editor/Textures/GUI/SpatialLogo.png?fileID=2800000&amp;guid=c76d105e95406410985f7f2c1f2bf0a0&amp;type=3#SpatialLogo&apos;); width: 64px; height: 64px; -unity-background-scale-mode: scale-to-fit;" />
         <ui:Label text="SpatialSDK" display-tooltip-when-elided="true" style="font-size: 48px; -unity-font-style: bold; color: rgb(255, 255, 255);" />
     </ui:VisualElement>
     <ui:VisualElement style="flex-direction: row; justify-content: center; flex-wrap: wrap; padding-left: 4px; padding-right: 4px; padding-top: 4px; padding-bottom: 4px; flex-shrink: 0;">
@@ -22,9 +22,8 @@
                 <ui:Label text="Here you can configure some information about the package that gets uploaded to Spatial." display-tooltip-when-elided="true" class="infoText" />
                 <ui:TextField picking-mode="Ignore" label="Package Name" password="false" multiline="false" binding-path="packageName" class="textField" />
                 <ui:TextField picking-mode="Ignore" label="Package Description" password="false" multiline="false" binding-path="description" class="textField" style="height: 148px;" />
-                <uie:EnumField label="Usage Type" value="Uncategorized" binding-path="usageType" type="SpatialSys.UnitySDK.Editor.EditorConfig+UsageType, SpatialSys.UnitySDK.Editor" include-obsolete-values="false" />
                 <ui:Label text="Package Contents" display-tooltip-when-elided="false" class="label" style="font-size: 24px;" />
-                <uie:PropertyField binding-path="environmentVariants" picking-mode="Ignore" style="flex-direction: column; flex-wrap: nowrap; max-height: 900px; flex-shrink: 1; align-items: center; min-height: 0; opacity: 1; overflow: visible; width: 100%; max-width: 700px; padding-left: 32px; padding-right: 32px; padding-top: 0; padding-bottom: 32px;" />
+                <uie:PropertyField binding-path="environment.variants" picking-mode="Ignore" style="flex-direction: column; flex-wrap: nowrap; max-height: 900px; flex-shrink: 1; align-items: center; min-height: 0; opacity: 1; overflow: visible; width: 100%; max-width: 700px; padding-left: 32px; padding-right: 32px; padding-top: 0; padding-bottom: 32px;" />
             </ui:VisualElement>
             <ui:VisualElement name="configNull" style="align-items: center; display: none; flex-shrink: 0; justify-content: space-around; flex-basis: auto;">
                 <ui:Label text="Unable to locate a config in this project.&#10;Click the button below to get started!" display-tooltip-when-elided="true" class="infoText" style="-unity-text-align: upper-center;" />

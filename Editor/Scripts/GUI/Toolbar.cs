@@ -11,15 +11,9 @@ namespace SpatialSys.UnitySDK.Editor
     [InitializeOnLoad]
     public static class Toolbar
     {
-        private static string _testBundleName;
-
         static Toolbar()
         {
             ToolbarExtender.RightToolbarGUI.Add(OnToolbarGUI);
-            EditorSceneManager.activeSceneChangedInEditMode += OnActiveSceneChanged;
-            EditorSceneManager.sceneOpened += OnSceneOpened;
-            EditorSceneManager.sceneClosed += OnSceneClosed;
-            UpdateTestBundleName();
         }
 
         static void OnToolbarGUI()
@@ -36,9 +30,9 @@ namespace SpatialSys.UnitySDK.Editor
                 // TODO: Add a mini window previewing what's about to be built, which will act as a confirmation as well so the dialog won't be necessary.
                 if (GUILayout.Button(new GUIContent(
                         "▶️ Test Current Space",
-                        !string.IsNullOrEmpty(cannotTestReason) ? cannotTestReason : $"Builds the bundle ({_testBundleName}) for testing in the Spatial web app"
+                        !string.IsNullOrEmpty(cannotTestReason) ? cannotTestReason : $"Builds the current scene to test in the Spatial web app"
                     )) &&
-                    UnityEditor.EditorUtility.DisplayDialog("Testing Space", $"You are about to export this bundle {_testBundleName} to the Spatial sandbox.", "Continue", "Cancel"))
+                    UnityEditor.EditorUtility.DisplayDialog("Testing Space", $"You are about to export the current scene to the Spatial sandbox.", "Continue", "Cancel"))
                 {
                     PerformUpgradeFlowIfNecessary()
                         .Then(() => {
@@ -70,7 +64,7 @@ namespace SpatialSys.UnitySDK.Editor
                 {
                     PerformUpgradeFlowIfNecessary()
                         .Then(() => {
-                            BuildUtility.PackageForPublishing();
+                            return BuildUtility.PackageForPublishing();
                         })
                         .Catch(exc => {
                             if (exc is RSG.PromiseCancelledException)
@@ -124,35 +118,28 @@ namespace SpatialSys.UnitySDK.Editor
                 });
         }
 
-        private static void OnActiveSceneChanged(Scene oldScene, Scene newScene) => UpdateTestBundleName();
-        private static void OnSceneOpened(Scene scene, OpenSceneMode openMode) => UpdateTestBundleName();
-        private static void OnSceneClosed(Scene scene) => UpdateTestBundleName();
-
-        private static void UpdateTestBundleName()
-        {
-            _testBundleName = BuildUtility.GetAssetBundleNameForOpenedScene();
-        }
-
         private static string GetTestButtonErrorString()
         {
             if (!EditorUtility.isUsingSupportedUnityVersion)
                 return $"Requires Unity {EditorUtility.CLIENT_UNITY_VERSION} to test in Spatial (currently using {Application.unityVersion})";
             if (EditorApplication.isPlayingOrWillChangePlaymode)
                 return "Feature disabled while in play mode";
-            if (string.IsNullOrEmpty(_testBundleName))
-                return "No open scenes are tagged as an asset bundle";
 
             return null;
         }
 
         private static string GetPublishButtonErrorString()
         {
-            if (EditorConfig.instance == null)
+            if (PackageConfig.instance == null)
                 return "Unable to locate SDK configuration";
             if (EditorApplication.isPlayingOrWillChangePlaymode)
                 return "Feature disabled while in play mode";
 
+#if SPATIAL_UNITYSDK_STAGING
+            return null;
+#else
             return "This feature is coming soon";
+#endif
         }
     }
 }

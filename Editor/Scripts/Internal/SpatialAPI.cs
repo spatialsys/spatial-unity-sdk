@@ -1,3 +1,5 @@
+using UnityEngine;
+
 using System;
 using RSG;
 using Proyecto26;
@@ -35,18 +37,82 @@ namespace SpatialSys.UnitySDK.Editor
         }
 
         //------------------------------------------------
+        // CREATE PACKAGE
+        //------------------------------------------------
+
+        public static IPromise<CreateOrUpdatePackageResponse> CreateOrUpdatePackage(string sku, PackageType packageType)
+        {
+            RequestHelper request = CreateRequest();
+            request.Uri = $"{API_ORIGIN}/sdk/v1/package/";
+            request.Body = new CreateOrUpdatePackageRequest() {
+                sku = sku,
+                unityVersion = Application.unityVersion,
+                packageSource = PackageSourceToSAPIPackageSource(PackageSource.Unity),
+                packageType = PackageSourceToSAPIPackageType(packageType)
+            };
+
+            return RestClient.Post<CreateOrUpdatePackageResponse>(request);
+        }
+
+        [Serializable]
+        private struct CreateOrUpdatePackageRequest
+        {
+            public string sku;
+            public string unityVersion;
+            public string packageSource;
+            public string packageType;
+        }
+
+        [Serializable]
+        public struct CreateOrUpdatePackageResponse
+        {
+            public string sku;
+            public int version;
+        }
+
+        //------------------------------------------------
+        // UPLOAD PACKAGE
+        //------------------------------------------------
+
+        public static IPromise<UploadPackageResponse> UploadPackage(string sku, int version, byte[] packageFileData, Action<float> progressCallback = null)
+        {
+            string url = $"{API_ORIGIN}/sdk/v1/package/{sku}/{version}";
+            RequestHelper request = CreateUploadFileRequest(useSpatialHeaders: true, url, packageFileData, progressCallback);
+            return RestClient.Put<UploadPackageResponse>(request);
+        }
+
+        [Serializable]
+        public struct UploadPackageResponse
+        {
+            public string sku;
+            public int version;
+            public string downloadUrl;
+        }
+
+        //------------------------------------------------
         // UPLOAD FILE
         //------------------------------------------------
 
-        public static IPromise<ResponseHelper> UploadFile(string url, byte[] data, Action<float> progressCallback = null)
+        public static IPromise<ResponseHelper> UploadFile(bool useSpatialHeaders, string url, byte[] data, Action<float> progressCallback = null)
         {
-            RequestHelper request = new RequestHelper();
-            request.Uri = url;
-            request.BodyRaw = data;
-            request.ContentType = "application/octet-stream";
-            if (progressCallback != null)
-                request.ProgressCallback += progressCallback;
+            RequestHelper request = CreateUploadFileRequest(useSpatialHeaders, url, data, progressCallback);
             return RestClient.Put(request);
+        }
+
+        //------------------------------------------------
+        // SHARED DATA TYPES/STRUCTURES
+        //------------------------------------------------
+
+        public enum PackageSource
+        {
+            Unity
+        }
+
+        public enum PackageType
+        {
+            Environment,
+            Avatar,
+            Object
         }
 
         //------------------------------------------------
@@ -61,6 +127,27 @@ namespace SpatialSys.UnitySDK.Editor
             // Currently the gitsha is not used, but is included for SAPI compatibility
             request.Headers["Spatial-User-Agent"] = $"UNITYSDK {UpgradeUtility.currentVersion} {(UpgradeUtility.isOfficialVersion ? "official" : "dev")} 00000000";
             return request;
+        }
+
+        private static RequestHelper CreateUploadFileRequest(bool useSpatialHeaders, string url, byte[] data, Action<float> progressCallback = null)
+        {
+            RequestHelper request = (useSpatialHeaders) ? CreateRequest() : new RequestHelper();
+            request.Uri = url;
+            request.BodyRaw = data;
+            request.ContentType = "application/octet-stream";
+            if (progressCallback != null)
+                request.ProgressCallback += progressCallback;
+            return request;
+        }
+
+        private static string PackageSourceToSAPIPackageSource(PackageSource source)
+        {
+            return source.ToString();
+        }
+
+        private static string PackageSourceToSAPIPackageType(PackageType type)
+        {
+            return type.ToString();
         }
     }
 }

@@ -1,0 +1,14 @@
+{
+    "name": "SpatialSys.UnitySDK.Editor.Tests",
+    "references": [
+        "SpatialSys.UnitySDK",
+        "SpatialSys.UnitySDK.Editor"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}

@@ -10,20 +10,18 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static bool isUsingSupportedUnityVersion => Application.unityVersion == CLIENT_UNITY_VERSION;
 
-        public static EditorConfig CreateOrGetConfigurationFile()
+        public static PackageConfig CreateOrGetConfigurationFile()
         {
             string directory = CreateFolderHierarchy("Spatial SDK");
             string filePath = directory + "/SpatialSDK_Config.asset";
-            EditorConfig result = AssetDatabase.LoadAssetAtPath<EditorConfig>(filePath);
+            PackageConfig result = AssetDatabase.LoadAssetAtPath<PackageConfig>(filePath);
 
             if (result == null)
             {
-                EditorConfig config = ScriptableObject.CreateInstance<EditorConfig>();
-                config.environmentVariants = new EditorConfig.EnvironmentVariant[1];
-                config.environmentVariants[0] = new EditorConfig.EnvironmentVariant();
+                PackageConfig config = ScriptableObject.CreateInstance<PackageConfig>();
                 AssetDatabase.CreateAsset(config, filePath);
                 AssetDatabase.Refresh();
-                result = AssetDatabase.LoadAssetAtPath<EditorConfig>(filePath);
+                result = AssetDatabase.LoadAssetAtPath<PackageConfig>(filePath);
             }
 
             return result;

@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -15,7 +12,15 @@ namespace SpatialSys.UnitySDK
         public SpatialTriggerEvent[] triggerEvents;
         public SpatialEmptyFrame[] emptyFrames;
         public SpatialAvatarTeleporter[] avatarTeleporters;
+        public SpatialSyncedAnimator[] syncedAnimators;
+        public Animator[] unsyncedAnimators;
 
         public Volume[] renderingVolumes;
+
+        // TODO: Add other config data.
+        // TODO: Have config data per variant.
+        public bool enableFog;
+
+        public SpatialEvent[] spatialEvents;
     }
 }
