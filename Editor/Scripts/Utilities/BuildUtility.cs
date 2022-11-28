@@ -115,7 +115,16 @@ namespace SpatialSys.UnitySDK.Editor
                     byte[] packageData = File.ReadAllBytes(PACKAGE_EXPORT_PATH);
                     SpatialAPI.UploadPackage(resp.sku, resp.version, packageData, UpdatePackageUploadProgressBar)
                         .Catch(exc => UnityEditor.EditorUtility.DisplayDialog("Package upload network error", GetExceptionMessage(exc), "OK"))
-                        .Finally(() => UnityEditor.EditorUtility.ClearProgressBar());
+                        .Finally(() => {
+                            UnityEditor.EditorUtility.ClearProgressBar();
+                            UnityEditor.EditorUtility.DisplayDialog(
+                                "Upload complete!",
+                                "Your package was successfully uploaded and we've started processing it.\n\n" +
+                                "This may take anywhere from 1 to 24 hours. Once the package is processed, you will " +
+                                "be able to select it from the 'Create Space' and 'Environment' menus in Spatial.",
+                                "OK"
+                            );
+                        });
                 })
                 .Catch(exc => {
                     UnityEditor.EditorUtility.ClearProgressBar();

@@ -1,7 +1,5 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 
 using UnityToolbarExtender;
 using RSG;
@@ -135,11 +133,7 @@ namespace SpatialSys.UnitySDK.Editor
             if (EditorApplication.isPlayingOrWillChangePlaymode)
                 return "Feature disabled while in play mode";
 
-#if SPATIAL_UNITYSDK_STAGING
             return null;
-#else
-            return "This feature is coming soon";
-#endif
         }
     }
 }

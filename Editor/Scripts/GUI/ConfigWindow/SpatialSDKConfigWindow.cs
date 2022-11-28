@@ -18,8 +18,8 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static void OpenWindow(string startingTab)
         {
-            SpatialSDKConfigWindow wnd = GetWindowWithRect<SpatialSDKConfigWindow>(new Rect(Screen.width / 2f, Screen.height / 2f, 900, 600));
-            wnd.titleContent = new GUIContent("SpatialSDKConfig");
+            SpatialSDKConfigWindow wnd = GetWindow<SpatialSDKConfigWindow>("SpatialSDK");
+            wnd.minSize = new Vector2(640, 480);
             wnd.SetTab(startingTab);
         }
 
