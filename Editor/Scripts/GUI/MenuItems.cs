@@ -20,6 +20,17 @@ namespace SpatialSys.UnitySDK.Editor
         {
             SpatialSDKConfigWindow.OpenWindow("help");
         }
+        [MenuItem("Spatial SDK/Test Active Scene")]
+        public static void RunTests()
+        {
+            SpatialValidator.RunTestsOnActiveScene();
+        }
+
+        [MenuItem("Spatial SDK/Test Project")]
+        public static void RunTestsProject()
+        {
+            SpatialValidator.RunTestsOnProject();
+        }
 
         [MenuItem("Spatial SDK/Check for updates...")]
         public static void UpgradeToLatest()

@@ -1,0 +1,138 @@
+.headerButton {
+    background-color: rgb(30, 30, 30);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-left: 8px;
+    margin-right: 0;
+    font-size: 16px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    align-items: center;
+    justify-content: space-around;
+    flex-shrink: 0;
+    border-left-color: rgba(0, 0, 0, 0);
+    border-right-color: rgba(0, 0, 0, 0);
+    border-top-color: rgba(0, 0, 0, 0);
+    border-bottom-color: rgba(0, 0, 0, 0);
+    transition-property: scale;
+    transition-duration: 0.25s;
+    transition-timing-function: ease-out-back;
+    color: rgb(255, 255, 255);
+    padding-top: 0;
+    padding-bottom: 0;
+    height: 24px;
+}
+
+.headerButton:hover {
+    transition-property: scale;
+    transition-duration: 0.25s;
+    transition-timing-function: ease-out-back;
+    scale: 1.1 1.1;
+}
+
+.fixAllButton {
+    color: rgb(0, 0, 0);
+    background-color: rgb(67, 255, 165);
+}
+
+.headerTextButton {
+    -unity-font-style: bold;
+    font-size: 16px;
+    color: rgb(91, 91, 91);
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    background-color: rgba(0, 0, 0, 0);
+    border-left-color: rgba(0, 0, 0, 0);
+    border-right-color: rgba(0, 0, 0, 0);
+    border-top-color: rgba(0, 0, 0, 0);
+    border-bottom-color: rgba(0, 0, 0, 0);
+}
+
+.headerErrors {
+    color: rgb(235, 50, 35);
+}
+
+.headerWarnings {
+    color: rgb(255, 253, 84);
+}
+
+.selectedIssueGray {
+    -unity-background-image-tint-color: rgba(128, 128, 128, 0.05);
+    color: rgb(128, 128, 128);
+    border-top-width: 2px;
+    border-top-color: rgb(128, 128, 128);
+}
+
+.selectedIssueYellow {
+    -unity-background-image-tint-color: rgba(255, 253, 84, 0.05);
+    color: rgb(255, 253, 84);
+    border-top-width: 2px;
+    border-top-color: rgb(255, 253, 84);
+}
+
+.selectedIssueRed {
+    -unity-background-image-tint-color: rgba(235, 50, 35, 0.05);
+    color: rgb(235, 50, 35);
+    border-top-width: 2px;
+    border-top-color: rgb(235, 50, 35);
+}
+
+.issueContainerError {
+    color: rgb(235, 50, 35);
+    -unity-background-image-tint-color: rgb(235, 50, 35);
+}
+
+.issueContainerWarning {
+    color: rgb(255, 253, 84);
+    -unity-background-image-tint-color: rgb(255, 253, 84);
+}
+
+.issueContainer {
+    background-color: rgb(0, 0, 0);
+    justify-content: flex-start;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 6px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    transition-property: translate, background-color;
+    transition-duration: 0.3s, 0.2s;
+    transition-timing-function: ease-out-back, ease;
+}
+
+.issueContainer:hover {
+    transition-property: translate, background-color;
+    transition-duration: 0.15s, 0.2s;
+    transition-timing-function: ease-out-back, ease;
+    translate: 6px 0;
+    background-color: rgb(20, 20, 20);
+}
+
+.issueContainer:active {
+    transition-property: translate, background-color;
+    transition-duration: 0.15s, 0.2s;
+    transition-timing-function: ease-out-back, ease;
+    translate: 3px 0;
+    background-color: rgb(20, 20, 20);
+}
+
+.issueContainerSelected {
+    background-color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
+}
+
+.issueContainerSelected:hover {
+    background-color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
+}
+
+.issueContainerSelected:active {
+    background-color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
+}

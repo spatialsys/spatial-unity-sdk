@@ -8,7 +8,6 @@ using UnityEditor.Build.Pipeline;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Build.Pipeline;
-using UnityEngine.SceneManagement;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -22,8 +21,14 @@ namespace SpatialSys.UnitySDK.Editor
         public static IPromise BuildAndUploadForSandbox()
         {
             // Validate package
-            if (!Validation.Validate(out Exception error))
-                return Promise.Rejected(error);
+            if (!SpatialValidator.RunTestsOnProject())
+            {
+                SpatialSDKConfigWindow.OpenWindow("issues");
+                return Promise.Rejected(new Exception("Package has errors"));
+            }
+
+            // Auto-assign necessary bundle names
+            AssignBundleNamesToEachVariant();
 
             // TODO: Ensure WebGL bundle is installed.
             const BuildTarget TARGET = BuildTarget.WebGL;
@@ -78,8 +83,11 @@ namespace SpatialSys.UnitySDK.Editor
         public static IPromise PackageForPublishing()
         {
             // Validate package
-            if (!Validation.Validate(out Exception error))
-                return Promise.Rejected(new Exception("Package validation failed", error));
+            if (!SpatialValidator.RunTestsOnProject())
+            {
+                SpatialSDKConfigWindow.OpenWindow("issues");
+                return Promise.Rejected(new Exception("Package has errors"));
+            }
 
             if (!Directory.Exists(BUILD_DIR))
                 Directory.CreateDirectory(BUILD_DIR);
@@ -114,9 +122,7 @@ namespace SpatialSys.UnitySDK.Editor
 
                     byte[] packageData = File.ReadAllBytes(PACKAGE_EXPORT_PATH);
                     SpatialAPI.UploadPackage(resp.sku, resp.version, packageData, UpdatePackageUploadProgressBar)
-                        .Catch(exc => UnityEditor.EditorUtility.DisplayDialog("Package upload network error", GetExceptionMessage(exc), "OK"))
-                        .Finally(() => {
-                            UnityEditor.EditorUtility.ClearProgressBar();
+                        .Then(resp => {
                             UnityEditor.EditorUtility.DisplayDialog(
                                 "Upload complete!",
                                 "Your package was successfully uploaded and we've started processing it.\n\n" +
@@ -124,7 +130,9 @@ namespace SpatialSys.UnitySDK.Editor
                                 "be able to select it from the 'Create Space' and 'Environment' menus in Spatial.",
                                 "OK"
                             );
-                        });
+                        })
+                        .Catch(exc => UnityEditor.EditorUtility.DisplayDialog("Package upload network error", GetExceptionMessage(exc), "OK"))
+                        .Finally(() => UnityEditor.EditorUtility.ClearProgressBar());
                 })
                 .Catch(exc => {
                     UnityEditor.EditorUtility.ClearProgressBar();
@@ -173,6 +181,25 @@ namespace SpatialSys.UnitySDK.Editor
                 result += "\n\n" + additionalMessage;
 
             return result;
+        }
+
+        public static void AssignBundleNamesToEachVariant()
+        {
+            PackageConfig config = PackageConfig.instance;
+
+            // Clear all asset bundle assets in the project
+            foreach (string name in AssetDatabase.GetAllAssetBundleNames())
+                AssetDatabase.RemoveAssetBundleName(name, forceRemove: true);
+            AssetDatabase.Refresh();
+
+            // Assign a unique asset bundle name to each scene
+            foreach (PackageConfig.Environment.Variant variant in config.environment.variants)
+            {
+                string scenePath = AssetDatabase.GetAssetPath(variant.scene);
+                AssetImporter importer = AssetImporter.GetAtPath(scenePath);
+                importer.assetBundleName = variant.bundleName;
+                AssetDatabase.SaveAssetIfDirty(importer);
+            }
         }
     }
 }

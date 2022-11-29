@@ -9,6 +9,11 @@ namespace SpatialSys.UnitySDK.Editor
     /// </summary>
     public class PackageConfig : ScriptableObject
     {
+        public const int THUMBNAIL_TEXTURE_WIDTH = 1024;
+        public const int THUMBNAIL_TEXTURE_HEIGHT = 512;
+        public const int MINI_THUMBNAIL_TEXTURE_WIDTH = 64;
+        public const int MINI_THUMBNAIL_TEXTURE_HEIGHT = 64;
+
         public static PackageConfig instance { get; private set; }
 
         //--------------------------------------------------------------------------------------------------------------

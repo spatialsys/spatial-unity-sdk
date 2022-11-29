@@ -8,7 +8,8 @@
         "Unity.ScriptableBuildPipeline.Editor",
         "CSharpPromise",
         "EditorRestClient",
-        "Unity.RenderPipelines.Core.Runtime"
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime"
     ],
     "includePlatforms": [
         "Editor"
