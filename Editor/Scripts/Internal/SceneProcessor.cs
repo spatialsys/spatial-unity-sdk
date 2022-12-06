@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.SceneManagement;
 using UnityEditor.Callbacks;
+using UnityEngine.Rendering.Universal;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -22,6 +23,29 @@ namespace SpatialSys.UnitySDK.Editor
                 }))
             {
                 return;
+            }
+
+            // Delete all components that are tagged with the EditorOnly attribute
+            Scene activeScene = SceneManager.GetActiveScene();
+            foreach (var rootGO in activeScene.GetRootGameObjects())
+            {
+                foreach (var component in rootGO.GetComponentsInChildren<Component>(true))
+                {
+                    // component == null can be true if a component script is missing
+                    if (component == null || component.GetType().GetCustomAttributes(typeof(EditorOnlyAttribute), true).Length > 0)
+                        UnityEngine.Object.DestroyImmediate(component);
+                }
+            }
+
+            // Delete all game objects that have the "EditorOnly" tag
+            foreach (var rootGO in activeScene.GetRootGameObjects())
+            {
+                foreach (var transform in rootGO.GetComponentsInChildren<Transform>(true))
+                {
+                    // nullcheck necessary in case game object was already destroyed
+                    if (transform != null && transform.gameObject.tag == "EditorOnly")
+                        UnityEngine.Object.DestroyImmediate(transform.gameObject);
+                }
             }
 
             //users should not be adding environmentData to their scene. remove any
@@ -43,6 +67,13 @@ namespace SpatialSys.UnitySDK.Editor
             data.triggerEvents = GameObject.FindObjectsOfType<SpatialTriggerEvent>();
             data.emptyFrames = GameObject.FindObjectsOfType<SpatialEmptyFrame>();
             data.avatarTeleporters = GameObject.FindObjectsOfType<SpatialAvatarTeleporter>();
+            data.cameraPassthroughs = GameObject.FindObjectsOfType<SpatialCameraPassthrough>();
+            data.thumbnailCamera = GameObject.FindObjectOfType<SpatialThumbnailCamera>();
+            if (data.thumbnailCamera != null)
+            {
+                data.thumbnailCamera.fieldOfView = data.thumbnailCamera.TryGetComponent(out Camera camera) ? camera.fieldOfView : 85f;
+            }
+            data.projectorSurfaces = GameObject.FindObjectsOfType<SpatialProjectorSurface>();
 
             //unity components
             data.renderingVolumes = GameObject.FindObjectsOfType<UnityEngine.Rendering.Volume>();
@@ -108,6 +139,20 @@ namespace SpatialSys.UnitySDK.Editor
                     }
                     animatorEvent.parameterType = animatorEvent.animator.GetParameter(parameterIndex).type;
                     animatorEvent.syncedAnimator = animatorEvent.animator.GetComponent<SpatialSyncedAnimator>();
+                }
+            }
+
+            // Delete non render texture cameras
+            Camera[] cameras = GameObject.FindObjectsOfType<Camera>();
+            foreach (Camera camera in cameras)
+            {
+                if (camera.targetTexture == null)
+                {
+                    if (camera.TryGetComponent(out UniversalAdditionalCameraData extraData))
+                    {
+                        GameObject.DestroyImmediate(extraData);
+                    }
+                    GameObject.DestroyImmediate(camera);
                 }
             }
         }

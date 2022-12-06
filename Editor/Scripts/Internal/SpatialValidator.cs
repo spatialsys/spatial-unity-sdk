@@ -120,24 +120,27 @@ namespace SpatialSys.UnitySDK.Editor
                     method.Invoke(null, targetParam);
                 }
 
+                // Run component tests
                 List<Component> components = new List<Component>();
-
                 foreach (GameObject g in testScene.GetRootGameObjects())
                 {
-                    components.AddRange(g.GetComponentsInChildren(typeof(Component), true));
+                    FindComponentsRecursive(g, components);
                 }
-
                 foreach (Component component in components)
                 {
                     RunTestsOnObject(component);
                 }
             }
+
             if (previousScene.path != originalScenePath)
             {
-                EditorSceneManager.OpenScene(originalScenePath);
+                if (!string.IsNullOrEmpty(originalScenePath))
+                    EditorSceneManager.OpenScene(originalScenePath);
                 EditorSceneManager.CloseScene(previousScene, true);
             }
+
             RefreshAllResponses();
+
             foreach (SpatialTestResponse response in allResponses)
             {
                 if (response.responseType == TestResponseType.Fail)
@@ -146,6 +149,25 @@ namespace SpatialSys.UnitySDK.Editor
                 }
             }
             return true;
+        }
+
+        private static void FindComponentsRecursive(GameObject g, List<Component> components)
+        {
+            // Ignore object and children if marked editor only
+            if (g.tag == "EditorOnly")
+                return;
+
+            foreach (var component in g.GetComponents<Component>())
+            {
+                // null-check here because components can be null if script is missing
+                if (component != null)
+                    components.Add(component);
+            }
+
+            foreach (Transform child in g.transform)
+            {
+                FindComponentsRecursive(child.gameObject, components);
+            }
         }
 
         private static void RunTestsOnObject(UnityEngine.Object target)

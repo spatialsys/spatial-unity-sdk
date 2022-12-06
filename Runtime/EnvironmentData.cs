@@ -13,6 +13,10 @@ namespace SpatialSys.UnitySDK
         public SpatialEmptyFrame[] emptyFrames;
         public SpatialAvatarTeleporter[] avatarTeleporters;
         public SpatialSyncedAnimator[] syncedAnimators;
+        public SpatialCameraPassthrough[] cameraPassthroughs;
+        public SpatialThumbnailCamera thumbnailCamera;
+        public SpatialProjectorSurface[] projectorSurfaces;
+
         public Animator[] unsyncedAnimators;
 
         public Volume[] renderingVolumes;

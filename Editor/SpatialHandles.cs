@@ -204,7 +204,7 @@ namespace SpatialSys.UnitySDK.Editor
         {
             Handles.zTest = UnityEngine.Rendering.CompareFunction.Always;
             Handles.color = handleClear;
-            Vector3 startPos = origin + direction * target;
+            Vector3 startPos = origin + direction.normalized * target;
             EditorGUI.BeginChangeCheck();
             Vector3 newPos = Handles.Slider(startPos, direction, HandleUtility.GetHandleSize(startPos) * handleSize, Handles.SphereHandleCap, 0f);
             if (EditorGUI.EndChangeCheck())
@@ -238,6 +238,74 @@ namespace SpatialSys.UnitySDK.Editor
                 Undo.RecordObject(target, "Change position");
                 target.position = newPos;
             }
+        }
+
+        public static void EvenlyScaleableRectangleHandle(Vector3 position, ref Vector2 size, Matrix4x4 matrix)
+        {
+            DrawEvenlyScaleableRectangleHandle(position, size, matrix);
+
+            Vector3 right = matrix.MultiplyVector(Vector3.right).normalized;
+            Vector3 up = matrix.MultiplyVector(Vector3.up).normalized;
+
+            Vector3 ne = position + (right * (size.x * .5f)) + (up * (size.y * .5f));
+            Vector3 se = position + (right * (size.x * .5f)) + (-up * (size.y * .5f));
+            Vector3 sw = position + (-right * (size.x * .5f)) + (-up * (size.y * .5f));
+            Vector3 nw = position + (-right * (size.x * .5f)) + (up * (size.y * .5f));
+
+            float distance = Vector3.Distance(position, ne);
+            float startDistance = distance;
+            FloatHandleSlider(ref distance, position, ne - position, .2f);
+            FloatHandleSlider(ref distance, position, se - position, .2f);
+            FloatHandleSlider(ref distance, position, sw - position, .2f);
+            FloatHandleSlider(ref distance, position, nw - position, .2f);
+
+            size = size * Mathf.LerpUnclamped(0f, 1f, distance / startDistance);
+        }
+
+        private static void DrawEvenlyScaleableRectangleHandle(Vector3 position, Vector2 size, Matrix4x4 matrix)
+        {
+            Handles.zTest = UnityEngine.Rendering.CompareFunction.LessEqual;
+            DrawEvenlyScaleableRectangleElement(position, size, matrix, handleWhite, handleBlack);
+            Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
+            DrawEvenlyScaleableRectangleElement(position, size, matrix, handleWhiteFade, handleBlackFade);
+        }
+
+        //Evenly scalable has the handles on the corners. If we need non-even scaling do that with handles on the edges.
+        private static void DrawEvenlyScaleableRectangleElement(Vector3 position, Vector2 size, Matrix4x4 matrix, Color foregroundColor, Color backgroundColor)
+        {
+            Vector3 pos = matrix.MultiplyPoint3x4(position);
+            Vector3 right = matrix.MultiplyVector(Vector3.right).normalized;
+            Vector3 up = matrix.MultiplyVector(Vector3.up).normalized;
+
+            Vector3 ne = position + (right * (size.x * .5f)) + (up * (size.y * .5f));
+            Vector3 se = position + (right * (size.x * .5f)) + (-up * (size.y * .5f));
+            Vector3 sw = position + (-right * (size.x * .5f)) + (-up * (size.y * .5f));
+            Vector3 nw = position + (-right * (size.x * .5f)) + (up * (size.y * .5f));
+
+            float backgroundThickness = 10f;
+            float foregroundThickness = 2f;
+
+            Handles.color = backgroundColor;
+            Handles.DrawLine(ne, se, backgroundThickness);
+            Handles.DrawLine(se, sw, backgroundThickness);
+            Handles.DrawLine(sw, nw, backgroundThickness);
+            Handles.DrawLine(nw, ne, backgroundThickness);
+
+            Handles.DrawSolidDisc(ne, HandleUtility.GUIPointToWorldRay(HandleUtility.WorldToGUIPoint(ne)).direction, HandleUtility.GetHandleSize(ne) * (.15f));
+            Handles.DrawSolidDisc(se, HandleUtility.GUIPointToWorldRay(HandleUtility.WorldToGUIPoint(se)).direction, HandleUtility.GetHandleSize(se) * (.15f));
+            Handles.DrawSolidDisc(sw, HandleUtility.GUIPointToWorldRay(HandleUtility.WorldToGUIPoint(sw)).direction, HandleUtility.GetHandleSize(sw) * (.15f));
+            Handles.DrawSolidDisc(nw, HandleUtility.GUIPointToWorldRay(HandleUtility.WorldToGUIPoint(nw)).direction, HandleUtility.GetHandleSize(nw) * (.15f));
+
+            Handles.color = foregroundColor;
+            Handles.DrawLine(ne, se, foregroundThickness);
+            Handles.DrawLine(se, sw, foregroundThickness);
+            Handles.DrawLine(sw, nw, foregroundThickness);
+            Handles.DrawLine(nw, ne, foregroundThickness);
+
+            Handles.DrawSolidDisc(ne, HandleUtility.GUIPointToWorldRay(HandleUtility.WorldToGUIPoint(ne)).direction, HandleUtility.GetHandleSize(ne) * (.1f));
+            Handles.DrawSolidDisc(se, HandleUtility.GUIPointToWorldRay(HandleUtility.WorldToGUIPoint(se)).direction, HandleUtility.GetHandleSize(se) * (.1f));
+            Handles.DrawSolidDisc(sw, HandleUtility.GUIPointToWorldRay(HandleUtility.WorldToGUIPoint(sw)).direction, HandleUtility.GetHandleSize(sw) * (.1f));
+            Handles.DrawSolidDisc(nw, HandleUtility.GUIPointToWorldRay(HandleUtility.WorldToGUIPoint(nw)).direction, HandleUtility.GetHandleSize(nw) * (.1f));
         }
     }
 }

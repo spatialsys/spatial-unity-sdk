@@ -116,6 +116,14 @@ namespace SpatialSys.UnitySDK.Editor
         [ComponentTest(typeof(UnityEngine.Object))]
         public static void IsValidComponent(UnityEngine.Object target)
         {
+            // Components can be "null" if the script is missing; These are automatically removed during scene build
+            if (target == null)
+                return;
+
+            // Ignore this component if it has a [EditorOnly] attribute. These are automatically removed during scene build
+            if (target.GetType().GetCustomAttributes(typeof(EditorOnlyAttribute), true).Length > 0)
+                return;
+
             Type targetType = target.GetType();
             if (!_allowedComponentTypes.Any(t => t == targetType || t.IsAssignableFrom(targetType)))
             {

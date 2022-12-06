@@ -15,9 +15,8 @@ namespace SpatialSys.UnitySDK
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.red;
-            Gizmos.matrix = transform.localToWorldMatrix;
+            Gizmos.matrix = Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation, transform.localScale);
             Gizmos.DrawWireCube(Vector3.zero, new Vector3(size, size, 0f));
-            Gizmos.DrawLine(Vector3.zero, new Vector3(0f, 0f, .4f));
         }
     }
 }
