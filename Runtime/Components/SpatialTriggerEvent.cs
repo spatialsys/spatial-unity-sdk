@@ -30,5 +30,10 @@ namespace SpatialSys.UnitySDK
         public UnityEvent deprecated_onEnter;
         [FormerlySerializedAs("onEnter"), Obsolete("Use onExitEvent instead.")]
         public UnityEvent deprecated_onExit;
+
+        private void Reset()
+        {
+            version = LATEST_VERSION;
+        }
     }
 }

@@ -10,26 +10,29 @@ namespace SpatialSys.UnitySDK.Editor
         {
             SpatialSDKConfigWindow.OpenWindow("account");
         }
+
         [MenuItem("Spatial SDK/Configuration")]
         public static void OpenConfig()
         {
             SpatialSDKConfigWindow.OpenWindow("config");
         }
+
         [MenuItem("Spatial SDK/Help")]
         public static void OpenHelp()
         {
             SpatialSDKConfigWindow.OpenWindow("help");
         }
+
         [MenuItem("Spatial SDK/Test Active Scene")]
         public static void RunTests()
         {
-            SpatialValidator.RunTestsOnActiveScene();
+            SpatialValidator.RunTestsOnActiveScene(ValidationContext.ManualRun);
         }
 
         [MenuItem("Spatial SDK/Test Project")]
         public static void RunTestsProject()
         {
-            SpatialValidator.RunTestsOnProject();
+            SpatialValidator.RunTestsOnProject(ValidationContext.ManualRun);
         }
 
         [MenuItem("Spatial SDK/Check for updates...")]

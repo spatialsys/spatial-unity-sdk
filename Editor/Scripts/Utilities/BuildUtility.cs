@@ -15,13 +15,15 @@ namespace SpatialSys.UnitySDK.Editor
     {
         public static string BUILD_DIR = "Exports";
         public static string PACKAGE_EXPORT_PATH = Path.Combine(BUILD_DIR, "spaces.unitypackage");
+        public static int MAX_SANDBOX_BUNDLE_SIZE = 100 * 1024 * 1024; // 100 MB
+        public static int MAX_PACKAGE_SIZE = 500 * 1024 * 1024; // 500 MB
 
         private static float _lastUploadProgress;
 
         public static IPromise BuildAndUploadForSandbox()
         {
-            // Validate package
-            if (!SpatialValidator.RunTestsOnProject())
+            // Validate just the active scene
+            if (!SpatialValidator.RunTestsOnActiveScene(ValidationContext.Testing))
             {
                 SpatialSDKConfigWindow.OpenWindow("issues");
                 return Promise.Rejected(new Exception("Package has errors"));
@@ -54,15 +56,19 @@ namespace SpatialSys.UnitySDK.Editor
             if (environmentVariant == null)
                 return Promise.Rejected(new System.Exception("The current scene isn't one that is assigned to a variant in the package configuration"));
 
+            // Check for bundle size
+            string bundlePath = Path.Combine(bundleDir, environmentVariant.bundleName);
+            if (!File.Exists(bundlePath))
+                return Promise.Rejected(new System.Exception("Built asset bundle was not found on disk"));
+            long bundleSize = new FileInfo(bundlePath).Length;
+            if (bundleSize > MAX_SANDBOX_BUNDLE_SIZE)
+                return Promise.Rejected(new System.Exception($"Asset bundle is too large ({bundleSize / 1024 / 1024}MB). The maximum size is {MAX_SANDBOX_BUNDLE_SIZE / 1024 / 1024}MB"));
+
+            // Upload
             _lastUploadProgress = -1f;
             UpdateSandboxUploadProgressBar(0f);
-
             return SpatialAPI.UploadTestEnvironment()
                 .Then(resp => {
-                    string bundlePath = Path.Combine(bundleDir, environmentVariant.bundleName);
-                    if (!File.Exists(bundlePath))
-                        throw new System.Exception("Built asset bundle was not found on disk");
-
                     byte[] data = File.ReadAllBytes(bundlePath);
                     SpatialAPI.UploadFile(useSpatialHeaders: false, resp.url, data, UpdateSandboxUploadProgressBar)
                         .Then(resp => EditorUtility.OpenSandboxInBrowser())
@@ -83,31 +89,22 @@ namespace SpatialSys.UnitySDK.Editor
         public static IPromise PackageForPublishing()
         {
             // Validate package
-            if (!SpatialValidator.RunTestsOnProject())
+            if (!SpatialValidator.RunTestsOnProject(ValidationContext.Publishing))
             {
                 SpatialSDKConfigWindow.OpenWindow("issues");
                 return Promise.Rejected(new Exception("Package has errors"));
             }
 
+            // Export all scenes and dependencies as a package
             if (!Directory.Exists(BUILD_DIR))
                 Directory.CreateDirectory(BUILD_DIR);
+            PackageProject(PACKAGE_EXPORT_PATH);
 
-            // Export all scenes and dependencies as a package
-            PackageConfig config = PackageConfig.instance;
-            List<string> sourceAssets = new List<string>();
-            if (config.packageType == PackageConfig.PackageType.Environment)
-                sourceAssets.AddRange(config.environment.variants.Select(v => AssetDatabase.GetAssetPath(v.scene)));
-            sourceAssets.Add(AssetDatabase.GetAssetPath(config));
-            AssetDatabase.ExportPackage(
-                sourceAssets.ToArray(),
-                PACKAGE_EXPORT_PATH,
-                ExportPackageOptions.Recurse | ExportPackageOptions.IncludeDependencies
-            );
-
+            // Upload package
+            // TODO: support multiple package types.
             _lastUploadProgress = -1f;
             UpdatePackageUploadProgressBar(0f);
-
-            // TODO: support multiple package types.
+            PackageConfig config = PackageConfig.instance;
             return SpatialAPI.CreateOrUpdatePackage(config.sku, SpatialAPI.PackageType.Environment)
                 .Then(resp => {
                     if (config.sku != resp.sku)
@@ -126,8 +123,8 @@ namespace SpatialSys.UnitySDK.Editor
                             UnityEditor.EditorUtility.DisplayDialog(
                                 "Upload complete!",
                                 "Your package was successfully uploaded and we've started processing it.\n\n" +
-                                "This may take anywhere from 1 to 24 hours. Once the package is processed, you will " +
-                                "be able to select it from the 'Create Space' and 'Environment' menus in Spatial.",
+                                "This may take as little as 15 minutes to process, depending on our backlog. If any unexpected errors occur, we aim to address the issue within 24 hours.\n\n" +
+                                "You will receive an email notification once the package has been published.",
                                 "OK"
                             );
                         })
@@ -136,8 +133,37 @@ namespace SpatialSys.UnitySDK.Editor
                 })
                 .Catch(exc => {
                     UnityEditor.EditorUtility.ClearProgressBar();
+
+                    if (exc is Proyecto26.RequestException ex)
+                    {
+                        if (ex.StatusCode == 403) // Forbidden
+                        {
+                            UnityEditor.EditorUtility.DisplayDialog(
+                                "Upload failed",
+                                "The package you are trying to upload has an SKU that is owned by another user. Only the user that initially published the package can update it.",
+                                "OK"
+                            );
+                            return;
+                        }
+                    }
+
                     UnityEditor.EditorUtility.DisplayDialog("Upload failed", GetExceptionMessage(exc), "OK");
                 });
+        }
+
+        public static void PackageProject(string outputPath)
+        {
+            // Export all scenes and dependencies as a package
+            PackageConfig config = PackageConfig.instance;
+            List<string> sourceAssets = new List<string>();
+            if (config.packageType == PackageConfig.PackageType.Environment)
+                sourceAssets.AddRange(config.environment.variants.Select(v => AssetDatabase.GetAssetPath(v.scene)));
+            sourceAssets.Add(AssetDatabase.GetAssetPath(config));
+            AssetDatabase.ExportPackage(
+                sourceAssets.ToArray(),
+                outputPath,
+                ExportPackageOptions.Recurse | ExportPackageOptions.IncludeDependencies
+            );
         }
 
         private static void UpdatePackageUploadProgressBar(float progress)

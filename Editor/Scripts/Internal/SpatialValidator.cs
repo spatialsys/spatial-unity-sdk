@@ -9,11 +9,22 @@ using UnityEditor.SceneManagement;
 
 namespace SpatialSys.UnitySDK.Editor
 {
+    /// <summary>
+    /// What is the context of the current validation run?
+    /// </summary>
+    public enum ValidationContext
+    {
+        Testing,
+        Publishing,
+        ManualRun
+    }
+
     public static class SpatialValidator
     {
         public static List<SpatialTestResponse> allResponses { get; private set; } = new List<SpatialTestResponse>();
         public static List<SpatialTestResponse> projectResponses { get; private set; } = new List<SpatialTestResponse>();
         public static Dictionary<string, List<SpatialTestResponse>> sceneResponses { get; private set; } = new Dictionary<string, List<SpatialTestResponse>>();
+        public static ValidationContext validationContext { get; private set; } = ValidationContext.ManualRun;
 
         private static bool _initialized;
         private static Dictionary<Type, List<MethodInfo>> _componentTests;
@@ -75,10 +86,13 @@ namespace SpatialSys.UnitySDK.Editor
         /// Returns true if no tests FAILED. There could be warnings though.
         /// </summary>
         /// <returns></returns>
-        public static bool RunTestsOnProject()
+        public static bool RunTestsOnProject(ValidationContext context)
         {
+            validationContext = context;
+
             LoadTestsIfNecessary();
-            EditorSceneManager.SaveOpenScenes();//we are going to swap scenes and will lose changes without this
+            if (!Application.isBatchMode)
+                EditorSceneManager.SaveOpenScenes();//we are going to swap scenes and will lose changes without this
             _currentTestScene = null;
             projectResponses.Clear();
             sceneResponses.Clear();
@@ -104,7 +118,6 @@ namespace SpatialSys.UnitySDK.Editor
                 if (previousScene.path != testScenePath)
                 {
                     testScene = EditorSceneManager.OpenScene(testScenePath);
-                    EditorSceneManager.CloseScene(previousScene, true);
                 }
                 else
                 {
@@ -136,7 +149,6 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 if (!string.IsNullOrEmpty(originalScenePath))
                     EditorSceneManager.OpenScene(originalScenePath);
-                EditorSceneManager.CloseScene(previousScene, true);
             }
 
             RefreshAllResponses();
@@ -186,19 +198,16 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
-        public static void RunTestsOnActiveScene()
+        public static bool RunTestsOnActiveScene(ValidationContext context)
         {
+            validationContext = context;
+
             LoadTestsIfNecessary();
             Scene scene = SceneManager.GetActiveScene();
             projectResponses.Clear();
-            if (sceneResponses.TryGetValue(scene.path, out List<SpatialTestResponse> existingResponses))
-            {
-                existingResponses.Clear();
-            }
-            else
-            {
-                sceneResponses.Add(scene.path, new List<SpatialTestResponse>());
-            }
+            sceneResponses.Clear();
+            sceneResponses.Add(scene.path, new List<SpatialTestResponse>());
+
             object[] targetParam = new object[] { scene };
 
             _currentTestScene = null;
@@ -225,7 +234,17 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 RunTestsOnObject(component);
             }
+
             RefreshAllResponses();
+
+            foreach (SpatialTestResponse response in allResponses)
+            {
+                if (response.responseType == TestResponseType.Fail)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         public static void AddResponse(SpatialTestResponse response)

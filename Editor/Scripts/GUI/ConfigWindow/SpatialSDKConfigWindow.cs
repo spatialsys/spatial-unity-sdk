@@ -173,7 +173,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         private void RefreshIssuesButton()
         {
-            SpatialValidator.RunTestsOnProject();
+            SpatialValidator.RunTestsOnProject(ValidationContext.ManualRun);
             LoadIssues();
         }
 

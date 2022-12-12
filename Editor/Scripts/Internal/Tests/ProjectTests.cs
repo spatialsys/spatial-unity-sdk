@@ -11,6 +11,35 @@ namespace SpatialSys.UnitySDK.Editor
     public class ProjectTests
     {
         [ProjectTest]
+        public static void CheckPackageFileSizeLimit()
+        {
+            // Don't run this test on build servers
+            if (Application.isBatchMode)
+                return;
+
+            // To speed up testing iteration times, don't run this test for test case
+            if (SpatialValidator.validationContext == ValidationContext.Testing)
+                return;
+
+            string tempOutputPath = "Temp/SpatialPackage.unitypackage";
+            BuildUtility.PackageProject(tempOutputPath);
+
+            FileInfo packageInfo = new FileInfo(tempOutputPath);
+            if (packageInfo.Length > BuildUtility.MAX_PACKAGE_SIZE)
+            {
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(
+                        null,
+                        TestResponseType.Fail,
+                        "Package is too large to upload to Spatial",
+                        $"The package is {packageInfo.Length / 1024 / 1024}MB, but the maximum size is {BuildUtility.MAX_PACKAGE_SIZE / 1024 / 1024}MB. " +
+                        "Try to reduce the size of source assets referenced by scenes in your project. Sometimes, texture source assets can be very large on disk, and it can help to downscale them."
+                    )
+                );
+            }
+        }
+
+        [ProjectTest]
         public static void EnsureVariantExists()
         {
             PackageConfig config = PackageConfig.instance;
