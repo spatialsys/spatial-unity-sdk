@@ -136,18 +136,39 @@ namespace SpatialSys.UnitySDK.Editor
 
                     if (exc is Proyecto26.RequestException ex)
                     {
-                        if (ex.StatusCode == 403) // Forbidden
+                        if (SpatialAPI.TryGetSingleError(ex.Response, out SpatialAPI.ErrorResponse.Error error))
                         {
-                            UnityEditor.EditorUtility.DisplayDialog(
-                                "Upload failed",
-                                "The package you are trying to upload has an SKU that is owned by another user. Only the user that initially published the package can update it.",
-                                "OK"
-                            );
-                            return;
+                            switch (error.code)
+                            {
+                                case "NOT_OWNER_OF_PACKAGE":
+                                    UnityEditor.EditorUtility.DisplayDialog(
+                                        "Publishing failed",
+                                        "The package you are trying to upload has an SKU that is owned by another user. Only the user that initially published the package can update it.",
+                                        "OK"
+                                    );
+                                    return;
+
+                                case "USER_NOT_WHITELISTED":
+                                    UnityEditor.EditorUtility.DisplayDialog(
+                                        "Apply to be a Spatial Publisher",
+                                        "You currently do not have the ability to publish to Spatial. While we are still in beta, we are only allowing a limited number of users to publish packages.\n\nTo become a publisher, fill out the form that will open in your browser after your close this dialog.\n\nMeanwhile, you can still continue to test your environments in the Spatial Sandbox.",
+                                        "OK"
+                                    );
+                                    Application.OpenURL("https://spatialxr.typeform.com/to/e8XPgO5p");
+                                    return;
+
+                                default:
+                                    UnityEditor.EditorUtility.DisplayDialog(
+                                        "Publishing failed",
+                                        $"Publishing failed with the following error: {ex.Response}",
+                                        "OK"
+                                    );
+                                    return;
+                            }
                         }
                     }
 
-                    UnityEditor.EditorUtility.DisplayDialog("Upload failed", GetExceptionMessage(exc), "OK");
+                    UnityEditor.EditorUtility.DisplayDialog("Publishing failed", GetExceptionMessage(exc), "OK");
                 });
         }
 

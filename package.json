@@ -5,7 +5,7 @@
     "com.unity.editorcoroutines": "1.0.0"
   },
   "displayName": "Spatial Unity SDK",
-  "version": "0.26.0",
+  "version": "0.27.0",
   "unity": "2021.3",
   "description": "This package allows creators to build 3D environments using the Unity editor and publish them to Spatial",
   "keywords": [

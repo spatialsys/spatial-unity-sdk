@@ -149,5 +149,50 @@ namespace SpatialSys.UnitySDK.Editor
         {
             return type.ToString();
         }
+
+        public static bool TryGetSingleError(string response, out ErrorResponse.Error error)
+        {
+            try
+            {
+                ErrorResponse errResp = JsonUtility.FromJson<ErrorResponse>(response);
+                if (errResp.errors.Length > 0)
+                {
+                    error = errResp.errors[0];
+                    return true;
+                }
+            }
+            catch {}
+
+            error = new ErrorResponse.Error();
+            return false;
+        }
+
+        //------------------------------------------------
+        // Models
+        //------------------------------------------------
+
+        [Serializable]
+        public struct ErrorResponse
+        {
+            [Serializable]
+            public struct Error
+            {
+                public string code;
+                public string message;
+                public int statusCode;
+                public bool display;
+                public ErrorField[] fields;
+            }
+
+            [Serializable]
+            public struct ErrorField
+            {
+                public string field;
+                public string error;
+            }
+
+            public Error[] errors;
+            public string trace;
+        }
     }
 }

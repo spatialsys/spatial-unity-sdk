@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using System.Linq;
 
 namespace SpatialSys.UnitySDK
 {
@@ -13,6 +14,7 @@ namespace SpatialSys.UnitySDK
         public bool unityEventIsSynced;
         public UnityEvent unityEvent;
         public AnimatorEvent animatorEvent;
+        public bool isSyncedEvent => (unityEventIsSynced || animatorEvent.events.Any(e => e.syncedAnimator != null));
     }
 
     [System.Serializable]

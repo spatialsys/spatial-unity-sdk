@@ -59,6 +59,8 @@ namespace SpatialSys.UnitySDK.Editor
                 public Texture2D miniThumbnail = null; // 64x64
                 public Color thumbnailColor = Color.blue;
 
+                private static readonly string[] INVALID_BUNDLE_NAME_CHARS = new string[] { " ", "_", ".", ",", "(", ")", "[", "]", "{", "}", "!", "@", "#", "$", "%", "^", "&", "*", "+", "=", "|", "\\", "/", "?", "<", ">", "`", "~", "'", "\"", ":", ";" };
+
                 public string id => (scene == null) ? null : AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(scene));
                 public string bundleName
                 {
@@ -68,8 +70,8 @@ namespace SpatialSys.UnitySDK.Editor
                             return null;
 
                         string pathSafeName = name.Replace(" ", "-").Replace("_", "-").ToLower();
-                        foreach (char c in System.IO.Path.GetInvalidFileNameChars())
-                            pathSafeName = pathSafeName.Replace(c.ToString(), "");
+                        foreach (string c in INVALID_BUNDLE_NAME_CHARS)
+                            pathSafeName = pathSafeName.Replace(c, "");
                         return id + "_" + pathSafeName;
                     }
                 }
@@ -176,7 +178,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
-#region Deprecated, Keeping for backwards compatibility
+        #region Deprecated, Keeping for backwards compatibility
 
         [System.Obsolete("Use environment.useCases instead"), HideInInspector, FormerlySerializedAs("usageType")]
         public Deprecated.UsageTypeV0 deprecated_usageType = Deprecated.UsageTypeV0.Uncategorized;
@@ -207,6 +209,6 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
-#endregion
+        #endregion
     }
 }
