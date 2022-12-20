@@ -26,6 +26,9 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(AudioReverbZone),
             typeof(AudioSource),
 
+            // Video
+            typeof(VideoPlayer),
+
             // UI
             typeof(RectTransform),
             typeof(Canvas),

@@ -26,17 +26,24 @@ namespace SpatialSys.UnitySDK.Editor
         private List<VisualElement> _warningIssues;
         private Dictionary<VisualElement, SpatialTestResponse> _elementToReponse;
 
-        private VisualElement _selectedIssueText;
+        private VisualElement _issuesCountBlock;
+        private Label _issuesCountTitle;
+        private Label _issuesCountDescription;
+        private Button _issuesRefreshButton;
+
+        private VisualElement _issuesScrollBlock;
+
+        private VisualElement _selectedIssueBlock;
         private Label _selectedIssueTextTitle;
         private Label _selectedIssueTextDescription;
 
-        private VisualElement _safeFixSection;
-        private Label _safeFixDescription;
-        private VisualElement _unsafeFixSection;
-        private Label _unsafeFixDescription;
+        private VisualElement _autoFixBlock;
+        private Label _autoFixDescription;
 
-        private Button _openSceneButton;
-        private Button _openObjectButton;
+        private VisualElement _openSceneBlock;
+        private Label _targetSceneName;
+        private VisualElement _selectObjectBlock;
+        private Label _targetObjectName;
 
         public static void OpenWindow(string startingTab)
         {
@@ -54,6 +61,10 @@ namespace SpatialSys.UnitySDK.Editor
             var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/io.spatial.unitysdk/Editor/Scripts/GUI/ConfigWindow/SpatialSDKConfigWindow.uxml");
             _issueContainerTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/io.spatial.unitysdk/Editor/Scripts/GUI/ConfigWindow/IssueElement/SpatialValidatorIssueElement.uxml");
             VisualElement element = visualTree.Instantiate();
+            if (!EditorGUIUtility.isProSkin)
+            {
+                element.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>("Packages/io.spatial.unitysdk/Editor/Scripts/GUI/ConfigWindow/SpatialSDKConfigWindowStyles_LightModeOverride.uss"));
+            }
             root.Add(element);
 
             root.Query<Button>("accountButton").First().clicked += () => SetTab("account");
@@ -63,27 +74,34 @@ namespace SpatialSys.UnitySDK.Editor
 
             // Account
             root.Query<Button>("getToken").First().clicked += () => Application.OpenURL(ACCESS_TOKEN_URL);
+            root.Query<Button>("pasteToken").First().clicked += () => PasteAuthToken();
 
-            // Config
-            root.Query<Button>("createConfig").First().clicked += CreateAndBindConfigAsset;
+            // Config 
+            root.Query<Button>("newConfigButton").First().clicked += () => CreateAndBindConfigAsset();
 
             // Issues
-            root.Query<Button>("refreshButton").First().clicked += () => RefreshIssuesButton();
-            _selectedIssueText = root.Q("selectedIssueText");
-            _selectedIssueTextTitle = _selectedIssueText.Query<Label>("title").First();
-            _selectedIssueTextDescription = _selectedIssueText.Query<Label>("description").First();
-            _openSceneButton = root.Query<Button>("openSceneButton").First();
-            _openSceneButton.clicked += () => OpenSelectedIssueScene();
-            _openObjectButton = root.Query<Button>("selectObjectButton").First();
-            _openObjectButton.clicked += () => OpenSelectedIssueGameObject();
+            _issuesCountBlock = root.Q("issuesCountBlock");
+            _issuesCountTitle = root.Query<Label>("issuesCountTitle").First();
+            _issuesCountDescription = root.Query<Label>("issuesCountDescription").First();
+            _issuesRefreshButton = root.Query<Button>("refreshButton").First();
+            _issuesRefreshButton.clicked += () => RefreshIssuesButton();
 
-            // These are different elements because swapping the style would have been harder. I would need to apply style to multiple elements :(
-            _safeFixSection = root.Q("safeAutoFixSection");
-            _unsafeFixSection = root.Q("unsafeAutoFixSection");
-            _safeFixDescription = root.Query<Label>("safeAutoFixDescription").First();
-            _unsafeFixDescription = root.Query<Label>("unsafeAutoFixDescription").First();
-            root.Query<Button>("safeAutoFixButton").First().clicked += () => FixSelectedIssue();
-            root.Query<Button>("unsafeAutoFixButton").First().clicked += () => FixSelectedIssue();
+            _issuesScrollBlock = root.Q("issuesScrollBlock");
+
+            _selectedIssueBlock = root.Q("selectedIssueBlock");
+            _selectedIssueTextTitle = _selectedIssueBlock.Query<Label>("title").First();
+            _selectedIssueTextDescription = _selectedIssueBlock.Query<Label>("description").First();
+
+            _autoFixBlock = root.Q("autoFixBlock");
+            _autoFixDescription = root.Query<Label>("autoFixDescription").First();
+            root.Query<Button>("autoFixButton").First().clicked += () => FixSelectedIssue();
+
+            _openSceneBlock = root.Q("openSceneBlock");
+            _targetSceneName = root.Query<Label>("targetSceneName").First();
+            root.Query<Button>("openSceneButton").First().clicked += () => OpenSelectedIssueScene();
+            _selectObjectBlock = root.Q("selectObjectBlock");
+            _targetObjectName = root.Query<Label>("targetObjectName").First();
+            root.Query<Button>("selectObjectButton").First().clicked += () => OpenSelectedIssueGameObject();
 
             // Help
             root.Query<Button>("gotoDocumentation").First().clicked += () => Application.OpenURL(UpgradeUtility.packageInfo.documentationUrl);
@@ -95,13 +113,7 @@ namespace SpatialSys.UnitySDK.Editor
             if (PackageConfig.instance != null)
                 root.Bind(new SerializedObject(PackageConfig.instance));
 
-            _authToken = EditorUtility.GetSavedAuthToken();
-            if (string.IsNullOrEmpty(_authToken))
-            {
-                _authToken = "";
-            }
-            root.Query<TextField>("authField").First().value = _authToken;
-            root.Query<TextField>("authField").First().RegisterValueChangedCallback<string>((e) => SetAuthToken(e.newValue));
+            _authToken = EditorUtility.GetSavedAuthToken();//
             UpdateAuthWarning();
         }
 
@@ -148,21 +160,31 @@ namespace SpatialSys.UnitySDK.Editor
             rootVisualElement.Q(CONFIG_NULL_SELECTOR_NAME).style.display = (PackageConfig.instance == null) ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
-        private void SetAuthToken(string token)
+        private void PasteAuthToken()
         {
-            _authToken = token;
-            EditorUtility.SaveAuthToken(token);
+            string clipboard = GUIUtility.systemCopyBuffer;
+
+            if (string.IsNullOrWhiteSpace(clipboard) || !clipboard.StartsWith("sandbox"))
+            {
+                Debug.LogError("Invalid access token, try clicking copy to clipboard again. Pasted text: " + clipboard);
+                return;
+            }
+            _authToken = clipboard;
+            EditorUtility.SaveAuthToken(clipboard);
             UpdateAuthWarning();
+            GUIUtility.systemCopyBuffer = "";
         }
 
         private void UpdateAuthWarning()
         {
             bool validAuthToken = _authToken.StartsWith("sandbox_") && _authToken.Length > 16;
-            rootVisualElement.Q("authWarning").style.display = validAuthToken ? DisplayStyle.None : DisplayStyle.Flex;
+            rootVisualElement.Q("notLoggedInBlock").style.display = validAuthToken ? DisplayStyle.None : DisplayStyle.Flex;
+            rootVisualElement.Q("loggedInBlock").style.display = validAuthToken ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         private void CreateAndBindConfigAsset()
         {
+            Debug.Log("Creating config asset");
             PackageConfig config = EditorUtility.CreateOrGetConfigurationFile();
             rootVisualElement.Bind(new SerializedObject(config));
         }
@@ -190,6 +212,10 @@ namespace SpatialSys.UnitySDK.Editor
             foreach (SpatialTestResponse response in responses)
             {
                 VisualElement element = _issueContainerTemplate.Instantiate();
+                if (EditorStyles.label.normal.textColor.r < .5f)//are we in light mode?
+                {
+                    element.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>("Packages/io.spatial.unitysdk/Editor/Scripts/GUI/ConfigWindow/SpatialValidatorWindow_LightModeOverride.uss"));
+                }
                 // It's important to note that when this tree is instantiated it has an extra "root" element that we can't really see inside the UI-builder.
                 // So bellow, "issueContainer" != element, it's a child of this extra root element... 
 
@@ -213,8 +239,37 @@ namespace SpatialSys.UnitySDK.Editor
                 }
             }
 
-            rootVisualElement.Query<Button>("errorsButton").First().text = _errorIssues.Count.ToString() + " Errors";
-            rootVisualElement.Query<Button>("warningsButton").First().text = _warningIssues.Count.ToString() + " Warnings";
+            _issuesCountBlock.ClearClassList();
+            _issuesRefreshButton.ClearClassList();
+            _issuesCountBlock.AddToClassList("block_base");
+            _issuesRefreshButton.AddToClassList("blockButton_white");
+            if (_errorIssues.Count == 0 && _warningIssues.Count == 0)
+            {
+                _issuesCountTitle.text = "No issues found!";
+                _issuesCountDescription.text = "You're good to go!";
+                _issuesCountBlock.AddToClassList("block_green");
+                _issuesRefreshButton.AddToClassList("blockButton_green");
+                _issuesScrollBlock.style.display = DisplayStyle.None;
+                _selectedIssueBlock.style.display = DisplayStyle.None;
+            }
+            else if (_errorIssues.Count > 0)
+            {
+                _issuesCountTitle.text = "<color=#FF4343>" + _errorIssues.Count.ToString() + " Errors</color> <color=#FFEA80>" + _warningIssues.Count.ToString() + " Warnings</color>";
+                _issuesCountDescription.text = "You can't upload your environment to the sandbox or publish until the errors are resolved.";
+                _issuesCountBlock.AddToClassList("block_red");
+                _issuesRefreshButton.AddToClassList("blockButton_red");
+                _issuesScrollBlock.style.display = DisplayStyle.Flex;
+                _selectedIssueBlock.style.display = DisplayStyle.Flex;
+            }
+            else
+            {
+                _issuesCountTitle.text = "<color=#FFEA80>" + _warningIssues.Count.ToString() + " Warnings</color>";
+                _issuesCountDescription.text = "Warnings will not prevent you from publishing, but you should still look to resolve them as your environment may not work as expected.";
+                _issuesCountBlock.AddToClassList("block_yellow");
+                _issuesRefreshButton.AddToClassList("blockButton_yellow");
+                _issuesScrollBlock.style.display = DisplayStyle.Flex;
+                _selectedIssueBlock.style.display = DisplayStyle.Flex;
+            }
 
             if (_errorIssues.Count > 0)
             {
@@ -238,47 +293,52 @@ namespace SpatialSys.UnitySDK.Editor
                 _selectedIssue = element;
             }
 
-            _selectedIssueText.ClearClassList();
+            _selectedIssueBlock.ClearClassList();
+            _selectedIssueBlock.AddToClassList("block_base");
 
             if (element == null || !_elementToReponse.TryGetValue(element, out SpatialTestResponse response))
             {
                 // No selection
-                _selectedIssueText.AddToClassList("selectedIssueGray");
                 _selectedIssueTextTitle.text = "No issue selected";
                 _selectedIssueTextDescription.text = "Choose an issue from the list above to see more information about it and execute auto fixes";
-                _unsafeFixSection.style.display = DisplayStyle.None;
-                _safeFixSection.style.display = DisplayStyle.None;
-                _openObjectButton.style.display = DisplayStyle.None;
-                _openSceneButton.style.display = DisplayStyle.None;
+                _autoFixBlock.style.display = DisplayStyle.None;
+                _selectObjectBlock.style.display = DisplayStyle.None;
+                _openSceneBlock.style.display = DisplayStyle.None;
             }
             else
             {
-                _selectedIssueText.AddToClassList(response.responseType == TestResponseType.Fail ? "selectedIssueRed" : "selectedIssueYellow");
+                _selectedIssueBlock.AddToClassList(response.responseType == TestResponseType.Fail ? "block_red" : "block_yellow");
                 _selectedIssueTextTitle.text = response.title;
                 _selectedIssueTextDescription.text = response.description;
 
-                _openSceneButton.style.display = !string.IsNullOrEmpty(response.scenePath) ? DisplayStyle.Flex : DisplayStyle.None;
+                _openSceneBlock.style.display = !string.IsNullOrEmpty(response.scenePath) ? DisplayStyle.Flex : DisplayStyle.None;
+                _targetSceneName.text = response.scenePath;
 
                 if (response.targetObject != null || response.targetObjectGlobalID.HasValue)
                 {
-                    _openObjectButton.style.display = DisplayStyle.Flex;
+                    _selectObjectBlock.style.display = DisplayStyle.Flex;
+                    if (response.targetObject != null)
+                    {
+                        _targetObjectName.text = response.targetObject.name;
+                    }
+                    else
+                    {
+                        _targetObjectName.text = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(response.targetObjectGlobalID.Value).name;
+                    }
                 }
                 else
                 {
-                    _openObjectButton.style.display = DisplayStyle.None;
+                    _selectObjectBlock.style.display = DisplayStyle.None;
                 }
 
                 if (response.hasAutoFix)
                 {
-                    _unsafeFixSection.style.display = response.autoFixIsSafe ? DisplayStyle.None : DisplayStyle.Flex;
-                    _safeFixSection.style.display = response.autoFixIsSafe ? DisplayStyle.Flex : DisplayStyle.None;
-                    _unsafeFixDescription.text = response.autoFixDescription;
-                    _safeFixDescription.text = response.autoFixDescription;
+                    _autoFixBlock.style.display = DisplayStyle.Flex;
+                    _autoFixDescription.text = response.autoFixDescription;
                 }
                 else
                 {
-                    _unsafeFixSection.style.display = DisplayStyle.None;
-                    _safeFixSection.style.display = DisplayStyle.None;
+                    _autoFixBlock.style.display = DisplayStyle.None;
                 }
             }
         }

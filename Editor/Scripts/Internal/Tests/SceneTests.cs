@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Video;
 using UnityEngine.SceneManagement;
 using UnityEditor.SceneManagement;
 
@@ -92,6 +93,23 @@ namespace SpatialSys.UnitySDK.Editor
                     TestResponseType.Fail,
                     "Multiple projector surfaces found in scene: " + scene.name,
                     "There should only be one projector surface per scene."
+                ));
+            }
+        }
+
+        [SceneTest]
+        public static void WarnIfVideoPlayerIsUsed(Scene scene)
+        {
+            VideoPlayer[] videoPlayers = GameObject.FindObjectsOfType<VideoPlayer>();
+
+            if (videoPlayers.Length > 0)
+            {
+                SpatialValidator.AddResponse(new SpatialTestResponse(
+                    videoPlayers[0],
+                    TestResponseType.Warning,
+                    "Video Players are unsupported on web",
+                    "Currently, embedded video players are not supported on web, but they do work on other platforms. " +
+                    "If this is intended, you can ignore this warning. We may add support for video players on web in the future."
                 ));
             }
         }

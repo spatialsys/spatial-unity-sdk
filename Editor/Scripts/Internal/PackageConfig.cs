@@ -20,7 +20,7 @@ namespace SpatialSys.UnitySDK.Editor
         // Shared Config
         //--------------------------------------------------------------------------------------------------------------
 
-        public const int LATEST_VERSION = 1;
+        public const int LATEST_VERSION = 2;
 
         [HideInInspector]
         public int configVersion; // version of this config model; Used for making backwards-compatible changes
@@ -54,6 +54,8 @@ namespace SpatialSys.UnitySDK.Editor
             public class Variant
             {
                 public string name = "My Environment";
+                [HideInInspector]
+                public string id; // We want this to be unique and never change
                 public SceneAsset scene = null;
                 public Texture2D thumbnail = null; // 1024x512
                 public Texture2D miniThumbnail = null; // 64x64
@@ -61,7 +63,6 @@ namespace SpatialSys.UnitySDK.Editor
 
                 private static readonly string[] INVALID_BUNDLE_NAME_CHARS = new string[] { " ", "_", ".", ",", "(", ")", "[", "]", "{", "}", "!", "@", "#", "$", "%", "^", "&", "*", "+", "=", "|", "\\", "/", "?", "<", ">", "`", "~", "'", "\"", ":", ";" };
 
-                public string id => (scene == null) ? null : AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(scene));
                 public string bundleName
                 {
                     get
@@ -74,6 +75,11 @@ namespace SpatialSys.UnitySDK.Editor
                             pathSafeName = pathSafeName.Replace(c, "");
                         return id + "_" + pathSafeName;
                     }
+                }
+
+                public static string NewID()
+                {
+                    return System.Guid.NewGuid().ToString().Replace("-", "");
                 }
             }
 
@@ -99,6 +105,27 @@ namespace SpatialSys.UnitySDK.Editor
         private void OnValidate()
         {
             UpgradeDataIfNecessary();
+
+            // If a new variant is added, unity will essentially duplicate the last variant in the array so we need to clear it
+            if (environment.variants.Length >= 2)
+            {
+                // Check if a duplicate was just made
+                Environment.Variant beforeLastVariant = environment.variants[environment.variants.Length - 2];
+                Environment.Variant lastVariant = environment.variants[environment.variants.Length - 1];
+                if (beforeLastVariant.id == lastVariant.id &&
+                    beforeLastVariant.scene == lastVariant.scene &&
+                    beforeLastVariant.thumbnail == lastVariant.thumbnail)
+                {
+                    environment.variants[environment.variants.Length - 1] = new Environment.Variant();
+                }
+            }
+
+            // Assign unique IDs to variants if they don't have one
+            foreach (Environment.Variant variant in environment.variants)
+            {
+                if (string.IsNullOrEmpty(variant.id))
+                    variant.id = Environment.Variant.NewID();
+            }
         }
 
         public void UpgradeDataIfNecessary()
@@ -141,6 +168,32 @@ namespace SpatialSys.UnitySDK.Editor
                     Debug.LogError($"Failed to upgrade {nameof(PackageConfig)} to version 1: {e.Message}");
                 }
 #pragma warning restore 0618
+            }
+
+            // Upgrade from version 1 to version 2
+            if (configVersion == 1)
+            {
+                try
+                {
+                    // Assign the same id to the variant it previously had, or a new one if it didn't have one
+                    foreach (Environment.Variant variant in environment.variants)
+                    {
+                        string oldID = (variant.scene == null) ? null : AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(variant.scene));
+                        if (!string.IsNullOrEmpty(oldID))
+                        {
+                            variant.id = oldID;
+                        }
+                        else
+                        {
+                            variant.id = Environment.Variant.NewID();
+                        }
+                    }
+                    configVersion = 2;
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError($"Failed to upgrade {nameof(PackageConfig)} to version 2: {e.Message}");
+                }
             }
 
             // Set version to latest

@@ -19,7 +19,7 @@
     transition-property: translate, background-color;
     transition-duration: 0.3s, 0.2s;
     transition-timing-function: ease-out-back, ease;
-    color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
     border-top-left-radius: 8px;
     border-bottom-left-radius: 8px;
     border-top-right-radius: 8px;
@@ -44,6 +44,7 @@
 
 .issueContainerSelected {
     background-color: rgba(255, 255, 255, 0.25);
+    color: rgba(0, 0, 0, 255);
 }
 
 .issueContainerSelected:hover {

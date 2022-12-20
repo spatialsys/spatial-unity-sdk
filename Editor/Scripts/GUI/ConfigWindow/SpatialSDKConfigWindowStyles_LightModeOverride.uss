@@ -48,7 +48,7 @@
 
 .tabButtonSelected {
     background-color: rgba(0, 0, 0, 0);
-    color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
     -unity-font-style: bold;
     border-top-width: 0;
     border-left-color: rgb(255, 255, 255);
@@ -66,27 +66,27 @@
     border-bottom-left-radius: 16px;
     border-top-right-radius: 16px;
     border-bottom-right-radius: 16px;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.1);
     flex-grow: 1;
     flex-shrink: 1;
     width: 100%;
-    color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
     margin-bottom: 8px;
 }
 
 .block_red {
-    background-color: rgba(255, 0, 0, 0.1);
-    color: rgb(255, 67, 67);
+    background-color: rgba(255, 0, 0, 0.2);
+    color: rgb(102, 0, 0);
 }
 
 .block_green {
-    background-color: rgba(0, 255, 0, 0.1);
-    color: rgb(128, 255, 128);
+    background-color: rgba(0, 255, 0, 0.2);
+    color: rgb(0, 75, 0);
 }
 
 .block_yellow {
-    background-color: rgba(255, 234, 128, 0.1);
-    color: rgb(255, 234, 128);
+    background-color: rgba(255, 224, 70, 0.2);
+    color: rgb(101, 84, 0);
 }
 
 .blockButton_white {
@@ -168,11 +168,11 @@
     margin-right: 4px;
     margin-top: 0;
     margin-bottom: 0;
-    -unity-background-image-tint-color: rgba(255, 255, 255, 0.5);
+    -unity-background-image-tint-color: rgba(0, 0, 0, 0.5);
 }
 
 .logotext {
     font-size: 12px;
     -unity-font-style: bold;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(0, 0, 0, 0.5);
 }
