@@ -112,8 +112,13 @@ namespace SpatialSys.UnitySDK.Editor
                 {
                     continue;
                 }
+
                 string testScenePath = AssetDatabase.GetAssetPath(variant.scene);
+                if (sceneResponses.ContainsKey(testScenePath))
+                    continue;
+
                 sceneResponses.Add(testScenePath, new List<SpatialTestResponse>());
+
                 Scene testScene;
                 if (previousScene.path != testScenePath)
                 {

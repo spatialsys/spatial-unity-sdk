@@ -119,7 +119,7 @@ namespace SpatialSys.UnitySDK.Editor
                     if (importer == null)
                     {
                         SpatialValidator.AddResponse(
-                            new SpatialTestResponse(config, TestResponseType.Fail, $"There seems to be an unexpected issue witht the scene assigned to variant {variant.name}. Scene: {scenePath}; Index: {i}")
+                            new SpatialTestResponse(config, TestResponseType.Fail, $"There seems to be an unexpected issue with the scene assigned to variant {variant.name}. Scene: {scenePath}; Index: {i}")
                         );
                     }
                 }

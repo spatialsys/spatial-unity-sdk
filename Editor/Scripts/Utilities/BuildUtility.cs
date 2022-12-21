@@ -95,10 +95,12 @@ namespace SpatialSys.UnitySDK.Editor
                 return Promise.Rejected(new Exception("Package has errors"));
             }
 
-            // Export all scenes and dependencies as a package
-            if (!Directory.Exists(BUILD_DIR))
-                Directory.CreateDirectory(BUILD_DIR);
-            PackageProject(PACKAGE_EXPORT_PATH);
+            // Always save all assets before publishing so that the uploaded package has the latest changes
+            AssetDatabase.SaveAssets();
+
+            // Auto-assign necessary bundle names
+            // This get's done on the build machines too, but we also want to do it here just in case there's an issue
+            AssignBundleNamesToEachVariant();
 
             // Upload package
             // TODO: support multiple package types.
@@ -114,8 +116,11 @@ namespace SpatialSys.UnitySDK.Editor
                         AssetDatabase.SaveAssetIfDirty(config);
                     }
 
-                    if (!File.Exists(PACKAGE_EXPORT_PATH))
-                        throw new System.Exception("Built package was not found on disk");
+                    // Package it after SKU is assigned or else the config inside the package will not have the SKU
+                    // Export all scenes and dependencies as a package
+                    if (!Directory.Exists(BUILD_DIR))
+                        Directory.CreateDirectory(BUILD_DIR);
+                    PackageProject(PACKAGE_EXPORT_PATH);
 
                     byte[] packageData = File.ReadAllBytes(PACKAGE_EXPORT_PATH);
                     SpatialAPI.UploadPackage(resp.sku, resp.version, packageData, UpdatePackageUploadProgressBar)
