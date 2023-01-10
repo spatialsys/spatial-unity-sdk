@@ -10,23 +10,6 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static bool isUsingSupportedUnityVersion => Application.unityVersion == CLIENT_UNITY_VERSION;
 
-        public static PackageConfig CreateOrGetConfigurationFile()
-        {
-            string directory = CreateFolderHierarchy("Spatial SDK");
-            string filePath = directory + "/SpatialSDK_Config.asset";
-            PackageConfig result = AssetDatabase.LoadAssetAtPath<PackageConfig>(filePath);
-
-            if (result == null)
-            {
-                PackageConfig config = ScriptableObject.CreateInstance<PackageConfig>();
-                AssetDatabase.CreateAsset(config, filePath);
-                AssetDatabase.Refresh();
-                result = AssetDatabase.LoadAssetAtPath<PackageConfig>(filePath);
-            }
-
-            return result;
-        }
-
         public static string GetSavedAuthToken()
         {
             return EditorPrefs.GetString(AUTH_TOKEN_KEY);

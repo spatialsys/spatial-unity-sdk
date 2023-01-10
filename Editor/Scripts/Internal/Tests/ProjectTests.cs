@@ -42,9 +42,9 @@ namespace SpatialSys.UnitySDK.Editor
         [ProjectTest]
         public static void EnsureVariantExists()
         {
-            PackageConfig config = PackageConfig.instance;
+            EnvironmentConfig config = ProjectConfig.activePackage as EnvironmentConfig;
 
-            if (config.environment.variants.Length == 0)
+            if (config.variants.Length == 0)
             {
                 SpatialValidator.AddResponse(
                     new SpatialTestResponse(config, TestResponseType.Fail, "Package Config has no environments set.")
@@ -55,12 +55,12 @@ namespace SpatialSys.UnitySDK.Editor
         [ProjectTest]
         public static void EnsureVariantsHaveNonEmptyUniqueNames()
         {
-            PackageConfig config = PackageConfig.instance;
+            EnvironmentConfig config = ProjectConfig.activePackage as EnvironmentConfig;
 
             var variantNames = new HashSet<string>();
-            for (int i = 0; i < config.environment.variants.Length; i++)
+            for (int i = 0; i < config.variants.Length; i++)
             {
-                var variant = config.environment.variants[i];
+                var variant = config.variants[i];
                 if (string.IsNullOrEmpty(variant.name) || string.IsNullOrWhiteSpace(variant.name))
                 {
                     SpatialValidator.AddResponse(
@@ -81,12 +81,12 @@ namespace SpatialSys.UnitySDK.Editor
         [ProjectTest]
         public static void EnsureVariantsHaveUniqueScenesAssigned()
         {
-            PackageConfig config = PackageConfig.instance;
+            EnvironmentConfig config = ProjectConfig.activePackage as EnvironmentConfig;
 
             var variantScenes = new HashSet<SceneAsset>();
-            for (int i = 0; i < config.environment.variants.Length; i++)
+            for (int i = 0; i < config.variants.Length; i++)
             {
-                var variant = config.environment.variants[i];
+                var variant = config.variants[i];
                 if (variant.scene == null)
                 {
                     SpatialValidator.AddResponse(
@@ -106,12 +106,12 @@ namespace SpatialSys.UnitySDK.Editor
         [ProjectTest]
         public static void EnsureVariantSceneImporterCanBeFound()
         {
-            PackageConfig config = PackageConfig.instance;
+            EnvironmentConfig config = ProjectConfig.activePackage as EnvironmentConfig;
 
             var variantScenes = new HashSet<SceneAsset>();
-            for (int i = 0; i < config.environment.variants.Length; i++)
+            for (int i = 0; i < config.variants.Length; i++)
             {
-                var variant = config.environment.variants[i];
+                var variant = config.variants[i];
                 if (variant.scene != null)
                 {
                     string scenePath = AssetDatabase.GetAssetPath(variant.scene);
@@ -133,11 +133,11 @@ namespace SpatialSys.UnitySDK.Editor
         [ProjectTest]
         public static void EnsureVariantsHaveThumbnailAssigned()
         {
-            PackageConfig config = PackageConfig.instance;
+            EnvironmentConfig config = ProjectConfig.activePackage as EnvironmentConfig;
 
-            for (int i = 0; i < config.environment.variants.Length; i++)
+            for (int i = 0; i < config.variants.Length; i++)
             {
-                var variant = config.environment.variants[i];
+                var variant = config.variants[i];
                 if (variant.thumbnail == null)
                 {
                     SpatialValidator.AddResponse(
@@ -150,13 +150,13 @@ namespace SpatialSys.UnitySDK.Editor
         [ProjectTest]
         public static void EnsureVariantsHaveCorrectlySizedThumbnails()
         {
-            PackageConfig config = PackageConfig.instance;
+            EnvironmentConfig config = ProjectConfig.activePackage as EnvironmentConfig;
 
-            for (int i = 0; i < config.environment.variants.Length; i++)
+            for (int i = 0; i < config.variants.Length; i++)
             {
-                var variant = config.environment.variants[i];
-                CheckVariantThumbnail(i, "thumbnail", variant.thumbnail, PackageConfig.THUMBNAIL_TEXTURE_WIDTH, PackageConfig.THUMBNAIL_TEXTURE_HEIGHT);
-                CheckVariantThumbnail(i, "mini thumbnail", variant.miniThumbnail, PackageConfig.MINI_THUMBNAIL_TEXTURE_WIDTH, PackageConfig.MINI_THUMBNAIL_TEXTURE_HEIGHT);
+                var variant = config.variants[i];
+                CheckVariantThumbnail(i, "thumbnail", variant.thumbnail, ProjectConfig.THUMBNAIL_TEXTURE_WIDTH, ProjectConfig.THUMBNAIL_TEXTURE_HEIGHT);
+                CheckVariantThumbnail(i, "mini thumbnail", variant.miniThumbnail, ProjectConfig.MINI_THUMBNAIL_TEXTURE_WIDTH, ProjectConfig.MINI_THUMBNAIL_TEXTURE_HEIGHT);
             }
         }
 

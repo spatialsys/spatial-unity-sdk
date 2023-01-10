@@ -102,11 +102,19 @@ namespace SpatialSys.UnitySDK.Editor
                 method.Invoke(null, null);
             }
 
-            PackageConfig config = PackageConfig.instance;
+            // TODO: "Project" tests should be run on all packages, not just the active one.
+            // TODO: Make it possible to run tests for other types of assets too
+            EnvironmentConfig config = ProjectConfig.activePackage as EnvironmentConfig;
+            if (config == null)
+            {
+                Debug.LogError("No environment config found.");
+                return false;
+            }
+
             Scene previousScene = EditorSceneManager.GetActiveScene();
             string originalScenePath = previousScene.path;
 
-            foreach (PackageConfig.Environment.Variant variant in config.environment.variants)
+            foreach (EnvironmentConfig.Variant variant in config.variants)
             {
                 if (variant.scene == null)
                 {
@@ -228,13 +236,12 @@ namespace SpatialSys.UnitySDK.Editor
                 method.Invoke(null, targetParam);
             }
 
+            // Run component tests
             List<Component> components = new List<Component>();
-
             foreach (GameObject g in scene.GetRootGameObjects())
             {
-                components.AddRange(g.GetComponentsInChildren(typeof(Component), true));
+                FindComponentsRecursive(g, components);
             }
-
             foreach (Component component in components)
             {
                 RunTestsOnObject(component);

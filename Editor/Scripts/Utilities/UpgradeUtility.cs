@@ -201,7 +201,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static void ShowUpgradeDialog()
         {
-            if (UnityEditor.EditorUtility.DisplayDialog("Upgrade to latest version?", "A new version of the Spatial SDK is available. Would you like to upgrade?", "Yes", "No"))
+            if (UnityEditor.EditorUtility.DisplayDialog("Upgrade to latest version?", "A new version of the Spatial SDK is available. Would you like to upgrade now?", "Yes", "No"))
             {
                 UpgradeToLatest()
                     .Then(upgradePerformed => {
@@ -212,6 +212,43 @@ namespace SpatialSys.UnitySDK.Editor
                         UnityEditor.EditorUtility.DisplayDialog("Upgrade failed", "Failed to upgrade to latest version of the Spatial SDK. Please try again later.", "OK");
                     });
             }
+        }
+
+        /// <summary>
+        /// UpgradeToLatest, but specific messaging for when the upgrade is required for test or publish
+        /// </summary>
+        public static IPromise PerformUpgradeIfNecessaryForTestOrPublish()
+        {
+            return CheckForUpgrade()
+                .Then(upgradeRequired => {
+                    if (upgradeRequired)
+                    {
+                        string dialogMessage = "A new version of the Spatial SDK is available. You will need to upgrade to the latest version to publish or test your package. Would you like to upgrade now?";
+                        if (UnityEditor.EditorUtility.DisplayDialog("Upgrade to latest version?", dialogMessage, "Yes", "No"))
+                        {
+                            return UpgradeToLatest();
+                        }
+                        else
+                        {
+                            UnityEditor.EditorUtility.DisplayDialog("Upgrade required to continue", "You will need to upgrade to the latest Spatial SDK to continue. You can do this by pressing the menu item under \"Spatial SDK/Check for updates...\".", "OK");
+                            throw new RSG.PromiseCancelledException();
+                        }
+                    }
+
+                    return Promise<bool>.Resolved(false);
+                })
+                .Then(upgradePerformed => {
+                    if (upgradePerformed)
+                        UnityEditor.EditorUtility.DisplayDialog("Upgrade successful", "The Spatial SDK has been upgraded to the latest version.", "OK");
+                })
+                .Catch(err => {
+                    if (err is RSG.PromiseCancelledException)
+                        throw err; // Cancel downstream promises
+
+                    Debug.LogException(err);
+                    UnityEditor.EditorUtility.DisplayDialog("Upgrade failed", "Failed to upgrade to latest version of the Spatial SDK. Check out the console panel for details.", "OK");
+                    throw new System.Exception("Failed to perform necessary upgrade");
+                });
         }
     }
 }

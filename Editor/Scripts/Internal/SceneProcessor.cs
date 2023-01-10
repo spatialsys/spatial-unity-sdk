@@ -13,11 +13,11 @@ namespace SpatialSys.UnitySDK.Editor
         [PostProcessSceneAttribute(0)]
         public static void OnPostprocessScene()
         {
-            PackageConfig config = PackageConfig.instance;
+            EnvironmentConfig envConfig = ProjectConfig.activePackage as EnvironmentConfig;
             if (Application.isPlaying ||
-                config == null ||
-                config.environment.variants == null ||
-                !Array.Exists(config.environment.variants, (variant) => {
+                envConfig == null ||
+                envConfig.variants == null ||
+                !Array.Exists(envConfig.variants, (variant) => {
                     SceneAsset asset = AssetDatabase.LoadAssetAtPath<SceneAsset>(SceneManager.GetActiveScene().path);
                     return asset != null && asset == variant.scene;
                 }))

@@ -12,7 +12,7 @@ namespace SpatialSys.UnitySDK.Editor
 {
     public class ValidComponents
     {
-        private static readonly HashSet<Type> _allowedComponentTypes = new HashSet<Type>() {
+        public static HashSet<Type> allowedComponentTypes = new HashSet<Type>() {
             // Unity
             typeof(Transform),
 
@@ -63,6 +63,7 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(Outline),
             typeof(PositionAsUV1),
             typeof(Shadow),
+            typeof(GraphicRaycaster),
 
             // Physics
             typeof(Collider),
@@ -128,7 +129,7 @@ namespace SpatialSys.UnitySDK.Editor
                 return;
 
             Type targetType = target.GetType();
-            if (!_allowedComponentTypes.Any(t => t == targetType || t.IsAssignableFrom(targetType)))
+            if (!allowedComponentTypes.Any(t => t == targetType || t.IsAssignableFrom(targetType)))
             {
                 // Maybe do some type specific messages. For example reasure people that we have an event system active etc.
                 SpatialTestResponse resp = new SpatialTestResponse(

@@ -5,20 +5,31 @@ using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using System.Linq;
 using UnityEditor.SceneManagement;
+using System;
 
 namespace SpatialSys.UnitySDK.Editor
 {
+    [InitializeOnLoad]
     public class SpatialSDKConfigWindow : EditorWindow
     {
         private static readonly string ACCESS_TOKEN_URL = $"https://{SpatialAPI.SPATIAL_ORIGIN}/account";
+        private static bool _isOpen = false;
 
         private const string CONFIG_TAB_NAME = "config";
-        private const string CONFIG_EXISTS_SELECTOR_NAME = "configExists";
-        private const string CONFIG_NULL_SELECTOR_NAME = "configNull";
+        private const string PROJECT_CONFIG_NULL_ELEMENT_NAME = "configNull";
+        private const string PROJECT_CONFIG_ELEMENT_NAME = "projectConfig";
+        private const string PACKAGE_CONFIG_ELEMENT_NAME = "packageConfig";
 
         private string _tab;
         private string _authToken;
 
+        // Config Tab Elements
+        private DropdownField _configActivePackageDropdown;
+        private EnumField _configCreatePackageTypeDropdown;
+        private VisualElement _packageConfigSKUEmptyElement;
+        private VisualElement _packageConfigSKUElement;
+
+        // Issue Tab Elements
         private VisualTreeAsset _issueContainerTemplate;
         private VisualElement _issueListParent;
         private VisualElement _selectedIssue;
@@ -52,6 +63,34 @@ namespace SpatialSys.UnitySDK.Editor
             wnd.SetTab(startingTab);
         }
 
+        static SpatialSDKConfigWindow()
+        {
+            if (_isOpen)
+                EditorApplication.update += DelayedInitialize;
+        }
+
+        private void OnEnable()
+        {
+            _isOpen = true;
+        }
+
+        private void OnDisable()
+        {
+            _isOpen = false;
+        }
+
+        // Needed to refresh the UI bindings after recompile
+        private static void DelayedInitialize()
+        {
+            EditorApplication.update -= DelayedInitialize;
+            EditorWindow.GetWindow<SpatialSDKConfigWindow>().Refresh();
+        }
+
+        public void Refresh()
+        {
+            SetTab(_tab);
+        }
+
         public void CreateGUI()
         {
             // Each editor window contains a root VisualElement object
@@ -77,7 +116,47 @@ namespace SpatialSys.UnitySDK.Editor
             root.Query<Button>("pasteToken").First().clicked += () => PasteAuthToken();
 
             // Config 
-            root.Query<Button>("newConfigButton").First().clicked += () => CreateAndBindConfigAsset();
+            root.Query<Button>("newConfigButton").First().clicked += () => {
+                ProjectConfig.Create();
+                root.Bind(new SerializedObject(ProjectConfig.activePackage));
+            };
+            _configActivePackageDropdown = root.Q<DropdownField>("packageConfigDropDown");
+            _configActivePackageDropdown.RegisterValueChangedCallback(evt => {
+                int index = _configActivePackageDropdown.choices.IndexOf(evt.newValue);
+                ProjectConfig.activePackageIndex = index;
+                UnityEditor.EditorUtility.SetDirty(ProjectConfig.instance);
+                rootVisualElement.Bind(new SerializedObject(ProjectConfig.activePackage));
+            });
+            _configCreatePackageTypeDropdown = root.Q<EnumField>("createPackageTypeDropdown");
+            root.Q<Button>("createPackageButton").clicked += () => {
+                var package = ProjectConfig.AddNewPackage((PackageType)_configCreatePackageTypeDropdown.value);
+                ProjectConfig.SetActivePackage(package);
+            };
+            root.Q<Button>("publishPackageButton").clicked += () => {
+                if (EditorApplication.isPlayingOrWillChangePlaymode)
+                {
+                    UnityEditor.EditorUtility.DisplayDialog("Publish Package", "Cannot publish package while in play mode.", "Ok");
+                    return;
+                }
+
+                UpgradeUtility.PerformUpgradeIfNecessaryForTestOrPublish()
+                    .Then(() => {
+                        return BuildUtility.PackageForPublishing();
+                    })
+                    .Catch(exc => {
+                        if (exc is RSG.PromiseCancelledException)
+                            return;
+
+                        UnityEditor.EditorUtility.DisplayDialog("Publishing Error", $"There was an unexpected error while publishing your space.\n\n{exc.Message}", "OK");
+                        Debug.LogException(exc);
+                    });
+            };
+            root.Q<Button>("deletePackageButton").clicked += () => {
+                if (UnityEditor.EditorUtility.DisplayDialog("Delete Package", "Are you sure you want to delete this package?", "Yes", "No"))
+                    ProjectConfig.RemovePackage(ProjectConfig.activePackage);
+            };
+            _packageConfigSKUEmptyElement = root.Q(PACKAGE_CONFIG_ELEMENT_NAME).Q("packageSKUEmpty");
+            _packageConfigSKUElement = root.Q(PACKAGE_CONFIG_ELEMENT_NAME).Q("packageSKU");
 
             // Issues
             _issuesCountBlock = root.Q("issuesCountBlock");
@@ -110,10 +189,10 @@ namespace SpatialSys.UnitySDK.Editor
 
             _issueListParent = root.Q("issuesScroll");
 
-            if (PackageConfig.instance != null)
-                root.Bind(new SerializedObject(PackageConfig.instance));
+            if (ProjectConfig.activePackage != null)
+                root.Bind(new SerializedObject(ProjectConfig.activePackage));
 
-            _authToken = EditorUtility.GetSavedAuthToken();//
+            _authToken = EditorUtility.GetSavedAuthToken();
             UpdateAuthWarning();
         }
 
@@ -138,7 +217,11 @@ namespace SpatialSys.UnitySDK.Editor
 
             // There are two states for the config tab, which depends on whether the config exists or not.
             if (tab == CONFIG_TAB_NAME)
+            {
                 UpdateConfigTabContents();
+
+                _configActivePackageDropdown.index = ProjectConfig.activePackageIndex;
+            }
 
             if (tab == "issues")
             {
@@ -156,8 +239,32 @@ namespace SpatialSys.UnitySDK.Editor
 
         private void UpdateConfigTabContents()
         {
-            rootVisualElement.Q(CONFIG_EXISTS_SELECTOR_NAME).style.display = (PackageConfig.instance != null) ? DisplayStyle.Flex : DisplayStyle.None;
-            rootVisualElement.Q(CONFIG_NULL_SELECTOR_NAME).style.display = (PackageConfig.instance == null) ? DisplayStyle.Flex : DisplayStyle.None;
+            rootVisualElement.Q(PROJECT_CONFIG_NULL_ELEMENT_NAME).style.display = (ProjectConfig.instance == null) ? DisplayStyle.Flex : DisplayStyle.None;
+            rootVisualElement.Q(PROJECT_CONFIG_ELEMENT_NAME).style.display = (ProjectConfig.instance != null) ? DisplayStyle.Flex : DisplayStyle.None;
+            rootVisualElement.Q(PACKAGE_CONFIG_ELEMENT_NAME).style.display = (ProjectConfig.activePackage != null) ? DisplayStyle.Flex : DisplayStyle.None;
+
+            // Active config dropdown
+            _configActivePackageDropdown.SetEnabled(ProjectConfig.hasPackages);
+            if (_configActivePackageDropdown.enabledSelf)
+            {
+                Func<PackageConfig, string> getPackageDropdownLabel = (PackageConfig config) => config.packageName;
+
+                // Update elements
+                if (_configActivePackageDropdown.choices == null || _configActivePackageDropdown.choices.Count != ProjectConfig.packages.Count)
+                    _configActivePackageDropdown.choices = ProjectConfig.packages.Select(getPackageDropdownLabel).ToList();
+                _configActivePackageDropdown.index = ProjectConfig.activePackageIndex;
+
+                // Update the selected label
+                if (ProjectConfig.activePackage != null)
+                    _configActivePackageDropdown.choices[ProjectConfig.activePackageIndex] = getPackageDropdownLabel(ProjectConfig.activePackage);
+            }
+
+            // Active Package
+            if (ProjectConfig.activePackage != null)
+            {
+                _packageConfigSKUEmptyElement.style.display = (string.IsNullOrEmpty(ProjectConfig.activePackage.sku)) ? DisplayStyle.Flex : DisplayStyle.None;
+                _packageConfigSKUElement.style.display = (string.IsNullOrEmpty(ProjectConfig.activePackage.sku)) ? DisplayStyle.None : DisplayStyle.Flex;
+            }
         }
 
         private void PasteAuthToken()
@@ -180,13 +287,6 @@ namespace SpatialSys.UnitySDK.Editor
             bool validAuthToken = _authToken.StartsWith("sandbox_") && _authToken.Length > 16;
             rootVisualElement.Q("notLoggedInBlock").style.display = validAuthToken ? DisplayStyle.None : DisplayStyle.Flex;
             rootVisualElement.Q("loggedInBlock").style.display = validAuthToken ? DisplayStyle.Flex : DisplayStyle.None;
-        }
-
-        private void CreateAndBindConfigAsset()
-        {
-            Debug.Log("Creating config asset");
-            PackageConfig config = EditorUtility.CreateOrGetConfigurationFile();
-            rootVisualElement.Bind(new SerializedObject(config));
         }
 
         /////////////////////////////////////////
@@ -242,7 +342,7 @@ namespace SpatialSys.UnitySDK.Editor
             _issuesCountBlock.ClearClassList();
             _issuesRefreshButton.ClearClassList();
             _issuesCountBlock.AddToClassList("block_base");
-            _issuesRefreshButton.AddToClassList("blockButton_white");
+            _issuesRefreshButton.AddToClassList("blockButton");
             if (_errorIssues.Count == 0 && _warningIssues.Count == 0)
             {
                 _issuesCountTitle.text = "No issues found!";

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEditor;
@@ -7,14 +8,10 @@ namespace SpatialSys.UnitySDK.Editor
     /// <summary>
     /// The configuration of a SpatialSDK package
     /// </summary>
-    public class PackageConfig : ScriptableObject
+    [Obsolete("Use ProjectConfig instead")]
+    public class PackageConfig_OLD : ScriptableObject
     {
-        public const int THUMBNAIL_TEXTURE_WIDTH = 1024;
-        public const int THUMBNAIL_TEXTURE_HEIGHT = 512;
-        public const int MINI_THUMBNAIL_TEXTURE_WIDTH = 64;
-        public const int MINI_THUMBNAIL_TEXTURE_HEIGHT = 64;
-
-        public static PackageConfig instance { get; private set; }
+        public static PackageConfig_OLD instance { get; private set; }
 
         //--------------------------------------------------------------------------------------------------------------
         // Shared Config
@@ -165,7 +162,7 @@ namespace SpatialSys.UnitySDK.Editor
                 }
                 catch (System.Exception e)
                 {
-                    Debug.LogError($"Failed to upgrade {nameof(PackageConfig)} to version 1: {e.Message}");
+                    Debug.LogError($"Failed to upgrade {nameof(PackageConfig_OLD)} to version 1: {e.Message}");
                 }
 #pragma warning restore 0618
             }
@@ -192,7 +189,7 @@ namespace SpatialSys.UnitySDK.Editor
                 }
                 catch (System.Exception e)
                 {
-                    Debug.LogError($"Failed to upgrade {nameof(PackageConfig)} to version 2: {e.Message}");
+                    Debug.LogError($"Failed to upgrade {nameof(PackageConfig_OLD)} to version 2: {e.Message}");
                 }
             }
 
@@ -202,10 +199,9 @@ namespace SpatialSys.UnitySDK.Editor
             AssetDatabase.SaveAssets();
         }
 
-        static PackageConfig()
+        static PackageConfig_OLD()
         {
             EditorApplication.update += DelayedInitialize;
-            EditorApplication.projectChanged += SearchProjectForConfig;
         }
 
         /// <summary>
@@ -215,6 +211,13 @@ namespace SpatialSys.UnitySDK.Editor
         {
             EditorApplication.update -= DelayedInitialize;
             SearchProjectForConfig();
+
+            // Upgrade to ProjectConfig
+            if (instance != null && ProjectConfig.instance == null)
+            {
+                Debug.Log("Updating project configuration files to new format");
+                ProjectConfig.Create();
+            }
         }
 
         private static void SearchProjectForConfig()
@@ -222,12 +225,12 @@ namespace SpatialSys.UnitySDK.Editor
             if (instance != null)
                 return;
 
-            string[] configGuids = AssetDatabase.FindAssets($"t:{nameof(PackageConfig)}");
+            string[] configGuids = AssetDatabase.FindAssets($"t:{nameof(PackageConfig_OLD)}");
 
             if (configGuids.Length > 0)
             {
                 string path = AssetDatabase.GUIDToAssetPath(configGuids[0]);
-                instance = AssetDatabase.LoadAssetAtPath<PackageConfig>(path);
+                instance = AssetDatabase.LoadAssetAtPath<PackageConfig_OLD>(path);
             }
         }
 

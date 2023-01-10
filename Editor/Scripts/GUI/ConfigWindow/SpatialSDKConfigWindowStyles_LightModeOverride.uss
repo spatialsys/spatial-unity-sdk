@@ -89,7 +89,7 @@
     color: rgb(101, 84, 0);
 }
 
-.blockButton_white {
+.blockButton {
     flex-shrink: 1;
     background-color: rgb(255, 255, 255);
     border-left-color: rgba(255, 255, 255, 0);
@@ -123,13 +123,13 @@
     transition-timing-function: ease-out-back;
 }
 
-.blockButton_white:hover {
+.blockButton:hover {
     transition-duration: 0.2s;
     transition-timing-function: ease-out-back;
     scale: 1.1 1.1;
 }
 
-.blockButton_white:active {
+.blockButton:active {
     transition-duration: 0.2s;
     transition-timing-function: ease-out-back;
     scale: 1.05 1.05;
@@ -145,6 +145,13 @@
 
 .blockButton_yellow {
     background-color: rgb(255, 234, 128);
+}
+
+.blockButton_small {
+    font-size: 12px;
+    padding: 0 10px;
+    height: 24px;
+    border-radius: 9px;
 }
 
 .blockTitle {

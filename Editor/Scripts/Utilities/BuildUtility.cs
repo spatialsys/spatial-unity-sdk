@@ -15,6 +15,7 @@ namespace SpatialSys.UnitySDK.Editor
     {
         public static string BUILD_DIR = "Exports";
         public static string PACKAGE_EXPORT_PATH = Path.Combine(BUILD_DIR, "spaces.unitypackage");
+        public static readonly string[] INVALID_BUNDLE_NAME_CHARS = new string[] { " ", "_", ".", ",", "(", ")", "[", "]", "{", "}", "!", "@", "#", "$", "%", "^", "&", "*", "+", "=", "|", "\\", "/", "?", "<", ">", "`", "~", "'", "\"", ":", ";" };
         public static int MAX_SANDBOX_BUNDLE_SIZE = 100 * 1024 * 1024; // 100 MB
         public static int MAX_PACKAGE_SIZE = 500 * 1024 * 1024; // 500 MB
 
@@ -22,6 +23,10 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static IPromise BuildAndUploadForSandbox()
         {
+            // Make sure the active package is set to the one that contains the active scene
+            SceneAsset currentScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
+            ProjectConfig.SetActivePackageBySourceAsset(currentScene);
+
             // Validate just the active scene
             if (!SpatialValidator.RunTestsOnActiveScene(ValidationContext.Testing))
             {
@@ -30,7 +35,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
 
             // Auto-assign necessary bundle names
-            AssignBundleNamesToEachVariant();
+            AssignBundleNamesToPackageAssets();
 
             // TODO: Ensure WebGL bundle is installed.
             const BuildTarget TARGET = BuildTarget.WebGL;
@@ -50,16 +55,15 @@ namespace SpatialSys.UnitySDK.Editor
                 return Promise.Rejected(new System.Exception("Failed to build asset bundle for sandbox. Check the console for details."));
 
             // Get the variant config for the current scene
-            PackageConfig config = PackageConfig.instance;
-            SceneAsset currentScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
-            PackageConfig.Environment.Variant environmentVariant = config.environment.variants.FirstOrDefault(v => v.scene == currentScene);
+            EnvironmentConfig config = ProjectConfig.activePackage as EnvironmentConfig;
+            EnvironmentConfig.Variant environmentVariant = config.variants.FirstOrDefault(v => v.scene == currentScene);
             if (environmentVariant == null)
                 return Promise.Rejected(new System.Exception("The current scene isn't one that is assigned to a variant in the package configuration"));
 
             // Check for bundle size
             string bundlePath = Path.Combine(bundleDir, environmentVariant.bundleName);
             if (!File.Exists(bundlePath))
-                return Promise.Rejected(new System.Exception("Built asset bundle was not found on disk"));
+                return Promise.Rejected(new System.Exception($"Built asset bundle `{bundlePath}` was not found on disk"));
             long bundleSize = new FileInfo(bundlePath).Length;
             if (bundleSize > MAX_SANDBOX_BUNDLE_SIZE)
                 return Promise.Rejected(new System.Exception($"Asset bundle is too large ({bundleSize / 1024 / 1024}MB). The maximum size is {MAX_SANDBOX_BUNDLE_SIZE / 1024 / 1024}MB"));
@@ -100,13 +104,13 @@ namespace SpatialSys.UnitySDK.Editor
 
             // Auto-assign necessary bundle names
             // This get's done on the build machines too, but we also want to do it here just in case there's an issue
-            AssignBundleNamesToEachVariant();
+            AssignBundleNamesToPackageAssets();
 
             // Upload package
             // TODO: support multiple package types.
             _lastUploadProgress = -1f;
             UpdatePackageUploadProgressBar(0f);
-            PackageConfig config = PackageConfig.instance;
+            PackageConfig config = ProjectConfig.activePackage;
             return SpatialAPI.CreateOrUpdatePackage(config.sku, SpatialAPI.PackageType.Environment)
                 .Then(resp => {
                     if (config.sku != resp.sku)
@@ -179,14 +183,20 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static void PackageProject(string outputPath)
         {
-            // Export all scenes and dependencies as a package
-            PackageConfig config = PackageConfig.instance;
-            List<string> sourceAssets = new List<string>();
-            if (config.packageType == PackageConfig.PackageType.Environment)
-                sourceAssets.AddRange(config.environment.variants.Select(v => AssetDatabase.GetAssetPath(v.scene)));
-            sourceAssets.Add(AssetDatabase.GetAssetPath(config));
+            // Export all referenced assets from active package as a unity package
+            // NOTE: Intentionally not including the ProjectConfig since that includes all packages in this project
             AssetDatabase.ExportPackage(
-                sourceAssets.ToArray(),
+                new string[] { AssetDatabase.GetAssetPath(ProjectConfig.activePackage) },
+                outputPath,
+                ExportPackageOptions.Recurse | ExportPackageOptions.IncludeDependencies
+            );
+        }
+
+        public static void PackageActiveScene(string outputPath)
+        {
+            // Export only the active scene and its dependencies as a package
+            AssetDatabase.ExportPackage(
+                new string[] { UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene().path },
                 outputPath,
                 ExportPackageOptions.Recurse | ExportPackageOptions.IncludeDependencies
             );
@@ -235,23 +245,50 @@ namespace SpatialSys.UnitySDK.Editor
             return result;
         }
 
-        public static void AssignBundleNamesToEachVariant()
+        public static void AssignBundleNamesToPackageAssets()
         {
-            PackageConfig config = PackageConfig.instance;
+            PackageConfig config = ProjectConfig.activePackage;
 
             // Clear all asset bundle assets in the project
             foreach (string name in AssetDatabase.GetAllAssetBundleNames())
                 AssetDatabase.RemoveAssetBundleName(name, forceRemove: true);
             AssetDatabase.Refresh();
 
-            // Assign a unique asset bundle name to each scene
-            foreach (PackageConfig.Environment.Variant variant in config.environment.variants)
+            // Environment
+            if (config is EnvironmentConfig envConfig)
             {
-                string scenePath = AssetDatabase.GetAssetPath(variant.scene);
-                AssetImporter importer = AssetImporter.GetAtPath(scenePath);
-                importer.assetBundleName = variant.bundleName;
-                AssetDatabase.SaveAssetIfDirty(importer);
+                // Assign a unique asset bundle name to each scene
+                foreach (EnvironmentConfig.Variant variant in envConfig.variants)
+                {
+                    string scenePath = AssetDatabase.GetAssetPath(variant.scene);
+                    AssetImporter importer = AssetImporter.GetAtPath(scenePath);
+                    importer.assetBundleName = GetBundleNameForPackageAsset(config.name, variant.name, variant.id);
+                    AssetDatabase.SaveAssetIfDirty(importer);
+                }
             }
+        }
+
+        public static string GetBundleNameForPackageAsset(string packageName, string variantName, string variantID)
+        {
+            // WARNING: Do not edit this without also changing GetVariantIDFromBundleName
+            return $"{GetValidBundleNameString(packageName)}_{GetValidBundleNameString(variantName)}_{variantID}";
+        }
+
+        public static string GetVariantIDFromBundleName(string bundleName)
+        {
+            string[] parts = bundleName.Split('_');
+            return parts[parts.Length - 1]; // Last part is the variant ID; See AssignBundleNamesToPackageAssets
+        }
+
+        /// <summary>
+        /// Returns a string that is safe to use as an asset bundle name.
+        /// </summary>
+        private static string GetValidBundleNameString(string str)
+        {
+            string safeStr = str.Replace(" ", "-").Replace("_", "-").ToLower();
+            foreach (string c in INVALID_BUNDLE_NAME_CHARS)
+                safeStr = safeStr.Replace(c, "");
+            return safeStr;
         }
     }
 }
