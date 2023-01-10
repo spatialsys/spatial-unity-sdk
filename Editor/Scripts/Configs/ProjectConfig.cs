@@ -63,6 +63,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             var config = CreateInstance<ProjectConfig>();
             config._configVersion = LATEST_VERSION;
+            AssetDatabase.CreateAsset(config, ASSET_PATH);
 
 #pragma warning disable 618 // Ignore PackageConfig_OLD deprecation warning
             // Backwards compatibility, if there are any PackageConfig_OLD then convert them to the new format
@@ -116,9 +117,9 @@ namespace SpatialSys.UnitySDK.Editor
                 config._packages.Add(AssetDatabase.LoadAssetAtPath<PackageConfig>(AssetDatabase.GUIDToAssetPath(existingConfigs[i])));
             }
 
-            AssetDatabase.CreateAsset(config, ASSET_PATH);
-            AssetDatabase.Refresh();
+            UnityEditor.EditorUtility.SetDirty(config);
             AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
 
         public static PackageConfig AddNewPackage(PackageType type)
