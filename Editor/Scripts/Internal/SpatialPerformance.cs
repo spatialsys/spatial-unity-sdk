@@ -285,6 +285,15 @@ namespace SpatialSys.UnitySDK.Editor
                     $"Environments are limited to {PerformanceResponse.MAX_UNIQUE_MATERIALS} unique materials. You will need to reduce the number of unique materials in your scene before you can publish."
                 ));
             }
+            if (response.sharedTexturePercent > 1f)
+            {
+                SpatialValidator.AddResponse(new SpatialTestResponse(
+                    null,
+                    TestResponseType.Fail,
+                    $"Scene {scene.name} has too many shared textures.",
+                    $"Environments are limited to {PerformanceResponse.MAX_SHARED_TEXTURE_MB} MB of shared textures. You will need to reduce the size of your shared textures before you can publish."
+                ));
+            }
         }
     }
 }

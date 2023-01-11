@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,30 +11,79 @@ namespace SpatialSys.UnitySDK.Editor
     // Project tests are run once.
     public class ProjectTests
     {
+        public static readonly HashSet<string> UNSUPPORTED_MODEL_FORMATS = new HashSet<string>(new string[] { ".glb", ".gltf", ".ma", ".mb", ".max", ".c4d" });
+
+        private static string[] GetPackageDependencies(PackageConfig package)
+        {
+            return AssetDatabase.GetDependencies(AssetDatabase.GetAssetPath(package))
+                .Where(d => !d.StartsWith("Packages/io.spatial.unitysdk"))
+                .ToArray();
+        }
+
         [ProjectTest]
         public static void CheckPackageFileSizeLimit()
         {
-            // Don't run this test on build servers
-            if (Application.isBatchMode)
-                return;
+            string[] dependencies = GetPackageDependencies(ProjectConfig.activePackage);
 
-            // To speed up testing iteration times, don't run this test for test case
-            if (SpatialValidator.validationContext == ValidationContext.Testing)
-                return;
-
-            string tempOutputPath = "Temp/SpatialPackage.unitypackage";
-            BuildUtility.PackageProject(tempOutputPath);
-
-            FileInfo packageInfo = new FileInfo(tempOutputPath);
-            if (packageInfo.Length > BuildUtility.MAX_PACKAGE_SIZE)
+            // Get size of each dependency
+            Tuple<string, FileInfo>[] dependencyInfos = dependencies.Select(d => new Tuple<string, FileInfo>(d, new FileInfo(d))).ToArray();
+            long totalSize = dependencyInfos.Sum(d => d.Item2.Length);
+            if (totalSize > BuildUtility.MAX_PACKAGE_SIZE)
             {
+                var orderedDependencies = dependencyInfos.OrderByDescending(d => d.Item2.Length).Select(d => $"{d.Item2.Length / 1024 / 1024f:0.0000}MB - {d.Item1}");
                 SpatialValidator.AddResponse(
                     new SpatialTestResponse(
                         null,
                         TestResponseType.Fail,
                         "Package is too large to upload to Spatial",
-                        $"The package is {packageInfo.Length / 1024 / 1024}MB, but the maximum size is {BuildUtility.MAX_PACKAGE_SIZE / 1024 / 1024}MB. " +
-                        "Try to reduce the size of source assets referenced by scenes in your project. Sometimes, texture source assets can be very large on disk, and it can help to downscale them."
+                        $"The package is {totalSize / 1024f / 1024f}MB, but the maximum size is {BuildUtility.MAX_PACKAGE_SIZE / 1024 / 1024}MB. " +
+                        "Try to reduce the size of source assets referenced by scenes in your project. " +
+                        "Sometimes, texture source assets can be very large on disk, and it can help to downscale them." +
+                        $"Here's a list of assets ordered by largest to smallest:\n - {string.Join("\n - ", orderedDependencies)}"
+                    )
+                );
+            }
+        }
+
+        [ProjectTest]
+        public static void CheckPackageUnsupportedFilesLimit()
+        {
+            string[] dependencies = GetPackageDependencies(ProjectConfig.activePackage);
+
+            List<string> unsupportedModelFiles = dependencies.Where(d => UNSUPPORTED_MODEL_FORMATS.Contains(Path.GetExtension(d))).ToList();
+            if (unsupportedModelFiles.Count > 0)
+            {
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(
+                        null,
+                        TestResponseType.Fail,
+                        "Package contains unsupported model files",
+                        "This package contains file formats that are not supported. " +
+                        $"It is recommended to use the FBX format instead.\n - {string.Join("\n - ", unsupportedModelFiles)}"
+                    )
+                );
+            }
+        }
+
+        [ProjectTest]
+        public static void CheckPackageForAssetsWithLongPaths()
+        {
+            // We need to account for the fact that the package will be processed on a windows machine where the 
+            // path to the project is something like: "C:\agent\_work\6\s\_b\Assets\..."
+            const int MAX_PATH_LENGTH = 200;
+            string[] dependencies = GetPackageDependencies(ProjectConfig.activePackage);
+
+            List<string> longPathDependencies = dependencies.Where(d => d.Length > MAX_PATH_LENGTH).ToList();
+            if (longPathDependencies.Count > 0)
+            {
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(
+                        null,
+                        TestResponseType.Fail,
+                        "Package contains files with paths that are too long",
+                        "This package contains files that have asset paths that are too long. " + 
+                        $"To be able to process this package on a windows machine, path lengths cannot exceed {MAX_PATH_LENGTH}. " +
+                        $"Try to collapse folder hierarchies or give assets shorter file names.\n - {string.Join("\n - ", longPathDependencies)}"
                     )
                 );
             }
