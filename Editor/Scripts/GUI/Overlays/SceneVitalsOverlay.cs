@@ -141,7 +141,7 @@ namespace SpatialSys.UnitySDK.Editor
             SetBaseClass(_materialsBlock);
             SetBlockClassFromRatio(_materialsBlock, resp.uniqueMaterialsPercent);
             _materialsCount.text = AbbreviateNumber(resp.uniqueMaterials);
-            _materialsMax.text = "/ " + AbbreviateNumber(PerformanceResponse.MAX_UNIQUE_MATERIALS);
+            _materialsMax.text = "/ " + AbbreviateNumber(PerformanceResponse.MAX_SUGGESTED_UNIQUE_MATERIALS);
             _materialIcon.ClearClassList();
             SetBlockClassFromRatio(_materialIcon, resp.uniqueMaterialsPercent);
 

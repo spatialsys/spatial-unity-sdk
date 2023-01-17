@@ -24,7 +24,7 @@ namespace SpatialSys.UnitySDK.Editor
         private const int k = 1000;
 
         public static readonly int MAX_VERTS = 500 * k;
-        public static readonly int MAX_UNIQUE_MATERIALS = 50;
+        public static readonly int MAX_SUGGESTED_UNIQUE_MATERIALS = 50;
         public static readonly int MAX_SHARED_TEXTURE_MB = 200;
         public static readonly int MAX_COLLIDER_VERTS = 75 * k;
 
@@ -44,6 +44,11 @@ namespace SpatialSys.UnitySDK.Editor
         public int realtimeLights;
         public int reflectionProbeMB;//textures
 
+        // Per asset data about their size
+        public IReadOnlyList<Tuple<string, int>> meshVertCounts;
+        public IReadOnlyList<Tuple<string, int>> meshColliderVertCounts;
+        public IReadOnlyList<Tuple<string, float>> textureMemorySizesMB;
+
         public int sharedTextureMB => materialTextureMB + lightmapTextureMB + reflectionProbeMB;
 
         //how long it took to analyze the scene.
@@ -51,7 +56,7 @@ namespace SpatialSys.UnitySDK.Editor
         public float responseMiliseconds;
 
         public float vertPercent => (float)verts / MAX_VERTS;
-        public float uniqueMaterialsPercent => (float)uniqueMaterials / MAX_UNIQUE_MATERIALS;
+        public float uniqueMaterialsPercent => (float)uniqueMaterials / MAX_SUGGESTED_UNIQUE_MATERIALS;
         public float sharedTexturePercent => (float)sharedTextureMB / MAX_SHARED_TEXTURE_MB;
         public float meshColliderVertPercent => (float)meshColliderVerts / MAX_COLLIDER_VERTS;
     }
@@ -89,9 +94,16 @@ namespace SpatialSys.UnitySDK.Editor
             var timer = System.Diagnostics.Stopwatch.StartNew();
             var scene = EditorSceneManager.GetActiveScene();
 
+            List<Tuple<string, int>> meshVertCounts = new List<Tuple<string, int>>();
+            List<Tuple<string, int>> meshColliderVertCounts = new List<Tuple<string, int>>();
+            List<Tuple<string, float>> textureSizesMB = new List<Tuple<string, float>>();
+
             PerformanceResponse response = new PerformanceResponse();
             response.sceneName = scene.name;
             response.scenePath = scene.path;
+            response.meshVertCounts = meshVertCounts;
+            response.meshColliderVertCounts = meshColliderVertCounts;
+            response.textureMemorySizesMB = textureSizesMB;
 
             // Count lightmaps size
             long bytes = 0;
@@ -100,15 +112,21 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 if (lightmap.lightmapColor != null)
                 {
-                    bytes += Profiler.GetRuntimeMemorySizeLong(lightmap.lightmapColor);
+                    long sizeInBytes = Profiler.GetRuntimeMemorySizeLong(lightmap.lightmapColor);
+                    bytes += sizeInBytes;
+                    textureSizesMB.Add(new Tuple<string, float>(AssetDatabase.GetAssetPath(lightmap.lightmapColor), sizeInBytes / 1024f / 1024f));
                 }
                 if (lightmap.lightmapDir != null)
                 {
-                    bytes += Profiler.GetRuntimeMemorySizeLong(lightmap.lightmapDir);
+                    long sizeInBytes = Profiler.GetRuntimeMemorySizeLong(lightmap.lightmapDir);
+                    bytes += sizeInBytes;
+                    textureSizesMB.Add(new Tuple<string, float>(AssetDatabase.GetAssetPath(lightmap.lightmapDir), sizeInBytes / 1024f / 1024f));
                 }
                 if (lightmap.shadowMask != null)
                 {
-                    bytes += Profiler.GetRuntimeMemorySizeLong(lightmap.shadowMask);
+                    long sizeInBytes = Profiler.GetRuntimeMemorySizeLong(lightmap.shadowMask);
+                    bytes += sizeInBytes;
+                    textureSizesMB.Add(new Tuple<string, float>(AssetDatabase.GetAssetPath(lightmap.shadowMask), sizeInBytes / 1024f / 1024f));
                 }
             }
             response.lightmapTextureMB = (int)bytes / 1024 / 1024;
@@ -162,25 +180,29 @@ namespace SpatialSys.UnitySDK.Editor
                     response.verts += 4;
                 }
             }
-
-            response.uniqueVerts = foundMeshes.Distinct().Sum(m => m.vertexCount);
+            IEnumerable<Mesh> uniqueMeshes = foundMeshes.Distinct();
+            meshVertCounts.AddRange(uniqueMeshes.Select(m => new Tuple<string, int>(AssetDatabase.GetAssetPath(m), m.vertexCount)));
+            response.uniqueVerts = uniqueMeshes.Distinct().Sum(m => m.vertexCount);
             response.uniqueMaterials = materials.FindAll(m => m != null).Select(m => m.name).Distinct().Count();
 
             // Count texture sizes
             bytes = 0;
             foreach (Texture texture in foundTextures.Distinct())
             {
-                bytes += Profiler.GetRuntimeMemorySizeLong(texture);
+                long sizeInBytes = Profiler.GetRuntimeMemorySizeLong(texture);
+                bytes += sizeInBytes;
+                textureSizesMB.Add(new Tuple<string, float>(AssetDatabase.GetAssetPath(texture), sizeInBytes / 1024f / 1024f));
             }
             response.materialTextureMB = (int)(bytes / 1024 / 1024);
 
-            // Count mesh collider tris
+            // Count mesh collider vertices
             MeshCollider[] meshColliders = GameObject.FindObjectsOfType<MeshCollider>(true);
             foreach (MeshCollider meshCollider in meshColliders)
             {
                 if (meshCollider.sharedMesh != null)
                 {
                     response.meshColliderVerts += meshCollider.sharedMesh.vertexCount;
+                    meshColliderVertCounts.Add(new Tuple<string, int>(GetGameObjectPath(meshCollider.gameObject), meshCollider.sharedMesh.vertexCount));
                 }
             }
 
@@ -219,10 +241,30 @@ namespace SpatialSys.UnitySDK.Editor
             }
             response.reflectionProbeMB = (int)(bytes / 1024 / 1024);
 
+            // Sort by size descending
+            meshVertCounts.Sort((a, b) => b.Item2.CompareTo(a.Item2));
+            meshColliderVertCounts.Sort((a, b) => b.Item2.CompareTo(a.Item2));
+            textureSizesMB.Sort((a, b) => b.Item2.CompareTo(a.Item2));
+
             timer.Stop();
             response.responseMiliseconds = timer.ElapsedMilliseconds;
 
             return response;
+        }
+
+        private static string GetGameObjectPath(GameObject obj)
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+            GetGameObjectRecursive(obj.transform, stringBuilder);
+            return stringBuilder.ToString();
+        }
+
+        private static void GetGameObjectRecursive(Transform t, System.Text.StringBuilder stringBuilder)
+        {
+            if (t.parent != null)
+                GetGameObjectRecursive(t.parent, stringBuilder);
+
+            stringBuilder.AppendFormat("/{0}", t.gameObject.name);
         }
 
         [SceneTest]
@@ -233,14 +275,15 @@ namespace SpatialSys.UnitySDK.Editor
 
             PerformanceResponse response = GetActiveScenePerformanceResponse();
 
-
             if (response.meshColliderVertPercent > 1f)
             {
                 SpatialValidator.AddResponse(new SpatialTestResponse(
                     null,
                     TestResponseType.Warning,
-                    $"Scene {scene.name} has a lot of high density mesh colliders.",
-                    "You should try to use primitives or low density meshes for colliders where possible. High density collision gemoetry will impact the performance of your environment."
+                    $"Scene {scene.name} has a lot of high density mesh colliders ({response.meshColliderVerts}/{PerformanceResponse.MAX_COLLIDER_VERTS}).",
+                    "You should try to use primitives or low density meshes for colliders where possible. "
+                    + "High density collision gemoetry will impact the performance of your environment."
+                    + "Here's a list of all objects with high density mesh colliders:\n - " + string.Join("\n - ", response.meshColliderVertCounts.Select(m => $"{m.Item2} - {m.Item1}"))
                 ));
             }
 
@@ -272,7 +315,9 @@ namespace SpatialSys.UnitySDK.Editor
                     null,
                     TestResponseType.Fail,
                     $"Scene {scene.name} has too many vertices.",
-                    "The scene has too many high detail models. You will need to reduce the total vertex count in your scene before you can publish."
+                    "The scene has too many high detail models. "
+                    + "You will need to reduce the total vertex count in your scene before you can publish."
+                    + "Here's a list of all objects with high vertex counts:\n - " + string.Join("\n - ", response.meshVertCounts.Select(m => $"{m.Item2} - {m.Item1}"))
                 ));
             }
 
@@ -280,18 +325,24 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 SpatialValidator.AddResponse(new SpatialTestResponse(
                     null,
-                    TestResponseType.Fail,
-                    $"Scene {scene.name} has too many unique materials.",
-                    $"Environments are limited to {PerformanceResponse.MAX_UNIQUE_MATERIALS} unique materials. You will need to reduce the number of unique materials in your scene before you can publish."
+                    TestResponseType.Warning,
+                    $"Scene {scene.name} has many unique materials.",
+                    $"It is encouraged for environments to limit unique materials to around {PerformanceResponse.MAX_SUGGESTED_UNIQUE_MATERIALS}. "
+                    + "The more unique materials you have, the less likely it is that your asset will perform well on all platforms. "
+                    + "Look into texture atlasing techniques to share textures and materials across multiple separate objects."
                 ));
             }
+
             if (response.sharedTexturePercent > 1f)
             {
                 SpatialValidator.AddResponse(new SpatialTestResponse(
                     null,
                     TestResponseType.Fail,
                     $"Scene {scene.name} has too many shared textures.",
-                    $"Environments are limited to {PerformanceResponse.MAX_SHARED_TEXTURE_MB} MB of shared textures. You will need to reduce the size of your shared textures before you can publish."
+                    $"Environments are limited to {PerformanceResponse.MAX_SHARED_TEXTURE_MB} MB of shared textures. "
+                    + "You will need to reduce the size of your shared textures before you can publish. "
+                    + "Compressing your textures will help reduce their size."
+                    + "Here's a list of all textures used by the scene:\n - " + string.Join("\n - ", response.textureMemorySizesMB.Select(m => $"{m.Item2:0.00}MB - {m.Item1}"))
                 ));
             }
         }

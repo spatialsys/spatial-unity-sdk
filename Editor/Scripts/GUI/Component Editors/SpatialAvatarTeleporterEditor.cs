@@ -11,9 +11,11 @@ namespace SpatialSys.UnitySDK.Editor
         public void OnSceneGUI()
         {
             var t = target as SpatialAvatarTeleporter;
-
-            SpatialHandles.DrawGroundPoint(t.targetLocation.position, .25f);
-            SpatialHandles.TargetTransformHandle(t.transform, ref t.targetLocation);
+            if (t.targetLocation)
+            {
+                SpatialHandles.DrawGroundPoint(t.targetLocation.position, .25f);
+                SpatialHandles.TargetTransformHandle(t.transform, ref t.targetLocation);
+            }
         }
     }
 }

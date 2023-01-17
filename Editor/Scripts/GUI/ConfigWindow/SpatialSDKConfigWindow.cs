@@ -132,6 +132,9 @@ namespace SpatialSys.UnitySDK.Editor
                 var package = ProjectConfig.AddNewPackage((PackageType)_configCreatePackageTypeDropdown.value);
                 ProjectConfig.SetActivePackage(package);
             };
+            root.Q<Button>("skuCopyButton").clicked += () => {
+                EditorGUIUtility.systemCopyBuffer = ProjectConfig.activePackage.sku;
+            };
             root.Q<Button>("publishPackageButton").clicked += () => {
                 if (EditorApplication.isPlayingOrWillChangePlaymode)
                 {
