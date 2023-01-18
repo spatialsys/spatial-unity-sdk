@@ -23,10 +23,10 @@ namespace SpatialSys.UnitySDK.Editor
         private const int m = 1000000;
         private const int k = 1000;
 
-        public static readonly int MAX_VERTS = 500 * k;
-        public static readonly int MAX_SUGGESTED_UNIQUE_MATERIALS = 50;
-        public static readonly int MAX_SHARED_TEXTURE_MB = 200;
-        public static readonly int MAX_COLLIDER_VERTS = 75 * k;
+        public static readonly int MAX_SUGGESTED_VERTS = 500 * k;
+        public static readonly int MAX_SUGGESTED_UNIQUE_MATERIALS = 75;
+        public static readonly int MAX_SUGGESTED_SHARED_TEXTURE_MB = 200;
+        public static readonly int MAX_SUGGESTED_COLLIDER_VERTS = 75 * k;
 
         public string sceneName;
         public string scenePath;
@@ -55,10 +55,10 @@ namespace SpatialSys.UnitySDK.Editor
         //used in sceneVitals to auto adjust the refresh rate.
         public float responseMiliseconds;
 
-        public float vertPercent => (float)verts / MAX_VERTS;
+        public float vertPercent => (float)verts / MAX_SUGGESTED_VERTS;
         public float uniqueMaterialsPercent => (float)uniqueMaterials / MAX_SUGGESTED_UNIQUE_MATERIALS;
-        public float sharedTexturePercent => (float)sharedTextureMB / MAX_SHARED_TEXTURE_MB;
-        public float meshColliderVertPercent => (float)meshColliderVerts / MAX_COLLIDER_VERTS;
+        public float sharedTexturePercent => (float)sharedTextureMB / MAX_SUGGESTED_SHARED_TEXTURE_MB;
+        public float meshColliderVertPercent => (float)meshColliderVerts / MAX_SUGGESTED_COLLIDER_VERTS;
     }
 
     public class SpatialPerformance
@@ -280,10 +280,10 @@ namespace SpatialSys.UnitySDK.Editor
                 SpatialValidator.AddResponse(new SpatialTestResponse(
                     null,
                     TestResponseType.Warning,
-                    $"Scene {scene.name} has a lot of high density mesh colliders ({response.meshColliderVerts}/{PerformanceResponse.MAX_COLLIDER_VERTS}).",
+                    $"Scene {scene.name} has a lot of high density mesh colliders ({response.meshColliderVerts}/{PerformanceResponse.MAX_SUGGESTED_COLLIDER_VERTS}).",
                     "You should try to use primitives or low density meshes for colliders where possible. "
-                    + "High density collision gemoetry will impact the performance of your environment."
-                    + "Here's a list of all objects with high density mesh colliders:\n - " + string.Join("\n - ", response.meshColliderVertCounts.Select(m => $"{m.Item2} - {m.Item1}"))
+                    + "High density collision gemoetry will impact the performance of your environment.\n"
+                    + "Here's a list of all objects with high density mesh colliders:\n - " + string.Join("\n - ", response.meshColliderVertCounts.Where(m => m.Item2 > 50).Select(m => $"{m.Item2} - {m.Item1}"))
                 ));
             }
 
@@ -313,11 +313,10 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 SpatialValidator.AddResponse(new SpatialTestResponse(
                     null,
-                    TestResponseType.Fail,
+                    TestResponseType.Warning,
                     $"Scene {scene.name} has too many vertices.",
-                    "The scene has too many high detail models. "
-                    + "You will need to reduce the total vertex count in your scene before you can publish."
-                    + "Here's a list of all objects with high vertex counts:\n - " + string.Join("\n - ", response.meshVertCounts.Select(m => $"{m.Item2} - {m.Item1}"))
+                    "The scene has too many high detail models. It is recommended that you stay within the suggested limits or your asset may not perform well on all platforms.\n"
+                    + "Here's a list of all objects with high vertex counts:\n - " + string.Join("\n - ", response.meshVertCounts.Where(m => m.Item2 > 50).Select(m => $"{m.Item2} - {m.Item1}"))
                 ));
             }
 
@@ -337,12 +336,12 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 SpatialValidator.AddResponse(new SpatialTestResponse(
                     null,
-                    TestResponseType.Fail,
+                    TestResponseType.Warning,
                     $"Scene {scene.name} has too many shared textures.",
-                    $"Environments are limited to {PerformanceResponse.MAX_SHARED_TEXTURE_MB} MB of shared textures. "
-                    + "You will need to reduce the size of your shared textures before you can publish. "
-                    + "Compressing your textures will help reduce their size."
-                    + "Here's a list of all textures used by the scene:\n - " + string.Join("\n - ", response.textureMemorySizesMB.Select(m => $"{m.Item2:0.00}MB - {m.Item1}"))
+                    $"Environments are limited to {PerformanceResponse.MAX_SUGGESTED_SHARED_TEXTURE_MB} MB of shared textures. "
+                    + "High memory usage can cause application crashes on lower end devices. It is highly recommended that you stay within the suggested limits. "
+                    + "Compressing your textures will help reduce their size.\n"
+                    + "Here's a list of all textures used by the scene:\n - " + string.Join("\n - ", response.textureMemorySizesMB.Where(m => m.Item2 > 0.1f).Select(m => $"{m.Item2:0.00}MB - {m.Item1}"))
                 ));
             }
         }

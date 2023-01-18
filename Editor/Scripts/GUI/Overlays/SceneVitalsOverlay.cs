@@ -121,7 +121,7 @@ namespace SpatialSys.UnitySDK.Editor
             SetBaseClass(_verticesBlock);
             SetBlockClassFromRatio(_verticesBlock, resp.vertPercent);
             _verticesCount.text = AbbreviateNumber(resp.verts);
-            _verticesMax.text = "/ " + AbbreviateNumber(PerformanceResponse.MAX_VERTS);
+            _verticesMax.text = "/ " + AbbreviateNumber(PerformanceResponse.MAX_SUGGESTED_VERTS);
             _meshIcon.ClearClassList();
             SetBlockClassFromRatio(_meshIcon, resp.vertPercent);
 
@@ -130,7 +130,7 @@ namespace SpatialSys.UnitySDK.Editor
             SetBlockClassFromRatio(_sharedTexturesBlock, resp.sharedTexturePercent);
             SetBlockClassFromRatio(_sharedTexturesSubBlock, resp.sharedTexturePercent);
             _sharedTexturesCount.text = AbbreviateNumber(resp.sharedTextureMB) + "mb";
-            _sharedTexturesMax.text = "/ " + AbbreviateNumber(PerformanceResponse.MAX_SHARED_TEXTURE_MB) + "mb";
+            _sharedTexturesMax.text = "/ " + AbbreviateNumber(PerformanceResponse.MAX_SUGGESTED_SHARED_TEXTURE_MB) + "mb";
             _materialTexturesCount.text = AbbreviateNumber(resp.materialTextureMB) + "mb";
             _lightmapTexturesCount.text = AbbreviateNumber(resp.lightmapTextureMB) + "mb";
             _reflectionProbeBlock.style.display = resp.reflectionProbeMB > 0 ? DisplayStyle.Flex : DisplayStyle.None;

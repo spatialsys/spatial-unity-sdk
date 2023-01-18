@@ -70,11 +70,11 @@
                 <ui:VisualElement name="projectConfig" class="block_white block_base">
                     <ui:Label text="Project Configuration" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
                     <ui:Label text="Projects can have multiple packages that can be published as individual assets to Spatial." display-tooltip-when-elided="true" name="Text" class="blockText" style="margin-bottom: 8px;" />
-                    <ui:DropdownField label="Active Package" index="-1" name="packageConfigDropDown" binding-path="_currentPackageIndex" style="height: 22px; margin-top: 0; width: auto; margin-left: 0; margin-bottom: 0; margin-right: 5px;" />
-                    <ui:VisualElement name="create" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 3px;">
+                    <ui:VisualElement name="create" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 0; margin-bottom: 3px;">
                         <uie:EnumField label="Create New" type="SpatialSys.UnitySDK.Editor.PackageType, SpatialSys.UnitySDK.Editor" value="Environment" name="createPackageTypeDropdown" style="margin-left: 0; margin-right: 5px; margin-top: 0; margin-bottom: 0;" />
                         <ui:Button text="Create" display-tooltip-when-elided="true" name="createPackageButton" style="height: 22px; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; width: auto; min-width: 60px;" />
                     </ui:VisualElement>
+                    <ui:DropdownField label="Active Package" index="-1" name="packageConfigDropDown" binding-path="_currentPackageIndex" style="height: 22px; margin-top: 0; width: auto; margin-left: 0; margin-bottom: 0; margin-right: 0;" />
                 </ui:VisualElement>
                 <ui:VisualElement name="packageConfig" class="block_white block_base">
                     <ui:VisualElement name="header" style="flex-direction: row; margin-bottom: 8px;">
