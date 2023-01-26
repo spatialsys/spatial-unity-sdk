@@ -30,7 +30,7 @@ namespace SpatialSys.UnitySDK.Editor
             long totalSize = dependencyInfos.Sum(d => d.Item2.Length);
             if (totalSize > BuildUtility.MAX_PACKAGE_SIZE)
             {
-                var orderedDependencies = dependencyInfos.OrderByDescending(d => d.Item2.Length).Select(d => $"{d.Item2.Length / 1024 / 1024f:0.0000}MB - {d.Item1}");
+                var orderedDependencies = dependencyInfos.OrderByDescending(d => d.Item2.Length).Select(d => $"{d.Item2.Length / 1024 / 1024f:0.0000}MB - {d.Item1}").Take(25);
                 SpatialValidator.AddResponse(
                     new SpatialTestResponse(
                         null,
@@ -38,8 +38,8 @@ namespace SpatialSys.UnitySDK.Editor
                         "Package is too large to upload to Spatial",
                         $"The package is {totalSize / 1024f / 1024f}MB, but the maximum size is {BuildUtility.MAX_PACKAGE_SIZE / 1024 / 1024}MB. " +
                         "Try to reduce the size of source assets referenced by scenes in your project. " +
-                        "Sometimes, texture source assets can be very large on disk, and it can help to downscale them." +
-                        $"Here's a list of assets ordered by largest to smallest:\n - {string.Join("\n - ", orderedDependencies)}"
+                        "Sometimes, texture source assets can be very large on disk, and it can help to downscale them. " +
+                        $"Here's a list of the largest assets in the project:\n - {string.Join("\n - ", orderedDependencies)}"
                     )
                 );
             }
@@ -81,7 +81,7 @@ namespace SpatialSys.UnitySDK.Editor
                         null,
                         TestResponseType.Fail,
                         "Package contains files with paths that are too long",
-                        "This package contains files that have asset paths that are too long. " + 
+                        "This package contains files that have asset paths that are too long. " +
                         $"To be able to process this package on a windows machine, path lengths cannot exceed {MAX_PATH_LENGTH}. " +
                         $"Try to collapse folder hierarchies or give assets shorter file names.\n - {string.Join("\n - ", longPathDependencies)}"
                     )

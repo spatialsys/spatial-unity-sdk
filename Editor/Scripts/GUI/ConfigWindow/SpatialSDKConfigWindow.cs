@@ -30,6 +30,22 @@ namespace SpatialSys.UnitySDK.Editor
         private VisualElement _packageConfigSKUElement;
 
         // Issue Tab Elements
+        private const string _issuesContainerTemplatePath = "Packages/io.spatial.unitysdk/Editor/Scripts/GUI/ConfigWindow/IssueElement/SpatialValidatorIssueElement.uxml";
+        private VisualTreeAsset issueContainerTemplate
+        {
+            get
+            {
+                if (_issueContainerTemplate == null)
+                {
+                    _issueContainerTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(_issuesContainerTemplatePath);
+                    if (_issueContainerTemplate == null)
+                    {
+                        Debug.LogError("Issue Template could not be found. Your Spatial SDK installation may be corrupted.");
+                    }
+                }
+                return _issueContainerTemplate;
+            }
+        }
         private VisualTreeAsset _issueContainerTemplate;
         private VisualElement _issueListParent;
         private VisualElement _selectedIssue;
@@ -98,7 +114,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             // Import UXML
             var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/io.spatial.unitysdk/Editor/Scripts/GUI/ConfigWindow/SpatialSDKConfigWindow.uxml");
-            _issueContainerTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/io.spatial.unitysdk/Editor/Scripts/GUI/ConfigWindow/IssueElement/SpatialValidatorIssueElement.uxml");
+            _issueContainerTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(_issuesContainerTemplatePath);
             VisualElement element = visualTree.Instantiate();
             if (!EditorGUIUtility.isProSkin)
             {
@@ -314,7 +330,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             foreach (SpatialTestResponse response in responses)
             {
-                VisualElement element = _issueContainerTemplate.Instantiate();
+                VisualElement element = issueContainerTemplate.Instantiate();
                 if (EditorStyles.label.normal.textColor.r < .5f)//are we in light mode?
                 {
                     element.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>("Packages/io.spatial.unitysdk/Editor/Scripts/GUI/ConfigWindow/SpatialValidatorWindow_LightModeOverride.uss"));
