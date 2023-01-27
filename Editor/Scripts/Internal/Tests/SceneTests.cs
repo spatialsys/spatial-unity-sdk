@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.Video;
 using UnityEngine.SceneManagement;
 using UnityEditor.SceneManagement;
+using UnityEditor;
+using System.IO;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -110,6 +112,24 @@ namespace SpatialSys.UnitySDK.Editor
                     "Video Players are unsupported on web",
                     "Currently, embedded video players are not supported on web, but they do work on other platforms. " +
                     "If this is intended, you can ignore this warning. We may add support for video players on web in the future."
+                ));
+            }
+        }
+
+        // This isn't a test, but just something we want to enforce
+        // If auto-generation is on, building bundles will take a really long time if GI baking takes a long time
+        [SceneTest]
+        public static void DisableLightmapAutoGeneration(Scene scene)
+        {
+            // Disable auto generation of lightmaps to prevent really long bundle build times
+            if (Lightmapping.giWorkflowMode != Lightmapping.GIWorkflowMode.OnDemand)
+            {
+                Lightmapping.giWorkflowMode = Lightmapping.GIWorkflowMode.OnDemand;
+                SpatialValidator.AddResponse(new SpatialTestResponse(
+                    AssetDatabase.LoadAssetAtPath<SceneAsset>(scene.path),
+                    TestResponseType.Warning,
+                    $"Lightmapping auto generation was turned off for {Path.GetFileNameWithoutExtension(scene.path)}",
+                    "This prevents issues with long build times if GI baking takes a long time."
                 ));
             }
         }

@@ -262,10 +262,14 @@ namespace SpatialSys.UnitySDK.Editor
                 {
                     string scenePath = AssetDatabase.GetAssetPath(variant.scene);
                     AssetImporter importer = AssetImporter.GetAtPath(scenePath);
-                    importer.assetBundleName = GetBundleNameForPackageAsset(config.name, variant.name, variant.id);
+                    importer.assetBundleName = GetBundleNameForPackageAsset(config.packageName, variant.name, variant.id);
+                    UnityEditor.EditorUtility.SetDirty(config);
                     AssetDatabase.SaveAssetIfDirty(importer);
                 }
             }
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
 
         public static string GetBundleNameForPackageAsset(string packageName, string variantName, string variantID)
