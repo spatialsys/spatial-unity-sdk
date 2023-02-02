@@ -13,7 +13,14 @@ namespace SpatialSys.UnitySDK.Editor
             var t = target as SpatialEntrancePoint;
 
             SpatialHandles.DrawGroundPoint(t.transform.position, .25f);
-            SpatialHandles.RadiusHandle(t.transform.position, ref t.radius);
+
+            Vector3 dir = t.transform.forward;
+            if (t.transform.forward == Vector3.up || t.transform.forward == Vector3.down)
+            {
+                dir = t.transform.right;
+            }
+            SpatialHandles.RadiusAndDirectionHandle(t.transform.position, ref t.radius, ref dir);
+            t.transform.forward = dir;
         }
     }
 }

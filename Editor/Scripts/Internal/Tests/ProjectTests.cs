@@ -37,9 +37,9 @@ namespace SpatialSys.UnitySDK.Editor
                         TestResponseType.Fail,
                         "Package is too large to upload to Spatial",
                         $"The package is {totalSize / 1024f / 1024f}MB, but the maximum size is {BuildUtility.MAX_PACKAGE_SIZE / 1024 / 1024}MB. " +
-                        "Try to reduce the size of source assets referenced by scenes in your project. " +
-                        "Sometimes, texture source assets can be very large on disk, and it can help to downscale them. " +
-                        $"Here's a list of the largest assets in the project:\n - {string.Join("\n - ", orderedDependencies)}"
+                        "The size of the package is equal to the raw file size of all your assets which get uploaded to Spatial. Import settings will not change this. " +
+                        "Sometimes, texture and audio source assets can be very large on disk, and it can help to downscale them or re-export them in a different format." +
+                        $"Here's a list of assets ordered by largest to smallest:\n - {string.Join("\n - ", orderedDependencies)}"
                     )
                 );
             }

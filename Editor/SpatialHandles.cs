@@ -23,30 +23,86 @@ namespace SpatialSys.UnitySDK.Editor
         //i find most of the handle CAPS ugly so i hide them.
         public static Color handleClear = new Color(0, 0, 0, 0);
 
-        public static void RadiusHandle(Vector3 center, ref float target)
+        /// <summary>
+        /// A flat gizmo that controls radius and a direction. 
+        /// </summary>
+        public static void RadiusAndDirectionHandle(Vector3 center, ref float radiusTarget, ref Vector3 directionTarget)
         {
-            //TODO: maybe expose the size of the "nub", would add context to the .31 below...
-            DrawRadiusHandle(center, target);
-            FloatHandleSlider(ref target, center, Vector3.right, .31f);//radius of white nub * 2 + .1
+            directionTarget = new Vector3(directionTarget.x, 0f, directionTarget.z).normalized;
+            DrawRadiusAndDirectionHandle(center, radiusTarget, directionTarget, .2f);
+            FloatAndFlatDirectionSlider(ref radiusTarget, ref directionTarget, center, .4f);
         }
 
-        private static void DrawRadiusHandle(Vector3 center, float radius)
+        private static void DrawRadiusAndDirectionHandle(Vector3 center, float radius, Vector3 direction, float nubSize)
         {
             Handles.zTest = UnityEngine.Rendering.CompareFunction.LessEqual;
-            DrawRadiusElement(center, radius, handleWhite, handleBlack);
+            DrawRadiusAndDirectionElement(center, radius, direction, handleWhite, handleBlack, nubSize);
             Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
-            DrawRadiusElement(center, radius, handleWhiteFade, handleBlackFade);
+            DrawRadiusAndDirectionElement(center, radius, direction, handleWhiteFade, handleBlackFade, nubSize);
         }
 
-        private static void DrawRadiusElement(Vector3 center, float radius, Color foregroundColor, Color backgroundColor)
+        private static void DrawRadiusAndDirectionElement(Vector3 center, float radius, Vector3 direction, Color foregroundColor, Color backgroundColor, float nubSize)
         {
-            Vector3 handlePos = center + Vector3.right * radius;
+            float largeNubSize = nubSize;
+            float smallNubSize = nubSize - .05f;
+            Vector3 nubPosition = center + direction * radius;
+
             Handles.color = backgroundColor;
             Handles.DrawWireDisc(center, Vector3.up, radius, 10f);
-            Handles.DrawSolidDisc(handlePos, HandleUtility.GUIPointToWorldRay(HandleUtility.WorldToGUIPoint(handlePos)).direction, HandleUtility.GetHandleSize(handlePos) * .2f);
+            Handles.DrawSolidDisc(nubPosition, HandleUtility.GUIPointToWorldRay(HandleUtility.WorldToGUIPoint(nubPosition)).direction, HandleUtility.GetHandleSize(nubPosition) * largeNubSize);
+            Handles.ArrowHandleCap(-1, nubPosition, Quaternion.LookRotation(direction), HandleUtility.GetHandleSize(nubPosition) * largeNubSize * 4f, EventType.Repaint);
+
             Handles.color = foregroundColor;
-            Handles.DrawSolidDisc(handlePos, HandleUtility.GUIPointToWorldRay(HandleUtility.WorldToGUIPoint(handlePos)).direction, HandleUtility.GetHandleSize(handlePos) * .15f);
             Handles.DrawWireDisc(center, Vector3.up, radius, 2f);
+            Handles.DrawSolidDisc(nubPosition, HandleUtility.GUIPointToWorldRay(HandleUtility.WorldToGUIPoint(nubPosition)).direction, HandleUtility.GetHandleSize(nubPosition) * smallNubSize);
+        }
+
+        public static void RadiusHandle(Vector3 center, ref float target)
+        {
+            FloatHandleSlider(ref target, center, Vector3.right, .3f);
+            FloatHandleSlider(ref target, center, Vector3.left, .3f);
+            FloatHandleSlider(ref target, center, Vector3.forward, .3f);
+            FloatHandleSlider(ref target, center, Vector3.back, .3f);
+            DrawRadiusHandle(center, target, .15f);
+        }
+
+        private static void DrawRadiusHandle(Vector3 center, float radius, float nubSize)
+        {
+            Handles.zTest = UnityEngine.Rendering.CompareFunction.LessEqual;
+            DrawRadiusElement(center, radius, handleWhite, handleBlack, nubSize);
+            Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
+            DrawRadiusElement(center, radius, handleWhiteFade, handleBlackFade, nubSize);
+        }
+
+        private static void DrawRadiusElement(Vector3 center, float radius, Color foregroundColor, Color backgroundColor, float nubSize)
+        {
+            float largeNubSize = nubSize;
+            float smallNubSize = nubSize - .05f;
+
+            Vector3 nubPosition;
+            Handles.color = backgroundColor;
+            Handles.DrawWireDisc(center, Vector3.up, radius, 10f);
+
+            nubPosition = center + Vector3.forward * radius;
+            Handles.DrawSolidDisc(nubPosition, HandleUtility.GUIPointToWorldRay(HandleUtility.WorldToGUIPoint(nubPosition)).direction, HandleUtility.GetHandleSize(nubPosition) * largeNubSize);
+            nubPosition = center + Vector3.back * radius;
+            Handles.DrawSolidDisc(nubPosition, HandleUtility.GUIPointToWorldRay(HandleUtility.WorldToGUIPoint(nubPosition)).direction, HandleUtility.GetHandleSize(nubPosition) * largeNubSize);
+            nubPosition = center + Vector3.left * radius;
+            Handles.DrawSolidDisc(nubPosition, HandleUtility.GUIPointToWorldRay(HandleUtility.WorldToGUIPoint(nubPosition)).direction, HandleUtility.GetHandleSize(nubPosition) * largeNubSize);
+            nubPosition = center + Vector3.right * radius;
+            Handles.DrawSolidDisc(nubPosition, HandleUtility.GUIPointToWorldRay(HandleUtility.WorldToGUIPoint(nubPosition)).direction, HandleUtility.GetHandleSize(nubPosition) * largeNubSize);
+
+            Handles.color = foregroundColor;
+            Handles.DrawWireDisc(center, Vector3.up, radius, 2f);
+
+            nubPosition = center + Vector3.forward * radius;
+            Handles.DrawSolidDisc(nubPosition, HandleUtility.GUIPointToWorldRay(HandleUtility.WorldToGUIPoint(nubPosition)).direction, HandleUtility.GetHandleSize(nubPosition) * smallNubSize);
+            nubPosition = center + Vector3.back * radius;
+            Handles.DrawSolidDisc(nubPosition, HandleUtility.GUIPointToWorldRay(HandleUtility.WorldToGUIPoint(nubPosition)).direction, HandleUtility.GetHandleSize(nubPosition) * smallNubSize);
+            nubPosition = center + Vector3.left * radius;
+            Handles.DrawSolidDisc(nubPosition, HandleUtility.GUIPointToWorldRay(HandleUtility.WorldToGUIPoint(nubPosition)).direction, HandleUtility.GetHandleSize(nubPosition) * smallNubSize);
+            nubPosition = center + Vector3.right * radius;
+            Handles.DrawSolidDisc(nubPosition, HandleUtility.GUIPointToWorldRay(HandleUtility.WorldToGUIPoint(nubPosition)).direction, HandleUtility.GetHandleSize(nubPosition) * smallNubSize);
         }
 
         public static void TargetTransformHandle(Transform parent, ref Transform target)
@@ -213,6 +269,21 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
+        private static void FloatAndFlatDirectionSlider(ref float target, ref Vector3 direction, Vector3 origin, float handleSize)
+        {
+            Handles.zTest = UnityEngine.Rendering.CompareFunction.Always;
+            Handles.color = handleClear;
+            Vector3 startPos = origin + direction.normalized * target;
+            EditorGUI.BeginChangeCheck();
+            Vector3 newPos = Handles.Slider2D(startPos, Vector3.up, Vector3.forward, Vector3.right, HandleUtility.GetHandleSize(startPos) * handleSize, Handles.SphereHandleCap, Vector2.zero * .01f);
+            newPos.y = startPos.y;
+            if (EditorGUI.EndChangeCheck())
+            {
+                target = Vector3.Distance(origin, newPos);
+                direction = (newPos - origin).normalized;
+            }
+        }
+
         private static void PositionHandleSlider(ref Transform target, Vector3 direction, float handleOffset, float handleSize = .15f)
         {
             Handles.zTest = UnityEngine.Rendering.CompareFunction.Always;
@@ -232,7 +303,7 @@ namespace SpatialSys.UnitySDK.Editor
             Handles.zTest = UnityEngine.Rendering.CompareFunction.Always;
             Handles.color = handleClear;
             EditorGUI.BeginChangeCheck();
-            Vector4 newPos = Handles.FreeMoveHandle(target.position, Quaternion.identity, HandleUtility.GetHandleSize(target.position) * handleSize, Vector3.zero, Handles.SphereHandleCap);
+            Vector3 newPos = Handles.FreeMoveHandle(target.position, Quaternion.identity, HandleUtility.GetHandleSize(target.position) * handleSize, Vector3.zero, Handles.SphereHandleCap);
             if (EditorGUI.EndChangeCheck())
             {
                 Undo.RecordObject(target, "Change position");
