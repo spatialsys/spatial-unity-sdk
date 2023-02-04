@@ -183,13 +183,24 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static void PackageProject(string outputPath)
         {
+            // TODO: we can also exclude dependencies from packages that are included in the builder project by default
+            List<string> dependencies = AssetDatabase.GetDependencies(AssetDatabase.GetAssetPath(ProjectConfig.activePackage))
+                .Where(d => !d.StartsWith("Packages/io.spatial.unitysdk")) // we already have these
+                .ToList();
+
+            // For `.obj` files in dependencies, we need to also manually include the `.mtl` file as a dependency
+            // or else when the package extracted into the builder project, the materials will not be the same
+            // as they were in the original project.
+            string[] additionalMtlDependencies = dependencies
+                .Where(d => d.EndsWith(".obj"))
+                .Select(d => d.Replace(".obj", ".mtl"))
+                .Where(d => File.Exists(d))
+                .ToArray();
+            dependencies.AddRange(additionalMtlDependencies);
+
             // Export all referenced assets from active package as a unity package
             // NOTE: Intentionally not including the ProjectConfig since that includes all packages in this project
-            AssetDatabase.ExportPackage(
-                new string[] { AssetDatabase.GetAssetPath(ProjectConfig.activePackage) },
-                outputPath,
-                ExportPackageOptions.Recurse | ExportPackageOptions.IncludeDependencies
-            );
+            AssetDatabase.ExportPackage(dependencies.ToArray(), outputPath);
         }
 
         public static void PackageActiveScene(string outputPath)

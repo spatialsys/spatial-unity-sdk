@@ -228,6 +228,7 @@ namespace SpatialSys.UnitySDK.Editor
                     name = "DefaultTexturePlatform",
                     maxTextureSize = width,
                     format = TextureImporterFormat.RGB24,
+                    textureCompression = TextureImporterCompression.Uncompressed,
                 });
                 AssetDatabase.ImportAsset(path);
             }
