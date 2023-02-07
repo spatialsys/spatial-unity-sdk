@@ -21,9 +21,10 @@ namespace SpatialSys.UnitySDK
 
         public Volume[] renderingVolumes;
 
-        // TODO: Add other config data.
-        // TODO: Have config data per variant.
+        // TODO: Have fog setting per variant.
         public bool enableFog;
+
+        public EnvironmentSettings environmentSettings;
 
         public SpatialEvent[] spatialEvents;
     }

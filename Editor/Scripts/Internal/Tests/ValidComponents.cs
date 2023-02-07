@@ -101,6 +101,9 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(SpriteRenderer),
             typeof(TrailRenderer),
 
+            // Particles
+            typeof(ParticleSystemForceField),
+
             // Animation
             typeof(Animator),
 

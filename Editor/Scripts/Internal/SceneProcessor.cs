@@ -79,6 +79,10 @@ namespace SpatialSys.UnitySDK.Editor
             data.renderingVolumes = GameObject.FindObjectsOfType<UnityEngine.Rendering.Volume>();
             data.enableFog = RenderSettings.fog;
 
+            // Environment Setting
+            SpatialEnvironmentSettingsOverrides environmentSettingsOverrides = GameObject.FindObjectOfType<SpatialEnvironmentSettingsOverrides>();
+            data.environmentSettings = environmentSettingsOverrides != null ? environmentSettingsOverrides.environmentSettings : new EnvironmentSettings();
+
             //animators
             Animator[] allAnimators = GameObject.FindObjectsOfType<Animator>();
             List<SpatialSyncedAnimator> foundSyncedAnimators = new List<SpatialSyncedAnimator>();

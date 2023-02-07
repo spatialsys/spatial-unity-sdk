@@ -23,6 +23,8 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static IPromise BuildAndUploadForSandbox()
         {
+            EditorSceneManager.SaveOpenScenes();
+
             // Make sure the active package is set to the one that contains the active scene
             SceneAsset currentScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
             ProjectConfig.SetActivePackageBySourceAsset(currentScene);
@@ -92,6 +94,8 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static IPromise PackageForPublishing()
         {
+            EditorSceneManager.SaveOpenScenes();
+
             // Validate package
             if (!SpatialValidator.RunTestsOnProject(ValidationContext.Publishing))
             {
