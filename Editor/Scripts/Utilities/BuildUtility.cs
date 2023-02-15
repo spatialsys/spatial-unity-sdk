@@ -97,7 +97,7 @@ namespace SpatialSys.UnitySDK.Editor
             EditorSceneManager.SaveOpenScenes();
 
             // Validate package
-            if (!SpatialValidator.RunTestsOnProject(ValidationContext.Publishing))
+            if (!SpatialValidator.RunTestsOnPackage(ValidationContext.Publishing))
             {
                 SpatialSDKConfigWindow.OpenWindow("issues");
                 return Promise.Rejected(new Exception("Package has errors"));

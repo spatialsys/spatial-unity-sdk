@@ -16,6 +16,7 @@ namespace SpatialSys.UnitySDK.Editor
         private static bool _isOpen = false;
 
         private const string CONFIG_TAB_NAME = "config";
+        private const string ISSUES_TAB_NAME = "issues";
         private const string PROJECT_CONFIG_NULL_ELEMENT_NAME = "configNull";
         private const string PROJECT_CONFIG_ELEMENT_NAME = "projectConfig";
         private const string PACKAGE_CONFIG_ELEMENT_NAME = "packageConfig";
@@ -124,7 +125,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             root.Query<Button>("accountButton").First().clicked += () => SetTab("account");
             root.Query<Button>("configButton").First().clicked += () => SetTab(CONFIG_TAB_NAME);
-            root.Query<Button>("issuesButton").First().clicked += () => SetTab("issues");
+            root.Query<Button>("issuesButton").First().clicked += () => SetTab(ISSUES_TAB_NAME);
             root.Query<Button>("helpButton").First().clicked += () => SetTab("help");
 
             // Account
@@ -229,7 +230,7 @@ namespace SpatialSys.UnitySDK.Editor
             // Tab contents
             rootVisualElement.Q("account").style.display = DisplayStyle.None;
             rootVisualElement.Q(CONFIG_TAB_NAME).style.display = DisplayStyle.None;
-            rootVisualElement.Q("issues").style.display = DisplayStyle.None;
+            rootVisualElement.Q(ISSUES_TAB_NAME).style.display = DisplayStyle.None;
             rootVisualElement.Q("help").style.display = DisplayStyle.None;
 
             rootVisualElement.Q(tab).style.display = DisplayStyle.Flex;
@@ -241,8 +242,7 @@ namespace SpatialSys.UnitySDK.Editor
 
                 _configActivePackageDropdown.index = ProjectConfig.activePackageIndex;
             }
-
-            if (tab == "issues")
+            else if (tab == ISSUES_TAB_NAME)
             {
                 LoadIssues();
             }
@@ -314,7 +314,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         private void RefreshIssuesButton()
         {
-            SpatialValidator.RunTestsOnProject(ValidationContext.ManualRun);
+            SpatialValidator.RunTestsOnPackage(ValidationContext.ManualRun);
             LoadIssues();
         }
 
@@ -331,7 +331,7 @@ namespace SpatialSys.UnitySDK.Editor
             foreach (SpatialTestResponse response in responses)
             {
                 VisualElement element = issueContainerTemplate.Instantiate();
-                if (EditorStyles.label.normal.textColor.r < .5f)//are we in light mode?
+                if (!EditorGUIUtility.isProSkin)
                 {
                     element.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>("Packages/io.spatial.unitysdk/Editor/Scripts/GUI/ConfigWindow/SpatialValidatorWindow_LightModeOverride.uss"));
                 }
@@ -466,7 +466,7 @@ namespace SpatialSys.UnitySDK.Editor
         {
             if (_elementToReponse.TryGetValue(_selectedIssue, out SpatialTestResponse response))
             {
-                response.InvokeFix();//this might switch the scene.
+                response.InvokeAutoFix(); // This might switch the scene.
                 if (response.responseType == TestResponseType.Fail)
                 {
                     _errorIssues.Remove(_selectedIssue);

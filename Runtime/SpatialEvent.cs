@@ -1,8 +1,7 @@
-using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-using System.Linq;
 
 namespace SpatialSys.UnitySDK
 {
@@ -14,6 +13,8 @@ namespace SpatialSys.UnitySDK
         public bool unityEventIsSynced;
         public UnityEvent unityEvent;
         public AnimatorEvent animatorEvent;
+        public QuestEvent questEvent;
+
         public bool isSyncedEvent => (unityEventIsSynced || animatorEvent.events.Any(e => e.syncedAnimator != null));
     }
 
@@ -42,6 +43,34 @@ namespace SpatialSys.UnitySDK
             Set,
             Add,
             Multiply,
+        }
+    }
+
+    [System.Serializable]
+    public class QuestEvent
+    {
+        public List<QuestEventEntry> events;
+
+        [System.Serializable]
+        public class QuestEventEntry
+        {
+            public uint questID;
+            public QuestEventType questEventType;
+            public uint taskID;  // Only used if quest event is "Task" type
+        }
+
+        public static bool QuestEventHasTaskParam(QuestEventType questEventType)
+        {
+            return (questEventType == QuestEventType.AddTaskProgress || questEventType == QuestEventType.CompleteTask);
+        }
+
+        public enum QuestEventType
+        {
+            Unset = 0,
+            StartQuest = 1,
+            ResetQuest = 2,
+            AddTaskProgress = 3, // Task is auto-completed if progress is >= task.progressSteps
+            CompleteTask = 4,
         }
     }
 }

@@ -32,13 +32,13 @@ namespace SpatialSys.UnitySDK.Editor
         {
             CreateGameObject(menuCommand, "Entrance Point").AddComponent<SpatialEntrancePoint>();
         }
-        
+
         [MenuItem("GameObject/Spatial/Thumbnail Camera", false, 1)]
         static void CreateThumbnailCamera(MenuCommand menuCommand)
         {
             CreateGameObject(menuCommand, "Thumbnail Camera").AddComponent<SpatialThumbnailCamera>();
         }
-        
+
         // Interactivity
         [MenuItem("GameObject/Spatial/Seat Hotspot", false, 20)]
         static void CreateSeatHotspot(MenuCommand menuCommand)
@@ -51,7 +51,7 @@ namespace SpatialSys.UnitySDK.Editor
         {
             CreateGameObjectWithTrigger(menuCommand, "Trigger Event").AddComponent<SpatialTriggerEvent>();
         }
-        
+
         [MenuItem("GameObject/Spatial/Avatar Teleporter", false, 22)]
         static void CreateAvatarTeleporter(MenuCommand menuCommand)
         {
@@ -75,6 +75,24 @@ namespace SpatialSys.UnitySDK.Editor
         static void CreateProjectorSurface(MenuCommand menuCommand)
         {
             CreateGameObjectWithTrigger(menuCommand, "Projector Surface").AddComponent<SpatialProjectorSurface>();
+        }
+
+        [MenuItem("GameObject/Spatial/Interactable", false, 43)]
+        static void CreateInteractable(MenuCommand menuCommand)
+        {
+            CreateGameObject(menuCommand, "Interactable").AddComponent<SpatialInteractable>();
+        }
+
+        [MenuItem("GameObject/Spatial/Point of Interest", false, 44)]
+        static void CreatePointOfInterest(MenuCommand menuCommand)
+        {
+            CreateGameObject(menuCommand, "Point of Interest").AddComponent<SpatialPointOfInterest>();
+        }
+
+        [MenuItem("GameObject/Spatial/Quest", false, 44)]
+        static void CreateQuest(MenuCommand menuCommand)
+        {
+            CreateGameObject(menuCommand, "Quest").AddComponent<SpatialQuest>();
         }
     }
 }

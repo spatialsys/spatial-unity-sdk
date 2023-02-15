@@ -26,9 +26,9 @@ namespace SpatialSys.UnitySDK
         public SpatialEvent onEnterEvent;
         public SpatialEvent onExitEvent;
 
-        [FormerlySerializedAs("onEnter"), Obsolete("Use onEnterEvent instead.")]
+        [HideInInspector, FormerlySerializedAs("onEnter"), Obsolete("Use onEnterEvent instead.")]
         public UnityEvent deprecated_onEnter;
-        [FormerlySerializedAs("onEnter"), Obsolete("Use onExitEvent instead.")]
+        [HideInInspector, FormerlySerializedAs("onEnter"), Obsolete("Use onExitEvent instead.")]
         public UnityEvent deprecated_onExit;
 
         private void Reset()

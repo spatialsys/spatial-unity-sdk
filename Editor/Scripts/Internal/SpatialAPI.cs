@@ -47,6 +47,7 @@ namespace SpatialSys.UnitySDK.Editor
             request.Body = new CreateOrUpdatePackageRequest() {
                 sku = sku,
                 unityVersion = Application.unityVersion,
+                spatialSdkVersion = UpgradeUtility.currentVersion,
                 packageSource = PackageSourceToSAPIPackageSource(PackageSource.Unity),
                 packageType = PackageSourceToSAPIPackageType(packageType)
             };
@@ -59,6 +60,7 @@ namespace SpatialSys.UnitySDK.Editor
         {
             public string sku;
             public string unityVersion;
+            public string spatialSdkVersion;
             public string packageSource;
             public string packageType;
         }
@@ -161,7 +163,7 @@ namespace SpatialSys.UnitySDK.Editor
                     return true;
                 }
             }
-            catch {}
+            catch { }
 
             error = new ErrorResponse.Error();
             return false;

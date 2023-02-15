@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.Video;
 using UnityEngine.AI;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.UI;
+using UnityEngine.Video;
 using System.Linq;
+using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -15,6 +16,11 @@ namespace SpatialSys.UnitySDK.Editor
         public static HashSet<Type> allowedComponentTypes = new HashSet<Type>() {
             // Unity
             typeof(Transform),
+
+            // Visual Scripting
+            typeof(Variables),
+            typeof(ScriptMachine),
+            typeof(SceneVariables),
 
             // Audio
             typeof(AudioChorusFilter),
@@ -30,50 +36,28 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(VideoPlayer),
 
             // UI
-            typeof(RectTransform),
+            typeof(AspectRatioFitter),
+            typeof(BaseMeshEffect), // Includes effects like shadow, outline, etc.
             typeof(Canvas),
             typeof(CanvasGroup),
             typeof(CanvasRenderer),
-            typeof(Button),
-            typeof(Dropdown),
-            typeof(Graphic),
-            typeof(Image),
-            typeof(InputField),
-            typeof(Mask),
-            typeof(MaskableGraphic),
-            typeof(RawImage),
-            typeof(RectMask2D),
-            typeof(Scrollbar),
-            typeof(ScrollRect),
-            typeof(Selectable),
-            typeof(Slider),
-            typeof(Text),
-            typeof(Toggle),
-            typeof(ToggleGroup),
-            typeof(AspectRatioFitter),
             typeof(CanvasScaler),
             typeof(ContentSizeFitter),
-            typeof(GridLayoutGroup),
-            typeof(HorizontalLayoutGroup),
-            typeof(HorizontalOrVerticalLayoutGroup),
+            typeof(Graphic), // Mostly visual UI components are derived from this (image, text, etc)
+            typeof(GraphicRaycaster),
             typeof(LayoutElement),
             typeof(LayoutGroup),
-            typeof(VerticalLayoutGroup),
-            typeof(BaseMeshEffect),
-            typeof(Outline),
-            typeof(PositionAsUV1),
-            typeof(Shadow),
-            typeof(GraphicRaycaster),
+            typeof(Mask),
+            typeof(RectMask2D),
+            typeof(ScrollRect),
+            typeof(Selectable), // Most interactive UI components are derived from this (button, slider, dropdown, etc)
+            typeof(ToggleGroup),
 
             // Physics
             typeof(Collider),
             typeof(Rigidbody),
             typeof(Cloth),
-            typeof(CharacterJoint),
-            typeof(ConfigurableJoint),
-            typeof(FixedJoint),
-            typeof(HingeJoint),
-            typeof(SpringJoint),
+            typeof(Joint),
             typeof(ConstantForce),
 
             // Rendering
@@ -81,8 +65,10 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(Light),
             typeof(LightProbeGroup),
             typeof(LightProbeProxyVolume),
+            typeof(ParticleSystem),
             typeof(Projector),
             typeof(ReflectionProbe),
+            typeof(Renderer),
             typeof(UniversalAdditionalCameraData),
             typeof(UniversalAdditionalLightData),
             typeof(Volume),
@@ -91,15 +77,6 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(MeshFilter),
             typeof(Terrain),
             typeof(Tree),
-            // Rendering.Renderers
-            typeof(BillboardRenderer),
-            typeof(LineRenderer),
-            typeof(MeshRenderer),
-            typeof(ParticleSystem),
-            typeof(ParticleSystemRenderer),
-            typeof(SkinnedMeshRenderer),
-            typeof(SpriteRenderer),
-            typeof(TrailRenderer),
 
             // Particles
             typeof(ParticleSystemForceField),
@@ -120,19 +97,20 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(SpatialComponentBase),
         };
 
-        [ComponentTest(typeof(UnityEngine.Object))]
-        public static void IsValidComponent(UnityEngine.Object target)
+        [ComponentTest(typeof(Component))]
+        public static void TestValidComponent(Component target)
         {
             // Components can be "null" if the script is missing; These are automatically removed during scene build
             if (target == null)
                 return;
 
+            Type targetType = target.GetType();
+
             // Ignore this component if it has a [EditorOnly] attribute. These are automatically removed during scene build
-            if (target.GetType().GetCustomAttributes(typeof(EditorOnlyAttribute), true).Length > 0)
+            if (targetType.GetCustomAttributes(typeof(EditorOnlyAttribute), true).Length > 0)
                 return;
 
-            Type targetType = target.GetType();
-            if (!allowedComponentTypes.Any(t => t == targetType || t.IsAssignableFrom(targetType)))
+            if (!allowedComponentTypes.Any(t => t.IsAssignableFrom(targetType)))
             {
                 // Maybe do some type specific messages. For example reasure people that we have an event system active etc.
                 SpatialTestResponse resp = new SpatialTestResponse(

@@ -23,16 +23,10 @@ namespace SpatialSys.UnitySDK.Editor
             SpatialSDKConfigWindow.OpenWindow("help");
         }
 
-        [MenuItem("Spatial SDK/Test Active Scene")]
-        public static void RunTests()
+        [MenuItem("Spatial SDK/Visual Scripting/Regenerate Nodes")]
+        public static void RegenerateNodes()
         {
-            SpatialValidator.RunTestsOnActiveScene(ValidationContext.ManualRun);
-        }
-
-        [MenuItem("Spatial SDK/Test Project")]
-        public static void RunTestsProject()
-        {
-            SpatialValidator.RunTestsOnProject(ValidationContext.ManualRun);
+            NodeGeneration.SetTypesAndAssemblies();
         }
 
         [MenuItem("Spatial SDK/Check for updates...")]

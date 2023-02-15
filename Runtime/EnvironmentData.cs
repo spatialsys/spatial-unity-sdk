@@ -16,6 +16,9 @@ namespace SpatialSys.UnitySDK
         public SpatialCameraPassthrough[] cameraPassthroughs;
         public SpatialThumbnailCamera thumbnailCamera;
         public SpatialProjectorSurface[] projectorSurfaces;
+        public SpatialInteractable[] interactables;
+        public SpatialPointOfInterest[] pointsOfInterest;
+        public SpatialQuest[] quests;
 
         public Animator[] unsyncedAnimators;
 

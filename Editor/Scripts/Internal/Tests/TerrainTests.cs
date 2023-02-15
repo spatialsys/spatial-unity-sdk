@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace SpatialSys.UnitySDK.Editor
@@ -7,7 +5,7 @@ namespace SpatialSys.UnitySDK.Editor
     public class TerrainTests
     {
         [ComponentTest(typeof(Terrain))]
-        public static void WarnAboutTerrainResolution(UnityEngine.Object target)
+        public static void WarnAboutTerrainResolution(Component target)
         {
             Terrain terrain = target as Terrain;
 

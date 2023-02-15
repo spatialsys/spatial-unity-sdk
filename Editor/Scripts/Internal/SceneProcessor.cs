@@ -25,7 +25,7 @@ namespace SpatialSys.UnitySDK.Editor
                 return;
             }
 
-            // Delete all components that are tagged with the EditorOnly attribute
+            // Delete all components that are tagged with the EditorOnly attribute or the "EditorOnly" tag
             Scene activeScene = SceneManager.GetActiveScene();
             foreach (var rootGO in activeScene.GetRootGameObjects())
             {
@@ -43,7 +43,7 @@ namespace SpatialSys.UnitySDK.Editor
                 foreach (var transform in rootGO.GetComponentsInChildren<Transform>(true))
                 {
                     // nullcheck necessary in case game object was already destroyed
-                    if (transform != null && transform.gameObject.tag == "EditorOnly")
+                    if (transform != null && transform.gameObject.CompareTag("EditorOnly"))
                         UnityEngine.Object.DestroyImmediate(transform.gameObject);
                 }
             }
@@ -55,13 +55,11 @@ namespace SpatialSys.UnitySDK.Editor
                 UnityEngine.Object.DestroyImmediate(dataInScene[i]);
             }
 
-            //add fresh environment data
-            EnvironmentData data;
-            GameObject g = new GameObject();
-            g.name = "EnvironmentData";
-            data = g.AddComponent<EnvironmentData>();
+            // Add fresh environment data
+            GameObject g = new GameObject("EnvironmentData");
+            EnvironmentData data = g.AddComponent<EnvironmentData>();
 
-            //spatial components
+            // Spatial components
             data.seats = GameObject.FindObjectsOfType<SpatialSeatHotspot>();
             data.entrancePoints = GameObject.FindObjectsOfType<SpatialEntrancePoint>();
             data.triggerEvents = GameObject.FindObjectsOfType<SpatialTriggerEvent>();
@@ -74,8 +72,11 @@ namespace SpatialSys.UnitySDK.Editor
                 data.thumbnailCamera.fieldOfView = data.thumbnailCamera.TryGetComponent(out Camera camera) ? camera.fieldOfView : 85f;
             }
             data.projectorSurfaces = GameObject.FindObjectsOfType<SpatialProjectorSurface>();
+            data.interactables = GameObject.FindObjectsOfType<SpatialInteractable>(true);
+            data.pointsOfInterest = GameObject.FindObjectsOfType<SpatialPointOfInterest>(true);
+            data.quests = GameObject.FindObjectsOfType<SpatialQuest>(true);
 
-            //unity components
+            // Unity components
             data.renderingVolumes = GameObject.FindObjectsOfType<UnityEngine.Rendering.Volume>();
             data.enableFog = RenderSettings.fog;
 
@@ -83,7 +84,7 @@ namespace SpatialSys.UnitySDK.Editor
             SpatialEnvironmentSettingsOverrides environmentSettingsOverrides = GameObject.FindObjectOfType<SpatialEnvironmentSettingsOverrides>();
             data.environmentSettings = environmentSettingsOverrides != null ? environmentSettingsOverrides.environmentSettings : new EnvironmentSettings();
 
-            //animators
+            // Animators
             Animator[] allAnimators = GameObject.FindObjectsOfType<Animator>();
             List<SpatialSyncedAnimator> foundSyncedAnimators = new List<SpatialSyncedAnimator>();
             List<Animator> foundUnsyncedAnimators = new List<Animator>();
@@ -103,18 +104,37 @@ namespace SpatialSys.UnitySDK.Editor
             data.syncedAnimators = foundSyncedAnimators.ToArray();
             data.unsyncedAnimators = foundUnsyncedAnimators.ToArray();
 
-            //spatial events
+            // Spatial events
             List<SpatialEvent> spatialEventsList = new List<SpatialEvent>();
             foreach (SpatialTriggerEvent triggerEvent in data.triggerEvents)
             {
-                spatialEventsList.Add(triggerEvent.onEnterEvent);
-                triggerEvent.onEnterEvent.id = spatialEventsList.Count - 1;
-                spatialEventsList.Add(triggerEvent.onExitEvent);
-                triggerEvent.onExitEvent.id = spatialEventsList.Count - 1;
+                AddSpatialEvent(spatialEventsList, triggerEvent.onEnterEvent);
+                AddSpatialEvent(spatialEventsList, triggerEvent.onExitEvent);
+            }
+            foreach (SpatialInteractable interactable in data.interactables)
+            {
+                AddSpatialEvent(spatialEventsList, interactable.onInteractEvent);
+                AddSpatialEvent(spatialEventsList, interactable.onEnterEvent);
+                AddSpatialEvent(spatialEventsList, interactable.onExitEvent);
+            }
+            foreach (SpatialPointOfInterest interactable in data.pointsOfInterest)
+            {
+                AddSpatialEvent(spatialEventsList, interactable.onTextDisplayedEvent);
+            }
+            foreach (SpatialQuest quest in data.quests)
+            {
+                AddSpatialEvent(spatialEventsList, quest.onStartedEvent);
+                AddSpatialEvent(spatialEventsList, quest.onCompletedEvent);
+                AddSpatialEvent(spatialEventsList, quest.onResetEvent);
+                foreach (SpatialQuest.Task task in quest.tasks)
+                {
+                    AddSpatialEvent(spatialEventsList, task.onStartedEvent);
+                    AddSpatialEvent(spatialEventsList, task.onCompletedEvent);
+                }
             }
             data.spatialEvents = spatialEventsList.ToArray();
 
-            //Give animation events an animator ID or remove them if null
+            // Give animation events an animator ID or remove them if null
             foreach (SpatialEvent spatialEvent in data.spatialEvents)
             {
                 for (int i = spatialEvent.animatorEvent.events.Count - 1; i >= 0; i--)
@@ -126,7 +146,7 @@ namespace SpatialSys.UnitySDK.Editor
                         continue;
                     }
 
-                    //make sure this parameter is still valid
+                    // Make sure this parameter is still valid
                     int parameterIndex = -1;
                     for (int j = 0; j < animatorEvent.animator.parameterCount; j++)
                     {
@@ -159,6 +179,12 @@ namespace SpatialSys.UnitySDK.Editor
                     GameObject.DestroyImmediate(camera);
                 }
             }
+        }
+
+        private static void AddSpatialEvent(List<SpatialEvent> list, SpatialEvent ev)
+        {
+            list.Add(ev);
+            ev.id = list.Count - 1;
         }
     }
 }

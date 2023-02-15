@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -69,6 +71,26 @@ namespace SpatialSys.UnitySDK.Editor
         public static void OpenSandboxInBrowser()
         {
             Application.OpenURL($"https://{SpatialAPI.SPATIAL_ORIGIN}/sandbox");
+        }
+
+        public static IEnumerable<T> FindAssetsByType<T>() where T : Object
+        {
+            string[] guids = AssetDatabase.FindAssets($"t:{typeof(T)}");
+            foreach (var t in guids)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(t);
+                T asset = AssetDatabase.LoadAssetAtPath<T>(assetPath);
+                if (asset != null)
+                {
+                    yield return asset;
+                }
+            }
+        }
+
+        public static bool TryGetCustomAttribute<T>(this MethodInfo method, out T attribute) where T : System.Attribute
+        {
+            attribute = method.GetCustomAttribute<T>();
+            return attribute != null;
         }
     }
 }

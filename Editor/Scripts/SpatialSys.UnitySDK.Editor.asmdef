@@ -9,7 +9,13 @@
         "CSharpPromise",
         "EditorRestClient",
         "Unity.RenderPipelines.Core.Runtime",
-        "Unity.RenderPipelines.Universal.Runtime"
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.VisualScripting.Flow",
+        "Unity.VisualScripting.Flow.Editor",
+        "Unity.VisualScripting.Core.Editor",
+        "Unity.VisualScripting.Core",
+        "Unity.TextMeshPro",
+        "SpatialSys.UnitySDK.VisualScripting"
     ],
     "includePlatforms": [
         "Editor"

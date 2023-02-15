@@ -12,14 +12,6 @@ namespace SpatialSys.UnitySDK.Editor
         private SerializedProperty version;
         private SerializedProperty listenFor;
 
-        private SerializedProperty onEnterUnityEvent;
-        private SerializedProperty onEnterIsSynced;
-        private ReorderableList onEnterAnimatorEventsList;
-
-        private SerializedProperty onExitUnityEvent;
-        private SerializedProperty onExitIsSynced;
-        private ReorderableList onExitAnimatorEventsList;
-
         public void OnSceneGUI()
         {
             var t = target as SpatialTriggerEvent;
@@ -39,34 +31,6 @@ namespace SpatialSys.UnitySDK.Editor
             serializedObject.Update();
             version = serializedObject.FindProperty(nameof(SpatialTriggerEvent.version));
             listenFor = serializedObject.FindProperty(nameof(SpatialTriggerEvent.listenFor));
-
-            SerializedProperty onEnter = serializedObject.FindProperty(nameof(SpatialTriggerEvent.onEnterEvent));
-            onEnterUnityEvent = onEnter.FindPropertyRelative(nameof(SpatialTriggerEvent.onEnterEvent.unityEvent));
-            onEnterIsSynced = onEnter.FindPropertyRelative(nameof(SpatialTriggerEvent.onEnterEvent.unityEventIsSynced));
-            SerializedProperty onEnterAnimatorEvent = onEnter.FindPropertyRelative(nameof(SpatialTriggerEvent.onEnterEvent.animatorEvent));
-            SerializedProperty onEnterAnimatorEvents = onEnterAnimatorEvent.FindPropertyRelative(nameof(AnimatorEvent.events));
-            onEnterAnimatorEventsList = new ReorderableList(serializedObject, onEnterAnimatorEvents, true, true, true, true);
-            onEnterAnimatorEventsList.elementHeight = EditorGUIUtility.singleLineHeight * 2 + 3;
-            onEnterAnimatorEventsList.drawHeaderCallback = (rect) => {
-                EditorGUI.LabelField(rect, "Animator Events");
-            };
-            onEnterAnimatorEventsList.drawElementCallback = (rect, index, isActive, isFocused) => {
-                EditorGUI.PropertyField(rect, onEnterAnimatorEvents.GetArrayElementAtIndex(index));
-            };
-
-            SerializedProperty onExit = serializedObject.FindProperty(nameof(SpatialTriggerEvent.onExitEvent));
-            onExitUnityEvent = onExit.FindPropertyRelative(nameof(SpatialTriggerEvent.onExitEvent.unityEvent));
-            onExitIsSynced = onExit.FindPropertyRelative(nameof(SpatialTriggerEvent.onExitEvent.unityEventIsSynced));
-            SerializedProperty onExitAnimatorEvent = onExit.FindPropertyRelative(nameof(SpatialTriggerEvent.onExitEvent.animatorEvent));
-            SerializedProperty onExitAnimatorEvents = onExitAnimatorEvent.FindPropertyRelative(nameof(AnimatorEvent.events));
-            onExitAnimatorEventsList = new ReorderableList(serializedObject, onExitAnimatorEvents, true, true, true, true);
-            onExitAnimatorEventsList.elementHeight = onEnterAnimatorEventsList.elementHeight;
-            onExitAnimatorEventsList.drawHeaderCallback = (rect) => {
-                EditorGUI.LabelField(rect, "Animator Events");
-            };
-            onExitAnimatorEventsList.drawElementCallback = (rect, index, isActive, isFocused) => {
-                EditorGUI.PropertyField(rect, onExitAnimatorEvents.GetArrayElementAtIndex(index));
-            };
         }
 
         public override void DrawFields()
@@ -86,42 +50,8 @@ namespace SpatialSys.UnitySDK.Editor
             }
             else
             {
-                SpatialGUIUtility.AutoFoldout("TRIGGER_ON_ENTER", "On Enter", () => {
-                    DrawEventGroup(onEnterIsSynced, onEnterUnityEvent, onEnterAnimatorEventsList);
-                }, savePref: true, openByDefault: false);
-
-                GUILayout.Space(10);
-
-                SpatialGUIUtility.AutoFoldout("TRIGGER_ON_EXIT", "On Exit", () => {
-                    DrawEventGroup(onExitIsSynced, onExitUnityEvent, onExitAnimatorEventsList);
-                }, savePref: true, openByDefault: false);
+                base.DrawFields();
             }
-        }
-
-        private void DrawEventGroup(SerializedProperty syncedField, SerializedProperty unityEvent, ReorderableList animatorEventsList)
-        {
-            // Unity Event
-            GUILayout.Label("Unity Events", EditorStyles.whiteLabel);
-            GUILayout.BeginHorizontal();
-            GUILayout.Space(10);
-            GUILayout.BeginVertical();
-            {
-                EditorGUILayout.PropertyField(syncedField);
-                EditorGUILayout.PropertyField(unityEvent);
-            }
-            GUILayout.EndVertical();
-            GUILayout.EndHorizontal();
-
-            // Animator Event
-            GUILayout.Label("Animator Events", EditorStyles.whiteLabel);
-            GUILayout.BeginHorizontal();
-            GUILayout.Space(10);
-            GUILayout.BeginVertical();
-            {
-                animatorEventsList.DoLayoutList();
-            }
-            GUILayout.EndVertical();
-            GUILayout.EndHorizontal();
         }
 
         private void UpgradeToLatest()
@@ -133,11 +63,16 @@ namespace SpatialSys.UnitySDK.Editor
             if (version.intValue == 0)
             {
 #pragma warning disable 0618
+                SerializedProperty onEnter = serializedObject.FindProperty(nameof(SpatialTriggerEvent.onEnterEvent));
+                var onEnterUnityEvent = onEnter.FindPropertyRelative(nameof(SpatialTriggerEvent.onEnterEvent.unityEvent));
+                
                 var onEnterOld = serializedObject.FindProperty(nameof(SpatialTriggerEvent.deprecated_onEnter));
                 CopySerializedProperty(onEnterOld, onEnterOld.propertyPath, serializedObject, onEnterUnityEvent.propertyPath);
                 serializedObject.FindProperty($"{nameof(SpatialTriggerEvent.deprecated_onEnter)}.m_PersistentCalls.m_Calls").ClearArray();
                 serializedObject.ApplyModifiedProperties();
 
+                SerializedProperty onExit = serializedObject.FindProperty(nameof(SpatialTriggerEvent.onExitEvent));
+                var onExitUnityEvent = onExit.FindPropertyRelative(nameof(SpatialTriggerEvent.onExitEvent.unityEvent));
                 var onExitOld = serializedObject.FindProperty(nameof(SpatialTriggerEvent.deprecated_onExit));
                 CopySerializedProperty(onExitOld, onExitOld.propertyPath, serializedObject, onExitUnityEvent.propertyPath);
                 serializedObject.FindProperty($"{nameof(SpatialTriggerEvent.deprecated_onExit)}.m_PersistentCalls.m_Calls").ClearArray();
@@ -182,11 +117,21 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 switch (source.propertyType)
                 {
-                    case SerializedPropertyType.Integer: dest.intValue = source.intValue; break;
-                    case SerializedPropertyType.String: dest.stringValue = source.stringValue; break;
-                    case SerializedPropertyType.Boolean: dest.boolValue = source.boolValue; break;
-                    case SerializedPropertyType.Float: dest.floatValue = source.floatValue; break;
-                    case SerializedPropertyType.Enum: dest.enumValueIndex = source.enumValueIndex; break;
+                    case SerializedPropertyType.Integer:
+                        dest.intValue = source.intValue;
+                        break;
+                    case SerializedPropertyType.String:
+                        dest.stringValue = source.stringValue;
+                        break;
+                    case SerializedPropertyType.Boolean:
+                        dest.boolValue = source.boolValue;
+                        break;
+                    case SerializedPropertyType.Float:
+                        dest.floatValue = source.floatValue;
+                        break;
+                    case SerializedPropertyType.Enum:
+                        dest.enumValueIndex = source.enumValueIndex;
+                        break;
                 }
             }
         }

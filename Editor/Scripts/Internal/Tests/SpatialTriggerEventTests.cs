@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace SpatialSys.UnitySDK.Editor
@@ -7,7 +5,7 @@ namespace SpatialSys.UnitySDK.Editor
     public class SpatialTriggerEventTests
     {
         [ComponentTest(typeof(SpatialTriggerEvent))]
-        public static void CheckForTrigger(UnityEngine.Object target)
+        public static void CheckForTrigger(Component target)
         {
             SpatialTriggerEvent trigger = target as SpatialTriggerEvent;
 
@@ -24,7 +22,6 @@ namespace SpatialSys.UnitySDK.Editor
                     (target) => {
                         Component c = target as Component;
                         c.gameObject.AddComponent<BoxCollider>().isTrigger = true;
-                        Debug.LogError("added box collider");//!TEMP 
                     }
                 );
                 SpatialValidator.AddResponse(resp);

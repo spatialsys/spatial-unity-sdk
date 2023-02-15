@@ -7,7 +7,7 @@ namespace SpatialSys.UnitySDK.Editor
     public enum TestResponseType
     {
         Fail,
-        Warning,//won't block you from publishing, but indicates something is probably set up wrong.
+        Warning, // won't block you from publishing, but indicates something is probably set up wrong.
     }
 
     public class SpatialTestResponse
@@ -20,10 +20,13 @@ namespace SpatialSys.UnitySDK.Editor
         public UnityEngine.Object targetObject;
         public string scenePath;
 
-        public bool hasAutoFix = false;
-        public bool autoFixIsSafe = false;//auto fix can be applied without asking user. Some auto fixes might have unwanted side effects.
-        Action<UnityEngine.Object> autoFixMethod;
-        public string autoFixDescription;//describe what will happen
+        public bool autoFixIsSafe = false; // "Unsafe" auto-fixes have unwanted side effects.
+        public string autoFixDescription; // Describe what will happen to the user.
+
+        public bool hasAutoFix => _autoFixMethod != null;
+        public bool isSceneResponse => !string.IsNullOrEmpty(scenePath);
+
+        private Action<UnityEngine.Object> _autoFixMethod = null;
 
         public SpatialTestResponse(UnityEngine.Object targetObject, TestResponseType responseType, string title, string description = "")
         {
@@ -31,6 +34,8 @@ namespace SpatialSys.UnitySDK.Editor
             this.title = title;
             this.description = description;
             this.targetObject = targetObject;
+            _autoFixMethod = null;
+
             if (targetObject != null)
             {
                 targetObjectGlobalID = GlobalObjectId.GetGlobalObjectIdSlow(targetObject);
@@ -39,20 +44,19 @@ namespace SpatialSys.UnitySDK.Editor
 
         public void SetAutoFix(bool isSafe, string description, Action<UnityEngine.Object> fix)
         {
-            hasAutoFix = true;
             autoFixIsSafe = isSafe;
             autoFixDescription = description;
-            autoFixMethod = fix;
+            _autoFixMethod = fix;
         }
 
-        public void InvokeFix()
+        public void InvokeAutoFix()
         {
             if (!hasAutoFix)
             {
                 return;
             }
 
-            if (!string.IsNullOrEmpty(scenePath) && EditorSceneManager.GetActiveScene().path != scenePath)
+            if (isSceneResponse && EditorSceneManager.GetActiveScene().path != scenePath)
             {
                 EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
             }
@@ -62,7 +66,7 @@ namespace SpatialSys.UnitySDK.Editor
                 targetObject = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(targetObjectGlobalID.Value);
             }
 
-            autoFixMethod.Invoke(targetObject);
+            _autoFixMethod.Invoke(targetObject);
             if (targetObject != null)
             {
                 Selection.activeObject = targetObject;
