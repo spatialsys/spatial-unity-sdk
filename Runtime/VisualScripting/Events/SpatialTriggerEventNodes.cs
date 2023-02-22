@@ -5,6 +5,7 @@ using SpatialSys.UnitySDK;
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitTitle("Spatial Trigger On Enter")]
+    [UnitCategory("Events\\Spatial")]
     [TypeIcon(typeof(SpatialTriggerEvent))]
     public class SpatialTriggerEventOnEnter : EventUnit<SpatialTriggerEvent>
     {
@@ -42,6 +43,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     }
 
     [UnitTitle("Spatial Trigger On Exit")]
+    [UnitCategory("Events\\Spatial")]
     [TypeIcon(typeof(SpatialTriggerEvent))]
     public class SpatialTriggerEventOnExit : EventUnit<SpatialTriggerEvent>
     {

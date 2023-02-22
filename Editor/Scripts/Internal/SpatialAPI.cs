@@ -18,20 +18,30 @@ namespace SpatialSys.UnitySDK.Editor
         private static string _authToken => EditorUtility.GetSavedAuthToken();
 
         //------------------------------------------------
-        // UPLOAD TEST ENVIRONMENT
+        // UPLOAD TO SANDBOX
         //------------------------------------------------
 
-        public static IPromise<UploadTestEnvironmentResponse> UploadTestEnvironment()
+        public static IPromise<UploadSandboxBundleResponse> UploadSandboxBundle(PackageType packageType)
         {
             RequestHelper request = CreateRequest();
-            request.Uri = $"{API_ORIGIN}/sandbox/v1/test-environment";
-            return RestClient.Post<UploadTestEnvironmentResponse>(request);
+            request.Uri = $"{API_ORIGIN}/sdk/v1/sandbox/bundle";
+            request.Body = new UploadSandboxBundleRequest() {
+                type = PackageTypeToSAPIPackageType(packageType)
+            };
+            return RestClient.Post<UploadSandboxBundleResponse>(request);
         }
 
         [Serializable]
-        public struct UploadTestEnvironmentResponse
+        public struct UploadSandboxBundleRequest
         {
-            public string url;
+            public string type;
+        }
+
+        [Serializable]
+        public struct UploadSandboxBundleResponse
+        {
+            public string url; // PUT bundle URL
+            public string type;
             public int version;
             public ulong expiresAt;
         }
@@ -49,7 +59,7 @@ namespace SpatialSys.UnitySDK.Editor
                 unityVersion = Application.unityVersion,
                 spatialSdkVersion = UpgradeUtility.currentVersion,
                 packageSource = PackageSourceToSAPIPackageSource(PackageSource.Unity),
-                packageType = PackageSourceToSAPIPackageType(packageType)
+                packageType = PackageTypeToSAPIPackageType(packageType)
             };
 
             return RestClient.Post<CreateOrUpdatePackageResponse>(request);
@@ -110,11 +120,13 @@ namespace SpatialSys.UnitySDK.Editor
             Unity
         }
 
+        // NOTE: keep this the same as UnitySDK PackageType enum
         public enum PackageType
         {
-            Environment,
-            Avatar,
-            Object
+            Environment = 0,
+            Avatar = 1,
+            AvatarAnimation = 2,
+            PrefabObject = 3,
         }
 
         //------------------------------------------------
@@ -147,7 +159,7 @@ namespace SpatialSys.UnitySDK.Editor
             return source.ToString();
         }
 
-        private static string PackageSourceToSAPIPackageType(PackageType type)
+        private static string PackageTypeToSAPIPackageType(PackageType type)
         {
             return type.ToString();
         }

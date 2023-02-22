@@ -23,14 +23,26 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static IPromise BuildAndUploadForSandbox()
         {
+            // We must save all scenes, otherwise the bundle build will fail without explanation.
             EditorSceneManager.SaveOpenScenes();
 
-            // Make sure the active package is set to the one that contains the active scene
-            SceneAsset currentScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
-            ProjectConfig.SetActivePackageBySourceAsset(currentScene);
+            PackageConfig activeConfig = ProjectConfig.activePackage;
+            bool validationHasErrors = false;
 
-            // Validate just the active scene
-            if (!SpatialValidator.RunTestsOnActiveScene(ValidationContext.Testing))
+            if (activeConfig is EnvironmentConfig)
+            {
+                // Make sure the active package is set to the one that contains the active scene
+                SceneAsset currentScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
+                ProjectConfig.SetActivePackageBySourceAsset(currentScene);
+
+                validationHasErrors = !SpatialValidator.RunTestsOnActiveScene(ValidationContext.Testing);
+            }
+            else
+            {
+                validationHasErrors = !SpatialValidator.RunTestsOnPackage(ValidationContext.Testing);
+            }
+
+            if (validationHasErrors)
             {
                 SpatialSDKConfigWindow.OpenWindow("issues");
                 return Promise.Rejected(new Exception("Package has errors"));
@@ -46,7 +58,7 @@ namespace SpatialSys.UnitySDK.Editor
                 Directory.Delete(bundleDir, recursive: true);
             Directory.CreateDirectory(bundleDir);
 
-            // Compress bundles with LZ4 (ChunkBasedCompression) since web doesn't support LZMA (why isn't this automatic based on build target??)
+            // Compress bundles with LZ4 (ChunkBasedCompression) since web doesn't support LZMA.
             CompatibilityAssetBundleManifest bundleManifest = CompatibilityBuildPipeline.BuildAssetBundles(
                 bundleDir,
                 BuildAssetBundleOptions.ForceRebuildAssetBundle | BuildAssetBundleOptions.ChunkBasedCompression,
@@ -54,26 +66,39 @@ namespace SpatialSys.UnitySDK.Editor
             );
 
             if (bundleManifest == null)
-                return Promise.Rejected(new System.Exception("Failed to build asset bundle for sandbox. Check the console for details."));
+                return Promise.Rejected(new System.Exception("Something went wrong when trying to build asset bundle for sandbox"));
 
-            // Get the variant config for the current scene
-            EnvironmentConfig config = ProjectConfig.activePackage as EnvironmentConfig;
-            EnvironmentConfig.Variant environmentVariant = config.variants.FirstOrDefault(v => v.scene == currentScene);
-            if (environmentVariant == null)
-                return Promise.Rejected(new System.Exception("The current scene isn't one that is assigned to a variant in the package configuration"));
+            if (activeConfig is EnvironmentConfig activeEnvConfig)
+            {
+                // Get the variant config for the current scene
+                SceneAsset currentSceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
+                EnvironmentConfig.Variant environmentVariant = activeEnvConfig.variants.FirstOrDefault(v => v.scene == currentSceneAsset);
+                if (environmentVariant == null)
+                    return Promise.Rejected(new System.Exception("The current scene isn't one that is assigned to a variant in the package configuration"));
 
-            // Check for bundle size
-            string bundlePath = Path.Combine(bundleDir, environmentVariant.bundleName);
+                return UploadAssetBundleToSandbox(environmentVariant.bundleName, bundleDir, activeConfig.packageType);
+            }
+            else
+            {
+                return UploadAssetBundleToSandbox(activeConfig.bundleName, bundleDir, activeConfig.packageType);
+            }
+        }
+
+        private static IPromise UploadAssetBundleToSandbox(string bundleName, string bundleDir, PackageType packageType)
+        {
+            if (string.IsNullOrEmpty(bundleName))
+                return Promise.Rejected(new System.Exception("Unable to retrieve the asset bundle name from the prefab. Make sure an asset is assigned in the package configuration."));
+
+            string bundlePath = Path.Combine(bundleDir, bundleName);
             if (!File.Exists(bundlePath))
                 return Promise.Rejected(new System.Exception($"Built asset bundle `{bundlePath}` was not found on disk"));
             long bundleSize = new FileInfo(bundlePath).Length;
             if (bundleSize > MAX_SANDBOX_BUNDLE_SIZE)
                 return Promise.Rejected(new System.Exception($"Asset bundle is too large ({bundleSize / 1024 / 1024}MB). The maximum size is {MAX_SANDBOX_BUNDLE_SIZE / 1024 / 1024}MB"));
 
-            // Upload
             _lastUploadProgress = -1f;
             UpdateSandboxUploadProgressBar(0f);
-            return SpatialAPI.UploadTestEnvironment()
+            return SpatialAPI.UploadSandboxBundle((SpatialAPI.PackageType)(int)packageType)
                 .Then(resp => {
                     byte[] data = File.ReadAllBytes(bundlePath);
                     SpatialAPI.UploadFile(useSpatialHeaders: false, resp.url, data, UpdateSandboxUploadProgressBar)
@@ -94,6 +119,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static IPromise PackageForPublishing()
         {
+            // We must save all scenes, otherwise the bundle build will fail without explanation.
             EditorSceneManager.SaveOpenScenes();
 
             // Validate package
@@ -111,11 +137,10 @@ namespace SpatialSys.UnitySDK.Editor
             AssignBundleNamesToPackageAssets();
 
             // Upload package
-            // TODO: support multiple package types.
             _lastUploadProgress = -1f;
             UpdatePackageUploadProgressBar(0f);
             PackageConfig config = ProjectConfig.activePackage;
-            return SpatialAPI.CreateOrUpdatePackage(config.sku, SpatialAPI.PackageType.Environment)
+            return SpatialAPI.CreateOrUpdatePackage(config.sku, (SpatialAPI.PackageType)(int)config.packageType)
                 .Then(resp => {
                     if (config.sku != resp.sku)
                     {
@@ -269,25 +294,45 @@ namespace SpatialSys.UnitySDK.Editor
                 AssetDatabase.RemoveAssetBundleName(name, forceRemove: true);
             AssetDatabase.Refresh();
 
-            // Environment
             if (config is EnvironmentConfig envConfig)
             {
                 // Assign a unique asset bundle name to each scene
                 foreach (EnvironmentConfig.Variant variant in envConfig.variants)
                 {
-                    string scenePath = AssetDatabase.GetAssetPath(variant.scene);
-                    AssetImporter importer = AssetImporter.GetAtPath(scenePath);
-                    importer.assetBundleName = GetBundleNameForPackageAsset(config.packageName, variant.name, variant.id);
-                    UnityEditor.EditorUtility.SetDirty(config);
-                    AssetDatabase.SaveAssetIfDirty(importer);
+                    AssignBundleNameToAsset(variant.scene, config.packageName, variant.name, variant.id);
                 }
             }
+            else if (config is AvatarConfig avatarConfig)
+            {
+                AssignBundleNameToAsset(avatarConfig.prefab, config.packageName);
+            }
+            else if (config is AvatarAnimationConfig avatarAnimConfig)
+            {
+                AssignBundleNameToAsset(avatarAnimConfig.prefab, config.packageName);
+            }
+            else if (config is PrefabObjectConfig prefabObjectConfig)
+            {
+                AssignBundleNameToAsset(prefabObjectConfig.prefab, config.packageName);
+            }
 
+            UnityEditor.EditorUtility.SetDirty(config);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
         }
 
-        public static string GetBundleNameForPackageAsset(string packageName, string variantName, string variantID)
+        private static void AssignBundleNameToAsset(UnityEngine.Object asset, string packageName, string variantName = "default", string variantID = "0")
+        {
+            string assetPath = AssetDatabase.GetAssetPath(asset);
+            AssetImporter importer = AssetImporter.GetAtPath(assetPath);
+            importer.assetBundleName = GetBundleNameForPackageAsset(packageName);
+            AssetDatabase.SaveAssetIfDirty(importer);
+        }
+
+        /// <summary>
+        /// Creates a valid asset bundle name for a package
+        /// Variant params can be ignored if package does not have any variants
+        /// </summary>
+        public static string GetBundleNameForPackageAsset(string packageName, string variantName = "default", string variantID = "0")
         {
             // WARNING: Do not edit this without also changing GetVariantIDFromBundleName
             return $"{GetValidBundleNameString(packageName)}_{GetValidBundleNameString(variantName)}_{variantID}";
@@ -296,7 +341,7 @@ namespace SpatialSys.UnitySDK.Editor
         public static string GetVariantIDFromBundleName(string bundleName)
         {
             string[] parts = bundleName.Split('_');
-            return parts[parts.Length - 1]; // Last part is the variant ID; See AssignBundleNamesToPackageAssets
+            return parts[parts.Length - 1]; // Last part is the variant ID; See GetBundleNameForPackageAsset
         }
 
         /// <summary>

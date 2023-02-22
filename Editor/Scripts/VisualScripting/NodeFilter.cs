@@ -30,7 +30,7 @@ namespace SpatialSys.UnitySDK.Editor
 
     public class NodeFilter
     {
-        public static int VS_FILTER_VERSION = 1;//increment when we want to force users to rebuild nodes on update
+        public static int VS_FILTER_VERSION = 2;//increment when we want to force users to rebuild nodes on update
 
         public static readonly string[] namespaceAllowList = {
             "UnityEngine",
@@ -116,6 +116,8 @@ namespace SpatialSys.UnitySDK.Editor
 
             //Spatial Types
             typeof(SpatialPlatform),
+            typeof(SpatialQuestTaskType),
+            typeof(SpatialQuestStatus),
 
             typeof(ParticleSystem),
         };
@@ -248,6 +250,13 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(UnityEngine.Time).GetMember(nameof(UnityEngine.Time.maximumParticleDeltaTime)),
             typeof(UnityEngine.Time).GetMember(nameof(UnityEngine.Time.captureDeltaTime)),
             typeof(UnityEngine.Time).GetMember(nameof(UnityEngine.Time.captureFramerate)),
+
+            //Camera
+            //Don't want creators messing with the main camera. We will let them customize camera pos etc through cinemachine
+            typeof(Camera).GetMember(nameof(Camera.main)),
+            typeof(Camera).GetMember(nameof(Camera.allCameras)),
+            typeof(Camera).GetMember(nameof(Camera.current)),
+            typeof(Camera).GetMember(nameof(Camera.scene)),//no scene access allowed
         };
 
         private static List<Type> supportedTypes = new List<Type>();

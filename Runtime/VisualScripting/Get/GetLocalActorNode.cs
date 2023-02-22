@@ -6,6 +6,8 @@ using Unity.VisualScripting;
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitTitle("Get Local Actor")]
+    [UnitCategory("Spatial\\Get Actions")]
+    [TypeIcon(typeof(SpatialComponentBase))]
     public class GetLocalActorNode : Unit
     {
         [DoNotSerialize]

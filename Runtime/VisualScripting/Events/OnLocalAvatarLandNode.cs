@@ -6,6 +6,8 @@ using Unity.VisualScripting;
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitTitle("On Local Avatar Land")]
+    [UnitCategory("Events\\Spatial")]
+    [TypeIcon(typeof(SpatialComponentBase))]
     public class OnLocalAvatarLandNode : EventUnit<EmptyEventArgs>
     {
         public static string eventName = "OnLocalAvatarLand";

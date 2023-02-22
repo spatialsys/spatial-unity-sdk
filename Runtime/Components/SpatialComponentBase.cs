@@ -19,9 +19,9 @@ namespace SpatialSys.UnitySDK
 
 #if UNITY_EDITOR
         private bool _isFirstComponent = false;
-        private void OnValidate()
+        protected virtual void OnValidate()
         {
-            if(_limitOnePerScene)
+            if (_limitOnePerScene)
             {
                 // Destroy this component if it is not the first component in the scene.
                 Object[] foundComponents = FindObjectsOfType(this.GetType());

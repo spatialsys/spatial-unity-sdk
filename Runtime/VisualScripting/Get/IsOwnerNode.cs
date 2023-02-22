@@ -6,6 +6,8 @@ using Unity.VisualScripting;
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitTitle("Is Space Owner")]
+    [UnitCategory("Spatial")]
+    [TypeIcon(typeof(SpatialComponentBase))]
     public class IsSpaceOwner : Unit
     {
         [DoNotSerialize]

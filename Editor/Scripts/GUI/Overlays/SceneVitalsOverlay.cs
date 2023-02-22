@@ -1,9 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 using UnityEditor;
 using UnityEditor.Overlays;
-using UnityEngine.UIElements;
 using UnityEditor.SceneManagement;
 
 namespace SpatialSys.UnitySDK.Editor
@@ -12,11 +10,14 @@ namespace SpatialSys.UnitySDK.Editor
     [Icon("Packages/io.spatial.unitysdk/Editor/Textures/Icons/icon_sceneVitals.png")]
     public class SceneVitalsOverlay : Overlay, ITransientOverlay
     {
-        //This is how you force an overlay to always be visible.
-        //Users can still "hide" the overlay by docking it somewhere.
-        //Without this the overlay would be disabled by default, and users would have
-        //no way to know that it exists.
-        bool ITransientOverlay.visible => true;
+        private const string BASE_BLOCK_CLASS = "InfoBlock";
+        private const string BASE_SUB_BLOCK_CLASS = "SubBlock";
+        private const string GREEN_BLOCK_CLASS = "InfoBlock_green";
+        private const string YELLOW_BLOCK_CLASS = "InfoBlock_yellow";
+        private const string RED_BLOCK_CLASS = "InfoBlock_red";
+
+        // Controls whether the panel or the docked button is visible.
+        bool ITransientOverlay.visible => ProjectConfig.activePackage is EnvironmentConfig;
 
         private VisualElement _verticesBlock;
         private Label _verticesCount;
@@ -46,14 +47,9 @@ namespace SpatialSys.UnitySDK.Editor
         private VisualElement _noLightprobesWarning;
         private VisualElement _highCollisionMeshWarning;
 
-        private const string BASE_BLOCK_CLASS = "InfoBlock";
-        private const string BASE_SUB_BLOCK_CLASS = "SubBlock";
-        private const string GREEN_BLOCK_CLASS = "InfoBlock_green";
-        private const string YELLOW_BLOCK_CLASS = "InfoBlock_yellow";
-        private const string RED_BLOCK_CLASS = "InfoBlock_red";
-
-        private double lastRefreshTime = -1f;
-        private float autoRefreshEvery = 30f;
+        private double _lastRefreshTime = -1.0;
+        private float _autoRefreshEvery = 30f;
+        private bool _addedRefreshEvents = false;
 
         public override VisualElement CreatePanelContent()
         {
@@ -64,17 +60,23 @@ namespace SpatialSys.UnitySDK.Editor
             InitializeElements(root);
             UpdatePerformanceStats();
 
-            // We refresh any time a scene is opened/saved, and periodically.
-            // I didnt want to do onDirty because I thought it would be too spammy.
-            EditorApplication.update += AutoRefreshTimer;
-            EditorSceneManager.sceneOpened += (scene, mode) => UpdatePerformanceStats();
-            EditorSceneManager.sceneSaved += (scene) => UpdatePerformanceStats();
+            // This function can get called multiple times (e.g. closing and opening a docked panel). We only need to subscribe once.
+            if (!_addedRefreshEvents)
+            {
+                // We refresh any time a scene is opened/saved, and periodically.
+                // I didnt want to do onDirty because I thought it would be too spammy.
+                EditorApplication.update += AutoRefreshTimer;
+                EditorSceneManager.sceneOpened += (scene, mode) => UpdatePerformanceStats();
+                EditorSceneManager.sceneSaved += (scene) => UpdatePerformanceStats();
+                _addedRefreshEvents = true;
+            }
+
             return root;
         }
 
         private void AutoRefreshTimer()
         {
-            if (EditorApplication.timeSinceStartup - lastRefreshTime > autoRefreshEvery)
+            if (EditorApplication.timeSinceStartup - _lastRefreshTime > _autoRefreshEvery)
             {
                 UpdatePerformanceStats();
             }
@@ -110,18 +112,16 @@ namespace SpatialSys.UnitySDK.Editor
 
         private void UpdatePerformanceStats()
         {
-            lastRefreshTime = EditorApplication.timeSinceStartup;
+            _lastRefreshTime = EditorApplication.timeSinceStartup;
             PerformanceResponse resp = SpatialPerformance.GetActiveScenePerformanceResponse();
 
-            // Change the refresh frequency based on how long the request takes.
-            // For larger scenes or slow computers where it takes a while I don't want to introduce
-            // micro stutters every 10s.
-            autoRefreshEvery = Mathf.Clamp(resp.responseMiliseconds * 5f, 5f, 100f);
+            // Change the refresh frequency based on how long the request takes, since it can affect performance of large scenes and slow computers.
+            _autoRefreshEvery = Mathf.Clamp(resp.responseMiliseconds * 5f, 5f, 100f);
 
             SetBaseClass(_verticesBlock);
             SetBlockClassFromRatio(_verticesBlock, resp.vertPercent);
-            _verticesCount.text = AbbreviateNumber(resp.verts);
-            _verticesMax.text = "/ " + AbbreviateNumber(PerformanceResponse.MAX_SUGGESTED_VERTS);
+            _verticesCount.text = EditorUtility.AbbreviateNumber(resp.verts);
+            _verticesMax.text = "/ " + EditorUtility.AbbreviateNumber(PerformanceResponse.MAX_SUGGESTED_VERTS);
             _meshIcon.ClearClassList();
             SetBlockClassFromRatio(_meshIcon, resp.vertPercent);
 
@@ -129,19 +129,19 @@ namespace SpatialSys.UnitySDK.Editor
             SetBaseClass(_sharedTexturesSubBlock, true);
             SetBlockClassFromRatio(_sharedTexturesBlock, resp.sharedTexturePercent);
             SetBlockClassFromRatio(_sharedTexturesSubBlock, resp.sharedTexturePercent);
-            _sharedTexturesCount.text = AbbreviateNumber(resp.sharedTextureMB) + "mb";
-            _sharedTexturesMax.text = "/ " + AbbreviateNumber(PerformanceResponse.MAX_SUGGESTED_SHARED_TEXTURE_MB) + "mb";
-            _materialTexturesCount.text = AbbreviateNumber(resp.materialTextureMB) + "mb";
-            _lightmapTexturesCount.text = AbbreviateNumber(resp.lightmapTextureMB) + "mb";
+            _sharedTexturesCount.text = EditorUtility.AbbreviateNumber(resp.sharedTextureMB) + "mb";
+            _sharedTexturesMax.text = "/ " + EditorUtility.AbbreviateNumber(PerformanceResponse.MAX_SUGGESTED_SHARED_TEXTURE_MB) + "mb";
+            _materialTexturesCount.text = EditorUtility.AbbreviateNumber(resp.materialTextureMB) + "mb";
+            _lightmapTexturesCount.text = EditorUtility.AbbreviateNumber(resp.lightmapTextureMB) + "mb";
             _reflectionProbeBlock.style.display = resp.reflectionProbeMB > 0 ? DisplayStyle.Flex : DisplayStyle.None;
-            _reflectionProbeCount.text = AbbreviateNumber(resp.reflectionProbeMB) + "mb";
+            _reflectionProbeCount.text = EditorUtility.AbbreviateNumber(resp.reflectionProbeMB) + "mb";
             _textureIcon.ClearClassList();
             SetBlockClassFromRatio(_textureIcon, resp.sharedTexturePercent);
 
             SetBaseClass(_materialsBlock);
             SetBlockClassFromRatio(_materialsBlock, resp.uniqueMaterialsPercent);
-            _materialsCount.text = AbbreviateNumber(resp.uniqueMaterials);
-            _materialsMax.text = "/ " + AbbreviateNumber(PerformanceResponse.MAX_SUGGESTED_UNIQUE_MATERIALS);
+            _materialsCount.text = EditorUtility.AbbreviateNumber(resp.uniqueMaterials);
+            _materialsMax.text = "/ " + EditorUtility.AbbreviateNumber(PerformanceResponse.MAX_SUGGESTED_UNIQUE_MATERIALS);
             _materialIcon.ClearClassList();
             SetBlockClassFromRatio(_materialIcon, resp.uniqueMaterialsPercent);
 
@@ -170,30 +170,6 @@ namespace SpatialSys.UnitySDK.Editor
             else
             {
                 element.AddToClassList(GREEN_BLOCK_CLASS);
-            }
-        }
-
-        private string AbbreviateNumber(int number)
-        {
-            if (number < 1000)
-            {
-                return number.ToString();
-            }
-            else if (number < 10000)
-            {
-                return (number / 1000f).ToString("0.#") + "K";
-            }
-            else if (number < 1000000)
-            {
-                return (number / 1000).ToString() + "K";
-            }
-            else if (number < 10000000)
-            {
-                return (number / 1000000f).ToString("0.#") + "M";
-            }
-            else
-            {
-                return (number / 1000000).ToString() + "M";
             }
         }
     }

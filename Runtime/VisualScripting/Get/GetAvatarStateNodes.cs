@@ -6,6 +6,8 @@ using Unity.VisualScripting;
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitTitle("Avatar State")]
+    [UnitCategory("Spatial\\Get Actions")]
+    [TypeIcon(typeof(SpatialComponentBase))]
     public class GetAvatarStateNode : Unit
     {
         [DoNotSerialize]
@@ -32,6 +34,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
     }
 
     [UnitTitle("Local Avatar State")]
+    [UnitCategory("Spatial\\Get Actions")]
+    [TypeIcon(typeof(SpatialComponentBase))]
     public class GetLocalAvatarStateNode : Unit
     {
         [DoNotSerialize]
@@ -44,7 +48,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         protected override void Definition()
         {
             avatarPosition = ValueOutput<Vector3>(nameof(avatarPosition), (f) => ClientBridge.GetLocalAvatarPosition.Invoke());
-            avatarRotation = ValueOutput<Quaternion>(nameof(avatarRotation), null);
+            avatarRotation = ValueOutput<Quaternion>(nameof(avatarRotation), (f) => ClientBridge.GetLocalAvatarRotation.Invoke());
         }
     }
 }

@@ -6,6 +6,8 @@ using Unity.VisualScripting;
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitTitle("Is Host")]
+    [UnitCategory("Spatial")]
+    [TypeIcon(typeof(SpatialComponentBase))]
     public class IsHostNode : Unit
     {
         [DoNotSerialize]

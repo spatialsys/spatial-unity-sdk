@@ -14,7 +14,7 @@
             <ui:Button text="Help" display-tooltip-when-elided="true" name="helpButton" class="tabButton" />
         </ui:VisualElement>
         <ui:ScrollView>
-            <ui:VisualElement name="account" style="align-items: center; display: flex; opacity: 1; flex-shrink: 0; justify-content: space-around;">
+            <ui:VisualElement name="account" style="align-items: center; display: none; opacity: 1; flex-shrink: 0; justify-content: space-around;">
                 <ui:VisualElement name="notLoggedInBlock" class="block_white block_red block_base">
                     <ui:Label text="Not Logged In" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
                     <ui:Label text="Follow the steps below to link your Spatial account with Unity." display-tooltip-when-elided="true" name="Text" class="blockText" />
@@ -56,7 +56,7 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement name="config" style="display: none;">
+            <ui:VisualElement name="config" style="display: flex;">
                 <ui:VisualElement name="configNull" style="align-items: center; display: flex; flex-shrink: 0; justify-content: space-around; flex-basis: auto;">
                     <ui:VisualElement name="notLoggedInBlock" class="block_white block_red block_base">
                         <ui:Label text="Config file not found" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
@@ -83,6 +83,10 @@
                         <ui:Button text="Publish" display-tooltip-when-elided="true" name="publishPackageButton" class="blockButton blockButton_small" style="margin-right: 10px;" />
                         <ui:Button text="Delete" display-tooltip-when-elided="true" name="deletePackageButton" class="blockButton blockButton_red blockButton_small" />
                     </ui:VisualElement>
+                    <ui:VisualElement name="packageType" style="flex-direction: row; margin-left: 3px; margin-right: 3px; margin-top: 1px; margin-bottom: 1px;">
+                        <ui:Label text="Type" display-tooltip-when-elided="true" enable-rich-text="false" class="unity-base-field__label" />
+                        <ui:Label text="Environment" display-tooltip-when-elided="true" enable-rich-text="false" name="packageTypeValue" style="color: rgb(168, 168, 168);" />
+                    </ui:VisualElement>
                     <ui:TextField picking-mode="Ignore" label="Name" password="false" multiline="false" binding-path="packageName" name="name" class="textField" />
                     <ui:VisualElement name="packageSKUEmpty" style="flex-direction: row; margin-left: 3px; margin-right: 3px; margin-top: 1px; margin-bottom: 1px;">
                         <ui:Label text="SKU" display-tooltip-when-elided="true" enable-rich-text="false" class="unity-base-field__label" />
@@ -93,7 +97,22 @@
                         <ui:Label display-tooltip-when-elided="true" enable-rich-text="false" name="skuValue" binding-path="sku" style="color: rgb(168, 168, 168); flex-grow: 1;" />
                         <ui:Button text="Copy" display-tooltip-when-elided="true" name="skuCopyButton" style="margin-right: 0; margin-top: 0; margin-bottom: 0;" />
                     </ui:VisualElement>
-                    <uie:PropertyField binding-path="variants" label="Environment Variants" name="variants" />
+                    <ui:VisualElement name="environmentConfig" style="margin-top: 10px;">
+                        <uie:PropertyField binding-path="variants" label="Environment Variants" name="variants" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="avatarConfig" style="margin-top: 10px;">
+                        <uie:PropertyField binding-path="prefab" label="Prefab" name="prefab" />
+                        <uie:PropertyField binding-path="usageContext" label="Usage Context" name="usageContext" />
+                        <uie:PropertyField binding-path="thumbnail" label="Thumbnail" name="thumbnail" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="avatarAnimationConfig" style="margin-top: 10px;">
+                        <uie:PropertyField binding-path="prefab" label="Prefab" name="prefab" />
+                        <uie:PropertyField binding-path="thumbnail" label="Thumbnail" name="thumbnail" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="prefabObjectConfig" style="margin-top: 10px; display: flex;">
+                        <uie:PropertyField binding-path="prefab" label="Prefab" name="prefab" />
+                        <uie:PropertyField binding-path="thumbnail" label="Thumbnail" name="thumbnail" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="issues" style="display: none; flex-grow: 1; flex-shrink: 0; height: 100%;">

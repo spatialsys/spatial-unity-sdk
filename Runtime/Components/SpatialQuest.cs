@@ -60,8 +60,10 @@ namespace SpatialSys.UnitySDK
         }
 
 #if UNITY_EDITOR
-        private void OnValidate()
+        protected override void OnValidate()
         {
+            base.OnValidate();
+
             // Check if a new instance or a duplicate was just made
             if (id == 0 || (Event.current != null && Event.current.type == EventType.ExecuteCommand && Event.current.commandName == "Duplicate"))
             {

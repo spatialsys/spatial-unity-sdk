@@ -6,6 +6,8 @@ using Unity.VisualScripting;
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitTitle("Add Force To Local Avatar")]
+    [UnitCategory("Spatial\\Actions")]
+    [TypeIcon(typeof(SpatialComponentBase))]
     public class AddForceToLocalAvatarNode : Unit
     {
         [DoNotSerialize]

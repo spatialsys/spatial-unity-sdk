@@ -29,6 +29,8 @@ namespace SpatialSys.UnitySDK.Editor
         private EnumField _configCreatePackageTypeDropdown;
         private VisualElement _packageConfigSKUEmptyElement;
         private VisualElement _packageConfigSKUElement;
+        private Label _configPackageType;
+        private Button _publishPackageButton;
 
         // Issue Tab Elements
         private const string _issuesContainerTemplatePath = "Packages/io.spatial.unitysdk/Editor/Scripts/GUI/ConfigWindow/IssueElement/SpatialValidatorIssueElement.uxml";
@@ -152,7 +154,9 @@ namespace SpatialSys.UnitySDK.Editor
             root.Q<Button>("skuCopyButton").clicked += () => {
                 EditorGUIUtility.systemCopyBuffer = ProjectConfig.activePackage.sku;
             };
-            root.Q<Button>("publishPackageButton").clicked += () => {
+
+            _publishPackageButton = root.Q<Button>("publishPackageButton");
+            _publishPackageButton.clicked += () => {
                 if (EditorApplication.isPlayingOrWillChangePlaymode)
                 {
                     UnityEditor.EditorUtility.DisplayDialog("Publish Package", "Cannot publish package while in play mode.", "Ok");
@@ -172,11 +176,12 @@ namespace SpatialSys.UnitySDK.Editor
                     });
             };
             root.Q<Button>("deletePackageButton").clicked += () => {
-                if (UnityEditor.EditorUtility.DisplayDialog("Delete Package", "Are you sure you want to delete this package?", "Yes", "No"))
+                if (UnityEditor.EditorUtility.DisplayDialog("Delete Package", $"Are you sure you want to delete {ProjectConfig.activePackage.packageName}?", "Yes", "No"))
                     ProjectConfig.RemovePackage(ProjectConfig.activePackage);
             };
             _packageConfigSKUEmptyElement = root.Q(PACKAGE_CONFIG_ELEMENT_NAME).Q("packageSKUEmpty");
             _packageConfigSKUElement = root.Q(PACKAGE_CONFIG_ELEMENT_NAME).Q("packageSKU");
+            _configPackageType = root.Q(PACKAGE_CONFIG_ELEMENT_NAME).Query<Label>("packageTypeValue").First();
 
             // Issues
             _issuesCountBlock = root.Q("issuesCountBlock");
@@ -258,15 +263,16 @@ namespace SpatialSys.UnitySDK.Editor
 
         private void UpdateConfigTabContents()
         {
+            PackageConfig packageConfig = ProjectConfig.activePackage;
             rootVisualElement.Q(PROJECT_CONFIG_NULL_ELEMENT_NAME).style.display = (ProjectConfig.instance == null) ? DisplayStyle.Flex : DisplayStyle.None;
             rootVisualElement.Q(PROJECT_CONFIG_ELEMENT_NAME).style.display = (ProjectConfig.instance != null) ? DisplayStyle.Flex : DisplayStyle.None;
-            rootVisualElement.Q(PACKAGE_CONFIG_ELEMENT_NAME).style.display = (ProjectConfig.activePackage != null) ? DisplayStyle.Flex : DisplayStyle.None;
+            rootVisualElement.Q(PACKAGE_CONFIG_ELEMENT_NAME).style.display = (packageConfig != null) ? DisplayStyle.Flex : DisplayStyle.None;
 
             // Active config dropdown
             _configActivePackageDropdown.SetEnabled(ProjectConfig.hasPackages);
             if (_configActivePackageDropdown.enabledSelf)
             {
-                Func<PackageConfig, string> getPackageDropdownLabel = (PackageConfig config) => config.packageName;
+                Func<PackageConfig, string> getPackageDropdownLabel = (PackageConfig config) => $"{config.packageType} - {config.packageName}";
 
                 // Update elements
                 if (_configActivePackageDropdown.choices == null || _configActivePackageDropdown.choices.Count != ProjectConfig.packages.Count)
@@ -274,15 +280,23 @@ namespace SpatialSys.UnitySDK.Editor
                 _configActivePackageDropdown.index = ProjectConfig.activePackageIndex;
 
                 // Update the selected label
-                if (ProjectConfig.activePackage != null)
-                    _configActivePackageDropdown.choices[ProjectConfig.activePackageIndex] = getPackageDropdownLabel(ProjectConfig.activePackage);
+                if (packageConfig != null)
+                    _configActivePackageDropdown.choices[ProjectConfig.activePackageIndex] = getPackageDropdownLabel(packageConfig);
             }
 
             // Active Package
-            if (ProjectConfig.activePackage != null)
+            if (packageConfig != null)
             {
-                _packageConfigSKUEmptyElement.style.display = (string.IsNullOrEmpty(ProjectConfig.activePackage.sku)) ? DisplayStyle.Flex : DisplayStyle.None;
-                _packageConfigSKUElement.style.display = (string.IsNullOrEmpty(ProjectConfig.activePackage.sku)) ? DisplayStyle.None : DisplayStyle.Flex;
+                _packageConfigSKUEmptyElement.style.display = (string.IsNullOrEmpty(packageConfig.sku)) ? DisplayStyle.Flex : DisplayStyle.None;
+                _packageConfigSKUElement.style.display = (string.IsNullOrEmpty(packageConfig.sku)) ? DisplayStyle.None : DisplayStyle.Flex;
+                _configPackageType.text = packageConfig.packageType.ToString();
+
+                rootVisualElement.Q("environmentConfig").style.display = (packageConfig.packageType == PackageType.Environment) ? DisplayStyle.Flex : DisplayStyle.None;
+                rootVisualElement.Q("avatarConfig").style.display = (packageConfig.packageType == PackageType.Avatar) ? DisplayStyle.Flex : DisplayStyle.None;
+                rootVisualElement.Q("avatarAnimationConfig").style.display = (packageConfig.packageType == PackageType.AvatarAnimation) ? DisplayStyle.Flex : DisplayStyle.None;
+                rootVisualElement.Q("prefabObjectConfig").style.display = (packageConfig.packageType == PackageType.PrefabObject) ? DisplayStyle.Flex : DisplayStyle.None;
+
+                _publishPackageButton.visible = packageConfig.packageType == PackageType.Environment;
             }
         }
 

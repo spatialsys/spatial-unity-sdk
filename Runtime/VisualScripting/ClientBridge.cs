@@ -52,5 +52,37 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public delegate bool HasLocalLovedSpaceDelegate();
         public static HasLocalLovedSpaceDelegate HasLocalLovedSpace;
+
+        public delegate void OpenURLDelegate(string url);
+        public static OpenURLDelegate OpenURL;
+
+        public delegate Vector3 GetCameraPositionDelegate();
+        public static GetCameraPositionDelegate GetCameraPosition;
+
+        public delegate Quaternion GetCameraRotationDelegate();
+        public static GetCameraRotationDelegate GetCameraRotation;
+
+        public delegate void SendToastDelegate(string message, float duration);
+        public static SendToastDelegate SendToast;
+
+        // Quests
+        public delegate void QuestDelegate(SpatialQuest quest);
+        public static QuestDelegate StartQuest;
+        public static QuestDelegate CompleteQuest;
+        public static QuestDelegate ResetQuest;
+
+        public delegate void QuestTaskDelegate(SpatialQuest quest, uint taskId);
+        public static QuestTaskDelegate StartQuestTask;
+        public static QuestTaskDelegate AddQuestTaskProgress;
+        public static QuestTaskDelegate CompleteQuestTask;
+
+        public delegate int GetQuestTaskProgressDelegate(SpatialQuest quest, uint task);
+        public static GetQuestTaskProgressDelegate GetQuestTaskProgress;
+
+        public delegate int GetQuestStatusDelegate(SpatialQuest quest);
+        public static GetQuestStatusDelegate GetQuestStatus;
+
+        public delegate int GetQuestTaskStatusDelegate(SpatialQuest quest, uint task);
+        public static GetQuestTaskStatusDelegate GetQuestTaskStatus;
     }
 }

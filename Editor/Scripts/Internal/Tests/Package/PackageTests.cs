@@ -90,6 +90,26 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
+        [PackageTest]
+        public static void CheckPackageType(PackageConfig config)
+        {
+            if (SpatialValidator.validationContext != ValidationContext.Publishing)
+                return;
+
+            // Temporarily disable publishing for new package types
+            if (config is not EnvironmentConfig)
+            {
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(
+                        config,
+                        TestResponseType.Fail,
+                        "Publishing for this package type is currently disabled",
+                        "Only environment packages are allowed to be published. For now, you can only test within the sandbox. We will open up publishing for this very soon!"
+                    )
+                );
+            }
+        }
+
         //--------------------------------------------------------------------------------------------------------------
         // Thumbnail tests
         //--------------------------------------------------------------------------------------------------------------
@@ -102,12 +122,41 @@ namespace SpatialSys.UnitySDK.Editor
                 for (int i = 0; i < envConfig.variants.Length; i++)
                 {
                     EnvironmentConfig.Variant variant = envConfig.variants[i];
-                    if (variant.thumbnail == null)
-                    {
-                        SpatialValidator.AddResponse(
-                            new SpatialTestResponse(envConfig, TestResponseType.Fail, $"Package Config has variant with no thumbnail assigned. Each variant must have a thumbnail assigned of size 1024x512. Index: {i}")
-                        );
-                    }
+                    CheckVariantThumbnailAssigned(config, variant.thumbnail, i);
+                }
+            }
+            else
+            {
+                CheckVariantThumbnailAssigned(config, config.thumbnail);
+            }
+        }
+
+        private static void CheckVariantThumbnailAssigned(PackageConfig config, Texture2D thumbnail, int? variantIndex = null)
+        {
+            if (thumbnail == null)
+            {
+                string thumbnailSizeString = $"{config.thumbnailDimensions.x}x{config.thumbnailDimensions.y}";
+                if (variantIndex.HasValue)
+                {
+                    SpatialValidator.AddResponse(
+                        new SpatialTestResponse(
+                            config,
+                            TestResponseType.Fail,
+                            $"Package config has a variant (index {variantIndex.Value}) with no thumbnail assigned",
+                            $"Assign a thumbnail of size {thumbnailSizeString} to this variant to fix this issue."
+                        )
+                    );
+                }
+                else
+                {
+                    SpatialValidator.AddResponse(
+                        new SpatialTestResponse(
+                            config,
+                            TestResponseType.Fail,
+                            "Package config has no thumbnail assigned",
+                            $"Assign a thumbnail of size {thumbnailSizeString} to fix this issue."
+                        )
+                    );
                 }
             }
         }
@@ -120,13 +169,17 @@ namespace SpatialSys.UnitySDK.Editor
                 for (int i = 0; i < envConfig.variants.Length; i++)
                 {
                     EnvironmentConfig.Variant variant = envConfig.variants[i];
-                    CheckVariantThumbnail(i, "thumbnail", variant.thumbnail, ProjectConfig.THUMBNAIL_TEXTURE_WIDTH, ProjectConfig.THUMBNAIL_TEXTURE_HEIGHT);
-                    CheckVariantThumbnail(i, "mini thumbnail", variant.miniThumbnail, ProjectConfig.MINI_THUMBNAIL_TEXTURE_WIDTH, ProjectConfig.MINI_THUMBNAIL_TEXTURE_HEIGHT);
+                    CheckVariantThumbnail(i, variant.thumbnail, config.thumbnailDimensions, "thumbnail");
+                    CheckVariantThumbnail(i, variant.miniThumbnail, EnvironmentConfig.MINI_THUMBNAIL_TEXTURE_DIMENSIONS, "mini thumbnail");
                 }
+            }
+            else
+            {
+                CheckVariantThumbnail(0, config.thumbnail, config.thumbnailDimensions);
             }
         }
 
-        private static void CheckVariantThumbnail(int variantIndex, string wording, Texture2D texture, int width, int height)
+        private static void CheckVariantThumbnail(int variantIndex, Texture2D texture, Vector2Int dimensions, string wording = "thumbnail")
         {
             // Enforce texture size and format
             //
@@ -140,20 +193,27 @@ namespace SpatialSys.UnitySDK.Editor
                 importer.ClearPlatformTextureSettings("Standalone");
                 importer.ClearPlatformTextureSettings("iPhone");
                 importer.ClearPlatformTextureSettings("Android");
-                importer.SetPlatformTextureSettings(new TextureImporterPlatformSettings() {
-                    name = "DefaultTexturePlatform",
-                    maxTextureSize = width,
-                    format = TextureImporterFormat.RGB24,
-                    textureCompression = TextureImporterCompression.Uncompressed,
-                });
-                AssetDatabase.ImportAsset(path);
-            }
 
-            // Is it the correct size and format?
-            if (texture != null && (texture.width != width || texture.height != height) && texture.format != TextureFormat.RGB24)
-            {
-                var resp = new SpatialTestResponse(texture, TestResponseType.Fail, $"Package Config has variant with incorrectly sized {wording}. Each variant must have a {wording} assigned of size {width}x{height} and have the RGB24 format. Index: {variantIndex}");
-                SpatialValidator.AddResponse(resp);
+                TextureImporterPlatformSettings defaultSettings = importer.GetDefaultPlatformTextureSettings();
+                defaultSettings.maxTextureSize = Mathf.Max(dimensions.x, dimensions.y);
+                defaultSettings.format = TextureImporterFormat.RGB24;
+                defaultSettings.textureCompression = TextureImporterCompression.Uncompressed;
+                importer.SetPlatformTextureSettings(defaultSettings);
+
+                importer.SaveAndReimport();
+
+                // Size can still be different from what was set on the importer.
+                if (texture.width != dimensions.x || texture.height != dimensions.y)
+                {
+                    SpatialValidator.AddResponse(
+                        new SpatialTestResponse(
+                            texture,
+                            TestResponseType.Fail,
+                            $"Package config has a variant (index {variantIndex}) with a {wording} with the incorrect size",
+                            $"Each variant must have a {wording} assigned of size {dimensions.x}x{dimensions.y}."
+                        )
+                    );
+                }
             }
         }
     }

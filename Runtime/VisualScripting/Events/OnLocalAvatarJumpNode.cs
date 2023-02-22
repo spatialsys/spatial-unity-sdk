@@ -5,6 +5,9 @@ using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
+    [UnitTitle("On Local Actor Jump")]
+    [UnitCategory("Events\\Spatial")]
+    [TypeIcon(typeof(SpatialComponentBase))]
     public class OnLocalAvatarJumpNode : EventUnit<EmptyEventArgs>
     {
         public static string eventName = "OnLocalAvatarJump";

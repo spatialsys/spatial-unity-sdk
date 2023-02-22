@@ -7,6 +7,8 @@ using Unity.VisualScripting;
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitTitle("On Space Loved")]
+    [UnitCategory("Events\\Spatial")]
+    [TypeIcon(typeof(SpatialComponentBase))]
     public class OnSpaceLovedNode : EventUnit<EmptyEventArgs>
     {
         public static string eventName = "OnSpaceLoved";

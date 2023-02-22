@@ -49,7 +49,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
 
             //users should not be adding environmentData to their scene. remove any
-            EnvironmentData[] dataInScene = GameObject.FindObjectsOfType<EnvironmentData>();
+            EnvironmentData[] dataInScene = GameObject.FindObjectsOfType<EnvironmentData>(true);
             for (int i = 0; i < dataInScene.Length; i++)
             {
                 UnityEngine.Object.DestroyImmediate(dataInScene[i]);
@@ -60,32 +60,32 @@ namespace SpatialSys.UnitySDK.Editor
             EnvironmentData data = g.AddComponent<EnvironmentData>();
 
             // Spatial components
-            data.seats = GameObject.FindObjectsOfType<SpatialSeatHotspot>();
-            data.entrancePoints = GameObject.FindObjectsOfType<SpatialEntrancePoint>();
-            data.triggerEvents = GameObject.FindObjectsOfType<SpatialTriggerEvent>();
-            data.emptyFrames = GameObject.FindObjectsOfType<SpatialEmptyFrame>();
-            data.avatarTeleporters = GameObject.FindObjectsOfType<SpatialAvatarTeleporter>();
-            data.cameraPassthroughs = GameObject.FindObjectsOfType<SpatialCameraPassthrough>();
-            data.thumbnailCamera = GameObject.FindObjectOfType<SpatialThumbnailCamera>();
+            data.seats = GameObject.FindObjectsOfType<SpatialSeatHotspot>(true);
+            data.entrancePoints = GameObject.FindObjectsOfType<SpatialEntrancePoint>(true);
+            data.triggerEvents = GameObject.FindObjectsOfType<SpatialTriggerEvent>(true);
+            data.emptyFrames = GameObject.FindObjectsOfType<SpatialEmptyFrame>(true);
+            data.avatarTeleporters = GameObject.FindObjectsOfType<SpatialAvatarTeleporter>(true);
+            data.cameraPassthroughs = GameObject.FindObjectsOfType<SpatialCameraPassthrough>(true);
+            data.thumbnailCamera = GameObject.FindObjectOfType<SpatialThumbnailCamera>(true);
             if (data.thumbnailCamera != null)
             {
                 data.thumbnailCamera.fieldOfView = data.thumbnailCamera.TryGetComponent(out Camera camera) ? camera.fieldOfView : 85f;
             }
-            data.projectorSurfaces = GameObject.FindObjectsOfType<SpatialProjectorSurface>();
+            data.projectorSurfaces = GameObject.FindObjectsOfType<SpatialProjectorSurface>(true);
             data.interactables = GameObject.FindObjectsOfType<SpatialInteractable>(true);
             data.pointsOfInterest = GameObject.FindObjectsOfType<SpatialPointOfInterest>(true);
             data.quests = GameObject.FindObjectsOfType<SpatialQuest>(true);
 
             // Unity components
-            data.renderingVolumes = GameObject.FindObjectsOfType<UnityEngine.Rendering.Volume>();
+            data.renderingVolumes = GameObject.FindObjectsOfType<UnityEngine.Rendering.Volume>(true);
             data.enableFog = RenderSettings.fog;
 
             // Environment Setting
-            SpatialEnvironmentSettingsOverrides environmentSettingsOverrides = GameObject.FindObjectOfType<SpatialEnvironmentSettingsOverrides>();
+            SpatialEnvironmentSettingsOverrides environmentSettingsOverrides = GameObject.FindObjectOfType<SpatialEnvironmentSettingsOverrides>(true);
             data.environmentSettings = environmentSettingsOverrides != null ? environmentSettingsOverrides.environmentSettings : new EnvironmentSettings();
 
             // Animators
-            Animator[] allAnimators = GameObject.FindObjectsOfType<Animator>();
+            Animator[] allAnimators = GameObject.FindObjectsOfType<Animator>(true);
             List<SpatialSyncedAnimator> foundSyncedAnimators = new List<SpatialSyncedAnimator>();
             List<Animator> foundUnsyncedAnimators = new List<Animator>();
             foreach (Animator foundAnimator in allAnimators)
@@ -167,7 +167,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
 
             // Delete non render texture cameras
-            Camera[] cameras = GameObject.FindObjectsOfType<Camera>();
+            Camera[] cameras = GameObject.FindObjectsOfType<Camera>(true);
             foreach (Camera camera in cameras)
             {
                 if (camera.targetTexture == null)

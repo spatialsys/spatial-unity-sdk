@@ -1,5 +1,7 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 
 using UnityToolbarExtender;
 using RSG;
@@ -25,12 +27,26 @@ namespace SpatialSys.UnitySDK.Editor
 
             using (new EditorGUI.DisabledScope(disabled: !string.IsNullOrEmpty(cannotTestReason)))
             {
-                // TODO: Add a mini window previewing what's about to be built, which will act as a confirmation as well so the dialog won't be necessary.
+                PackageConfig activeConfig = ProjectConfig.activePackage;
+                string buttonText, buttonTooltipText;
+
+                if (activeConfig is EnvironmentConfig)
+                {
+                    Scene scene = EditorSceneManager.GetActiveScene();
+                    buttonText = "Test Active Scene";
+                    buttonTooltipText = $"Builds the active scene ({scene.name}) for testing in the Spatial web app";
+                }
+                else
+                {
+                    buttonText = "Test Active Package";
+                    buttonTooltipText = $"Builds the active package ({activeConfig?.packageName}) for testing in the Spatial web app";
+                }
+
                 if (GUILayout.Button(new GUIContent(
-                        "▶️ Test Current Scene",
-                        !string.IsNullOrEmpty(cannotTestReason) ? cannotTestReason : $"Builds the current scene to test in the Spatial web app"
+                        $"▶️ {buttonText}",
+                        !string.IsNullOrEmpty(cannotTestReason) ? cannotTestReason : buttonTooltipText
                     )) &&
-                    UnityEditor.EditorUtility.DisplayDialog("Testing Space", $"You are about to export the current scene to the Spatial sandbox.", "Continue", "Cancel"))
+                    UnityEditor.EditorUtility.DisplayDialog("Testing Package", $"You are about to upload and test your package in the Spatial sandbox.", "Continue", "Cancel"))
                 {
                     UpgradeUtility.PerformUpgradeIfNecessaryForTestOrPublish()
                         .Then(() => {
@@ -66,6 +82,8 @@ namespace SpatialSys.UnitySDK.Editor
                 return $"Requires Unity {EditorUtility.CLIENT_UNITY_VERSION} to test in Spatial (currently using {Application.unityVersion})";
             if (EditorApplication.isPlayingOrWillChangePlaymode)
                 return "Feature disabled while in play mode";
+            if (ProjectConfig.activePackage == null)
+                return "There is no active package selected. You can create and select a package through the configuration window.";
 
             return null;
         }

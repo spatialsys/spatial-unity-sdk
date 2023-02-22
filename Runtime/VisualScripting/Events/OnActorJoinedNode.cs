@@ -6,6 +6,8 @@ using Unity.VisualScripting;
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitTitle("On Actor Joined")]
+    [UnitCategory("Events\\Spatial")]
+    [TypeIcon(typeof(SpatialComponentBase))]
     public class OnActorJoinedNode : EventUnit<int>
     {
         public static string eventName = "OnActorJoined";

@@ -14,6 +14,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
     }
 
     [UnitTitle("Get Actor Platform")]
+    [UnitCategory("Spatial\\Get Actions")]
+    [TypeIcon(typeof(SpatialComponentBase))]
     public class GetActorPlatformNode : Unit
     {
         [DoNotSerialize]
@@ -51,6 +53,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
     }
 
     [UnitTitle("Get Local Platform")]
+    [UnitCategory("Spatial\\Get Actions")]
+    [TypeIcon(typeof(SpatialComponentBase))]
     public class GetLocalActorPlatformNode : Unit
     {
         [DoNotSerialize]

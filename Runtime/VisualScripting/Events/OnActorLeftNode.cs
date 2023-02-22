@@ -6,6 +6,8 @@ using Unity.VisualScripting;
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitTitle("On Actor Left")]
+    [UnitCategory("Events\\Spatial")]
+    [TypeIcon(typeof(SpatialComponentBase))]
     public class OnActorLeftNode : EventUnit<int>
     {
         public static string eventName = "OnActorLeft";

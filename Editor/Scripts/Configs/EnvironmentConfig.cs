@@ -5,9 +5,13 @@ namespace SpatialSys.UnitySDK.Editor
 {
     public class EnvironmentConfig : PackageConfig
     {
+        public static readonly Vector2Int MINI_THUMBNAIL_TEXTURE_DIMENSIONS = new Vector2Int(64, 64);
+
         public Variant[] variants = new Variant[1] { new Variant() };
 
         public override PackageType packageType => PackageType.Environment;
+        public override Vector2Int thumbnailDimensions => new Vector2Int(1024, 512);
+        public override string bundleName => throw new System.InvalidOperationException("Access the bundle names through the variants array");
 
         [System.Serializable]
         public class Variant
@@ -16,25 +20,11 @@ namespace SpatialSys.UnitySDK.Editor
             [HideInInspector]
             public string id; // We want this to be unique and never change
             public SceneAsset scene = null;
-            public Texture2D thumbnail = null; // 1024x512
-            public Texture2D miniThumbnail = null; // 64x64
+            public Texture2D thumbnail = null;
+            public Texture2D miniThumbnail = null;
             public Color thumbnailColor = Color.blue;
 
-            public string bundleName
-            {
-                get
-                {
-                    if (scene == null)
-                        return null;
-
-                    string scenePath = AssetDatabase.GetAssetPath(scene);
-                    AssetImporter importer = AssetImporter.GetAtPath(scenePath);
-                    if (importer == null)
-                        return null;
-
-                    return importer.assetBundleName;
-                }
-            }
+            public string bundleName => EditorUtility.GetAssetBundleName(scene);
 
             public static string NewID()
             {

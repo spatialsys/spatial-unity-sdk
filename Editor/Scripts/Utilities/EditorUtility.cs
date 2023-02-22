@@ -68,6 +68,19 @@ namespace SpatialSys.UnitySDK.Editor
             return path;
         }
 
+        public static string GetAssetBundleName(Object asset)
+        {
+            if (asset == null)
+                return null;
+
+            string assetPath = AssetDatabase.GetAssetPath(asset);
+            AssetImporter importer = AssetImporter.GetAtPath(assetPath);
+            if (importer == null)
+                return null;
+
+            return importer.assetBundleName;
+        }
+
         public static void OpenSandboxInBrowser()
         {
             Application.OpenURL($"https://{SpatialAPI.SPATIAL_ORIGIN}/sandbox");
@@ -91,6 +104,36 @@ namespace SpatialSys.UnitySDK.Editor
         {
             attribute = method.GetCustomAttribute<T>();
             return attribute != null;
+        }
+
+        public static string FormatInteger(this int num)
+        {
+            // Add comma-separators (e.g. 1,000,000)
+            return num.ToString("N0");
+        }
+
+        public static string AbbreviateNumber(int number)
+        {
+            if (number < 1000)
+            {
+                return number.ToString();
+            }
+            else if (number < 10000)
+            {
+                return (number / 1000f).ToString("0.#") + "K";
+            }
+            else if (number < 1000000)
+            {
+                return (number / 1000).ToString() + "K";
+            }
+            else if (number < 10000000)
+            {
+                return (number / 1000000f).ToString("0.#") + "M";
+            }
+            else
+            {
+                return (number / 1000000).ToString() + "M";
+            }
         }
     }
 }

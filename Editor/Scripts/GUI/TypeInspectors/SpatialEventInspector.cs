@@ -17,10 +17,11 @@ namespace SpatialSys.UnitySDK.Editor
             public SerializedProperty isSynced;
             public ReorderableList animatorEventsList;
             public ReorderableList questEventsList;
-            public int eventCount => animatorEventsList.count + unityEventCalls.arraySize + questEventsList.count;
 
+            public int eventCount => animatorEventsList.count + unityEventCalls.arraySize + questEventsList.count;
         }
-        Dictionary<string, PropertyCache> _propCache = new Dictionary<string, PropertyCache>();
+
+        private Dictionary<string, PropertyCache> _propCache = new Dictionary<string, PropertyCache>();
 
         private PropertyCache GetPropertyCache(SerializedProperty property)
         {
@@ -29,6 +30,7 @@ namespace SpatialSys.UnitySDK.Editor
                 var propertyCache = new PropertyCache();
 
                 propertyCache.serializedObject = property.serializedObject;
+
                 // Unity Events
                 propertyCache.unityEvent = property.FindPropertyRelative(nameof(SpatialEvent.unityEvent));
                 propertyCache.unityEventCalls = propertyCache.unityEvent.FindPropertyRelative("m_PersistentCalls.m_Calls");
@@ -45,8 +47,8 @@ namespace SpatialSys.UnitySDK.Editor
                     EditorGUI.PropertyField(rect, animatorEvents.GetArrayElementAtIndex(index));
                 };
                 propertyCache.animatorEventsList.elementHeightCallback += idx => {
-                    SerializedProperty elementProp = animatorEvents.GetArrayElementAtIndex( idx );
-                    return EditorGUI.GetPropertyHeight( elementProp );
+                    SerializedProperty elementProp = animatorEvents.GetArrayElementAtIndex(idx);
+                    return EditorGUI.GetPropertyHeight(elementProp);
                 };
 
                 // Quest Events
@@ -60,8 +62,8 @@ namespace SpatialSys.UnitySDK.Editor
                     EditorGUI.PropertyField(rect, questEvents.GetArrayElementAtIndex(index));
                 };
                 propertyCache.questEventsList.elementHeightCallback += idx => {
-                    SerializedProperty elementProp = questEvents.GetArrayElementAtIndex( idx );
-                    return EditorGUI.GetPropertyHeight( elementProp );
+                    SerializedProperty elementProp = questEvents.GetArrayElementAtIndex(idx);
+                    return EditorGUI.GetPropertyHeight(elementProp);
                 };
                 _propCache.Add(property.propertyPath, propertyCache);
             }
@@ -86,17 +88,17 @@ namespace SpatialSys.UnitySDK.Editor
             property.isExpanded = EditorGUI.BeginFoldoutHeaderGroup(rect, property.isExpanded, title, EditorStyles.toolbarButton);
             {
                 rect.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing * 2;
-                
+
                 if (property.isExpanded)
                 {
                     rect.x += 8;
                     rect.width -= 8;
 
                     EditorGUI.PropertyField(rect, propertyCache.isSynced);
-                    rect.y += EditorGUI.GetPropertyHeight( propertyCache.isSynced );
+                    rect.y += EditorGUI.GetPropertyHeight(propertyCache.isSynced);
 
                     EditorGUI.PropertyField(rect, propertyCache.unityEvent);
-                    rect.y += EditorGUI.GetPropertyHeight( propertyCache.unityEvent );
+                    rect.y += EditorGUI.GetPropertyHeight(propertyCache.unityEvent);
 
                     propertyCache.animatorEventsList.DoList(rect);
                     rect.y += propertyCache.animatorEventsList.GetHeight();

@@ -13,10 +13,6 @@ namespace SpatialSys.UnitySDK.Editor
     {
         public const string CONFIG_DIRECTORY = "Assets/Spatial";
         public const string ASSET_PATH = "Assets/Spatial/ProjectConfig.asset";
-        public const int THUMBNAIL_TEXTURE_WIDTH = 1024;
-        public const int THUMBNAIL_TEXTURE_HEIGHT = 512;
-        public const int MINI_THUMBNAIL_TEXTURE_WIDTH = 64;
-        public const int MINI_THUMBNAIL_TEXTURE_HEIGHT = 64;
         public const int LATEST_VERSION = 1;
 
         public static ProjectConfig instance => AssetDatabase.LoadAssetAtPath<ProjectConfig>(ASSET_PATH);
@@ -134,7 +130,15 @@ namespace SpatialSys.UnitySDK.Editor
                 case PackageType.Environment:
                     packageConfigType = typeof(EnvironmentConfig);
                     break;
-
+                case PackageType.Avatar:
+                    packageConfigType = typeof(AvatarConfig);
+                    break;
+                case PackageType.AvatarAnimation:
+                    packageConfigType = typeof(AvatarAnimationConfig);
+                    break;
+                case PackageType.PrefabObject:
+                    packageConfigType = typeof(PrefabObjectConfig);
+                    break;
                 default:
                     throw new System.Exception($"Package type {type} is not yet supported");
             }
@@ -171,13 +175,12 @@ namespace SpatialSys.UnitySDK.Editor
             if (activePackage != null && activePackage.IsMainAssetForPackage(sourceAsset))
                 return;
 
-            // Find the package the current scene is assigned to
             foreach (PackageConfig package in ProjectConfig.packages)
             {
                 if (package.IsMainAssetForPackage(sourceAsset))
                 {
                     SetActivePackage(package);
-                    return;
+                    break;
                 }
             }
         }
@@ -193,7 +196,6 @@ namespace SpatialSys.UnitySDK.Editor
             int index = instance._packages.IndexOf(package);
             if (index >= 0)
             {
-                Debug.Log($"Setting active package to {package.packageName}");
                 instance._currentPackageIndex = index;
                 UnityEditor.EditorUtility.SetDirty(instance);
                 AssetDatabase.SaveAssets();

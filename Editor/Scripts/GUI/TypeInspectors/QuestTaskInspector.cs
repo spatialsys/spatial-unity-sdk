@@ -6,7 +6,8 @@ namespace SpatialSys.UnitySDK.Editor
     [CustomPropertyDrawer(typeof(SpatialQuest.Task))]
     public class QuestTaskInspector : UnityEditor.PropertyDrawer
     {
-        Dictionary<string, float> _heights = new Dictionary<string, float>();
+        private Dictionary<string, float> _heights = new Dictionary<string, float>();
+
         public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
         {
             SerializedProperty idProp = property.FindPropertyRelative(nameof(SpatialQuest.Task.id));
@@ -51,7 +52,7 @@ namespace SpatialSys.UnitySDK.Editor
             _heights[property.propertyPath] = rect.y - startY;
         }
 
-        void DrawProperty(ref Rect rect, SerializedProperty property)
+        private void DrawProperty(ref Rect rect, SerializedProperty property)
         {
             float height = EditorGUI.GetPropertyHeight(property);
             rect.height = height;

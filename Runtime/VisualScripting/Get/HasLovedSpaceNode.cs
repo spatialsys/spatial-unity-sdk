@@ -6,6 +6,8 @@ using Unity.VisualScripting;
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitTitle("Has Loved Space")]
+    [UnitCategory("Spatial")]
+    [TypeIcon(typeof(SpatialComponentBase))]
     public class HasLovedSpaceNode : Unit
     {
         [DoNotSerialize]

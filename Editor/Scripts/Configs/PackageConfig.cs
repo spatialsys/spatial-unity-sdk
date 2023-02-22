@@ -2,9 +2,13 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK.Editor
 {
+    // Sync any changes here with the corresponding enum in the Spatial API
     public enum PackageType
     {
         Environment = 0,
+        Avatar = 1,
+        AvatarAnimation = 2,
+        PrefabObject = 3,
     }
 
     /// <summary>
@@ -21,11 +25,14 @@ namespace SpatialSys.UnitySDK.Editor
         public string sku = "";
         [Tooltip("Display name of the asset as it would show up in Spatial")]
         public string packageName;
+        public Texture2D thumbnail = null;
 
         public abstract PackageType packageType { get; }
+        public abstract Vector2Int thumbnailDimensions { get; }
+        public abstract string bundleName { get; }
 
         /// <summary>
-        /// This this asset the main asset for the package (or any of its variants if it supports variants)
+        /// Is this the main asset for the package (or any of its variants, if it supports variants)
         /// </summary>
         public abstract bool IsMainAssetForPackage(Object asset);
     }
