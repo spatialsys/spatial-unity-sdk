@@ -324,7 +324,7 @@ namespace SpatialSys.UnitySDK.Editor
         {
             string assetPath = AssetDatabase.GetAssetPath(asset);
             AssetImporter importer = AssetImporter.GetAtPath(assetPath);
-            importer.assetBundleName = GetBundleNameForPackageAsset(packageName);
+            importer.assetBundleName = GetBundleNameForPackageAsset(packageName, variantName, variantID);
             AssetDatabase.SaveAssetIfDirty(importer);
         }
 
