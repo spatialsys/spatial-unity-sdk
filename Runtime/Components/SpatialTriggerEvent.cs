@@ -12,7 +12,7 @@ namespace SpatialSys.UnitySDK
 
         public override string prettyName => "Trigger Event";
         public override string tooltip => "Invokes the UnityEvent when an object enters the trigger.";
-        public override string documentationURL => "https://www.notion.so/spatialxr/Trigger-Event-6165695d8f1c423881c9d75935c7d934";
+        public override string documentationURL => "https://spatialxr.notion.site/Trigger-Event-6165695d8f1c423881c9d75935c7d934";
         public override bool isExperimental => true;
 
         public enum ListenFor

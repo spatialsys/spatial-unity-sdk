@@ -481,26 +481,9 @@ namespace SpatialSys.UnitySDK.Editor
             if (_elementToReponse.TryGetValue(_selectedIssue, out SpatialTestResponse response))
             {
                 response.InvokeAutoFix(); // This might switch the scene.
-                if (response.responseType == TestResponseType.Fail)
-                {
-                    _errorIssues.Remove(_selectedIssue);
-                    rootVisualElement.Query<Button>("errorsButton").First().text = _errorIssues.Count.ToString() + " Errors";
-                }
-                else
-                {
-                    _warningIssues.Remove(_selectedIssue);
-                    rootVisualElement.Query<Button>("warningsButton").First().text = _warningIssues.Count.ToString() + " Warnings";
-                }
-                _elementToReponse.Remove(_selectedIssue);
-                _issueListParent.Remove(_selectedIssue.parent);
-                if (_elementToReponse.Keys.Count > 0)
-                {
-                    SelectIssue(_elementToReponse.Keys.ElementAt(0));
-                }
-                else
-                {
-                    SelectIssue(null);
-                }
+
+                // Re-run tests to refresh UI
+                RefreshIssuesButton();
             }
         }
 

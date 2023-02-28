@@ -5,6 +5,7 @@ using SpatialSys.UnitySDK;
 
 namespace SpatialSys.UnitySDK
 {
+    [DisallowMultipleComponent]
     public class SpatialQuest : SpatialComponentBase
     {
         public const int LATEST_VERSION = 1;
@@ -12,7 +13,7 @@ namespace SpatialSys.UnitySDK
         public override string prettyName => "Quest";
         public override string tooltip => $"This components describes a quest and its tasks.";
 
-        public override string documentationURL => "https://www.notion.so/spatialxr/Quest-d2a35bd2b19f4b3d9288d23ebb816fc9";
+        public override string documentationURL => "https://spatialxr.notion.site/Quest-d2a35bd2b19f4b3d9288d23ebb816fc9";
         public override bool isExperimental => true;
 
         [ReadOnly]

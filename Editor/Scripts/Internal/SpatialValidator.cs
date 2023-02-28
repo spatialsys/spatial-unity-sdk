@@ -153,9 +153,25 @@ namespace SpatialSys.UnitySDK.Editor
 
             foreach (var component in g.GetComponents<Component>())
             {
-                // null-check here because components can be null if script is missing
-                if (component != null)
+                // Null components are missing scripts
+                if (component == null)
+                {
+                    // We only need to warn on build machines, because we remove all null components in the SceneProcessor build step
+                    var resp = new SpatialTestResponse(
+                        g,
+                        Application.isBatchMode ? TestResponseType.Warning : TestResponseType.Fail, // Don't fail on build machines
+                        $"GameObject {g.GetPath()} has a missing script",
+                        "Missing scripts should be removed so that they don't cause errors or unexpected behavior."
+                    );
+                    resp.SetAutoFix(true, "Remove component", (g) => {
+                        GameObjectUtility.RemoveMonoBehavioursWithMissingScript(g as GameObject);
+                    });
+                    SpatialValidator.AddResponse(resp);
+                }
+                else
+                {
                     RunComponentTests(component);
+                }
             }
 
             foreach (Transform child in g.transform)

@@ -24,7 +24,7 @@ namespace SpatialSys.UnitySDK
 
         public override string prettyName => "Interactable";
         public override string tooltip => "An object that users can interact with to trigger an event";
-        public override string documentationURL => "https://www.notion.so/spatialxr/Interactable-6fd1393ccb75422ba459e9f08ad48bb5";
+        public override string documentationURL => "https://spatialxr.notion.site/Interactable-6fd1393ccb75422ba459e9f08ad48bb5";
         public override bool isExperimental => true;
 
         public string interactText = "Interact";

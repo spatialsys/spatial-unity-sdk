@@ -170,14 +170,13 @@ namespace SpatialSys.UnitySDK.Editor
         /// </summary>
         public static void SetActivePackageBySourceAsset(UnityEngine.Object sourceAsset)
         {
-            // If this is the source asset for the currently active package, don't search for it
-            // because some packages may use the same scene asset
-            if (activePackage != null && activePackage.IsMainAssetForPackage(sourceAsset))
+            // The active package already uses this source asset.
+            if (activePackage != null && activePackage.ContainsAsset(sourceAsset))
                 return;
 
             foreach (PackageConfig package in ProjectConfig.packages)
             {
-                if (package.IsMainAssetForPackage(sourceAsset))
+                if (package.ContainsAsset(sourceAsset))
                 {
                     SetActivePackage(package);
                     break;

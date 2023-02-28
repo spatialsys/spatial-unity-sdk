@@ -11,7 +11,7 @@ namespace SpatialSys.UnitySDK
         public override string prettyName => "Environment Settings Overrides";
         public override string tooltip => "Use to override environment settings.";
 
-        public override string documentationURL => "https://www.notion.so/spatialxr/Environment-Setting-47f6abd36fc1485f918e64324406f6f4";
+        public override string documentationURL => "https://spatialxr.notion.site/Environment-Setting-47f6abd36fc1485f918e64324406f6f4";
 
         protected override bool _limitOnePerScene => true;
 

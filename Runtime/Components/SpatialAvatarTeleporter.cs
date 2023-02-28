@@ -9,7 +9,7 @@ namespace SpatialSys.UnitySDK
     {
         public override string prettyName => "Avatar Teleporter";
         public override string tooltip => "When an avatar enters the trigger area teleport them to the target location.";
-        public override string documentationURL => "https://www.notion.so/spatialxr/Avatar-Teleporter-4d56765a149e427cabe62a0c3057242c";
+        public override string documentationURL => "https://spatialxr.notion.site/Avatar-Teleporter-4d56765a149e427cabe62a0c3057242c";
 
         public Transform targetLocation;
 

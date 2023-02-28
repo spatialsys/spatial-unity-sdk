@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -32,8 +33,42 @@ namespace SpatialSys.UnitySDK.Editor
         public abstract string bundleName { get; }
 
         /// <summary>
-        /// Is this the main asset for the package (or any of its variants, if it supports variants)
+        /// A collection of all assets (excluding their dependencies) that this package uses.
         /// </summary>
-        public abstract bool IsMainAssetForPackage(Object asset);
+        public abstract IEnumerable<Object> assets { get; }
+
+        /// <summary>
+        /// A collection of all game objects contained within `assets`
+        /// </summary>
+        public IEnumerable<GameObject> gameObjectAssets
+        {
+            get
+            {
+                foreach (Object asset in assets)
+                {
+                    if (asset is GameObject go)
+                    {
+                        yield return go;
+                    }
+                    else if (asset is Component comp)
+                    {
+                        yield return comp.gameObject;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Is this asset used within this package
+        /// </summary>
+        public bool ContainsAsset(Object target)
+        {
+            foreach (Object asset in assets)
+            {
+                if (asset == target)
+                    return true;
+            }
+            return false;
+        }
     }
 }

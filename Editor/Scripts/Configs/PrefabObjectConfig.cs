@@ -1,5 +1,5 @@
-using UnityEditor;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -10,10 +10,13 @@ namespace SpatialSys.UnitySDK.Editor
         public override PackageType packageType => PackageType.PrefabObject;
         public override Vector2Int thumbnailDimensions => new Vector2Int(512, 512);
         public override string bundleName => EditorUtility.GetAssetBundleName(prefab);
-
-        public override bool IsMainAssetForPackage(Object asset)
+        public override IEnumerable<Object> assets
         {
-            return asset == prefab;
+            get
+            {
+                if (prefab != null)
+                    yield return prefab;
+            }
         }
     }
 }

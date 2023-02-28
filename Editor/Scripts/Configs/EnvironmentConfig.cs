@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -12,6 +13,17 @@ namespace SpatialSys.UnitySDK.Editor
         public override PackageType packageType => PackageType.Environment;
         public override Vector2Int thumbnailDimensions => new Vector2Int(1024, 512);
         public override string bundleName => throw new System.InvalidOperationException("Access the bundle names through the variants array");
+        public override IEnumerable<Object> assets
+        {
+            get
+            {
+                foreach (Variant variant in variants)
+                {
+                    if (variant.scene != null)
+                        yield return variant.scene;
+                }
+            }
+        }
 
         [System.Serializable]
         public class Variant
@@ -56,17 +68,6 @@ namespace SpatialSys.UnitySDK.Editor
                 if (string.IsNullOrEmpty(variant.id))
                     variant.id = Variant.NewID();
             }
-        }
-
-        public override bool IsMainAssetForPackage(Object asset)
-        {
-            foreach (Variant variant in variants)
-            {
-                if (variant.scene == asset)
-                    return true;
-            }
-
-            return false;
         }
     }
 }

@@ -110,6 +110,36 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
+        [PackageTest]
+        public static void EnsureNoMultiplePackageAssetComponents(PackageConfig config)
+        {
+            foreach (GameObject go in config.gameObjectAssets)
+            {
+                SpatialPackageAsset[] pkgComponents = go.GetComponentsInChildren<SpatialPackageAsset>();
+
+                if (pkgComponents.Length > 1)
+                {
+                    IEnumerable<Type> componentTypes = pkgComponents.Select(cmp => cmp.GetType());
+                    IEnumerable<string> componentNamesWithInstanceCount = componentTypes
+                        .Distinct()
+                        .Select(type => {
+                            int typeInstanceCount = componentTypes.Count(t => t == type);
+                            return $"- {typeInstanceCount} instance(s) of {type.Name}";
+                        });
+
+                    SpatialValidator.AddResponse(
+                        new SpatialTestResponse(
+                            go,
+                            TestResponseType.Fail,
+                            "This game object contains multiple package asset components on the object and it's children",
+                            "The component names are listed below. There should only be one of these attached to this object.\n" +
+                                string.Join('\n', componentNamesWithInstanceCount)
+                        )
+                    );
+                }
+            }
+        }
+
         //--------------------------------------------------------------------------------------------------------------
         // Thumbnail tests
         //--------------------------------------------------------------------------------------------------------------
@@ -170,7 +200,10 @@ namespace SpatialSys.UnitySDK.Editor
                 {
                     EnvironmentConfig.Variant variant = envConfig.variants[i];
                     CheckVariantThumbnail(i, variant.thumbnail, config.thumbnailDimensions, "thumbnail");
-                    CheckVariantThumbnail(i, variant.miniThumbnail, EnvironmentConfig.MINI_THUMBNAIL_TEXTURE_DIMENSIONS, "mini thumbnail");
+
+                    // Only need to check mini thumbnail if there are multiple variants
+                    if (envConfig.variants.Length > 1)
+                        CheckVariantThumbnail(i, variant.miniThumbnail, EnvironmentConfig.MINI_THUMBNAIL_TEXTURE_DIMENSIONS, "mini thumbnail");
                 }
             }
             else

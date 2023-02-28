@@ -10,7 +10,7 @@ namespace SpatialSys.UnitySDK
         public override string prettyName => "Thumbnail Camera";
         public override string tooltip => "Use to specify the location in which live thumbnails are captured for your space. These are the thumbnails you will see in your spaces list or on the Spatial homepage.";
 
-        public override string documentationURL => "https://www.notion.so/spatialxr/Thumbnail-Camera-40283993ab6f4a4abf15190a20cf63ef";
+        public override string documentationURL => "https://spatialxr.notion.site/Thumbnail-Camera-40283993ab6f4a4abf15190a20cf63ef";
 
         [HideInInspector]
         public float fieldOfView;// set during scene process

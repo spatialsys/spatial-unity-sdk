@@ -1,11 +1,12 @@
-using System.Collections;
+using System;
+using System.IO;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Video;
 using UnityEngine.SceneManagement;
 using UnityEditor.SceneManagement;
 using UnityEditor;
-using System.IO;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -131,6 +132,66 @@ namespace SpatialSys.UnitySDK.Editor
                     $"Lightmapping auto generation was turned off for {Path.GetFileNameWithoutExtension(scene.path)}",
                     "This prevents issues with long build times if GI baking takes a long time."
                 ));
+            }
+        }
+
+        [SceneTest]
+        public static void UnityEventSecurityTest(Scene scene)
+        {
+            if (SpatialValidator.validationContext != ValidationContext.Publishing)
+                return;
+
+            var assemblyList = new HashSet<string>(NodeFilter.assemblyAllowList);
+            bool previousLineWasPropertyPath = false;
+
+            foreach (string line in File.ReadLines(scene.path))
+            {
+                string eventTypeStr = null;
+                if (previousLineWasPropertyPath)
+                {
+                    previousLineWasPropertyPath = false;
+                    string[] splitString = line.Split("value:");
+                    if (splitString.Length < 2)
+                    {
+                        continue;
+                    }
+                    eventTypeStr = splitString[1].Trim();
+                }
+                else if (!line.Contains("m_TargetAssemblyTypeName"))
+                {
+                    continue;
+                }
+                else if (line.Contains("propertyPath"))
+                {
+                    previousLineWasPropertyPath = true;
+                    continue;
+                }
+                else
+                {
+                    string[] splitString = line.Split("m_TargetAssemblyTypeName:");
+                    if (splitString.Length < 2)
+                    {
+                        continue;
+                    }
+                    eventTypeStr = splitString[1].Trim();
+                }
+
+                if (!string.IsNullOrEmpty(eventTypeStr))
+                {
+                    Type t = Type.GetType(eventTypeStr);
+                    //null t could be targeting an internal type, so we still need to flag them.
+                    if (t != null && typeof(UnityEngine.Object).IsAssignableFrom(t) && assemblyList.Contains(t.Assembly.GetName().Name))
+                    {
+                        continue;
+                    }
+
+                    SpatialValidator.AddResponse(new SpatialTestResponse(
+                        null,
+                        TestResponseType.Fail,
+                        "Unsupported UnityEvent Type",
+                        $"UnityEvent of type \"{eventTypeStr}\" was found in {scene.name}. Only Unity Events targeting a UnityEngine.Object are supported."
+                    ));
+                }
             }
         }
     }

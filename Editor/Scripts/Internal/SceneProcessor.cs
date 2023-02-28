@@ -31,8 +31,8 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 foreach (var component in rootGO.GetComponentsInChildren<Component>(true))
                 {
-                    // component == null can be true if a component script is missing
-                    if (component == null || component.GetType().GetCustomAttributes(typeof(EditorOnlyAttribute), true).Length > 0)
+                    // component can be null if script is missing
+                    if (component != null && component.GetType().GetCustomAttributes(typeof(EditorOnlyAttribute), true).Length > 0)
                         UnityEngine.Object.DestroyImmediate(component);
                 }
             }
@@ -43,8 +43,21 @@ namespace SpatialSys.UnitySDK.Editor
                 foreach (var transform in rootGO.GetComponentsInChildren<Transform>(true))
                 {
                     // nullcheck necessary in case game object was already destroyed
-                    if (transform != null && transform.gameObject.CompareTag("EditorOnly"))
-                        UnityEngine.Object.DestroyImmediate(transform.gameObject);
+                    if (transform != null)
+                    {
+                        // Remove "EditorOnly" tagged game objects
+                        if (transform.gameObject.CompareTag("EditorOnly"))
+                        {
+                            UnityEngine.Object.DestroyImmediate(transform.gameObject);
+                        }
+                        else
+                        {
+                            // Remove "missing script components" from game object
+                            // !! NOTE: We always want to remove "missing script" components, removing this logic may cause
+                            //  assets to behave differently as the Spatial runtime available components change over time
+                            GameObjectUtility.RemoveMonoBehavioursWithMissingScript(transform.gameObject);
+                        }
+                    }
                 }
             }
 

@@ -8,9 +8,10 @@ namespace SpatialSys.UnitySDK
     {
         public override string prettyName => "Projector Surface";
         public override string tooltip => "Define a surface that can be used to project screen-shares and video streams on to.";
+        public override string documentationURL => null;
 
         public float size = 1f;
-        public bool dotsVisible;
+        public bool dotsVisible = false;
 
         private void OnDrawGizmos()
         {

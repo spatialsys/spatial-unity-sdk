@@ -299,33 +299,31 @@ namespace SpatialSys.UnitySDK.Editor
                 // Assign a unique asset bundle name to each scene
                 foreach (EnvironmentConfig.Variant variant in envConfig.variants)
                 {
-                    AssignBundleNameToAsset(variant.scene, config.packageName, variant.name, variant.id);
+                    string variantBundleName = GetBundleNameForPackageAsset(config.packageName, variant.name, variant.id);
+                    EditorUtility.SetAssetBundleName(variant.scene, variantBundleName);
                 }
             }
-            else if (config is AvatarConfig avatarConfig)
+            else
             {
-                AssignBundleNameToAsset(avatarConfig.prefab, config.packageName);
-            }
-            else if (config is AvatarAnimationConfig avatarAnimConfig)
-            {
-                AssignBundleNameToAsset(avatarAnimConfig.prefab, config.packageName);
-            }
-            else if (config is PrefabObjectConfig prefabObjectConfig)
-            {
-                AssignBundleNameToAsset(prefabObjectConfig.prefab, config.packageName);
+                string assetBundleName = GetBundleNameForPackageAsset(config.packageName);
+
+                switch (config)
+                {
+                    case AvatarConfig avatarConfig:
+                        EditorUtility.SetAssetBundleName(avatarConfig.prefab, assetBundleName);
+                        break;
+                    case AvatarAnimationConfig avatarAnimConfig:
+                        EditorUtility.SetAssetBundleName(avatarAnimConfig.prefab, assetBundleName);
+                        break;
+                    case PrefabObjectConfig prefabObjectConfig:
+                        EditorUtility.SetAssetBundleName(prefabObjectConfig.prefab, assetBundleName);
+                        break;
+                }
             }
 
             UnityEditor.EditorUtility.SetDirty(config);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-        }
-
-        private static void AssignBundleNameToAsset(UnityEngine.Object asset, string packageName, string variantName = "default", string variantID = "0")
-        {
-            string assetPath = AssetDatabase.GetAssetPath(asset);
-            AssetImporter importer = AssetImporter.GetAtPath(assetPath);
-            importer.assetBundleName = GetBundleNameForPackageAsset(packageName, variantName, variantID);
-            AssetDatabase.SaveAssetIfDirty(importer);
         }
 
         /// <summary>

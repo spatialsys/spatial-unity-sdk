@@ -81,6 +81,24 @@ namespace SpatialSys.UnitySDK.Editor
             return importer.assetBundleName;
         }
 
+        /// <summary>
+        /// Returns true if it successfully set the asset's bundle name.
+        /// </summary>
+        public static bool SetAssetBundleName(Object asset, string bundleName)
+        {
+            if (asset == null)
+                return false;
+
+            string assetPath = AssetDatabase.GetAssetPath(asset);
+            AssetImporter importer = AssetImporter.GetAtPath(assetPath);
+            if (importer == null)
+                return false;
+
+            importer.assetBundleName = bundleName;
+            importer.SaveAndReimport();
+            return true;
+        }
+
         public static void OpenSandboxInBrowser()
         {
             Application.OpenURL($"https://{SpatialAPI.SPATIAL_ORIGIN}/sandbox");
