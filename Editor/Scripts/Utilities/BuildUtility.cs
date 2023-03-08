@@ -11,12 +11,12 @@ using UnityEngine.Build.Pipeline;
 
 namespace SpatialSys.UnitySDK.Editor
 {
-    public class BuildUtility
+    public static class BuildUtility
     {
         public static string BUILD_DIR = "Exports";
         public static string PACKAGE_EXPORT_PATH = Path.Combine(BUILD_DIR, "spaces.unitypackage");
         public static readonly string[] INVALID_BUNDLE_NAME_CHARS = new string[] { " ", "_", ".", ",", "(", ")", "[", "]", "{", "}", "!", "@", "#", "$", "%", "^", "&", "*", "+", "=", "|", "\\", "/", "?", "<", ">", "`", "~", "'", "\"", ":", ";" };
-        public static int MAX_SANDBOX_BUNDLE_SIZE = 100 * 1024 * 1024; // 100 MB
+        public static int MAX_SANDBOX_BUNDLE_SIZE = 1000 * 1024 * 1024; // 1 GB; It's higher than the package size limit because we want to allow people to mess around more in the sandbox
         public static int MAX_PACKAGE_SIZE = 500 * 1024 * 1024; // 500 MB
 
         private static float _lastUploadProgress;
@@ -27,25 +27,29 @@ namespace SpatialSys.UnitySDK.Editor
             EditorSceneManager.SaveOpenScenes();
 
             PackageConfig activeConfig = ProjectConfig.activePackage;
-            bool validationHasErrors = false;
+            SpatialValidationSummary validationSummary;
 
-            if (activeConfig is EnvironmentConfig)
+            if (activeConfig.isSpaceBasedPackage)
             {
                 // Make sure the active package is set to the one that contains the active scene
                 SceneAsset currentScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
                 ProjectConfig.SetActivePackageBySourceAsset(currentScene);
 
-                validationHasErrors = !SpatialValidator.RunTestsOnActiveScene(ValidationContext.Testing);
+                validationSummary = SpatialValidator.RunTestsOnActiveScene(ValidationContext.Testing);
             }
             else
             {
-                validationHasErrors = !SpatialValidator.RunTestsOnPackage(ValidationContext.Testing);
+                validationSummary = SpatialValidator.RunTestsOnPackage(ValidationContext.Testing);
             }
 
-            if (validationHasErrors)
+            if (validationSummary == null)
+                return Promise.Rejected(new Exception("Package validation failed to run"));
+
+            if (validationSummary.failed || validationSummary.passedWithWarnings)
             {
                 SpatialSDKConfigWindow.OpenWindow("issues");
-                return Promise.Rejected(new Exception("Package has errors"));
+                if (validationSummary.failed)
+                    return Promise.Rejected(new Exception("Package has errors"));
             }
 
             // Auto-assign necessary bundle names
@@ -68,15 +72,15 @@ namespace SpatialSys.UnitySDK.Editor
             if (bundleManifest == null)
                 return Promise.Rejected(new System.Exception("Something went wrong when trying to build asset bundle for sandbox"));
 
-            if (activeConfig is EnvironmentConfig activeEnvConfig)
+            if (activeConfig is SpaceTemplateConfig spaceTemplateConfig)
             {
                 // Get the variant config for the current scene
                 SceneAsset currentSceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
-                EnvironmentConfig.Variant environmentVariant = activeEnvConfig.variants.FirstOrDefault(v => v.scene == currentSceneAsset);
-                if (environmentVariant == null)
+                SpaceTemplateConfig.Variant spaceTemplateVariant = spaceTemplateConfig.variants.FirstOrDefault(v => v.scene == currentSceneAsset);
+                if (spaceTemplateVariant == null)
                     return Promise.Rejected(new System.Exception("The current scene isn't one that is assigned to a variant in the package configuration"));
 
-                return UploadAssetBundleToSandbox(environmentVariant.bundleName, bundleDir, activeConfig.packageType);
+                return UploadAssetBundleToSandbox(spaceTemplateVariant.bundleName, bundleDir, activeConfig.packageType);
             }
             else
             {
@@ -98,7 +102,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             _lastUploadProgress = -1f;
             UpdateSandboxUploadProgressBar(0f);
-            return SpatialAPI.UploadSandboxBundle((SpatialAPI.PackageType)(int)packageType)
+            return SpatialAPI.UploadSandboxBundle(packageType)
                 .Then(resp => {
                     byte[] data = File.ReadAllBytes(bundlePath);
                     SpatialAPI.UploadFile(useSpatialHeaders: false, resp.url, data, UpdateSandboxUploadProgressBar)
@@ -122,11 +126,15 @@ namespace SpatialSys.UnitySDK.Editor
             // We must save all scenes, otherwise the bundle build will fail without explanation.
             EditorSceneManager.SaveOpenScenes();
 
-            // Validate package
-            if (!SpatialValidator.RunTestsOnPackage(ValidationContext.Publishing))
+            SpatialValidationSummary validationSummary = SpatialValidator.RunTestsOnPackage(ValidationContext.Publishing);
+            if (validationSummary == null)
+                return Promise.Rejected(new Exception("Package validation failed to run"));
+
+            if (validationSummary.failed || validationSummary.passedWithWarnings)
             {
                 SpatialSDKConfigWindow.OpenWindow("issues");
-                return Promise.Rejected(new Exception("Package has errors"));
+                if (validationSummary.failed)
+                    return Promise.Rejected(new Exception("Package has errors"));
             }
 
             // Always save all assets before publishing so that the uploaded package has the latest changes
@@ -136,11 +144,30 @@ namespace SpatialSys.UnitySDK.Editor
             // This get's done on the build machines too, but we also want to do it here just in case there's an issue
             AssignBundleNamesToPackageAssets();
 
+            // For "Space" packages, we need to make sure we have a worldID assigned to the project
+            // Worlds are a way to manage an ecosystem of spaces that share currency, rewards, inventory, etc.
+            // Spaces by default need to be assigned to a world
+            IPromise createWorldPromise = Promise.Resolved();
+            if (ProjectConfig.activePackage.packageType == PackageType.Space)
+            {
+                createWorldPromise = WorldUtility.ValidateWorldExists()
+                    .Then(() => {
+                        // Make sure that the space package has a worldID assigned
+                        SpaceConfig spaceConfig = ProjectConfig.activePackage as SpaceConfig;
+                        spaceConfig.worldID = ProjectConfig.worldID;
+                        UnityEditor.EditorUtility.SetDirty(spaceConfig);
+                        AssetDatabase.SaveAssetIfDirty(spaceConfig);
+                    });
+            }
+
             // Upload package
             _lastUploadProgress = -1f;
             UpdatePackageUploadProgressBar(0f);
             PackageConfig config = ProjectConfig.activePackage;
-            return SpatialAPI.CreateOrUpdatePackage(config.sku, (SpatialAPI.PackageType)(int)config.packageType)
+            return createWorldPromise
+                .Then(() => {
+                    return SpatialAPI.CreateOrUpdatePackage(config.sku, config.packageType);
+                })
                 .Then(resp => {
                     if (config.sku != resp.sku)
                     {
@@ -189,7 +216,7 @@ namespace SpatialSys.UnitySDK.Editor
                                 case "USER_NOT_WHITELISTED":
                                     UnityEditor.EditorUtility.DisplayDialog(
                                         "Apply to be a Spatial Publisher",
-                                        "You currently do not have the ability to publish to Spatial. While we are still in beta, we are only allowing a limited number of users to publish packages.\n\nTo become a publisher, fill out the form that will open in your browser after your close this dialog.\n\nMeanwhile, you can still continue to test your environments in the Spatial Sandbox.",
+                                        "You currently do not have the ability to publish to Spatial. While we are still in beta, we are only allowing a limited number of users to publish packages.\n\nTo become a publisher, fill out the form that will open in your browser after your close this dialog.\n\nMeanwhile, you can still continue to test your packages in the Spatial Sandbox.",
                                         "OK"
                                     );
                                     Application.OpenURL("https://spatialxr.typeform.com/to/e8XPgO5p");
@@ -294,10 +321,10 @@ namespace SpatialSys.UnitySDK.Editor
                 AssetDatabase.RemoveAssetBundleName(name, forceRemove: true);
             AssetDatabase.Refresh();
 
-            if (config is EnvironmentConfig envConfig)
+            if (config is SpaceTemplateConfig spaceTemplateConfig)
             {
                 // Assign a unique asset bundle name to each scene
-                foreach (EnvironmentConfig.Variant variant in envConfig.variants)
+                foreach (SpaceTemplateConfig.Variant variant in spaceTemplateConfig.variants)
                 {
                     string variantBundleName = GetBundleNameForPackageAsset(config.packageName, variant.name, variant.id);
                     EditorUtility.SetAssetBundleName(variant.scene, variantBundleName);
@@ -309,6 +336,9 @@ namespace SpatialSys.UnitySDK.Editor
 
                 switch (config)
                 {
+                    case SpaceConfig spaceConfig:
+                        EditorUtility.SetAssetBundleName(spaceConfig.scene, assetBundleName);
+                        break;
                     case AvatarConfig avatarConfig:
                         EditorUtility.SetAssetBundleName(avatarConfig.prefab, assetBundleName);
                         break;

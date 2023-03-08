@@ -30,7 +30,7 @@ namespace SpatialSys.UnitySDK.Editor
 
     public class NodeFilter
     {
-        public static int VS_FILTER_VERSION = 2;//increment when we want to force users to rebuild nodes on update
+        public static int VS_FILTER_VERSION = 3;//increment when we want to force users to rebuild nodes on update
 
         public static readonly HashSet<string> namespaceAllowList = new HashSet<string>() {
             "UnityEngine",
@@ -280,7 +280,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             foreach (Assembly assembly in filteredAssemblies)
             {
-                foreach (Type type in assembly.GetTypes())
+                foreach (Type type in assembly.GetExportedTypesCached())
                 {
                     if (!typeBlockList.Contains(type))
                     {

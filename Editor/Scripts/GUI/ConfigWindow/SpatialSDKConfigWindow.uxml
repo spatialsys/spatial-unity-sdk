@@ -11,6 +11,7 @@
             <ui:Button text="Account" display-tooltip-when-elided="true" name="accountButton" class="tabButton tabButtonSelected" style="margin-left: 0;" />
             <ui:Button text="Config" display-tooltip-when-elided="true" name="configButton" class="tabButton" />
             <ui:Button text="Issues" display-tooltip-when-elided="true" name="issuesButton" class="tabButton" />
+            <ui:Button text="Badges" display-tooltip-when-elided="true" name="badgesButton" class="tabButton" />
             <ui:Button text="Help" display-tooltip-when-elided="true" name="helpButton" class="tabButton" />
         </ui:VisualElement>
         <ui:ScrollView>
@@ -56,7 +57,7 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement name="config" style="display: flex;">
+            <ui:VisualElement name="config" style="display: none;">
                 <ui:VisualElement name="configNull" style="align-items: center; display: flex; flex-shrink: 0; justify-content: space-around; flex-basis: auto;">
                     <ui:VisualElement name="notLoggedInBlock" class="block_white block_red block_base">
                         <ui:Label text="Config file not found" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
@@ -71,7 +72,7 @@
                     <ui:Label text="Project Configuration" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
                     <ui:Label text="Projects can have multiple packages that can be published as individual assets to Spatial." display-tooltip-when-elided="true" name="Text" class="blockText" style="margin-bottom: 8px;" />
                     <ui:VisualElement name="create" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 0; margin-bottom: 3px;">
-                        <uie:EnumField label="Create New" type="SpatialSys.UnitySDK.Editor.PackageType, SpatialSys.UnitySDK.Editor" value="Environment" name="createPackageTypeDropdown" style="margin-left: 0; margin-right: 5px; margin-top: 0; margin-bottom: 0;" />
+                        <uie:EnumField label="Create New" type="SpatialSys.UnitySDK.PackageType, SpatialSys.UnitySDK" value="Space" name="createPackageTypeDropdown" style="margin-left: 0; margin-right: 5px; margin-top: 0; margin-bottom: 0;" />
                         <ui:Button text="Create" display-tooltip-when-elided="true" name="createPackageButton" style="height: 22px; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; width: auto; min-width: 60px;" />
                     </ui:VisualElement>
                     <ui:DropdownField label="Active Package" index="-1" name="packageConfigDropDown" binding-path="_currentPackageIndex" style="height: 22px; margin-top: 0; width: auto; margin-left: 0; margin-bottom: 0; margin-right: 0;" />
@@ -85,7 +86,7 @@
                     </ui:VisualElement>
                     <ui:VisualElement name="packageType" style="flex-direction: row; margin-left: 3px; margin-right: 3px; margin-top: 1px; margin-bottom: 1px;">
                         <ui:Label text="Type" display-tooltip-when-elided="true" enable-rich-text="false" class="unity-base-field__label" />
-                        <ui:Label text="Environment" display-tooltip-when-elided="true" enable-rich-text="false" name="packageTypeValue" style="color: rgb(168, 168, 168);" />
+                        <ui:Label text="SpaceTemplate" display-tooltip-when-elided="true" enable-rich-text="false" name="packageTypeValue" style="color: rgb(168, 168, 168);" />
                     </ui:VisualElement>
                     <ui:TextField picking-mode="Ignore" label="Name" password="false" multiline="false" binding-path="packageName" name="name" class="textField" />
                     <ui:VisualElement name="packageSKUEmpty" style="flex-direction: row; margin-left: 3px; margin-right: 3px; margin-top: 1px; margin-bottom: 1px;">
@@ -97,8 +98,12 @@
                         <ui:Label display-tooltip-when-elided="true" enable-rich-text="false" name="skuValue" binding-path="sku" style="color: rgb(168, 168, 168); flex-grow: 1;" />
                         <ui:Button text="Copy" display-tooltip-when-elided="true" name="skuCopyButton" style="margin-right: 0; margin-top: 0; margin-bottom: 0;" />
                     </ui:VisualElement>
-                    <ui:VisualElement name="environmentConfig" style="margin-top: 10px;">
-                        <uie:PropertyField binding-path="variants" label="Environment Variants" name="variants" />
+                    <ui:VisualElement name="spaceConfig" style="margin-top: 10px;">
+                        <uie:PropertyField binding-path="scene" label="Scene" name="scene" />
+                        <uie:PropertyField binding-path="thumbnail" label="Thumbnail" name="thumbnail" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="spaceTemplateConfig" style="margin-top: 10px;">
+                        <uie:PropertyField binding-path="variants" label="Template Variants" name="variants" />
                     </ui:VisualElement>
                     <ui:VisualElement name="avatarConfig" style="margin-top: 10px;">
                         <uie:PropertyField binding-path="prefab" label="Prefab" name="prefab" />
@@ -159,6 +164,39 @@
                         <ui:VisualElement name="Filler" style="flex-grow: 1;" />
                     </ui:VisualElement>
                 </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="badges" style="display: flex;">
+                <ui:VisualElement name="badgeInfo" class="block_white block_base">
+                    <ui:Label text="Badges" display-tooltip-when-elided="true" name="Badges" class="blockTitle" />
+                    <ui:Label text="In this section, you can create badges to reward users when they finish a quest. Badges can be worn by users under their nametag, so they provide a very nice way to promote your space and show off their accomplishments." display-tooltip-when-elided="true" name="Description" class="blockText" />
+                    <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: flex;">
+                        <ui:Button text="Download badge template" display-tooltip-when-elided="true" name="gotoBadgeTemplate" class="blockButton" />
+                        <ui:VisualElement name="Filler" style="flex-grow: 1;" />
+                        <ui:Label display-tooltip-when-elided="true" name="badgeManagerStatus" class="blockText" style="-unity-text-align: upper-right; margin-top: 4px;" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement name="newBadge" class="block_white block_base">
+                    <ui:GroupBox name="horizontalGroup" style="flex-direction: row;">
+                        <ui:GroupBox style="flex-shrink: 1; flex-grow: 0;">
+                            <ui:GroupBox name="newBadgeIcon" style="width: 100px; align-items: center; background-image: none; -unity-background-scale-mode: scale-to-fit; border-top-left-radius: 180px; border-bottom-left-radius: 180px; border-top-right-radius: 180px; border-bottom-right-radius: 180px; height: 100px; background-color: rgb(0, 0, 0);">
+                                <ui:Button text="Select icon" display-tooltip-when-elided="true" name="changeIconButton" enable-rich-text="true" class="blockButton blockButton_small" style="margin-right: 0; background-image: none; height: 24px; -unity-background-scale-mode: scale-and-crop; justify-content: flex-start;" />
+                                <ui:VisualElement style="flex-grow: 1;" />
+                            </ui:GroupBox>
+                            <ui:Label text="1024x1024" display-tooltip-when-elided="true" style="align-items: flex-start; -unity-text-align: upper-center;" />
+                        </ui:GroupBox>
+                        <ui:GroupBox style="flex-shrink: 1; flex-grow: 1;">
+                            <ui:TextField picking-mode="Ignore" label="Name" password="false" multiline="false" name="newBadgeName" class="textField" />
+                            <ui:TextField picking-mode="Ignore" label="Description" password="false" multiline="false" binding-path="badgeDescription" name="newBadgeDescription" class="textField" />
+                            <ui:VisualElement name="Filler" style="flex-grow: 1; height: 0;" />
+                            <ui:VisualElement name="header" style="flex-direction: row; margin-bottom: 8px;">
+                                <ui:Label display-tooltip-when-elided="true" name="newBadgeError" style="align-items: flex-start; -unity-text-align: upper-center; color: rgb(255, 0, 0);" />
+                                <ui:VisualElement name="Filler" style="flex-grow: 1; height: 0;" />
+                                <ui:Button text="Create new badge" display-tooltip-when-elided="true" name="createBadgeButton" class="blockButton blockButton_small" style="margin-right: 10px;" />
+                            </ui:VisualElement>
+                        </ui:GroupBox>
+                    </ui:GroupBox>
+                </ui:VisualElement>
+                <ui:ScrollView name="badgesScroll" />
             </ui:VisualElement>
             <ui:VisualElement name="help" style="align-items: center; display: none;">
                 <ui:VisualElement name="DocsBlock" class="block_white block_base">

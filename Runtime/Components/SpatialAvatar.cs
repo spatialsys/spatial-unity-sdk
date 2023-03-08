@@ -7,6 +7,6 @@ namespace SpatialSys.UnitySDK
     {
         public override string prettyName => "Custom Avatar";
         public override string tooltip => "This component is used to define a custom avatar for Spatial";
-        public override string documentationURL => "https://spatialxr.notion.site/Custom-Avatars-f11056b1f0984ac1a2b8c559e33ccbce";
+        public override string documentationURL => "https://docs.spatial.io/components/custom-avatars";
     }
 }

@@ -1,6 +1,8 @@
 using UnityEngine;
 
 using System;
+using System.Linq;
+using System.Collections.Generic;
 using RSG;
 using Proyecto26;
 
@@ -112,21 +114,37 @@ namespace SpatialSys.UnitySDK.Editor
         }
 
         //------------------------------------------------
+        // WORLDS / ECOSYSTEM
+        //------------------------------------------------
+
+        public static IPromise<CreateWorldResponse> CreateWorld()
+        {
+            RequestHelper request = CreateRequest();
+            request.Uri = $"{API_ORIGIN}/v2/worlds";
+            request.Body = new CreateWorldRequest() { };
+
+            return RestClient.Post<CreateWorldResponse>(request);
+        }
+
+        [Serializable]
+        private struct CreateWorldRequest
+        {
+        }
+
+        [Serializable]
+        public struct CreateWorldResponse
+        {
+            public string id;
+            public string name;
+        }
+
+        //------------------------------------------------
         // SHARED DATA TYPES/STRUCTURES
         //------------------------------------------------
 
         public enum PackageSource
         {
             Unity
-        }
-
-        // NOTE: keep this the same as UnitySDK PackageType enum
-        public enum PackageType
-        {
-            Environment = 0,
-            Avatar = 1,
-            AvatarAnimation = 2,
-            PrefabObject = 3,
         }
 
         //------------------------------------------------
@@ -140,6 +158,11 @@ namespace SpatialSys.UnitySDK.Editor
             // Example: UNITYSDK 1.2.3 official GITSHA00
             // Currently the gitsha is not used, but is included for SAPI compatibility
             request.Headers["Spatial-User-Agent"] = $"UNITYSDK {UpgradeUtility.currentVersion} {(UpgradeUtility.isOfficialVersion ? "official" : "dev")} 00000000";
+
+#if SPATIAL_UNITYSDK_STAGING
+            request.EnableDebug = true;
+#endif
+
             return request;
         }
 
@@ -161,6 +184,9 @@ namespace SpatialSys.UnitySDK.Editor
 
         private static string PackageTypeToSAPIPackageType(PackageType type)
         {
+            if (type == PackageType.SpaceTemplate)
+                return "Environment";
+
             return type.ToString();
         }
 
@@ -207,6 +233,131 @@ namespace SpatialSys.UnitySDK.Editor
 
             public Error[] errors;
             public string trace;
+        }
+
+        //------------------------------------------------
+        // BADGES
+        //------------------------------------------------
+
+        public static IPromise<GetBadgesResponse> GetBadges(string worldID)
+        {
+            RequestHelper request = CreateRequest();
+            request.Uri = $"{API_ORIGIN}/v2/worlds/{worldID}/badges";
+
+            return RestClient.Get<GetBadgesResponse>(request);
+        }
+
+        [Serializable]
+        public struct GetBadgesResponse
+        {
+            public Badge[] badges;
+        }
+
+        [Serializable]
+        public struct Badge
+        {
+            public string id;
+            public string name;
+            public string description;
+            public string badgeIconURL;
+            public string worldID;
+            public string worldName;
+            public string updatedAt;
+            public string createdAt;
+        }
+
+        public static IPromise<CreateBadgeResponse> CreateBadge(string worldID, string name, string description)
+        {
+            RequestHelper request = CreateRequest();
+            request.Uri = $"{API_ORIGIN}/v2/badges";
+            request.Body = new CreateBadgeRequest() {
+                name = name,
+                description = description,
+                worldID = worldID
+            };
+
+            return RestClient.Post<CreateBadgeResponse>(request);
+        }
+
+        [Serializable]
+        public struct CreateBadgeRequest
+        {
+            public string name;
+            public string description;
+            public string worldID;
+        }
+
+        [Serializable]
+        public struct CreateBadgeResponse
+        {
+            public string id;
+            public string name;
+            public string description;
+            public string badgeIconURL;
+            public string worldID;
+            public string worldName;
+            public string externalLink;
+            public string updatedAt;
+            public string createdAt;
+        }
+
+        public static IPromise DeleteBadge(string badgeID)
+        {
+            RequestHelper request = CreateRequest();
+            request.Uri = $"{API_ORIGIN}/v2/badges/{badgeID}";
+
+            return RestClient.Delete(request).Then(resp => { });
+        }
+
+        public static IPromise<UpdateBadgeResponse> UpdateBadge(string badgeID, string name, string description)
+        {
+            RequestHelper request = CreateRequest();
+            request.Uri = $"{API_ORIGIN}/v2/badges/{badgeID}";
+            request.Body = new UpdateBadgeRequest() { name = name, description = description };
+
+            return RestClient.Put<UpdateBadgeResponse>(request);
+        }
+
+        [Serializable]
+        public struct UpdateBadgeRequest
+        {
+            public string name;
+            public string description;
+        }
+
+        [Serializable]
+        public struct UpdateBadgeResponse
+        {
+            public string id;
+            public string name;
+            public string description;
+            public string badgeIconURL;
+            public string worldID;
+            public string worldName;
+            public string externalLink;
+            public string updatedAt;
+            public string createdAt;
+        }
+
+        public static IPromise<UploadBadgeIconResponse> UploadBadgeIcon(string badgeID, byte[] data)
+        {
+            string url = $"{API_ORIGIN}/v2/badges/{badgeID}/icon";
+            RequestHelper request = CreateUploadFileRequest(useSpatialHeaders: true, url, data, null);
+            return RestClient.Put<UploadBadgeIconResponse>(request);
+        }
+
+        [Serializable]
+        public struct UploadBadgeIconResponse
+        {
+            public string id;
+            public string name;
+            public string description;
+            public string badgeIconURL;
+            public string worldID;
+            public string worldName;
+            public string externalLink;
+            public string updatedAt;
+            public string createdAt;
         }
     }
 }

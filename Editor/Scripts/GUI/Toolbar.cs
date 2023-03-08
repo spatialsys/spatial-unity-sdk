@@ -24,13 +24,12 @@ namespace SpatialSys.UnitySDK.Editor
             GUI.contentColor = Color.white * 1.15f;
 
             string cannotTestReason = GetTestButtonErrorString();
-
             using (new EditorGUI.DisabledScope(disabled: !string.IsNullOrEmpty(cannotTestReason)))
             {
                 PackageConfig activeConfig = ProjectConfig.activePackage;
                 string buttonText, buttonTooltipText;
 
-                if (activeConfig is EnvironmentConfig)
+                if (activeConfig == null || activeConfig.isSpaceBasedPackage)
                 {
                     Scene scene = EditorSceneManager.GetActiveScene();
                     buttonText = "Test Active Scene";

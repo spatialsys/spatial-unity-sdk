@@ -1,51 +1,19 @@
-using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using Unity.VisualScripting;
 using UnityEngine.SceneManagement;
-using System.Linq;
+using UnityEditor;
 
 namespace SpatialSys.UnitySDK.Editor
 {
     public class VisualScriptingTests
     {
-        [SceneTest]
-        public static void DenyAllVisualScripts(Scene scene)
-        {
-            if (SpatialValidator.validationContext != ValidationContext.Publishing)
-            {
-                return;
-            }
-
-            if (GameObject.FindObjectOfType<ScriptMachine>() != null)
-            {
-                SpatialValidator.AddResponse(
-                    new SpatialTestResponse(
-                        null,
-                        TestResponseType.Fail,
-                        $"Scene {scene.name} contains a ScriptMachine. Visual Scripting is not allowed in published packages yet.",
-                        "You will need to remove the script machines from your project, or wait until Visual Scripting is enabled for publishing."
-                    )
-                );
-            }
-
-            if (GameObject.FindObjectOfType<SceneVariables>() != null)
-            {
-                SpatialValidator.AddResponse(
-                    new SpatialTestResponse(
-                        null,
-                        TestResponseType.Fail,
-                        $"Scene {scene.name} contains SceneVariable. Visual Scripting is not allowed in published packages yet.",
-                        "You will need to remove the Scene Variables from your project, or wait until Visual Scripting is enabled for publishing."
-                    )
-                );
-            }
-        }
-
         [PackageTest]
         //TODO: currently this checks every graph asset in the project.
         //try to check dependencies on a per-package basis
-        public static void CheckAllNodesValid(PackageConfig config)
+        public static void CheckAllMacroGraphNodesValid(PackageConfig config)
         {
             foreach (ScriptGraphAsset graphAsset in EditorUtility.FindAssetsByType<ScriptGraphAsset>())
             {
@@ -64,8 +32,40 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
+        [PackageTest]
+        public static void CheckAllDependenciesEmbeddedNodes(PackageConfig config)
+        {
+            List<GameObject> allDependencies = new List<GameObject>();
+            foreach (UnityEngine.Object asset in config.assets)
+            {
+                allDependencies.AddRange(AssetDatabase.GetDependencies(AssetDatabase.GetAssetPath(asset))
+                    .Select(AssetDatabase.LoadAssetAtPath<GameObject>)
+                    .Where(obj => obj != null));
+            }
+            foreach (GameObject dependency in allDependencies)
+            {
+                dependency.GetComponentsInChildren<ScriptMachine>(true).ToList().ForEach((scriptMachine) => {
+                    if (scriptMachine.nest.source == GraphSource.Embed && scriptMachine.nest.graph != null)
+                    {
+                        foreach (IUnit unit in scriptMachine.nest.graph.units)
+                        {
+                            if (!NodeFilter.FilterNode(unit).isAllowed)
+                            {
+                                SpatialValidator.AddResponse(
+                                    new SpatialTestResponse(
+                                        scriptMachine,
+                                        TestResponseType.Fail,
+                                        $"Embedded Script Graph on: {scriptMachine.gameObject.name} contains unsupported node: {unit.GetAnalyticsIdentifier().Identifier}")
+                                );
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
         [SceneTest]
-        public static void ScanEmbeddedVisualScriptingGraphs(Scene scene)
+        public static void CheckSceneEmbeddedNodes(Scene scene)
         {
             var scriptMachines = GameObject.FindObjectsOfType<ScriptMachine>();
 

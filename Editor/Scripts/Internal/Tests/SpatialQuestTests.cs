@@ -8,6 +8,27 @@ namespace SpatialSys.UnitySDK.Editor
     public class SpatialQuestTests
     {
         [ComponentTest(typeof(SpatialQuest))]
+        public static void DoNotAllowQuestRewardsInSpaceTemplates(SpatialQuest target)
+        {
+            // If this is a Space Template, then warn if the quest rewards a badge
+            if (ProjectConfig.activePackage.packageType != PackageType.SpaceTemplate || target.questRewards == null)
+                return;
+
+            if (target.questRewards.Length > 0)
+            {
+                SpatialValidator.AddResponse(new SpatialTestResponse(
+                    target,
+                    TestResponseType.Fail,
+                    "Quests Rewards are not supported inside Space Template packages",
+                    "Convert this package to a Space to enable rewards.\n"
+                    + "We may remove support for quests inside Space Templates in the future.\n\n"
+                    + "To convert this package to a Space, simply create a new `Space` package, and assign the current scene and thumbnail to it. "
+                    + "Once the space is publised and fully processed, a space will be automatically created for this package."
+                ));
+            }
+        }
+
+        [ComponentTest(typeof(SpatialQuest))]
         public static void CheckQuestValidity(SpatialQuest target)
         {
             if (string.IsNullOrEmpty(target.questName) || string.IsNullOrEmpty(target.description))
@@ -41,6 +62,49 @@ namespace SpatialSys.UnitySDK.Editor
                         "One or more quest tasks do not have a name",
                         "For all quest tasks to be valid, they must be given a name."
                     ));
+                }
+            }
+        }
+
+        [ComponentTest(typeof(SpatialQuest))]
+        public static void CheckQuestBadge(SpatialQuest target)
+        {
+            if (target.questRewards == null || target.questRewards.Length == 0)
+                return;
+
+            if (target.questRewards.Count(r => r.type == SpatialQuest.RewardType.Badge) > 1)
+            {
+                SpatialValidator.AddResponse(new SpatialTestResponse(
+                    target,
+                    TestResponseType.Fail,
+                    "You can only reward one badge per quest",
+                    "Only one badge can be rewarded per quest. Remove everything else."
+                ));
+            }
+            else
+            {
+                var badgeReward = target.questRewards.First(r => r.type == SpatialQuest.RewardType.Badge);
+                if (string.IsNullOrEmpty(badgeReward.id))
+                {
+                    SpatialValidator.AddResponse(new SpatialTestResponse(
+                        target,
+                        TestResponseType.Fail,
+                        $"Invalid reward badge on quest {target.questName}",
+                        "The rewarded badge is not set. Select a valid badge to reward for this quest or remove the reward."
+                    ));
+                }
+                else
+                {
+                    List<SpatialAPI.Badge> badges = BadgeManager.GetCachedBadges();
+                    if (badges != null && !badges.Exists(b => b.id == badgeReward.id))
+                    {
+                        SpatialValidator.AddResponse(new SpatialTestResponse(
+                            target,
+                            TestResponseType.Fail,
+                            $"Invalid reward badge on quest {target.questName}",
+                            "The badge reward set for this quest does not exist. Select a valid badge to reward for this quest or remove the reward."
+                        ));
+                    }
                 }
             }
         }
@@ -97,7 +161,7 @@ namespace SpatialSys.UnitySDK.Editor
             Dictionary<uint, SpatialQuest> questIdToQuest = questsInScene.ToDictionary(quest => quest.id, quest => quest);
 
             // Validate all "Quest" events
-            Dictionary<SpatialEvent, Component> questEvents = allEvents.Where(kvp => kvp.Key.questEvent.events?.Count > 0).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            Dictionary<SpatialEvent, Component> questEvents = allEvents.Where(kvp => kvp.Key.questEvent?.events?.Count > 0).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
             foreach (KeyValuePair<SpatialEvent, Component> kvp in questEvents)
             {
                 SpatialEvent e = kvp.Key;

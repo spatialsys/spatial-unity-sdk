@@ -124,6 +124,31 @@ namespace SpatialSys.UnitySDK.Editor
             return attribute != null;
         }
 
+        /// <summary>
+        /// Returns true if the method's parameter signature matches up with the parameter `targetTypes` list:
+        /// <para>1. The amount of parameters must be the same length as `targetTypes`</para>
+        /// <para>2. The order of parameters must match</para>
+        /// <para>3. The type must be assignable to each type in `targetTypes`</para>
+        /// </summary>
+        public static bool ValidateParameterTypes(this MethodInfo method, params System.Type[] targetTypes)
+        {
+            if (method == null || targetTypes == null)
+                return false;
+
+            ParameterInfo[] parameters = method.GetParameters();
+
+            if (parameters.Length != targetTypes.Length)
+                return false;
+
+            for (int i = 0; i < targetTypes.Length; i++)
+            {
+                if (!targetTypes[i].IsAssignableFrom(parameters[i].ParameterType))
+                    return false;
+            }
+
+            return true;
+        }
+
         public static string FormatInteger(this int num)
         {
             // Add comma-separators (e.g. 1,000,000)

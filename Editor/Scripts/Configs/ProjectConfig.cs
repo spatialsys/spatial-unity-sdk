@@ -16,6 +16,18 @@ namespace SpatialSys.UnitySDK.Editor
         public const int LATEST_VERSION = 1;
 
         public static ProjectConfig instance => AssetDatabase.LoadAssetAtPath<ProjectConfig>(ASSET_PATH);
+        public static string worldID
+        {
+            get => instance?._worldID;
+            set
+            {
+                if (instance == null)
+                    return;
+                instance._worldID = value;
+                UnityEditor.EditorUtility.SetDirty(instance);
+                AssetDatabase.SaveAssets();
+            }
+        }
         public static bool hasPackages => instance != null && instance._packages.Count > 0;
         public static IReadOnlyList<PackageConfig> packages => instance?._packages;
         public static PackageConfig activePackage
@@ -35,6 +47,7 @@ namespace SpatialSys.UnitySDK.Editor
                 if (instance == null || value < 0 || value >= packages.Count)
                     return;
                 instance._currentPackageIndex = value;
+                UnityEditor.EditorUtility.SetDirty(instance);
                 AssetDatabase.SaveAssets();
             }
         }
@@ -43,6 +56,7 @@ namespace SpatialSys.UnitySDK.Editor
         [HideInInspector]
         [SerializeField] private int _configVersion; // version of this config model; Used for making backwards-compatible changes
 #pragma warning restore 414
+        [SerializeField] private string _worldID;
         [SerializeField] private List<PackageConfig> _packages = new List<PackageConfig>();
         [SerializeField] private int _currentPackageIndex = 0;
 
@@ -72,14 +86,14 @@ namespace SpatialSys.UnitySDK.Editor
                 {
                     PackageConfig_OLD oldConfig = AssetDatabase.LoadAssetAtPath<PackageConfig_OLD>(AssetDatabase.GUIDToAssetPath(oldPackageConfigs[i]));
 
-                    EnvironmentConfig newConfig = AddNewPackage(PackageType.Environment) as EnvironmentConfig;
+                    SpaceTemplateConfig newConfig = AddNewPackage(PackageType.SpaceTemplate) as SpaceTemplateConfig;
                     newConfig.packageName = oldConfig.packageName;
                     newConfig.sku = oldConfig.sku;
 
-                    newConfig.variants = new EnvironmentConfig.Variant[oldConfig.environment.variants.Length];
+                    newConfig.variants = new SpaceTemplateConfig.Variant[oldConfig.environment.variants.Length];
                     for (int j = 0; j < oldConfig.environment.variants.Length; j++)
                     {
-                        newConfig.variants[j] = new EnvironmentConfig.Variant();
+                        newConfig.variants[j] = new SpaceTemplateConfig.Variant();
                         newConfig.variants[j].id = oldConfig.environment.variants[j].id;
                         newConfig.variants[j].name = oldConfig.environment.variants[j].name;
                         newConfig.variants[j].scene = oldConfig.environment.variants[j].scene;
@@ -127,8 +141,11 @@ namespace SpatialSys.UnitySDK.Editor
             Type packageConfigType = null;
             switch (type)
             {
-                case PackageType.Environment:
-                    packageConfigType = typeof(EnvironmentConfig);
+                case PackageType.Space:
+                    packageConfigType = typeof(SpaceConfig);
+                    break;
+                case PackageType.SpaceTemplate:
+                    packageConfigType = typeof(SpaceTemplateConfig);
                     break;
                 case PackageType.Avatar:
                     packageConfigType = typeof(AvatarConfig);
@@ -166,7 +183,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         /// <summary>
         /// Set what the active package should be based on the main source asset for that package.
-        /// For environments, this is a scene asset.
+        /// For space templates, this is a scene asset.
         /// </summary>
         public static void SetActivePackageBySourceAsset(UnityEngine.Object sourceAsset)
         {

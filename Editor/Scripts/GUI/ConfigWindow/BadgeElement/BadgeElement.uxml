@@ -1,0 +1,26 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Packages/io.spatial.unitysdk/Editor/Scripts/GUI/ConfigWindow/SpatialValidatorWindow.uss?fileID=7433441132597879392&amp;guid=f74bc96d71d244e49b30c2df4cd0e64a&amp;type=3#SpatialValidatorWindow" />
+    <ui:VisualElement name="badge" class="block_white block_base">
+        <ui:GroupBox name="horizontalGroup" style="flex-direction: row;">
+            <ui:GroupBox style="flex-shrink: 1; flex-grow: 0;">
+                <ui:GroupBox name="badgeIcon" style="width: 100px; align-items: center; background-image: none; -unity-background-scale-mode: scale-to-fit; border-top-left-radius: 180px; border-bottom-left-radius: 180px; border-top-right-radius: 180px; border-bottom-right-radius: 180px; height: 100px; border-left-width: 0; border-right-width: 0; border-top-width: 0; border-bottom-width: 0; background-color: rgb(0, 0, 0);">
+                    <ui:Button text="Select icon" display-tooltip-when-elided="true" name="changeIconButton" enable-rich-text="true" class="blockButton blockButton_small" style="margin-right: 0; background-image: none; height: 24px; -unity-background-scale-mode: scale-and-crop; justify-content: flex-start;" />
+                    <ui:VisualElement style="flex-grow: 1;" />
+                </ui:GroupBox>
+                <ui:Label text="1024x1024" display-tooltip-when-elided="true" style="align-items: flex-start; -unity-text-align: upper-center;" />
+            </ui:GroupBox>
+            <ui:GroupBox style="flex-shrink: 1; flex-grow: 1;">
+                <ui:TextField picking-mode="Ignore" label="ID" password="false" multiline="false" name="badgeId" readonly="true" class="textField" />
+                <ui:TextField picking-mode="Ignore" label="Name" password="false" multiline="false" name="name" class="textField" />
+                <ui:TextField picking-mode="Ignore" label="Description" password="false" multiline="false" binding-path="badgeDescription" name="description" class="textField" />
+                <ui:VisualElement name="Filler" style="flex-grow: 1; height: 0;" />
+                <ui:VisualElement name="ButtonGroup" style="flex-direction: row; margin-bottom: 8px;">
+                    <ui:Label display-tooltip-when-elided="true" name="error" style="align-items: flex-start; -unity-text-align: upper-center; color: rgb(255, 0, 0);" />
+                    <ui:VisualElement name="Filler" style="flex-grow: 1; height: 0;" />
+                    <ui:Button text="Save" display-tooltip-when-elided="true" name="saveButton" class="blockButton blockButton_small" style="margin-right: 10px;" />
+                    <ui:Button text="Delete" display-tooltip-when-elided="true" name="deleteButton" class="blockButton blockButton_red blockButton_small" />
+                </ui:VisualElement>
+            </ui:GroupBox>
+        </ui:GroupBox>
+    </ui:VisualElement>
+</ui:UXML>

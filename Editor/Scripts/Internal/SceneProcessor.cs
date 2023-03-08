@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.SceneManagement;
@@ -13,16 +14,27 @@ namespace SpatialSys.UnitySDK.Editor
         [PostProcessSceneAttribute(0)]
         public static void OnPostprocessScene()
         {
-            EnvironmentConfig envConfig = ProjectConfig.activePackage as EnvironmentConfig;
-            if (Application.isPlaying ||
-                envConfig == null ||
-                envConfig.variants == null ||
-                !Array.Exists(envConfig.variants, (variant) => {
-                    SceneAsset asset = AssetDatabase.LoadAssetAtPath<SceneAsset>(SceneManager.GetActiveScene().path);
-                    return asset != null && asset == variant.scene;
-                }))
-            {
+            SceneAsset activeSceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(SceneManager.GetActiveScene().path);
+            if (Application.isPlaying || activeSceneAsset == null)
                 return;
+
+            // Validate that the active scene is part of the active package
+            if (ProjectConfig.activePackage is SpaceConfig spaceConfig)
+            {
+                if (spaceConfig.scene != activeSceneAsset)
+                    return;
+            }
+            else if (ProjectConfig.activePackage is SpaceTemplateConfig spaceTemplateConfig)
+            {
+                if (spaceTemplateConfig.variants == null ||
+                    !Array.Exists(spaceTemplateConfig.variants, (variant) => variant.scene == activeSceneAsset))
+                {
+                    return;
+                }
+            }
+            else
+            {
+                return; // No processing for non-scene based packages
             }
 
             // Delete all components that are tagged with the EditorOnly attribute or the "EditorOnly" tag
@@ -61,16 +73,14 @@ namespace SpatialSys.UnitySDK.Editor
                 }
             }
 
-            //users should not be adding environmentData to their scene. remove any
+            // users should not be adding EnvironmentData to their scene. remove any and recreate
             EnvironmentData[] dataInScene = GameObject.FindObjectsOfType<EnvironmentData>(true);
             for (int i = 0; i < dataInScene.Length; i++)
             {
                 UnityEngine.Object.DestroyImmediate(dataInScene[i]);
             }
 
-            // Add fresh environment data
-            GameObject g = new GameObject("EnvironmentData");
-            EnvironmentData data = g.AddComponent<EnvironmentData>();
+            EnvironmentData data = new GameObject("EnvironmentData").AddComponent<EnvironmentData>();
 
             // Spatial components
             data.seats = GameObject.FindObjectsOfType<SpatialSeatHotspot>(true);
@@ -192,6 +202,22 @@ namespace SpatialSys.UnitySDK.Editor
                     GameObject.DestroyImmediate(camera);
                 }
             }
+
+            // setup with all synced object prefabs that the scene uses
+            List<SpatialSyncedObject> syncedObjects = AssetDatabase.GetDependencies(AssetDatabase.GetAssetPath(activeSceneAsset))
+                .Select(AssetDatabase.LoadAssetAtPath<SpatialSyncedObject>)
+                .Where(obj => obj != null)
+                .ToList();
+
+            // add all synced objects in scene
+            List<SpatialSyncedObject> sceneSyncedObjects = GameObject.FindObjectsOfType<SpatialSyncedObject>().ToList();
+            foreach (SpatialSyncedObject sceneSyncedObject in sceneSyncedObjects)
+            {
+                sceneSyncedObject.destroyOnCreatorDisconnect = false;// does not make sense so force it to false.
+            }
+            syncedObjects.AddRange(sceneSyncedObjects);
+
+            data.syncedObjects = syncedObjects.ToArray();
         }
 
         private static void AddSpatialEvent(List<SpatialEvent> list, SpatialEvent ev)

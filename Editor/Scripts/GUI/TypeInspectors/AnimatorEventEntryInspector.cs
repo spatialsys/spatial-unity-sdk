@@ -43,7 +43,7 @@ namespace SpatialSys.UnitySDK.Editor
                 fontStyle = FontStyle.Bold,
                 padding = new RectOffset(5, 0, 2, 0),
             };
-            _unsyncedStyle.normal.textColor = new Color32(200, 200, 200, 255);
+            _unsyncedStyle.normal.textColor = EditorGUIUtility.isProSkin ? new Color32(200, 200, 200, 255) : new Color32(0, 0, 0, 255);
         }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)

@@ -282,7 +282,8 @@ namespace SpatialSys.UnitySDK.Editor
                     TestResponseType.Warning,
                     $"Scene {scene.name} has a lot of high density mesh colliders ({response.meshColliderVerts}/{PerformanceResponse.MAX_SUGGESTED_COLLIDER_VERTS}).",
                     "You should try to use primitives or low density meshes for colliders where possible. "
-                    + "High density collision gemoetry will impact the performance of your environment.\n"
+                    + "High density collision geometry will impact the performance of your space.\n"
+
                     + "Here's a list of all objects with high density mesh colliders:\n - " + string.Join("\n - ", response.meshColliderVertCounts.Where(m => m.Item2 > 50).Select(m => $"{m.Item2} - {m.Item1}"))
                 ));
             }
@@ -293,7 +294,8 @@ namespace SpatialSys.UnitySDK.Editor
                     null,
                     TestResponseType.Warning,
                     $"Scene {scene.name} does not have lightmaps.",
-                    "It is highly reccomended that you bake lightmaps in each scene. This will greatly improve the fidelity of your environment."
+                    "It is highly recommended that you bake lightmaps in each scene. This will greatly improve the fidelity of your space."
+
                 ));
             }
 
@@ -303,7 +305,8 @@ namespace SpatialSys.UnitySDK.Editor
                     null,
                     TestResponseType.Warning,
                     $"Scene {scene.name} does not have light probes.",
-                    "It is highly reccomended that you bake light probes in each scene. This will allow avatars to interact with the baked lights in your environment properly."
+                    "It is highly recommended that you bake light probes in each scene. This will allow avatars to interact with the baked lights in your space properly."
+
                 ));
             }
 
@@ -326,7 +329,7 @@ namespace SpatialSys.UnitySDK.Editor
                     null,
                     TestResponseType.Warning,
                     $"Scene {scene.name} has many unique materials.",
-                    $"It is encouraged for environments to limit unique materials to around {PerformanceResponse.MAX_SUGGESTED_UNIQUE_MATERIALS}. "
+                    $"It is encouraged for scenes to limit unique materials to around {PerformanceResponse.MAX_SUGGESTED_UNIQUE_MATERIALS}. "
                     + "The more unique materials you have, the less likely it is that your asset will perform well on all platforms. "
                     + "Look into texture atlasing techniques to share textures and materials across multiple separate objects."
                 ));
@@ -338,7 +341,7 @@ namespace SpatialSys.UnitySDK.Editor
                     null,
                     TestResponseType.Warning,
                     $"Scene {scene.name} has too many shared textures.",
-                    $"Environments are limited to {PerformanceResponse.MAX_SUGGESTED_SHARED_TEXTURE_MB} MB of shared textures. "
+                    $"Space Templates are limited to {PerformanceResponse.MAX_SUGGESTED_SHARED_TEXTURE_MB} MB of shared textures. "
                     + "High memory usage can cause application crashes on lower end devices. It is highly recommended that you stay within the suggested limits. "
                     + "Compressing your textures will help reduce their size.\n"
                     + "Here's a list of all textures used by the scene:\n - " + string.Join("\n - ", response.textureMemorySizesMB.Where(m => m.Item2 > 0.1f).Select(m => $"{m.Item2:0.00}MB - {m.Item1}"))

@@ -97,14 +97,14 @@ namespace SpatialSys.UnitySDK.Editor
                 return;
 
             // Temporarily disable publishing for new package types
-            if (config is not EnvironmentConfig)
+            if (!config.isSpaceBasedPackage)
             {
                 SpatialValidator.AddResponse(
                     new SpatialTestResponse(
                         config,
                         TestResponseType.Fail,
                         "Publishing for this package type is currently disabled",
-                        "Only environment packages are allowed to be published. For now, you can only test within the sandbox. We will open up publishing for this very soon!"
+                        "Only SpaceTemplate packages are allowed to be published. For now, you can only test within the sandbox. We will open up publishing for this very soon!"
                     )
                 );
             }
@@ -147,11 +147,11 @@ namespace SpatialSys.UnitySDK.Editor
         [PackageTest]
         public static void EnsureThumbnailsAreAssigned(PackageConfig config)
         {
-            if (config is EnvironmentConfig envConfig)
+            if (config is SpaceTemplateConfig spaceTemplateConfig)
             {
-                for (int i = 0; i < envConfig.variants.Length; i++)
+                for (int i = 0; i < spaceTemplateConfig.variants.Length; i++)
                 {
-                    EnvironmentConfig.Variant variant = envConfig.variants[i];
+                    SpaceTemplateConfig.Variant variant = spaceTemplateConfig.variants[i];
                     CheckVariantThumbnailAssigned(config, variant.thumbnail, i);
                 }
             }
@@ -165,45 +165,49 @@ namespace SpatialSys.UnitySDK.Editor
         {
             if (thumbnail == null)
             {
+                SpatialTestResponse testResponse;
+                var responseType = SpatialValidator.validationContext == ValidationContext.Testing ? TestResponseType.Warning : TestResponseType.Fail;
+
                 string thumbnailSizeString = $"{config.thumbnailDimensions.x}x{config.thumbnailDimensions.y}";
                 if (variantIndex.HasValue)
                 {
-                    SpatialValidator.AddResponse(
-                        new SpatialTestResponse(
-                            config,
-                            TestResponseType.Fail,
-                            $"Package config has a variant (index {variantIndex.Value}) with no thumbnail assigned",
-                            $"Assign a thumbnail of size {thumbnailSizeString} to this variant to fix this issue."
-                        )
+                    testResponse = new SpatialTestResponse(
+                        config,
+                        responseType,
+                        $"Package config has a variant (index {variantIndex.Value}) with no thumbnail assigned",
+                        $"Assign a thumbnail of size {thumbnailSizeString} to this variant to fix this issue."
                     );
                 }
                 else
                 {
-                    SpatialValidator.AddResponse(
-                        new SpatialTestResponse(
-                            config,
-                            TestResponseType.Fail,
-                            "Package config has no thumbnail assigned",
-                            $"Assign a thumbnail of size {thumbnailSizeString} to fix this issue."
-                        )
+                    testResponse = new SpatialTestResponse(
+                        config,
+                        responseType,
+                        "Package config has no thumbnail assigned",
+                        $"Assign a thumbnail of size {thumbnailSizeString} to fix this issue."
                     );
                 }
+
+                if (SpatialValidator.validationContext == ValidationContext.Testing)
+                    testResponse.description += " Thumbnails will be required when publishing.";
+
+                SpatialValidator.AddResponse(testResponse);
             }
         }
 
         [PackageTest]
         public static void EnsureThumbnailsAreCorrectlySized(PackageConfig config)
         {
-            if (config is EnvironmentConfig envConfig)
+            if (config is SpaceTemplateConfig spaceTemplateConfig)
             {
-                for (int i = 0; i < envConfig.variants.Length; i++)
+                for (int i = 0; i < spaceTemplateConfig.variants.Length; i++)
                 {
-                    EnvironmentConfig.Variant variant = envConfig.variants[i];
+                    SpaceTemplateConfig.Variant variant = spaceTemplateConfig.variants[i];
                     CheckVariantThumbnail(i, variant.thumbnail, config.thumbnailDimensions, "thumbnail");
 
                     // Only need to check mini thumbnail if there are multiple variants
-                    if (envConfig.variants.Length > 1)
-                        CheckVariantThumbnail(i, variant.miniThumbnail, EnvironmentConfig.MINI_THUMBNAIL_TEXTURE_DIMENSIONS, "mini thumbnail");
+                    if (spaceTemplateConfig.variants.Length > 1)
+                        CheckVariantThumbnail(i, variant.miniThumbnail, SpaceTemplateConfig.MINI_THUMBNAIL_TEXTURE_DIMENSIONS, "mini thumbnail");
                 }
             }
             else
@@ -238,14 +242,17 @@ namespace SpatialSys.UnitySDK.Editor
                 // Size can still be different from what was set on the importer.
                 if (texture.width != dimensions.x || texture.height != dimensions.y)
                 {
-                    SpatialValidator.AddResponse(
-                        new SpatialTestResponse(
-                            texture,
-                            TestResponseType.Fail,
-                            $"Package config has a variant (index {variantIndex}) with a {wording} with the incorrect size",
-                            $"Each variant must have a {wording} assigned of size {dimensions.x}x{dimensions.y}."
-                        )
+                    var testResponse = new SpatialTestResponse(
+                        texture,
+                        SpatialValidator.validationContext == ValidationContext.Testing ? TestResponseType.Warning : TestResponseType.Fail,
+                        $"Package config has a variant (index {variantIndex}) with a {wording} with the incorrect size",
+                        $"Each variant must have a {wording} assigned of size {dimensions.x}x{dimensions.y}."
                     );
+
+                    if (SpatialValidator.validationContext == ValidationContext.Testing)
+                        testResponse.description += " Thumbnails will be required when publishing.";
+
+                    SpatialValidator.AddResponse(testResponse);
                 }
             }
         }

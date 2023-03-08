@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using UnityEngine;
-using SpatialSys.UnitySDK;
 
 namespace SpatialSys.UnitySDK
 {
@@ -13,7 +12,7 @@ namespace SpatialSys.UnitySDK
         public override string prettyName => "Quest";
         public override string tooltip => $"This components describes a quest and its tasks.";
 
-        public override string documentationURL => "https://spatialxr.notion.site/Quest-d2a35bd2b19f4b3d9288d23ebb816fc9";
+        public override string documentationURL => "https://docs.spatial.io/quest-building-system";
         public override bool isExperimental => true;
 
         [ReadOnly]
@@ -25,11 +24,27 @@ namespace SpatialSys.UnitySDK
         public string description;
         public bool startAutomatically = false;
         public bool tasksAreOrdered = true;
+
+        [Tooltip("Plays a confetti animation when the quest is completed")]
+        public bool celebrateOnComplete = true;
+        public Reward[] questRewards;
         public Task[] tasks = new Task[0];
 
         public SpatialEvent onStartedEvent;
         public SpatialEvent onCompletedEvent;
         public SpatialEvent onResetEvent;
+
+        [Serializable]
+        public class Reward
+        {
+            public RewardType type;
+            public string id;
+        }
+
+        public enum RewardType
+        {
+            Badge = 0,
+        }
 
         [Serializable]
         public class Task

@@ -84,5 +84,26 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public delegate int GetQuestTaskStatusDelegate(SpatialQuest quest, uint task);
         public static GetQuestTaskStatusDelegate GetQuestTaskStatus;
+
+        public delegate bool TakeoverSyncedObjectOwnerhipDelegate(SpatialSyncedObject syncedObject);
+        public static TakeoverSyncedObjectOwnerhipDelegate TakeoverSyncedObjectOwnership;
+
+        public delegate SpatialSyncedObject GetSyncedObjectByIDDelegate(int id);
+        public static GetSyncedObjectByIDDelegate GetSyncedObjectByID;
+
+        public delegate bool GetSyncedObjectIsSyncedDelegate(SpatialSyncedObject syncedObject);
+        public static GetSyncedObjectIsSyncedDelegate GetSyncedObjectIsSynced;
+
+        public delegate int GetSyncedObjectIDDelegate(SpatialSyncedObject syncedObject);
+        public static GetSyncedObjectIDDelegate GetSyncedObjectID;
+
+        public delegate int GetSyncedObjectOwnerDelegate(SpatialSyncedObject syncedObject);
+        public static GetSyncedObjectOwnerDelegate GetSyncedObjectOwner;
+
+        public delegate bool GetSyncedObjectHasControlDelegate(SpatialSyncedObject syncedObject);
+        public static GetSyncedObjectHasControlDelegate GetSyncedObjectHasControl;
+
+        public delegate bool GetSyncedObjectIsLocallyOwnedDelegate(SpatialSyncedObject syncedObject);
+        public static GetSyncedObjectIsLocallyOwnedDelegate GetSyncedObjectIsLocallyOwned;
     }
 }

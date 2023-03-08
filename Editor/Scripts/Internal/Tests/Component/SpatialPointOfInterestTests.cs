@@ -1,11 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using SpatialSys.UnitySDK;
 
 namespace SpatialSys.UnitySDK.Editor
 {
-    public class SpatialPointOfInterestTests
+    public static class SpatialPointOfInterestTests
     {
         [ComponentTest(typeof(SpatialPointOfInterest))]
         public static void CheckForTitle(SpatialPointOfInterest target)

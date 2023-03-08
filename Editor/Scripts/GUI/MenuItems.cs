@@ -17,6 +17,12 @@ namespace SpatialSys.UnitySDK.Editor
             SpatialSDKConfigWindow.OpenWindow("config");
         }
 
+        [MenuItem("Spatial SDK/Badges")]
+        public static void OpenBadges()
+        {
+            SpatialSDKConfigWindow.OpenWindow("badges");
+        }
+
         [MenuItem("Spatial SDK/Help")]
         public static void OpenHelp()
         {

@@ -102,7 +102,7 @@ namespace SpatialSys.UnitySDK.Editor
             InitializeIfNecessary(editorTarget);
             serializedObject.Update();
 
-            GUILayout.Space(8);
+            GUILayout.Space(4);
             GUILayout.BeginVertical(_areaStyle);
             {
                 GUILayout.BeginHorizontal();
@@ -129,7 +129,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
             GUILayout.EndVertical();
 
-            GUILayout.Space(8);
+            GUILayout.Space(4);
 
             DrawFields();
 

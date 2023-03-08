@@ -4,33 +4,13 @@ namespace SpatialSys.UnitySDK.Editor
 {
     public static class AvatarPackageTests
     {
-        /// <summary>
-        /// Checks for the following in order: Prefab is assigned in config, there's an animator component on the prefab, and the animator has a valid humanoid rig.
-        /// </summary>
         [PackageTest(PackageType.Avatar)]
-        public static void EnsureAnimatorRigIsHumanoid(AvatarConfig config)
+        public static void EnsurePrefabIsAssigned(AvatarConfig config)
         {
             if (config.prefab == null)
             {
                 SpatialValidator.AddResponse(
                     new SpatialTestResponse(config, TestResponseType.Fail, "A prefab with the Spatial Avatar component must be assigned in the config.")
-                );
-                return;
-            }
-
-            Animator animator;
-            if (!config.prefab.TryGetComponent<Animator>(out animator))
-            {
-                SpatialValidator.AddResponse(
-                    new SpatialTestResponse(config, TestResponseType.Fail, "The avatar prefab does not have an animator attached to it.")
-                );
-                return;
-            }
-
-            if (animator.avatar == null || !animator.avatar.isHuman)
-            {
-                SpatialValidator.AddResponse(
-                    new SpatialTestResponse(config.prefab, TestResponseType.Fail, "The avatar must have a valid humanoid rig. Non-humanoid rigs are not supported.")
                 );
             }
         }

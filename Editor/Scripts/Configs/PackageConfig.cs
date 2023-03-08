@@ -1,19 +1,11 @@
 using UnityEngine;
 using System.Collections.Generic;
+using SpatialSys.UnitySDK;
 
 namespace SpatialSys.UnitySDK.Editor
 {
-    // Sync any changes here with the corresponding enum in the Spatial API
-    public enum PackageType
-    {
-        Environment = 0,
-        Avatar = 1,
-        AvatarAnimation = 2,
-        PrefabObject = 3,
-    }
-
     /// <summary>
-    /// Base class for all package config types (Environment, Avatar, etc.)
+    /// Base class for all package config types (SpaceTemplate, Avatar, etc.)
     /// </summary>
     public abstract class PackageConfig : ScriptableObject
     {
@@ -31,6 +23,11 @@ namespace SpatialSys.UnitySDK.Editor
         public abstract PackageType packageType { get; }
         public abstract Vector2Int thumbnailDimensions { get; }
         public abstract string bundleName { get; }
+
+        /// <summary>
+        /// Space or SpaceTemplate
+        /// </summary>
+        public bool isSpaceBasedPackage => packageType == PackageType.Space || packageType == PackageType.SpaceTemplate;
 
         /// <summary>
         /// A collection of all assets (excluding their dependencies) that this package uses.

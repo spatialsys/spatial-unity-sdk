@@ -6,6 +6,9 @@ using UnityEditor.UIElements;
 using System.Linq;
 using UnityEditor.SceneManagement;
 using System;
+using System.IO;
+using RSG;
+using Proyecto26;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -13,15 +16,21 @@ namespace SpatialSys.UnitySDK.Editor
     public class SpatialSDKConfigWindow : EditorWindow
     {
         private static readonly string ACCESS_TOKEN_URL = $"https://{SpatialAPI.SPATIAL_ORIGIN}/account";
+
+        private const string SUPPORT_URL = "https://support.spatial.io/hc/en-us";
+        private const string DISCORD_URL = "https://discord.com/invite/spatial";
+        private const string BADGE_TEMPLATE_URL = "https://www.canva.com/design/DAFccMdm0M8/jQM0Ra4kqvFVoGMK0lSgpQ/view?mode=preview";
+
         private static bool _isOpen = false;
 
         private const string CONFIG_TAB_NAME = "config";
         private const string ISSUES_TAB_NAME = "issues";
+        private const string BADGES_TAB_NAME = "badges";
         private const string PROJECT_CONFIG_NULL_ELEMENT_NAME = "configNull";
         private const string PROJECT_CONFIG_ELEMENT_NAME = "projectConfig";
         private const string PACKAGE_CONFIG_ELEMENT_NAME = "packageConfig";
 
-        private string _tab;
+        private string _tab = CONFIG_TAB_NAME;
         private string _authToken;
 
         // Config Tab Elements
@@ -75,6 +84,34 @@ namespace SpatialSys.UnitySDK.Editor
         private VisualElement _selectObjectBlock;
         private Label _targetObjectName;
 
+        // Badge Tab Elements
+        private const string _badgeTemplatePath = "Packages/io.spatial.unitysdk/Editor/Scripts/GUI/ConfigWindow/BadgeElement/BadgeElement.uxml";
+        private VisualTreeAsset badgeTemplate
+        {
+            get
+            {
+                if (_badgeTemplate == null)
+                {
+                    _badgeTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(_badgeTemplatePath);
+                    if (_badgeTemplate == null)
+                    {
+                        Debug.LogError("Badge Template could not be found. Your Spatial SDK installation may be corrupted.");
+                    }
+                }
+                return _badgeTemplate;
+            }
+        }
+        private VisualTreeAsset _badgeTemplate;
+        private VisualElement _badgeListParent;
+        private VisualElement _newBadge;
+        private TextField _newBadgeName;
+        private TextField _newBadgeDescription;
+        private VisualElement _newBadgeIcon;
+        private Label _newBadgeError;
+        private Label _badgeManagerStatus;
+        Dictionary<string, VisualElement> _badgeElements = new Dictionary<string, VisualElement>();
+        private byte[] _badgeIconToUpload;
+
         public static void OpenWindow(string startingTab)
         {
             SpatialSDKConfigWindow wnd = GetWindow<SpatialSDKConfigWindow>("Spatial Portal");
@@ -84,8 +121,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         static SpatialSDKConfigWindow()
         {
-            if (_isOpen)
-                EditorApplication.update += DelayedInitialize;
+            EditorApplication.update += DelayedInitialize;
         }
 
         private void OnEnable()
@@ -102,7 +138,9 @@ namespace SpatialSys.UnitySDK.Editor
         private static void DelayedInitialize()
         {
             EditorApplication.update -= DelayedInitialize;
-            EditorWindow.GetWindow<SpatialSDKConfigWindow>().Refresh();
+
+            if (_isOpen)
+                EditorWindow.GetWindow<SpatialSDKConfigWindow>().Refresh();
         }
 
         public void Refresh()
@@ -128,6 +166,7 @@ namespace SpatialSys.UnitySDK.Editor
             root.Query<Button>("accountButton").First().clicked += () => SetTab("account");
             root.Query<Button>("configButton").First().clicked += () => SetTab(CONFIG_TAB_NAME);
             root.Query<Button>("issuesButton").First().clicked += () => SetTab(ISSUES_TAB_NAME);
+            root.Query<Button>("badgesButton").First().clicked += () => SetTab(BADGES_TAB_NAME);
             root.Query<Button>("helpButton").First().clicked += () => SetTab("help");
 
             // Account
@@ -183,6 +222,21 @@ namespace SpatialSys.UnitySDK.Editor
             _packageConfigSKUElement = root.Q(PACKAGE_CONFIG_ELEMENT_NAME).Q("packageSKU");
             _configPackageType = root.Q(PACKAGE_CONFIG_ELEMENT_NAME).Query<Label>("packageTypeValue").First();
 
+            // Badges
+            _badgeListParent = root.Q("badgesScroll");
+            root.Query<Button>("changeIconButton").First().clicked += () => ChangeBadgeIcon(null);
+            root.Query<Button>("createBadgeButton").First().clicked += () => CreateBadge();
+            _newBadge = root.Query<VisualElement>("newBadge").First();
+            _newBadgeName = root.Query<TextField>("newBadgeName").First();
+            _newBadgeDescription = root.Query<TextField>("newBadgeDescription").First();
+            _newBadgeIcon = root.Query<VisualElement>("newBadgeIcon").First();
+            _newBadgeError = root.Query<Label>("newBadgeError").First();
+            _badgeManagerStatus = root.Query<Label>("badgeManagerStatus").First();
+            root.Query<Button>("gotoBadgeTemplate").First().clicked += () => {
+                Application.OpenURL(BADGE_TEMPLATE_URL);
+                Debug.Log($"Opening Browser: {BADGE_TEMPLATE_URL}");
+            };
+
             // Issues
             _issuesCountBlock = root.Q("issuesCountBlock");
             _issuesCountTitle = root.Query<Label>("issuesCountTitle").First();
@@ -209,8 +263,8 @@ namespace SpatialSys.UnitySDK.Editor
 
             // Help
             root.Query<Button>("gotoDocumentation").First().clicked += () => Application.OpenURL(UpgradeUtility.packageInfo.documentationUrl);
-            root.Query<Button>("gotoSupport").First().clicked += () => Application.OpenURL("https://support.spatial.io/hc/en-us");
-            root.Query<Button>("gotoDiscord").First().clicked += () => Application.OpenURL("https://discord.com/invite/spatial");
+            root.Query<Button>("gotoSupport").First().clicked += () => Application.OpenURL(SUPPORT_URL);
+            root.Query<Button>("gotoDiscord").First().clicked += () => Application.OpenURL(DISCORD_URL);
 
             _issueListParent = root.Q("issuesScroll");
 
@@ -236,6 +290,7 @@ namespace SpatialSys.UnitySDK.Editor
             rootVisualElement.Q("account").style.display = DisplayStyle.None;
             rootVisualElement.Q(CONFIG_TAB_NAME).style.display = DisplayStyle.None;
             rootVisualElement.Q(ISSUES_TAB_NAME).style.display = DisplayStyle.None;
+            rootVisualElement.Q(BADGES_TAB_NAME).style.display = DisplayStyle.None;
             rootVisualElement.Q("help").style.display = DisplayStyle.None;
 
             rootVisualElement.Q(tab).style.display = DisplayStyle.Flex;
@@ -251,11 +306,16 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 LoadIssues();
             }
+            else if (tab == BADGES_TAB_NAME)
+            {
+                RefreshBadges();
+            }
 
             // Tab buttons
             rootVisualElement.Q("accountButton").RemoveFromClassList("tabButtonSelected");
             rootVisualElement.Q("configButton").RemoveFromClassList("tabButtonSelected");
             rootVisualElement.Q("issuesButton").RemoveFromClassList("tabButtonSelected");
+            rootVisualElement.Q("badgesButton").RemoveFromClassList("tabButtonSelected");
             rootVisualElement.Q("helpButton").RemoveFromClassList("tabButtonSelected");
 
             rootVisualElement.Q(tab + "Button").AddToClassList("tabButtonSelected");
@@ -291,12 +351,13 @@ namespace SpatialSys.UnitySDK.Editor
                 _packageConfigSKUElement.style.display = (string.IsNullOrEmpty(packageConfig.sku)) ? DisplayStyle.None : DisplayStyle.Flex;
                 _configPackageType.text = packageConfig.packageType.ToString();
 
-                rootVisualElement.Q("environmentConfig").style.display = (packageConfig.packageType == PackageType.Environment) ? DisplayStyle.Flex : DisplayStyle.None;
+                rootVisualElement.Q("spaceConfig").style.display = (packageConfig.packageType == PackageType.Space) ? DisplayStyle.Flex : DisplayStyle.None;
+                rootVisualElement.Q("spaceTemplateConfig").style.display = (packageConfig.packageType == PackageType.SpaceTemplate) ? DisplayStyle.Flex : DisplayStyle.None;
                 rootVisualElement.Q("avatarConfig").style.display = (packageConfig.packageType == PackageType.Avatar) ? DisplayStyle.Flex : DisplayStyle.None;
                 rootVisualElement.Q("avatarAnimationConfig").style.display = (packageConfig.packageType == PackageType.AvatarAnimation) ? DisplayStyle.Flex : DisplayStyle.None;
                 rootVisualElement.Q("prefabObjectConfig").style.display = (packageConfig.packageType == PackageType.PrefabObject) ? DisplayStyle.Flex : DisplayStyle.None;
 
-                _publishPackageButton.visible = packageConfig.packageType == PackageType.Environment;
+                _publishPackageButton.visible = packageConfig.packageType == PackageType.Space || packageConfig.packageType == PackageType.SpaceTemplate;
             }
         }
 
@@ -387,8 +448,8 @@ namespace SpatialSys.UnitySDK.Editor
             }
             else if (_errorIssues.Count > 0)
             {
-                _issuesCountTitle.text = "<color=#FF4343>" + _errorIssues.Count.ToString() + " Errors</color> <color=#FFEA80>" + _warningIssues.Count.ToString() + " Warnings</color>";
-                _issuesCountDescription.text = "You can't upload your environment to the sandbox or publish until the errors are resolved.";
+                _issuesCountTitle.text = "<color=#FF4343>" + _errorIssues.Count.ToString() + " Error(s)</color> <color=#FFEA80>" + _warningIssues.Count.ToString() + " Warning(s)</color>";
+                _issuesCountDescription.text = "You can't upload your package to the sandbox or publish until the errors are resolved.";
                 _issuesCountBlock.AddToClassList("block_red");
                 _issuesRefreshButton.AddToClassList("blockButton_red");
                 _issuesScrollBlock.style.display = DisplayStyle.Flex;
@@ -396,8 +457,8 @@ namespace SpatialSys.UnitySDK.Editor
             }
             else
             {
-                _issuesCountTitle.text = "<color=#FFEA80>" + _warningIssues.Count.ToString() + " Warnings</color>";
-                _issuesCountDescription.text = "Warnings will not prevent you from publishing, but you should still look to resolve them as your environment may not work as expected.";
+                _issuesCountTitle.text = "<color=#FFEA80>" + _warningIssues.Count.ToString() + " Warning(s)</color>";
+                _issuesCountDescription.text = "Warnings will not prevent you from publishing, but you should still look to resolve them as your package may not work as expected.";
                 _issuesCountBlock.AddToClassList("block_yellow");
                 _issuesRefreshButton.AddToClassList("blockButton_yellow");
                 _issuesScrollBlock.style.display = DisplayStyle.Flex;
@@ -520,6 +581,183 @@ namespace SpatialSys.UnitySDK.Editor
             }
 
             Selection.activeObject = response.targetObject;
+        }
+
+        /////////////////////////////////////////
+        //               Badges
+        /////////////////////////////////////////
+
+        private void RefreshBadges()
+        {
+            _badgeListParent.Clear();
+            _badgeElements.Clear();
+
+            CallBadgeApiFunction("Fetching badges", null, BadgeManager.FetchBadges())
+                .Then(badges => {
+                    foreach (var b in badges)
+                        CreateBadgeElement(b);
+                });
+        }
+
+        private void CreateBadgeElement(SpatialAPI.Badge badge)
+        {
+            VisualElement element = badgeTemplate.Instantiate();
+            if (!EditorGUIUtility.isProSkin)
+            {
+                element.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>("Packages/io.spatial.unitysdk/Editor/Scripts/GUI/ConfigWindow/SpatialValidatorWindow_LightModeOverride.uss"));
+            }
+            _badgeListParent.Add(element);
+            _badgeElements.Add(badge.id, element);
+
+            var idLabel = element.Query<TextField>("badgeId").First();
+            var nameText = element.Query<TextField>("name").First();
+            var descriptionText = element.Query<TextField>("description").First();
+            var badgeIcon = element.Query<VisualElement>("badgeIcon").First();
+
+            // Set layout values
+            idLabel.value = badge.id;
+            nameText.value = badge.name;
+            descriptionText.value = badge.description;
+
+            BadgeManager.GetBadgeIcon(badge.id).Then(texture => {
+                badgeIcon.style.backgroundImage = texture;
+            });
+
+            // Add events
+            element.Query<Button>("deleteButton").First().clicked += () => DeleteBadge(badge.id);
+            element.Query<Button>("saveButton").First().clicked += () => UpdateBadge(badge.id, nameText.value, descriptionText.value);
+            element.Query<Button>("changeIconButton").First().clicked += () => ChangeBadgeIcon(badge.id);
+        }
+
+        private void CreateBadge()
+        {
+            if (_badgeIconToUpload == null || _badgeIconToUpload.Length == 0)
+            {
+                _newBadgeError.text = "Select a badge icon before creating";
+                return;
+            }
+
+            CallBadgeApiFunction("Creating badge", null, BadgeManager.CreateBadge(_newBadgeName.value, _newBadgeDescription.value, _badgeIconToUpload))
+                .Then(badge => {
+                    CreateBadgeElement(badge);
+                    _newBadgeName.value = "";
+                    _newBadgeDescription.value = "";
+                    _newBadgeIcon.style.backgroundImage = null;
+                    _badgeIconToUpload = null;
+                });
+        }
+
+        private void ChangeBadgeIcon(string badgeID)
+        {
+            // Open file and load data
+            string path = UnityEditor.EditorUtility.OpenFilePanel("Select badge icon", "", "png");
+            if (path.Length == 0)
+                return;
+
+            byte[] fileContent = File.ReadAllBytes(path);
+
+            CallBadgeApiFunction("Uploading badge icon", badgeID, BadgeManager.UpdateBadgeIcon(badgeID, fileContent))
+                .Then(texture => {
+                    if (badgeID == null)
+                    {
+                        _badgeIconToUpload = fileContent;
+                        _newBadgeIcon.style.backgroundImage = texture;
+                    }
+                    else
+                    {
+                        VisualElement element = _badgeElements[badgeID];
+                        var badgeIcon = element.Query<VisualElement>("badgeIcon").First();
+
+                        badgeIcon.style.backgroundImage = texture;
+                    }
+                });
+        }
+
+        private void DeleteBadge(string badgeID)
+        {
+            CallBadgeApiFunction("Deleting badge", badgeID, BadgeManager.DeleteBadge(badgeID))
+                .Then(() => {
+                    VisualElement element = _badgeElements[badgeID];
+                    _badgeElements.Remove(badgeID);
+                    _badgeListParent.Remove(element);
+                });
+        }
+
+        private void UpdateBadge(string badgeID, string name, string description)
+        {
+            CallBadgeApiFunction("Updating badge", badgeID, BadgeManager.UpdateBadge(badgeID, name, description))
+                .Then(() => {
+                    VisualElement element = _badgeElements[badgeID];
+                    var nameText = element.Query<TextField>("name").First();
+                    var descriptionText = element.Query<TextField>("description").First();
+
+                    // Set layout values
+                    nameText.value = name;
+                    descriptionText.value = description;
+                });
+        }
+        private IPromise CallBadgeApiFunction(string message, string badgeID, IPromise promise)
+        {
+            SetBadgeManagerStatus(message);
+            SetBadgeError(badgeID);
+            return promise
+                .Then(() => {
+                    SetBadgeManagerStatus("");
+                }).Catch(exception => {
+                    SetBadgeManagerStatus("");
+                    SetBadgeError(badgeID, exception);
+                    throw exception;
+                });
+        }
+
+        private IPromise<T> CallBadgeApiFunction<T>(string message, string badgeID, IPromise<T> promise)
+        {
+            SetBadgeManagerStatus(message);
+            SetBadgeError(badgeID);
+            return promise
+                .Then(response => {
+                    SetBadgeManagerStatus("");
+                    return response;
+                }).Catch(exception => {
+                    SetBadgeManagerStatus("");
+                    SetBadgeError(badgeID, exception);
+                    throw exception;
+                });
+        }
+
+        private void SetBadgeManagerStatus(string text)
+        {
+            _badgeManagerStatus.text = text;
+
+            bool enabled = text.Length == 0;
+            _newBadge.SetEnabled(enabled);
+            _badgeListParent.SetEnabled(enabled);
+        }
+
+        private void SetBadgeError(string badgeID, Exception exception = null)
+        {
+            string message = "";
+            if (exception != null)
+            {
+                if (exception is RequestException)
+                {
+                    message = (exception as RequestException).ServerMessage;
+                }
+                else
+                {
+                    message = exception.Message;
+                }
+                Debug.LogException(exception);
+            }
+
+            if (badgeID == null)
+            {
+                _newBadgeError.text = message;
+            }
+            else
+            {
+                _badgeElements[badgeID].Query<Label>("error").First().text = message;
+            }
         }
     }
 }

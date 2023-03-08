@@ -2,12 +2,22 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK.Editor
 {
-    public class TerrainTests
+    public static class TerrainTests
     {
         [ComponentTest(typeof(Terrain))]
         public static void WarnAboutTerrainResolution(Component target)
         {
             Terrain terrain = target as Terrain;
+            if (terrain.terrainData == null)
+            {
+                SpatialValidator.AddResponse(new SpatialTestResponse(
+                    terrain,
+                    TestResponseType.Fail,
+                    "Terrain has no terrain data",
+                    "Terrains must have terrain data"
+                ));
+                return;
+            }
 
             if (terrain.terrainData.heightmapResolution > 2048)
             {

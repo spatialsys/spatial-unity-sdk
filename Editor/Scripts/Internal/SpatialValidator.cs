@@ -10,7 +10,7 @@ using UnityEditor.SceneManagement;
 namespace SpatialSys.UnitySDK.Editor
 {
     /// <summary>
-    /// What is the context of the current validation run?
+    /// From where was the currently running validation initiated?
     /// </summary>
     public enum ValidationContext
     {
@@ -32,31 +32,15 @@ namespace SpatialSys.UnitySDK.Editor
         private static Scene? _currentTestScene = null;
 
         /// <summary>
-        /// Returns true if there's at least one failed test response. Warning responses are excluded.
+        /// Returns a summary of the run, otherwise null if tests failed to run.
         /// </summary>
-        private static bool _hasFailedTestResponse
-        {
-            get
-            {
-                foreach (SpatialTestResponse response in allResponses)
-                {
-                    if (response.responseType == TestResponseType.Fail)
-                        return true;
-                }
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Returns true if no tests FAILED. There could be warnings though.
-        /// </summary>
-        public static bool RunTestsOnPackage(ValidationContext context)
+        public static SpatialValidationSummary RunTestsOnPackage(ValidationContext context)
         {
             PackageConfig config = ProjectConfig.activePackage;
             if (config == null)
             {
                 Debug.LogError("No config found.");
-                return false;
+                return null;
             }
 
             validationContext = context;
@@ -65,21 +49,28 @@ namespace SpatialSys.UnitySDK.Editor
 
             RunPackageTests(config);
 
-            if (config is EnvironmentConfig envConfig)
+            if (config is SpaceConfig spaceConfig)
             {
-                RunTestsOnEnvironmentPackage(envConfig);
+                RunTestsOnSpacePackageScenes(new SceneAsset[] { spaceConfig.scene });
+            }
+            else if (config is SpaceTemplateConfig spaceTemplateConfig)
+            {
+                RunTestsOnSpacePackageScenes(spaceTemplateConfig.variants.Select(v => v.scene).ToArray());
             }
 
-            return !_hasFailedTestResponse;
+            return CreateValidationSummary();
         }
 
-        public static bool RunTestsOnActiveScene(ValidationContext context)
+        /// <summary>
+        /// Returns a summary of the run, otherwise null if tests failed to run.
+        /// </summary>
+        public static SpatialValidationSummary RunTestsOnActiveScene(ValidationContext context)
         {
             PackageConfig config = ProjectConfig.activePackage;
             if (config == null)
             {
                 Debug.LogError("No config found.");
-                return false;
+                return null;
             }
 
             validationContext = context;
@@ -88,7 +79,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             RunPackageTests(config);
             RunSceneTests(SceneManager.GetActiveScene());
-            return !_hasFailedTestResponse;
+            return CreateValidationSummary();
         }
 
         public static void AddResponse(SpatialTestResponse response)
@@ -109,7 +100,7 @@ namespace SpatialSys.UnitySDK.Editor
         // INTERNAL HELPERS IMPLEMENTATION
         // ======================================================
 
-        private static void RunTestsOnEnvironmentPackage(EnvironmentConfig config)
+        private static void RunTestsOnSpacePackageScenes(SceneAsset[] sceneAssets)
         {
             if (!Application.isBatchMode)
                 EditorSceneManager.SaveOpenScenes(); // We are going to swap scenes and will lose changes without this
@@ -118,12 +109,12 @@ namespace SpatialSys.UnitySDK.Editor
             string originalScenePath = previousScene.path;
             var testedScenePaths = new HashSet<string>();
 
-            foreach (EnvironmentConfig.Variant variant in config.variants)
+            foreach (SceneAsset sceneAsset in sceneAssets)
             {
-                if (variant.scene == null)
+                if (sceneAsset == null)
                     continue;
 
-                string scenePath = AssetDatabase.GetAssetPath(variant.scene);
+                string scenePath = AssetDatabase.GetAssetPath(sceneAsset);
                 if (!testedScenePaths.Add(scenePath))
                     continue; // We already tested this scene, although this shouldn't happen since each scene should be assigned to at most one variant.
 
@@ -207,6 +198,9 @@ namespace SpatialSys.UnitySDK.Editor
                 if (attr.TestAffectsPackageType(config.packageType))
                     method.Invoke(null, configParam);
             }
+
+            foreach (GameObject go in config.gameObjectAssets)
+                RunComponentTestsOnObjectRecursively(go);
         }
 
         private static void RunSceneTests(Scene scene)
@@ -232,7 +226,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
 
             Assembly assembly = Assembly.GetAssembly(typeof(SpatialValidator));
-            IEnumerable<MethodInfo> allPublicStaticMethods = assembly.GetExportedTypes()
+            IEnumerable<MethodInfo> allPublicStaticMethods = assembly.GetExportedTypesCached()
                 .SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Static))
                 .Where(method => !method.IsSpecialName); // exclude property getters/setters
 
@@ -242,34 +236,34 @@ namespace SpatialSys.UnitySDK.Editor
 
             foreach (MethodInfo method in allPublicStaticMethods)
             {
-                ParameterInfo[] methodParams = method.GetParameters();
                 if (method.TryGetCustomAttribute<ComponentTest>(out var componentAttr))
                 {
-                    if (methodParams.Length != 1 || !typeof(Component).IsAssignableFrom(methodParams[0].ParameterType))
+                    if (!method.ValidateParameterTypes(typeof(Component)))
                     {
-                        Debug.LogError("Component tests should have a single parameter of type Component. " + method.Name);
+                        Debug.LogError("Component test does not match signature: (Component). " + method.Name);
                         continue;
                     }
-                    if (!_componentTests.ContainsKey(componentAttr.targetType))
+                    Type targetType = componentAttr.targetType ?? typeof(Component);
+                    if (!_componentTests.ContainsKey(targetType))
                     {
-                        _componentTests.Add(componentAttr.targetType, new List<MethodInfo>());
+                        _componentTests.Add(targetType, new List<MethodInfo>());
                     }
-                    _componentTests[componentAttr.targetType].Add(method);
+                    _componentTests[targetType].Add(method);
                 }
                 else if (method.TryGetCustomAttribute<SceneTest>(out var sceneAttr))
                 {
-                    if (methodParams.Length != 1 || methodParams[0].ParameterType != typeof(Scene))
+                    if (!method.ValidateParameterTypes(typeof(Scene)))
                     {
-                        Debug.LogError("Scene tests should have a single parameter of type Scene. " + method.Name);
+                        Debug.LogError("Scene test does not match signature: (Scene). " + method.Name);
                         continue;
                     }
                     _sceneTests.Add(method);
                 }
                 else if (method.TryGetCustomAttribute<PackageTest>(out var packageAttr))
                 {
-                    if (methodParams.Length != 1 || !typeof(PackageConfig).IsAssignableFrom(methodParams[0].ParameterType))
+                    if (!method.ValidateParameterTypes(typeof(PackageConfig)))
                     {
-                        Debug.LogError("Package tests should have a single parameter of type PackageConfig. " + method.Name);
+                        Debug.LogError("Package test does not match signature (PackageConfig). " + method.Name);
                         continue;
                     }
                     _packageTests.Add(method);
@@ -277,6 +271,21 @@ namespace SpatialSys.UnitySDK.Editor
             }
 
             _initialized = true;
+        }
+
+        private static SpatialValidationSummary CreateValidationSummary()
+        {
+            SpatialTestResponse[] warnings = allResponses
+                .Where(resp => resp.responseType == TestResponseType.Warning)
+                .ToArray();
+            SpatialTestResponse[] errors = allResponses
+                .Where(resp => resp.responseType == TestResponseType.Fail)
+                .ToArray();
+
+            return new SpatialValidationSummary() {
+                warnings = warnings,
+                errors = errors
+            };
         }
     }
 

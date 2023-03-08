@@ -4,21 +4,21 @@ using UnityEditor;
 
 namespace SpatialSys.UnitySDK.Editor
 {
-    public static class EnvironmentPackageTests
+    public static class SpaceTemplatePackageTests
     {
-        [PackageTest(PackageType.Environment)]
-        public static void EnsureVariantExists(EnvironmentConfig config)
+        [PackageTest(PackageType.SpaceTemplate)]
+        public static void EnsureVariantExists(SpaceTemplateConfig config)
         {
             if (config.variants.Length == 0)
             {
                 SpatialValidator.AddResponse(
-                    new SpatialTestResponse(config, TestResponseType.Fail, "There are no environment variants set.")
+                    new SpatialTestResponse(config, TestResponseType.Fail, "There are no space template variants set.")
                 );
             }
         }
 
-        [PackageTest(PackageType.Environment)]
-        public static void EnsureVariantsHaveNonEmptyUniqueNames(EnvironmentConfig config)
+        [PackageTest(PackageType.SpaceTemplate)]
+        public static void EnsureVariantsHaveNonEmptyUniqueNames(SpaceTemplateConfig config)
         {
             var variantNames = new HashSet<string>();
             for (int i = 0; i < config.variants.Length; i++)
@@ -41,13 +41,13 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
-        [PackageTest(PackageType.Environment)]
-        public static void EnsureVariantsHaveUniqueScenesAssigned(EnvironmentConfig config)
+        [PackageTest(PackageType.SpaceTemplate)]
+        public static void EnsureVariantsHaveUniqueScenesAssigned(SpaceTemplateConfig config)
         {
             var variantScenes = new HashSet<SceneAsset>();
             for (int i = 0; i < config.variants.Length; i++)
             {
-                EnvironmentConfig.Variant variant = config.variants[i];
+                SpaceTemplateConfig.Variant variant = config.variants[i];
                 if (variant.scene == null)
                 {
                     SpatialValidator.AddResponse(
@@ -64,13 +64,13 @@ namespace SpatialSys.UnitySDK.Editor
         }
 
         // We just need this to succeed since we will need to access the importer to assign the bundle name correctly
-        [PackageTest(PackageType.Environment)]
-        public static void EnsureVariantSceneImporterCanBeFound(EnvironmentConfig config)
+        [PackageTest(PackageType.SpaceTemplate)]
+        public static void EnsureVariantSceneImporterCanBeFound(SpaceTemplateConfig config)
         {
             var variantScenes = new HashSet<SceneAsset>();
             for (int i = 0; i < config.variants.Length; i++)
             {
-                EnvironmentConfig.Variant variant = config.variants[i];
+                SpaceTemplateConfig.Variant variant = config.variants[i];
                 if (variant.scene != null)
                 {
                     string scenePath = AssetDatabase.GetAssetPath(variant.scene);

@@ -4,13 +4,13 @@ using System.Collections.Generic;
 
 namespace SpatialSys.UnitySDK.Editor
 {
-    public class EnvironmentConfig : PackageConfig
+    public class SpaceTemplateConfig : PackageConfig
     {
         public static readonly Vector2Int MINI_THUMBNAIL_TEXTURE_DIMENSIONS = new Vector2Int(64, 64);
 
         public Variant[] variants = new Variant[1] { new Variant() };
 
-        public override PackageType packageType => PackageType.Environment;
+        public override PackageType packageType => PackageType.SpaceTemplate;
         public override Vector2Int thumbnailDimensions => new Vector2Int(1024, 512);
         public override string bundleName => throw new System.InvalidOperationException("Access the bundle names through the variants array");
         public override IEnumerable<Object> assets

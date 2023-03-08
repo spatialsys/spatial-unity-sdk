@@ -17,7 +17,7 @@ namespace SpatialSys.UnitySDK.Editor
         private const string RED_BLOCK_CLASS = "InfoBlock_red";
 
         // Controls whether the panel or the docked button is visible.
-        bool ITransientOverlay.visible => ProjectConfig.activePackage is EnvironmentConfig;
+        bool ITransientOverlay.visible => ProjectConfig.activePackage != null && ProjectConfig.activePackage.isSpaceBasedPackage;
 
         private VisualElement _verticesBlock;
         private Label _verticesCount;

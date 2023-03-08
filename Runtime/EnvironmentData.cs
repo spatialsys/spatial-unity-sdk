@@ -3,6 +3,7 @@ using UnityEngine.Rendering;
 
 namespace SpatialSys.UnitySDK
 {
+    // TODO: Figure out how to rename to SceneData without breaking component reference from old bundles after client load
     public class EnvironmentData : MonoBehaviour
     {
         public const int VERSION = 1;
@@ -19,6 +20,7 @@ namespace SpatialSys.UnitySDK
         public SpatialInteractable[] interactables;
         public SpatialPointOfInterest[] pointsOfInterest;
         public SpatialQuest[] quests;
+        public SpatialSyncedObject[] syncedObjects;
 
         public Animator[] unsyncedAnimators;
 
