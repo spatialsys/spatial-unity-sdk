@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections.Generic;
-using SpatialSys.UnitySDK;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -23,6 +22,20 @@ namespace SpatialSys.UnitySDK.Editor
         public abstract PackageType packageType { get; }
         public abstract Vector2Int thumbnailDimensions { get; }
         public abstract string bundleName { get; }
+
+        /// <summary>
+        /// Can the thumbnail have no transparent pixels?
+        /// </summary>
+        public virtual bool allowOpaqueThumbnails => true;
+        /// <summary>
+        /// Can the thumbnail have transparent/semi-transparent pixels?
+        /// </summary>
+        public virtual bool allowTransparentThumbnails => true;
+        /// <summary>
+        /// Required ratio of pixels in the thumbnail that need to be (fully) transparent to pass validation. A value of 0 disables this validation rule.
+        /// Not applicable if transparent pixels are not allowed.
+        /// </summary>
+        public virtual float thumbnailMinTransparentBgRatio => 0f;
 
         /// <summary>
         /// Space or SpaceTemplate

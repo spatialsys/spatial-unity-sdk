@@ -5,7 +5,9 @@ using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
-    [UnitTitle("Teleport Local Avatar")]
+    [UnitTitle("Spatial: Teleport Local Avatar")]
+    [UnitSurtitle("Spatial")]
+    [UnitShortTitle("Teleport Local Avatar")]
     [UnitCategory("Spatial\\Actions")]
     [TypeIcon(typeof(SpatialComponentBase))]
     public class TeleportAvatarSelfNode : Unit

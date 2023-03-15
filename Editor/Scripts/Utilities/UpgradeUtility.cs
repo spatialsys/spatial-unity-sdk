@@ -40,23 +40,17 @@ namespace SpatialSys.UnitySDK.Editor
         static UpgradeUtility()
         {
 #if !SPATIAL_UNITYSDK_DISABLE_UPGRADE_CHECK
-            // Do we need to do a suggest update check?
-            bool doSuggestUpdateCheck = true;
-            string lastCheckDateTicks = EditorPrefs.GetString(LAST_AUTO_UPDATE_DATE_PREFS_KEY, null);
-            if (long.TryParse(lastCheckDateTicks, out long lastCheckDateTicksLong))
-            {
-                System.DateTime lastCheckDate = new System.DateTime(lastCheckDateTicksLong);
-                if ((System.DateTime.Now - lastCheckDate).TotalMinutes < AUTO_UPDATE_INTERVAL_MINUTES)
-                    doSuggestUpdateCheck = false;
-            }
+            // Check if it has been enough time since we asked user to update
+            bool doSuggestUpdateCheck = !EditorUtility.TryGetDateTimeFromEditorPrefs(LAST_AUTO_UPDATE_DATE_PREFS_KEY, out System.DateTime lastCheckDate) ||
+                (System.DateTime.Now - lastCheckDate).TotalMinutes >= AUTO_UPDATE_INTERVAL_MINUTES;
 
-            // Only perform upgrade check if we opened the project just now, or if the last check was more than AUTO_UPDATE_INTERVAL_MINUTES ago
+            // But also perform an update check anyway if the user just opened the editor.
             bool editorWasJustOpened = Time.realtimeSinceStartup < 20;
             if (!EditorApplication.isPlayingOrWillChangePlaymode && (editorWasJustOpened || doSuggestUpdateCheck))
             {
                 CheckForUpgrade(UpgradeCheckType.ForceFetch)
                     .Then(upgradeRequired => {
-                        EditorPrefs.SetString(LAST_AUTO_UPDATE_DATE_PREFS_KEY, System.DateTime.Now.Ticks.ToString());
+                        EditorUtility.SetDateTimeToEditorPrefs(LAST_AUTO_UPDATE_DATE_PREFS_KEY, System.DateTime.Now);
                         if (upgradeRequired)
                             ShowUpgradeDialog();
                     });
@@ -78,13 +72,8 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 case UpgradeCheckType.Default:
                     // Only fetch package info if it's been a while since the last fetch
-                    string lastCheckDateTicks = EditorPrefs.GetString(LAST_FETCH_DATE_PREFS_KEY, null);
-                    if (long.TryParse(lastCheckDateTicks, out long lastCheckDateTicksLong))
-                    {
-                        System.DateTime lastCheckDate = new System.DateTime(lastCheckDateTicksLong);
-                        if ((System.DateTime.Now - lastCheckDate).TotalMinutes < FETCH_INTERVAL_MINUTES)
-                            fetchPackageInfo = false;
-                    }
+                    fetchPackageInfo = !EditorUtility.TryGetDateTimeFromEditorPrefs(LAST_FETCH_DATE_PREFS_KEY, out System.DateTime lastCheckDate) ||
+                        (System.DateTime.Now - lastCheckDate).TotalMinutes >= FETCH_INTERVAL_MINUTES;
                     break;
 
                 case UpgradeCheckType.ForceFetch:
@@ -106,7 +95,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             // Check for an upgrade, but fetch latest data
             _upgradeCheckPromise = new Promise<bool>();
-            _upgradeCheckPromise.Then(upgradeRequired => EditorPrefs.SetString(LAST_FETCH_DATE_PREFS_KEY, System.DateTime.Now.Ticks.ToString()));
+            _upgradeCheckPromise.Then(upgradeRequired => EditorUtility.SetDateTimeToEditorPrefs(LAST_FETCH_DATE_PREFS_KEY, System.DateTime.Now));
             _searchRequest = Client.Search(UNITY_SDK_PACKAGE_NAME);
             EditorApplication.update += SearchRequestProgressUpdate;
             return _upgradeCheckPromise;

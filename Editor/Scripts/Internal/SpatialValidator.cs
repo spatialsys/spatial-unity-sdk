@@ -14,8 +14,8 @@ namespace SpatialSys.UnitySDK.Editor
     /// </summary>
     public enum ValidationContext
     {
-        Testing,
-        Publishing,
+        UploadingToSandbox,
+        PublishingPackage,
         ManualRun
     }
 

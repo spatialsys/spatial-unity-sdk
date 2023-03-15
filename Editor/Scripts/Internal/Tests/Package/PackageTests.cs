@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEditor;
 using System.IO;
 using System.Linq;
+using UnityEngine;
+using UnityEditor;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -91,26 +91,6 @@ namespace SpatialSys.UnitySDK.Editor
         }
 
         [PackageTest]
-        public static void CheckPackageType(PackageConfig config)
-        {
-            if (SpatialValidator.validationContext != ValidationContext.Publishing)
-                return;
-
-            // Temporarily disable publishing for new package types
-            if (!config.isSpaceBasedPackage)
-            {
-                SpatialValidator.AddResponse(
-                    new SpatialTestResponse(
-                        config,
-                        TestResponseType.Fail,
-                        "Publishing for this package type is currently disabled",
-                        "Only SpaceTemplate packages are allowed to be published. For now, you can only test within the sandbox. We will open up publishing for this very soon!"
-                    )
-                );
-            }
-        }
-
-        [PackageTest]
         public static void EnsureNoMultiplePackageAssetComponents(PackageConfig config)
         {
             foreach (GameObject go in config.gameObjectAssets)
@@ -119,24 +99,56 @@ namespace SpatialSys.UnitySDK.Editor
 
                 if (pkgComponents.Length > 1)
                 {
-                    IEnumerable<Type> componentTypes = pkgComponents.Select(cmp => cmp.GetType());
-                    IEnumerable<string> componentNamesWithInstanceCount = componentTypes
-                        .Distinct()
-                        .Select(type => {
-                            int typeInstanceCount = componentTypes.Count(t => t == type);
-                            return $"- {typeInstanceCount} instance(s) of {type.Name}";
-                        });
-
                     SpatialValidator.AddResponse(
                         new SpatialTestResponse(
                             go,
                             TestResponseType.Fail,
                             "This game object contains multiple package asset components on the object and it's children",
                             "The component names are listed below. There should only be one of these attached to this object.\n" +
-                                string.Join('\n', componentNamesWithInstanceCount)
+                                EditorUtility.GetComponentNamesWithInstanceCountString(pkgComponents)
                         )
                     );
                 }
+            }
+        }
+
+        private const string LAST_COMMUNITY_GUIDELINES_ACCEPTED_DATE_PREFS_KEY = "SpatialSDK_CommunityGuidelinesAcceptedDate";
+
+        [PackageTest]
+        public static void AskUserIfPackageConformsToCommunityGuidelines(PackageConfig config)
+        {
+            // In batch mode, there's no human available to click the confirmation dialog
+            if (Application.isBatchMode)
+                return;
+
+            if (SpatialValidator.validationContext != ValidationContext.PublishingPackage)
+                return;
+
+            // Don't ask if they already accepted the prompt within the last 7 days.
+            if (EditorUtility.TryGetDateTimeFromEditorPrefs(LAST_COMMUNITY_GUIDELINES_ACCEPTED_DATE_PREFS_KEY, out DateTime lastPromptTime) &&
+                (DateTime.Now - lastPromptTime).TotalDays < 7.0)
+            {
+                return;
+            }
+
+            if (UnityEditor.EditorUtility.DisplayDialog("Content verification required",
+                "Does the contents of your package abide by our Community Guidelines? You may review them at https://www.spatial.io/guidelines.",
+                "Yes",
+                "No, I will remove the violating content"
+            ))
+            {
+                EditorUtility.SetDateTimeToEditorPrefs(LAST_COMMUNITY_GUIDELINES_ACCEPTED_DATE_PREFS_KEY, DateTime.Now);
+            }
+            else
+            {
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(
+                        null,
+                        TestResponseType.Fail,
+                        "User did not confirm that the package abides by the Spatial Community Guidelines",
+                        "Verify that the contents of this package does not violate of our Community Guidelines found at https://www.spatial.io/guidelines."
+                    )
+                );
             }
         }
 
@@ -166,7 +178,7 @@ namespace SpatialSys.UnitySDK.Editor
             if (thumbnail == null)
             {
                 SpatialTestResponse testResponse;
-                var responseType = SpatialValidator.validationContext == ValidationContext.Testing ? TestResponseType.Warning : TestResponseType.Fail;
+                var responseType = SpatialValidator.validationContext == ValidationContext.UploadingToSandbox ? TestResponseType.Warning : TestResponseType.Fail;
 
                 string thumbnailSizeString = $"{config.thumbnailDimensions.x}x{config.thumbnailDimensions.y}";
                 if (variantIndex.HasValue)
@@ -188,7 +200,7 @@ namespace SpatialSys.UnitySDK.Editor
                     );
                 }
 
-                if (SpatialValidator.validationContext == ValidationContext.Testing)
+                if (SpatialValidator.validationContext == ValidationContext.UploadingToSandbox)
                     testResponse.description += " Thumbnails will be required when publishing.";
 
                 SpatialValidator.AddResponse(testResponse);
@@ -196,63 +208,112 @@ namespace SpatialSys.UnitySDK.Editor
         }
 
         [PackageTest]
-        public static void EnsureThumbnailsAreCorrectlySized(PackageConfig config)
+        public static void ValidateThumbnailSpecifications(PackageConfig config)
         {
             if (config is SpaceTemplateConfig spaceTemplateConfig)
             {
                 for (int i = 0; i < spaceTemplateConfig.variants.Length; i++)
                 {
                     SpaceTemplateConfig.Variant variant = spaceTemplateConfig.variants[i];
-                    CheckVariantThumbnail(i, variant.thumbnail, config.thumbnailDimensions, "thumbnail");
+                    CheckThumbnailInternal(config, variant.thumbnail, config.thumbnailDimensions, "thumbnail");
 
                     // Only need to check mini thumbnail if there are multiple variants
                     if (spaceTemplateConfig.variants.Length > 1)
-                        CheckVariantThumbnail(i, variant.miniThumbnail, SpaceTemplateConfig.MINI_THUMBNAIL_TEXTURE_DIMENSIONS, "mini thumbnail");
+                        CheckThumbnailInternal(config, variant.miniThumbnail, SpaceTemplateConfig.MINI_THUMBNAIL_TEXTURE_DIMENSIONS, "mini thumbnail");
                 }
             }
             else
             {
-                CheckVariantThumbnail(0, config.thumbnail, config.thumbnailDimensions);
+                CheckThumbnailInternal(config, config.thumbnail, config.thumbnailDimensions);
             }
         }
 
-        private static void CheckVariantThumbnail(int variantIndex, Texture2D texture, Vector2Int dimensions, string wording = "thumbnail")
+        private static void CheckThumbnailInternal(PackageConfig config, Texture2D texture, Vector2Int targetDimensions, string wording = "thumbnail")
         {
-            // Enforce texture size and format
-            //
+            if (texture == null)
+                return;
+
             // !! NOTE: If you change the enforcement here, you must also re-evaluate the "package-builder" project thumbnail
             // upload logic to ensure that it is compatible with the enforcement here.
-            if (texture != null)
+            string path = AssetDatabase.GetAssetPath(texture);
+            var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            importer.SetupForThumbnailEncoding();
+            TextureImporterPlatformSettings defaultSettings = importer.GetDefaultPlatformTextureSettings();
+            defaultSettings.maxTextureSize = Mathf.Max(targetDimensions.x, targetDimensions.y);
+            importer.SetPlatformTextureSettings(defaultSettings);
+            importer.SaveAndReimport();
+
+            var responseType = SpatialValidator.validationContext == ValidationContext.UploadingToSandbox ? TestResponseType.Warning : TestResponseType.Fail;
+
+            string BuildTestResponseDescription(string message)
             {
-                string path = AssetDatabase.GetAssetPath(texture);
-                var importer = AssetImporter.GetAtPath(path) as TextureImporter;
-                importer.ClearPlatformTextureSettings("WebGL");
-                importer.ClearPlatformTextureSettings("Standalone");
-                importer.ClearPlatformTextureSettings("iPhone");
-                importer.ClearPlatformTextureSettings("Android");
+                if (SpatialValidator.validationContext == ValidationContext.UploadingToSandbox)
+                    message += " This will need to be fixed before publishing.";
+                return message;
+            }
 
-                TextureImporterPlatformSettings defaultSettings = importer.GetDefaultPlatformTextureSettings();
-                defaultSettings.maxTextureSize = Mathf.Max(dimensions.x, dimensions.y);
-                defaultSettings.format = TextureImporterFormat.RGB24;
-                defaultSettings.textureCompression = TextureImporterCompression.Uncompressed;
-                importer.SetPlatformTextureSettings(defaultSettings);
+            // Size can still be different from what was set on the importer.
+            if (texture.width != targetDimensions.x || texture.height != targetDimensions.y)
+            {
+                var testResponse = new SpatialTestResponse(
+                    texture,
+                    responseType,
+                    $"Package config has a {wording} with the incorrect size",
+                    BuildTestResponseDescription($"Each variant must have a {wording} assigned of size {targetDimensions.x}x{targetDimensions.y}.")
+                );
 
-                importer.SaveAndReimport();
+                if (SpatialValidator.validationContext == ValidationContext.UploadingToSandbox)
+                    testResponse.description += " This will need to be fixed before publishing.";
 
-                // Size can still be different from what was set on the importer.
-                if (texture.width != dimensions.x || texture.height != dimensions.y)
-                {
-                    var testResponse = new SpatialTestResponse(
+                SpatialValidator.AddResponse(testResponse);
+                return;
+            }
+
+            // Check thumbnail transparency.
+            bool thumbnailHasTransparency = texture.HasTransparency();
+            bool thumbnailIsOpaque = !thumbnailHasTransparency;
+
+            if (!config.allowTransparentThumbnails && thumbnailHasTransparency)
+            {
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(
                         texture,
-                        SpatialValidator.validationContext == ValidationContext.Testing ? TestResponseType.Warning : TestResponseType.Fail,
-                        $"Package config has a variant (index {variantIndex}) with a {wording} with the incorrect size",
-                        $"Each variant must have a {wording} assigned of size {dimensions.x}x{dimensions.y}."
+                        responseType,
+                        $"Package config has a {wording} with transparency",
+                        BuildTestResponseDescription($"Each variant must have a {wording} without transparency. You can use a JPG file to ensure that there's no transparency in the image.")
+                    )
+                );
+            }
+
+            if (!config.allowOpaqueThumbnails && thumbnailIsOpaque)
+            {
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(
+                        texture,
+                        responseType,
+                        $"Package config has a {wording} with no transparency",
+                        BuildTestResponseDescription($"Each variant must have a {wording} with transparency.")
+                    )
+                );
+            }
+            else if (config.allowTransparentThumbnails && thumbnailHasTransparency && config.thumbnailMinTransparentBgRatio > 0f)
+            {
+                // If we allow transparent thumbnails, and this is a transparent thumbnail, check transparent background ratio (if applicable)
+                // Just round to the nearest percent, we don't need to be too exact.
+                int transparentPercentage = Mathf.FloorToInt(texture.GetTransparentBackgroundRatio() * 100f);
+                int minTransparentPercentage = Mathf.RoundToInt(config.thumbnailMinTransparentBgRatio * 100f);
+
+                if (transparentPercentage < minTransparentPercentage)
+                {
+                    SpatialValidator.AddResponse(
+                        new SpatialTestResponse(
+                            texture,
+                            responseType,
+                            $"Package config has a {wording} with not enough transparent pixels",
+                            BuildTestResponseDescription($"At least {minTransparentPercentage}% of the pixels in the {wording} must be transparent (currently {transparentPercentage}%).\n" +
+                                "This is to ensure that the avatar thumbnail displays properly when this avatar is selected.")
+                        )
                     );
-
-                    if (SpatialValidator.validationContext == ValidationContext.Testing)
-                        testResponse.description += " Thumbnails will be required when publishing.";
-
-                    SpatialValidator.AddResponse(testResponse);
                 }
             }
         }

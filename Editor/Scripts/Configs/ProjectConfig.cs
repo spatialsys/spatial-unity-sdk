@@ -53,10 +53,10 @@ namespace SpatialSys.UnitySDK.Editor
         }
 
 #pragma warning disable 414
-        [HideInInspector]
-        [SerializeField] private int _configVersion; // version of this config model; Used for making backwards-compatible changes
+        [SerializeField, HideInInspector] private int _configVersion; // version of this config model; Used for making backwards-compatible changes
 #pragma warning restore 414
-        [SerializeField] private string _worldID;
+        [SerializeField, HideInInspector] private string _worldID;
+
         [SerializeField] private List<PackageConfig> _packages = new List<PackageConfig>();
         [SerializeField] private int _currentPackageIndex = 0;
 

@@ -108,6 +108,7 @@
                     <ui:VisualElement name="avatarConfig" style="margin-top: 10px;">
                         <uie:PropertyField binding-path="prefab" label="Prefab" name="prefab" />
                         <uie:PropertyField binding-path="usageContext" label="Usage Context" name="usageContext" />
+                        <uie:PropertyField binding-path="category" label="Category" name="category" />
                         <uie:PropertyField binding-path="thumbnail" label="Thumbnail" name="thumbnail" />
                     </ui:VisualElement>
                     <ui:VisualElement name="avatarAnimationConfig" style="margin-top: 10px;">

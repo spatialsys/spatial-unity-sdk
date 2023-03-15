@@ -18,11 +18,15 @@ namespace SpatialSys.UnitySDK.VisualScripting
         [DoNotSerialize]
         [PortLabel("Rotation")]
         public ValueOutput cameraRotation { get; private set; }
+        [DoNotSerialize]
+        [PortLabel("Forward")]
+        public ValueOutput cameraForward { get; private set; }
 
         protected override void Definition()
         {
             cameraPosition = ValueOutput<Vector3>(nameof(cameraPosition), (f) => ClientBridge.GetCameraPosition.Invoke());
             cameraRotation = ValueOutput<Quaternion>(nameof(cameraRotation), (f) => ClientBridge.GetCameraRotation.Invoke());
+            cameraForward = ValueOutput<Vector3>(nameof(cameraForward), (f) => ClientBridge.GetCameraForward.Invoke());
         }
     }
 }

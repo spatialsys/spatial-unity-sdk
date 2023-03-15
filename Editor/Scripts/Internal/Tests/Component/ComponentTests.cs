@@ -14,7 +14,7 @@ namespace SpatialSys.UnitySDK.Editor
             if (targetType.GetCustomAttributes(typeof(EditorOnlyAttribute), true).Length > 0)
                 return;
 
-            if (!ValidComponents.IsComponentTypeAllowedForPackageType(ProjectConfig.activePackage.packageType, targetType))
+            if (!ValidComponents.IsComponentTypeAllowedForPackageType(ProjectConfig.activePackage, targetType))
             {
                 // Maybe do some type specific messages. For example reasure people that we have an event system active etc.
                 SpatialTestResponse resp = new SpatialTestResponse(

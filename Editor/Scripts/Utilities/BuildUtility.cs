@@ -20,6 +20,7 @@ namespace SpatialSys.UnitySDK.Editor
         public static int MAX_PACKAGE_SIZE = 500 * 1024 * 1024; // 500 MB
 
         private static float _lastUploadProgress;
+        private static float _uploadStartTime;
 
         public static IPromise BuildAndUploadForSandbox()
         {
@@ -35,11 +36,11 @@ namespace SpatialSys.UnitySDK.Editor
                 SceneAsset currentScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
                 ProjectConfig.SetActivePackageBySourceAsset(currentScene);
 
-                validationSummary = SpatialValidator.RunTestsOnActiveScene(ValidationContext.Testing);
+                validationSummary = SpatialValidator.RunTestsOnActiveScene(ValidationContext.UploadingToSandbox);
             }
             else
             {
-                validationSummary = SpatialValidator.RunTestsOnPackage(ValidationContext.Testing);
+                validationSummary = SpatialValidator.RunTestsOnPackage(ValidationContext.UploadingToSandbox);
             }
 
             if (validationSummary == null)
@@ -51,6 +52,8 @@ namespace SpatialSys.UnitySDK.Editor
                 if (validationSummary.failed)
                     return Promise.Rejected(new Exception("Package has errors"));
             }
+
+            ProcessPackageAssets();
 
             // Auto-assign necessary bundle names
             AssignBundleNamesToPackageAssets();
@@ -101,13 +104,16 @@ namespace SpatialSys.UnitySDK.Editor
                 return Promise.Rejected(new System.Exception($"Asset bundle is too large ({bundleSize / 1024 / 1024}MB). The maximum size is {MAX_SANDBOX_BUNDLE_SIZE / 1024 / 1024}MB"));
 
             _lastUploadProgress = -1f;
-            UpdateSandboxUploadProgressBar(0f);
+            _uploadStartTime = Time.realtimeSinceStartup;
+            UpdateSandboxUploadProgressBar(0, 0, 0f);
             return SpatialAPI.UploadSandboxBundle(packageType)
                 .Then(resp => {
-                    byte[] data = File.ReadAllBytes(bundlePath);
-                    SpatialAPI.UploadFile(useSpatialHeaders: false, resp.url, data, UpdateSandboxUploadProgressBar)
-                        .Then(resp => EditorUtility.OpenSandboxInBrowser())
-                        .Catch(exc => UnityEditor.EditorUtility.DisplayDialog("Asset bundle upload network error", GetExceptionMessage(exc), "OK"))
+                    SpatialAPI.UploadFile(useSpatialHeaders: false, resp.url, bundlePath, UpdateSandboxUploadProgressBar)
+                        .Then(() => EditorUtility.OpenSandboxInBrowser())
+                        .Catch(exc => {
+                            UnityEditor.EditorUtility.DisplayDialog("Asset bundle upload error", GetExceptionMessage(exc), "OK");
+                            Debug.LogError(exc);
+                        })
                         .Finally(() => UnityEditor.EditorUtility.ClearProgressBar());
                 })
                 .Catch(exc => {
@@ -116,9 +122,9 @@ namespace SpatialSys.UnitySDK.Editor
                 });
         }
 
-        private static void UpdateSandboxUploadProgressBar(float progress)
+        private static void UpdateSandboxUploadProgressBar(long transferred, long total, float progress)
         {
-            UpdateUploadProgressBar("Uploading sandbox asset bundle", progress);
+            UpdateUploadProgressBar("Uploading sandbox asset bundle", transferred, total, progress);
         }
 
         public static IPromise PackageForPublishing()
@@ -126,7 +132,7 @@ namespace SpatialSys.UnitySDK.Editor
             // We must save all scenes, otherwise the bundle build will fail without explanation.
             EditorSceneManager.SaveOpenScenes();
 
-            SpatialValidationSummary validationSummary = SpatialValidator.RunTestsOnPackage(ValidationContext.Publishing);
+            SpatialValidationSummary validationSummary = SpatialValidator.RunTestsOnPackage(ValidationContext.PublishingPackage);
             if (validationSummary == null)
                 return Promise.Rejected(new Exception("Package validation failed to run"));
 
@@ -139,6 +145,8 @@ namespace SpatialSys.UnitySDK.Editor
 
             // Always save all assets before publishing so that the uploaded package has the latest changes
             AssetDatabase.SaveAssets();
+
+            ProcessPackageAssets();
 
             // Auto-assign necessary bundle names
             // This get's done on the build machines too, but we also want to do it here just in case there's an issue
@@ -162,7 +170,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             // Upload package
             _lastUploadProgress = -1f;
-            UpdatePackageUploadProgressBar(0f);
+            UpdatePackageUploadProgressBar(0, 0, 0f);
             PackageConfig config = ProjectConfig.activePackage;
             return createWorldPromise
                 .Then(() => {
@@ -182,13 +190,13 @@ namespace SpatialSys.UnitySDK.Editor
                         Directory.CreateDirectory(BUILD_DIR);
                     PackageProject(PACKAGE_EXPORT_PATH);
 
-                    byte[] packageData = File.ReadAllBytes(PACKAGE_EXPORT_PATH);
-                    SpatialAPI.UploadPackage(resp.sku, resp.version, packageData, UpdatePackageUploadProgressBar)
+                    _uploadStartTime = Time.realtimeSinceStartup;
+                    SpatialAPI.UploadPackage(resp.sku, resp.version, PACKAGE_EXPORT_PATH, UpdatePackageUploadProgressBar)
                         .Then(resp => {
                             UnityEditor.EditorUtility.DisplayDialog(
                                 "Upload complete!",
                                 "Your package was successfully uploaded and we've started processing it.\n\n" +
-                                "This may take as little as 15 minutes to process, depending on our backlog. If any unexpected errors occur, we aim to address the issue within 24 hours.\n\n" +
+                                "This may take as little as 15 minutes to process, depending on our backlog and your package complexity. If any unexpected errors occur, we aim to address the issue within 24 hours.\n\n" +
                                 "You will receive an email notification once the package has been published.",
                                 "OK"
                             );
@@ -198,42 +206,29 @@ namespace SpatialSys.UnitySDK.Editor
                 })
                 .Catch(exc => {
                     UnityEditor.EditorUtility.ClearProgressBar();
+                    string bodyMessage;
 
-                    if (exc is Proyecto26.RequestException ex)
+                    if (exc is Proyecto26.RequestException ex && SpatialAPI.TryGetSingleError(ex.Response, out SpatialAPI.ErrorResponse.Error error))
                     {
-                        if (SpatialAPI.TryGetSingleError(ex.Response, out SpatialAPI.ErrorResponse.Error error))
+                        switch (error.code)
                         {
-                            switch (error.code)
-                            {
-                                case "NOT_OWNER_OF_PACKAGE":
-                                    UnityEditor.EditorUtility.DisplayDialog(
-                                        "Publishing failed",
-                                        "The package you are trying to upload has an SKU that is owned by another user. Only the user that initially published the package can update it.",
-                                        "OK"
-                                    );
-                                    return;
-
-                                case "USER_NOT_WHITELISTED":
-                                    UnityEditor.EditorUtility.DisplayDialog(
-                                        "Apply to be a Spatial Publisher",
-                                        "You currently do not have the ability to publish to Spatial. While we are still in beta, we are only allowing a limited number of users to publish packages.\n\nTo become a publisher, fill out the form that will open in your browser after your close this dialog.\n\nMeanwhile, you can still continue to test your packages in the Spatial Sandbox.",
-                                        "OK"
-                                    );
-                                    Application.OpenURL("https://spatialxr.typeform.com/to/e8XPgO5p");
-                                    return;
-
-                                default:
-                                    UnityEditor.EditorUtility.DisplayDialog(
-                                        "Publishing failed",
-                                        $"Publishing failed with the following error: {ex.Response}",
-                                        "OK"
-                                    );
-                                    return;
-                            }
+                            case "USER_PROFILE_NOT_FOUND":
+                                bodyMessage = $"Unable to locate your Spatial account. Follow steps to re-authenticate by opening \"{MenuItems.ACCOUNT_MENU_ITEM_PATH}\" at the top.";
+                                break;
+                            case "NOT_OWNER_OF_PACKAGE":
+                                bodyMessage = "The package you are trying to upload is owned by another user. Only the user that initially published the package can update it.";
+                                break;
+                            default:
+                                bodyMessage = $"Publishing failed with the following error: {ex.Response}";
+                                break;
                         }
                     }
+                    else
+                    {
+                        bodyMessage = GetExceptionMessage(exc);
+                    }
 
-                    UnityEditor.EditorUtility.DisplayDialog("Publishing failed", GetExceptionMessage(exc), "OK");
+                    UnityEditor.EditorUtility.DisplayDialog("Publishing failed", bodyMessage, "OK");
                 });
         }
 
@@ -269,22 +264,23 @@ namespace SpatialSys.UnitySDK.Editor
             );
         }
 
-        private static void UpdatePackageUploadProgressBar(float progress)
+        private static void UpdatePackageUploadProgressBar(long transferred, long total, float progress)
         {
-            UpdateUploadProgressBar("Uploading package for publishing", progress);
+            UpdateUploadProgressBar("Uploading package for publishing", transferred, total, progress);
         }
 
-        private static void UpdateUploadProgressBar(string title, float progress)
+        private static void UpdateUploadProgressBar(string title, long transferred, long total, float progress)
         {
             if (progress <= _lastUploadProgress)
                 return;
 
             _lastUploadProgress = progress;
 
-            // For some reason, web request progress goes from 0 to 0.5 while uploading, then jumps to 1 at the end. Remap the value to 0 to 1.
-            float remappedProgress = Mathf.Clamp01(progress * 2f);
-            string message = (remappedProgress > 0f) ? $"Uploading... ({Mathf.FloorToInt(remappedProgress * 100f)}%)" : "Please wait...";
-            UnityEditor.EditorUtility.DisplayProgressBar(title, message, remappedProgress);
+            long transferredKb = Mathf.FloorToInt(transferred / 1024f);
+            long totalKb = Mathf.FloorToInt(total / 1024f);
+            int secondsElapsed = Mathf.FloorToInt(Time.realtimeSinceStartup - _uploadStartTime);
+            string message = (progress > 0f) ? $"Uploading {EditorUtility.FormatNumber(transferredKb)}kb / {EditorUtility.FormatNumber(totalKb)}kb ({Mathf.FloorToInt(progress * 100f)}%) ({secondsElapsed}sec)" : "Please wait...";
+            UnityEditor.EditorUtility.DisplayProgressBar(title, message, progress);
         }
 
         private static string GetExceptionMessage(System.Exception exc)
@@ -296,7 +292,7 @@ namespace SpatialSys.UnitySDK.Editor
                 switch (requestException.StatusCode)
                 {
                     case 401:
-                        additionalMessage = "Invalid or expired SDK token. Follow steps to re-authenticate by opening \"Spatial SDK/Authentication\" at the top.";
+                        additionalMessage = $"Invalid or expired SDK token. Follow steps to re-authenticate by opening \"{MenuItems.ACCOUNT_MENU_ITEM_PATH}\" at the top.";
                         break;
                     case 400:
                     case 500:
@@ -381,6 +377,26 @@ namespace SpatialSys.UnitySDK.Editor
             foreach (string c in INVALID_BUNDLE_NAME_CHARS)
                 safeStr = safeStr.Replace(c, "");
             return safeStr;
+        }
+
+
+        public static void ProcessPackageAssets()
+        {
+            PackageConfig config = ProjectConfig.activePackage;
+
+            foreach (UnityEngine.Object asset in config.assets)
+            {
+                switch (asset)
+                {
+                    case SpatialPrefabObject prefabObject:
+                        SpatialPackageProcessor.ProcessPrefabObject(prefabObject);
+                        UnityEditor.EditorUtility.SetDirty(asset);
+                        break;
+                }
+            }
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
     }
 }

@@ -198,21 +198,28 @@ namespace SpatialSys.UnitySDK.Editor
             _publishPackageButton.clicked += () => {
                 if (EditorApplication.isPlayingOrWillChangePlaymode)
                 {
-                    UnityEditor.EditorUtility.DisplayDialog("Publish Package", "Cannot publish package while in play mode.", "Ok");
+                    UnityEditor.EditorUtility.DisplayDialog("Unable to Publish", "Cannot publish package while in play mode.", "OK");
                     return;
                 }
 
-                UpgradeUtility.PerformUpgradeIfNecessaryForTestOrPublish()
-                    .Then(() => {
-                        return BuildUtility.PackageForPublishing();
-                    })
-                    .Catch(exc => {
-                        if (exc is RSG.PromiseCancelledException)
-                            return;
+                if (UnityEditor.EditorUtility.DisplayDialog(
+                    "Publishing Package",
+                    "You are about to upload your package to Spatial for publishing.\n\nWe highly recommend testing the package in the Spatial sandbox beforehand if you haven't done so already.",
+                    "Continue",
+                    "Cancel"))
+                {
+                    UpgradeUtility.PerformUpgradeIfNecessaryForTestOrPublish()
+                        .Then(() => {
+                            return BuildUtility.PackageForPublishing();
+                        })
+                        .Catch(exc => {
+                            if (exc is RSG.PromiseCancelledException)
+                                return;
 
-                        UnityEditor.EditorUtility.DisplayDialog("Publishing Error", $"There was an unexpected error while publishing your space.\n\n{exc.Message}", "OK");
-                        Debug.LogException(exc);
-                    });
+                            UnityEditor.EditorUtility.DisplayDialog("Publishing Error", $"There was an unexpected error while publishing your space.\n\n{exc.Message}", "OK");
+                            Debug.LogException(exc);
+                        });
+                }
             };
             root.Q<Button>("deletePackageButton").clicked += () => {
                 if (UnityEditor.EditorUtility.DisplayDialog("Delete Package", $"Are you sure you want to delete {ProjectConfig.activePackage.packageName}?", "Yes", "No"))
@@ -356,8 +363,6 @@ namespace SpatialSys.UnitySDK.Editor
                 rootVisualElement.Q("avatarConfig").style.display = (packageConfig.packageType == PackageType.Avatar) ? DisplayStyle.Flex : DisplayStyle.None;
                 rootVisualElement.Q("avatarAnimationConfig").style.display = (packageConfig.packageType == PackageType.AvatarAnimation) ? DisplayStyle.Flex : DisplayStyle.None;
                 rootVisualElement.Q("prefabObjectConfig").style.display = (packageConfig.packageType == PackageType.PrefabObject) ? DisplayStyle.Flex : DisplayStyle.None;
-
-                _publishPackageButton.visible = packageConfig.packageType == PackageType.Space || packageConfig.packageType == PackageType.SpaceTemplate;
             }
         }
 

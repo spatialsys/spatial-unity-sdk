@@ -60,6 +60,7 @@ namespace SpatialSys.UnitySDK
             bool isPrefab = prefabAssetType != PrefabAssetType.NotAPrefab;
             bool isPrefabInstance = isPrefab && prefabInstanceStatus == PrefabInstanceStatus.Connected;
             bool isPrefabAsset = isPrefab && prefabInstanceStatus == PrefabInstanceStatus.NotAPrefab;
+            bool isChildOfPrefabObject = transform.GetComponentsInParent<SpatialPrefabObject>(true).Length > 0;
 
             // set assetID if it's a prefab or instance of prefab
             if (isPrefabAsset || isPrefabInstance)
@@ -77,7 +78,8 @@ namespace SpatialSys.UnitySDK
             }
 
             // set instance ID if it's an instance in the scene
-            if (isPrefabAsset)
+            // or embedded within a prefab object
+            if (isPrefabAsset && !isChildOfPrefabObject)
             {
                 instanceID = null;
             }

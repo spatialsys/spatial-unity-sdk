@@ -18,20 +18,22 @@ namespace SpatialSys.UnitySDK.Editor
         {
             public ComponentStatus spaceStatus;
             public ComponentStatus spaceTemplateStatus;
-            public ComponentStatus avatarStatus;
+            public ComponentStatus globalAvatarStatus;
+            public ComponentStatus worldAvatarStatus;
             public ComponentStatus avatarAnimationStatus;
             public ComponentStatus prefabObjectStatus;
 
-            public ComponentStatus GetComponentStatusForPackageType(PackageType type)
+            public ComponentStatus GetComponentStatusForPackageType(PackageConfig packageConfig)
             {
-                switch (type)
+                switch (packageConfig.packageType)
                 {
                     case PackageType.Space:
                         return spaceStatus;
                     case PackageType.SpaceTemplate:
                         return spaceTemplateStatus;
                     case PackageType.Avatar:
-                        return avatarStatus;
+                        AvatarConfig avatarConfig = packageConfig as AvatarConfig;
+                        return avatarConfig.usageContext == AvatarConfig.Scope.Global ? globalAvatarStatus : worldAvatarStatus;
                     case PackageType.AvatarAnimation:
                         return avatarAnimationStatus;
                     case PackageType.PrefabObject:
@@ -47,7 +49,8 @@ namespace SpatialSys.UnitySDK.Editor
                 return new PackageComponentStatusCollection() {
                     spaceStatus = ComponentStatus.Allowed,
                     spaceTemplateStatus = ComponentStatus.Allowed,
-                    avatarStatus = ComponentStatus.Allowed,
+                    globalAvatarStatus = ComponentStatus.Allowed,
+                    worldAvatarStatus = ComponentStatus.Allowed,
                     avatarAnimationStatus = ComponentStatus.Allowed,
                     prefabObjectStatus = ComponentStatus.Allowed
                 };
@@ -58,7 +61,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static readonly Dictionary<Type, PackageComponentStatusCollection> componentTypeStatuses = new();
 
-        public static bool IsComponentTypeAllowedForPackageType(PackageType packageType, Type componentType)
+        public static bool IsComponentTypeAllowedForPackageType(PackageConfig packageConfig, Type componentType)
         {
             if (componentType == null)
                 return false;
@@ -72,7 +75,7 @@ namespace SpatialSys.UnitySDK.Editor
             foreach (KeyValuePair<Type, PackageComponentStatusCollection> pair in componentTypeStatuses)
             {
                 Type targetTypeCandidate = pair.Key;
-                ComponentStatus targetStatusCandidate = pair.Value.GetComponentStatusForPackageType(packageType);
+                ComponentStatus targetStatusCandidate = pair.Value.GetComponentStatusForPackageType(packageConfig);
 
                 if (targetTypeCandidate == componentType)
                 {
@@ -114,7 +117,8 @@ namespace SpatialSys.UnitySDK.Editor
 
             int spaceColumn = table.GetColumnIndex(PackageType.Space.ToString());
             int spaceTemplateColumn = table.GetColumnIndex(PackageType.SpaceTemplate.ToString());
-            int avatarColumn = table.GetColumnIndex(PackageType.Avatar.ToString());
+            int globalAvatarColumn = table.GetColumnIndex("GlobalAvatar");
+            int worldAvatarColumn = table.GetColumnIndex("WorldAvatar");
             int avatarAnimationColumn = table.GetColumnIndex(PackageType.AvatarAnimation.ToString());
             int prefabObjectColumn = table.GetColumnIndex(PackageType.PrefabObject.ToString());
 
@@ -125,7 +129,8 @@ namespace SpatialSys.UnitySDK.Editor
                 componentTypeStatuses[type] = new PackageComponentStatusCollection() {
                     spaceStatus = table.GetComponentStatusAtCell(row, spaceColumn),
                     spaceTemplateStatus = table.GetComponentStatusAtCell(row, spaceTemplateColumn),
-                    avatarStatus = table.GetComponentStatusAtCell(row, avatarColumn),
+                    globalAvatarStatus = table.GetComponentStatusAtCell(row, globalAvatarColumn),
+                    worldAvatarStatus = table.GetComponentStatusAtCell(row, worldAvatarColumn),
                     avatarAnimationStatus = table.GetComponentStatusAtCell(row, avatarAnimationColumn),
                     prefabObjectStatus = table.GetComponentStatusAtCell(row, prefabObjectColumn)
                 };

@@ -5,7 +5,9 @@ namespace SpatialSys.UnitySDK.Editor
 {
     public static class MenuItems
     {
-        [MenuItem("Spatial SDK/Account")]
+        public const string ACCOUNT_MENU_ITEM_PATH = "Spatial SDK/Account";
+
+        [MenuItem(ACCOUNT_MENU_ITEM_PATH)]
         public static void OpenAccount()
         {
             SpatialSDKConfigWindow.OpenWindow("account");

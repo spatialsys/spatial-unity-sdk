@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEditor;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace SpatialSys.UnitySDK.Editor
@@ -20,6 +22,24 @@ namespace SpatialSys.UnitySDK.Editor
         public static void SaveAuthToken(string token)
         {
             EditorPrefs.SetString(AUTH_TOKEN_KEY, token);
+        }
+
+        public static bool TryGetDateTimeFromEditorPrefs(string key, out DateTime result)
+        {
+            string dateTicks = EditorPrefs.GetString(key, defaultValue: null);
+            if (long.TryParse(dateTicks, out long dateTicksLong))
+            {
+                result = new DateTime(dateTicksLong);
+                return true;
+            }
+
+            result = DateTime.UnixEpoch;
+            return false;
+        }
+
+        public static void SetDateTimeToEditorPrefs(string key, DateTime value)
+        {
+            EditorPrefs.SetString(key, value.Ticks.ToString());
         }
 
         public static bool CheckStringDistance(string a, string b, int distanceThreshold)
@@ -68,7 +88,7 @@ namespace SpatialSys.UnitySDK.Editor
             return path;
         }
 
-        public static string GetAssetBundleName(Object asset)
+        public static string GetAssetBundleName(UnityEngine.Object asset)
         {
             if (asset == null)
                 return null;
@@ -84,7 +104,7 @@ namespace SpatialSys.UnitySDK.Editor
         /// <summary>
         /// Returns true if it successfully set the asset's bundle name.
         /// </summary>
-        public static bool SetAssetBundleName(Object asset, string bundleName)
+        public static bool SetAssetBundleName(UnityEngine.Object asset, string bundleName)
         {
             if (asset == null)
                 return false;
@@ -104,7 +124,7 @@ namespace SpatialSys.UnitySDK.Editor
             Application.OpenURL($"https://{SpatialAPI.SPATIAL_ORIGIN}/sandbox");
         }
 
-        public static IEnumerable<T> FindAssetsByType<T>() where T : Object
+        public static IEnumerable<T> FindAssetsByType<T>() where T : UnityEngine.Object
         {
             string[] guids = AssetDatabase.FindAssets($"t:{typeof(T)}");
             foreach (var t in guids)
@@ -149,7 +169,13 @@ namespace SpatialSys.UnitySDK.Editor
             return true;
         }
 
-        public static string FormatInteger(this int num)
+        public static string FormatNumber(this int num)
+        {
+            // Add comma-separators (e.g. 1,000,000)
+            return num.ToString("N0");
+        }
+
+        public static string FormatNumber(this long num)
         {
             // Add comma-separators (e.g. 1,000,000)
             return num.ToString("N0");
@@ -177,6 +203,21 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 return (number / 1000000).ToString() + "M";
             }
+        }
+
+        public static string GetComponentNamesWithInstanceCountString(IEnumerable<Component> components)
+        {
+            IEnumerable<Type> componentTypes = components.Select(cmp => cmp.GetType());
+
+            return string.Join(
+                '\n',
+                componentTypes
+                    .Distinct()
+                    .Select(type => {
+                        int typeInstanceCount = componentTypes.Count(t => t == type);
+                        return $"- {typeInstanceCount} instance(s) of {type.Name}";
+                    })
+            );
         }
     }
 }

@@ -270,7 +270,7 @@ namespace SpatialSys.UnitySDK.Editor
         [SceneTest]
         public static void TestScenePerformance(Scene scene)
         {
-            if (SpatialValidator.validationContext == ValidationContext.Testing)
+            if (SpatialValidator.validationContext == ValidationContext.UploadingToSandbox)
                 return;
 
             PerformanceResponse response = GetActiveScenePerformanceResponse();

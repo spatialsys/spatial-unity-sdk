@@ -44,6 +44,9 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public delegate void AddForceToLocalAvatarDelegate(Vector3 force);
         public static AddForceToLocalAvatarDelegate AddForceToLocalAvatar;
 
+        public delegate void SetLocalAvatarDelegate(string sku);
+        public static SetLocalAvatarDelegate SetLocalAvatar;
+
         public delegate bool IsLocalOwnerDelegate();
         public static IsLocalOwnerDelegate IsLocalOwner;
 
@@ -62,8 +65,17 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public delegate Quaternion GetCameraRotationDelegate();
         public static GetCameraRotationDelegate GetCameraRotation;
 
+        public delegate Vector3 GetCameraForwardDelegate();
+        public static GetCameraForwardDelegate GetCameraForward;
+
         public delegate void SendToastDelegate(string message, float duration);
         public static SendToastDelegate SendToast;
+
+        public delegate void PlayLocalAvatarEmoteAnimationDelegate(string sku);
+        public static PlayLocalAvatarEmoteAnimationDelegate PlayLocalAvatarEmoteAnimation;
+
+        public delegate void SpawnPrefabObjectDelegate(string sku, Vector3 position, Quaternion rotation);
+        public static SpawnPrefabObjectDelegate SpawnPrefabObject;
 
         // Quests
         public delegate void QuestDelegate(SpatialQuest quest);
@@ -105,5 +117,11 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public delegate bool GetSyncedObjectIsLocallyOwnedDelegate(SpatialSyncedObject syncedObject);
         public static GetSyncedObjectIsLocallyOwnedDelegate GetSyncedObjectIsLocallyOwned;
+
+        public delegate void SetSyncedAnimatorParameterDelegate(SpatialSyncedAnimator syncedAnimator, string parameterName, object value);
+        public static SetSyncedAnimatorParameterDelegate SetSyncedAnimatorParameter;
+
+        public delegate void SetSyncedAnimatorTriggerDelegate(SpatialSyncedAnimator syncedAnimator, string triggerName);
+        public static SetSyncedAnimatorTriggerDelegate SetSyncedAnimatorTrigger;
     }
 }

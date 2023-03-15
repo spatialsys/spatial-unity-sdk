@@ -1,4 +1,5 @@
 using UnityEngine;
+using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -64,7 +65,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         private static void ValidateAvatarVertexCount(AvatarConfig config, int vertexCount)
         {
-            int vertexCountLimit = (config.usageContext == AvatarConfig.UsageContext.Global) ? 8000 : 100000;
+            int vertexCountLimit = (config.usageContext == AvatarConfig.Scope.Global) ? 50000 : 200000;
 
             if (vertexCount > vertexCountLimit)
             {
@@ -72,7 +73,7 @@ namespace SpatialSys.UnitySDK.Editor
                     new SpatialTestResponse(
                         config.prefab,
                         TestResponseType.Fail,
-                        $"The avatar has too many vertices ({vertexCount.FormatInteger()}). It must have no more than {vertexCountLimit.FormatInteger()}.",
+                        $"The avatar has too many vertices ({vertexCount.FormatNumber()}). It must have no more than {vertexCountLimit.FormatNumber()}.",
                         "This avatar will likely overload mobile devices, especially with multiple instances of this avatar. Generate a lower level of detail to comply with this limit."
                     )
                 );
@@ -81,7 +82,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         private static void ValidateAvatarTriangleCount(AvatarConfig config, int triangleCount)
         {
-            int triangleCountLimit = (config.usageContext == AvatarConfig.UsageContext.Global) ? 15000 : 200000;
+            int triangleCountLimit = (config.usageContext == AvatarConfig.Scope.Global) ? 22500 : 200000;
 
             if (triangleCount > triangleCountLimit)
             {
@@ -89,7 +90,7 @@ namespace SpatialSys.UnitySDK.Editor
                     new SpatialTestResponse(
                         config.prefab,
                         TestResponseType.Fail,
-                        $"The avatar has too many triangles ({triangleCount.FormatInteger()}). It must have no more than {triangleCountLimit.FormatInteger()}.",
+                        $"The avatar has too many triangles ({triangleCount.FormatNumber()}). It must have no more than {triangleCountLimit.FormatNumber()}.",
                         "This avatar will likely overload mobile devices, especially with multiple instances of this avatar. Generate a lower level of detail to comply with this limit."
                     )
                 );
@@ -99,7 +100,7 @@ namespace SpatialSys.UnitySDK.Editor
         private static void ValidateAvatarSubMeshCount(AvatarConfig config, int subMeshCount)
         {
             // Submeshes correspond to a unique material and mesh, which we can use to approximate the draw calls it will use.
-            int subMeshCountLimit = (config.usageContext == AvatarConfig.UsageContext.Global) ? 4 : 100;
+            int subMeshCountLimit = (config.usageContext == AvatarConfig.Scope.Global) ? 4 : 100;
 
             if (subMeshCount > subMeshCountLimit)
             {
@@ -107,7 +108,7 @@ namespace SpatialSys.UnitySDK.Editor
                     new SpatialTestResponse(
                         config.prefab,
                         TestResponseType.Fail,
-                        $"The avatar has too many sub-meshes ({subMeshCount.FormatInteger()}). It must have no more than {subMeshCountLimit.FormatInteger()}.",
+                        $"The avatar has too many sub-meshes ({subMeshCount.FormatNumber()}). It must have no more than {subMeshCountLimit.FormatNumber()}.",
                         "This can negatively impact performance on lower-end devices. Combine meshes and materials to comply with this limit."
                     )
                 );
@@ -117,7 +118,7 @@ namespace SpatialSys.UnitySDK.Editor
         private static void ValidateAvatarBoundsSize(AvatarConfig config, Vector3 boundsSize)
         {
             // We're using a float since the avatar can be oriented in any axis (e.g. X-axis might be the avatar's height, depending on where it's exported from).
-            float boundsSizeLimit = (config.usageContext == AvatarConfig.UsageContext.Global) ? 2.5f : 25f;
+            float boundsSizeLimit = (config.usageContext == AvatarConfig.Scope.Global) ? 2.5f : 25f;
 
             if (boundsSize.x > boundsSizeLimit || boundsSize.y > boundsSizeLimit || boundsSize.z > boundsSizeLimit)
             {
@@ -146,7 +147,7 @@ namespace SpatialSys.UnitySDK.Editor
             if (config.prefab == null)
                 return;
 
-            int textureSizeLimit = (config.usageContext == AvatarConfig.UsageContext.Global) ? 1024 : 4096;
+            int textureSizeLimit = (config.usageContext == AvatarConfig.Scope.Global) ? 1024 : 4096;
             Object[] assetDeps = UnityEditor.EditorUtility.CollectDependencies(new Object[] { config.prefab });
 
             foreach (Object asset in assetDeps)
@@ -165,6 +166,52 @@ namespace SpatialSys.UnitySDK.Editor
                         );
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// If the avatar is intended for Global usage context, ensure there are no scripting-related components attached.
+        /// </summary>
+        [PackageTest(PackageType.Avatar)]
+        public static void EnsureGlobalAvatarHasNoScriptingComponents(AvatarConfig config)
+        {
+            if (config.usageContext != AvatarConfig.Scope.Global)
+                return;
+
+            if (config.prefab == null)
+                return;
+
+            LudiqBehaviour[] scriptingComponents = config.prefab.GetComponentsInChildren<LudiqBehaviour>();
+            if (scriptingComponents.Length > 0)
+            {
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(
+                        scriptingComponents[0],
+                        TestResponseType.Fail,
+                        "Visual Scripting is not allowed on avatars intended for a Global usage context",
+                        "This restriction is to keep functionality consistent across all spaces. " +
+                            "You may learn more about these restrictions and avatar usage contexts by reading the Avatar packages documentation. " +
+                            $"Remove the following components to fix this issue:\n{EditorUtility.GetComponentNamesWithInstanceCountString(scriptingComponents)}"
+                    )
+                );
+            }
+        }
+
+        [PackageTest(PackageType.Avatar)]
+        public static void WarnIfAvatarCategoryIsUnspecified(AvatarConfig config)
+        {
+            if (config.category == AvatarConfig.Category.Unspecified)
+            {
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(
+                        null,
+                        TestResponseType.Warning,
+                        "This avatar does not have a category specified",
+                        "Some spaces may impose a \"dress code\" to restrict certain avatar categories from joining. " +
+                            "This avatar won't be able to join these types of spaces at all if the category is unspecified. " +
+                            "Select a category that best suits this avatar to fix this warning."
+                    )
+                );
             }
         }
     }
