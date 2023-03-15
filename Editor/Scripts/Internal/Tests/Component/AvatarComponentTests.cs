@@ -26,5 +26,23 @@ namespace SpatialSys.UnitySDK.Editor
                 );
             }
         }
+
+        /// <summary>
+        /// Checks that the animator has transform hiearchy enabled.
+        /// </summary>
+        [ComponentTest(typeof(SpatialAvatar))]
+        public static void EnsureAnimatorRigHasTransformHierarchy(SpatialAvatar avatarPrefab)
+        {
+            Animator animator;
+            if (avatarPrefab.TryGetComponent<Animator>(out animator))
+            {
+                if (!animator.hasTransformHierarchy)
+                {
+                    SpatialValidator.AddResponse(
+                        new SpatialTestResponse(avatarPrefab, TestResponseType.Fail, "The avatar must have exposed transform hierarchy. Disable \"Optimize Game Objects\" in the model's Rig import settings.")
+                    );
+                }
+            }
+        }
     }
 }
