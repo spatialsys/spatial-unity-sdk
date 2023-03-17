@@ -15,7 +15,7 @@ namespace SpatialSys.UnitySDK
     {
         public override string prettyName => "Synced Object";
         public override string tooltip => "Used to create objects at runtime that are synced across clients.";
-        public override string documentationURL => "https://docs.spatial.io/1149f36778494c8581988c4be47efab5";
+        public override string documentationURL => "https://docs.spatial.io/components/synced-object";
         public override bool isExperimental => true;
 
         public bool syncTransform = true;

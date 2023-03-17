@@ -38,11 +38,30 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 if (!animator.hasTransformHierarchy)
                 {
-                    SpatialValidator.AddResponse(
-                        new SpatialTestResponse(avatarPrefab, TestResponseType.Fail, "The avatar must have exposed transform hierarchy. Disable \"Optimize Game Objects\" in the model's Rig import settings.")
-                    );
+                    if (!Application.isBatchMode)
+                    {
+                        var resp = new SpatialTestResponse(
+                            avatarPrefab.gameObject,
+                            TestResponseType.Fail,
+                            "The avatar must have transform hierarchy enabled. This can be enabled in the Animator component."
+                        );
+                        resp.SetAutoFix(true, "Disable Optimize GameObjects Setting", AutoFixAnimatorOptimizeGameObjects);
+                        SpatialValidator.AddResponse(resp);
+                    }
+                    else
+                    {
+                        AutoFixAnimatorOptimizeGameObjects(avatarPrefab.gameObject);
+                    }
                 }
             }
+        }
+
+        private static void AutoFixAnimatorOptimizeGameObjects(Object gameObject)
+        {
+            Object sourcePrefab = UnityEditor.PrefabUtility.GetCorrespondingObjectFromSource(gameObject);
+            var importer = UnityEditor.AssetImporter.GetAtPath(UnityEditor.AssetDatabase.GetAssetPath(sourcePrefab)) as UnityEditor.ModelImporter;
+            importer.optimizeGameObjects = false;
+            importer.SaveAndReimport();
         }
     }
 }

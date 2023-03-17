@@ -12,7 +12,7 @@ namespace SpatialSys.UnitySDK
         public override string prettyName => "Quest";
         public override string tooltip => $"This components describes a quest and its tasks.";
 
-        public override string documentationURL => "https://docs.spatial.io/quest-building-system";
+        public override string documentationURL => "https://docs.spatial.io/quests";
         public override bool isExperimental => true;
 
         [ReadOnly]

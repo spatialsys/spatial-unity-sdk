@@ -25,7 +25,7 @@ namespace SpatialSys.UnitySDK.Editor
         /// Modifies importer settings to ensure thumbnail is ready to be encoded and uploaded.
         /// Call importer.SaveAndReimport() afterwards to apply the changes.
         /// </summary>
-        public static void SetupForThumbnailEncoding(this TextureImporter importer)
+        public static void SetupForThumbnailEncoding(this TextureImporter importer, bool allowTransparency)
         {
             // Required for encoding.
             importer.isReadable = true;
@@ -38,7 +38,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             TextureImporterPlatformSettings defaultSettings = importer.GetDefaultPlatformTextureSettings();
             // Allow for encoding to both PNG/JPG.
-            defaultSettings.format = TextureImporterFormat.RGBA32;
+            defaultSettings.format = allowTransparency ? TextureImporterFormat.RGBA32 : TextureImporterFormat.RGB24;
             // Compressed textures cannot be encoded.
             defaultSettings.textureCompression = TextureImporterCompression.Uncompressed;
             importer.SetPlatformTextureSettings(defaultSettings);

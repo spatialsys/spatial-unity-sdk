@@ -12,7 +12,17 @@ namespace SpatialSys.UnitySDK.Editor
     /// </summary>
     public static class PackageTests
     {
-        public static readonly HashSet<string> UNSUPPORTED_MODEL_FORMATS = new HashSet<string>(new string[] { ".glb", ".gltf", ".ma", ".mb", ".max", ".c4d" });
+        public static readonly HashSet<string> UNSUPPORTED_MODEL_FILE_FORMATS = new HashSet<string>(new string[] {
+            // We don't have a GLTF importer on the build side
+            ".glb", ".gltf",
+            // We can't support these unless we have licensed Maya, Max or Cinema 4D licenses on the build side
+            ".ma", ".mb", ".max", ".c4d"
+        });
+        public static readonly HashSet<string> UNSUPPORTED_TEXTURE_FILE_FORMATS = new HashSet<string>(new string[] {
+            // DDS is a DirectX format, and cannot be encoded into another format for iOS or Android platforms
+            ".dds",
+        });
+        public static readonly HashSet<string> THUMBNAIL_TEXTURE_FORMATS = new HashSet<string>(new string[] { ".png", ".jpg", ".jpeg" });
 
         private static string[] GetPackageDependencies(PackageConfig config)
         {
@@ -51,7 +61,7 @@ namespace SpatialSys.UnitySDK.Editor
         {
             string[] dependencies = GetPackageDependencies(config);
 
-            List<string> unsupportedModelFiles = dependencies.Where(d => UNSUPPORTED_MODEL_FORMATS.Contains(Path.GetExtension(d))).ToList();
+            List<string> unsupportedModelFiles = dependencies.Where(d => UNSUPPORTED_MODEL_FILE_FORMATS.Contains(Path.GetExtension(d))).ToList();
             if (unsupportedModelFiles.Count > 0)
             {
                 SpatialValidator.AddResponse(
@@ -59,8 +69,22 @@ namespace SpatialSys.UnitySDK.Editor
                         null,
                         TestResponseType.Fail,
                         "Package contains unsupported model files",
-                        "This package contains file formats that are not supported. " +
+                        $"This package contains file formats that are not supported (Unsupported: {string.Join(",", UNSUPPORTED_MODEL_FILE_FORMATS)}). " +
                         $"It is recommended to use the FBX format instead.\n - {string.Join("\n - ", unsupportedModelFiles)}"
+                    )
+                );
+            }
+
+            List<string> unsupportedTextureFiles = dependencies.Where(d => UNSUPPORTED_TEXTURE_FILE_FORMATS.Contains(Path.GetExtension(d))).ToList();
+            if (unsupportedTextureFiles.Count > 0)
+            {
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(
+                        null,
+                        TestResponseType.Fail,
+                        "Package contains unsupported texture files",
+                        $"This package contains file formats that are not supported (Unsupported: {string.Join(",", UNSUPPORTED_TEXTURE_FILE_FORMATS)}). " +
+                        $"It is recommended to use the PNG, JPG, or TGA format instead. This is to ensure encoding works on all Spatial's target platforms.\n - {string.Join("\n - ", unsupportedTextureFiles)}"
                     )
                 );
             }
@@ -233,11 +257,28 @@ namespace SpatialSys.UnitySDK.Editor
             if (texture == null)
                 return;
 
+            string path = AssetDatabase.GetAssetPath(texture);
+
+            // Some formats like .exr (HDR) always have an alpha channel (used for extra precision); We don't want to assume
+            // that this is the alpha channel that the user wants to use for transparency, so we'll just disallow it.
+            // The EXR format seems to be allowed to be RGB on standalone, but on WebGL it's always RGBA.
+            string extension = Path.GetExtension(path);
+            if (!THUMBNAIL_TEXTURE_FORMATS.Contains(extension.ToLower()))
+            {
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(
+                        texture,
+                        TestResponseType.Fail,
+                        $"Texture format {extension} is not supported for package {wording}",
+                        $"Convert the texture into any of these file formats: " + string.Join(", ", THUMBNAIL_TEXTURE_FORMATS.Select(f => f.ToUpper()))
+                    )
+                );
+            }
+
             // !! NOTE: If you change the enforcement here, you must also re-evaluate the "package-builder" project thumbnail
             // upload logic to ensure that it is compatible with the enforcement here.
-            string path = AssetDatabase.GetAssetPath(texture);
             var importer = AssetImporter.GetAtPath(path) as TextureImporter;
-            importer.SetupForThumbnailEncoding();
+            importer.SetupForThumbnailEncoding(config.allowTransparentThumbnails);
             TextureImporterPlatformSettings defaultSettings = importer.GetDefaultPlatformTextureSettings();
             defaultSettings.maxTextureSize = Mathf.Max(targetDimensions.x, targetDimensions.y);
             importer.SetPlatformTextureSettings(defaultSettings);
