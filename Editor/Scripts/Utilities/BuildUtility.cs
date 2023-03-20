@@ -108,8 +108,9 @@ namespace SpatialSys.UnitySDK.Editor
             UpdateSandboxUploadProgressBar(0, 0, 0f);
             return SpatialAPI.UploadSandboxBundle(packageType)
                 .Then(resp => {
-                    SpatialAPI.UploadFile(useSpatialHeaders: false, resp.url, bundlePath, UpdateSandboxUploadProgressBar)
-                        .Then(() => EditorUtility.OpenSandboxInBrowser())
+                    byte[] bundleBytes = File.ReadAllBytes(bundlePath);
+                    SpatialAPI.UploadFile(useSpatialHeaders: false, resp.url, bundleBytes, UpdateSandboxUploadProgressBar)
+                        .Then(resp => EditorUtility.OpenSandboxInBrowser())
                         .Catch(exc => {
                             UnityEditor.EditorUtility.DisplayDialog("Asset bundle upload error", GetExceptionMessage(exc), "OK");
                             Debug.LogError(exc);
@@ -191,7 +192,8 @@ namespace SpatialSys.UnitySDK.Editor
                     PackageProject(PACKAGE_EXPORT_PATH);
 
                     _uploadStartTime = Time.realtimeSinceStartup;
-                    SpatialAPI.UploadPackage(resp.sku, resp.version, PACKAGE_EXPORT_PATH, UpdatePackageUploadProgressBar)
+                    byte[] packageBytes = File.ReadAllBytes(PACKAGE_EXPORT_PATH);
+                    SpatialAPI.UploadPackage(resp.sku, resp.version, packageBytes, UpdatePackageUploadProgressBar)
                         .Then(resp => {
                             UnityEditor.EditorUtility.DisplayDialog(
                                 "Upload complete!",
@@ -273,6 +275,9 @@ namespace SpatialSys.UnitySDK.Editor
         {
             if (progress <= _lastUploadProgress)
                 return;
+
+            // For some reason, web request progress goes from 0 to 0.5 while uploading, then jumps to 1 at the end. Remap the value to 0 to 1.
+            progress = Mathf.Clamp01(progress * 2f);
 
             _lastUploadProgress = progress;
 

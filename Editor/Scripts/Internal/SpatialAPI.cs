@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine;
+
+using System;
+using System.Linq;
+using System.Collections.Generic;
 using RSG;
 using Proyecto26;
 
@@ -21,15 +18,6 @@ namespace SpatialSys.UnitySDK.Editor
 
         private static readonly string API_ORIGIN = $"https://api.{SPATIAL_ORIGIN}";
         private static string _authToken => EditorUtility.GetSavedAuthToken();
-        private static HttpClient _httpClient;
-        private static TaskScheduler _mainThreadScheduler;
-
-        static SpatialAPI()
-        {
-            _httpClient = new HttpClient();
-            _httpClient.Timeout = TimeSpan.FromMinutes(120);
-            _mainThreadScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-        }
 
         //------------------------------------------------
         // UPLOAD TO SANDBOX
@@ -100,42 +88,11 @@ namespace SpatialSys.UnitySDK.Editor
         // UPLOAD PACKAGE
         //------------------------------------------------
 
-        public static IPromise<UploadPackageResponse> UploadPackage(string sku, int version, string packageFilePath,
-            ProgressableStreamContent.ReportUploadProgress progressCallback = null, CancellationToken cancellationToken = default(CancellationToken))
+        public static IPromise<UploadPackageResponse> UploadPackage(string sku, int version, byte[] packageFileData, Action<long, long, float> progressCallback = null)
         {
-            Promise<UploadPackageResponse> promise = new Promise<UploadPackageResponse>();
-
             string url = $"{API_ORIGIN}/sdk/v1/package/{sku}/{version}";
-            HttpRequestMessage request = CreateUploadFileRequest(useSpatialHeaders: true, url, packageFilePath, progressCallback, cancellationToken);
-            _httpClient.SendAsync(request, cancellationToken)
-                .ContinueWith((task) => {
-                    if (task.IsFaulted)
-                    {
-                        RunOnMainThread(() => promise.Reject(task.Exception));
-                    }
-                    else if (task.IsCanceled || cancellationToken.IsCancellationRequested)
-                    {
-                        RunOnMainThread(() => promise.Reject(new TaskCanceledException()));
-                    }
-                    else if (task.Result.StatusCode != System.Net.HttpStatusCode.OK)
-                    {
-                        RunOnMainThread(() => promise.Reject(new HttpRequestException($"Failed to upload file: {task.Result.StatusCode}")));
-                    }
-                    else
-                    {
-                        try
-                        {
-                            UploadPackageResponse response = JsonUtility.FromJson<UploadPackageResponse>(task.Result.Content.ReadAsStringAsync().Result);
-                            RunOnMainThread(() => promise.Resolve(response));
-                        }
-                        catch (System.Exception e)
-                        {
-                            Debug.LogError(e);
-                        }
-                    }
-                });
-
-            return promise;
+            RequestHelper request = CreateUploadFileRequest(useSpatialHeaders: true, url, packageFileData, progressCallback);
+            return RestClient.Put<UploadPackageResponse>(request);
         }
 
         [Serializable]
@@ -150,56 +107,10 @@ namespace SpatialSys.UnitySDK.Editor
         // UPLOAD FILE
         //------------------------------------------------
 
-        public static IPromise UploadFile(bool useSpatialHeaders, string url, string filePath,
-            ProgressableStreamContent.ReportUploadProgress progressCallback = null, CancellationToken cancellationToken = default(CancellationToken))
+        public static IPromise<ResponseHelper> UploadFile(bool useSpatialHeaders, string url, byte[] data, Action<long, long, float> progressCallback = null)
         {
-            Promise promise = new Promise();
-
-            HttpRequestMessage request = CreateUploadFileRequest(useSpatialHeaders, url, filePath, progressCallback, cancellationToken);
-            _httpClient.SendAsync(request, cancellationToken)
-                .ContinueWith((task) => {
-                    if (task.IsFaulted)
-                    {
-                        RunOnMainThread(() => promise.Reject(task.Exception));
-                    }
-                    else if (task.IsCanceled || cancellationToken.IsCancellationRequested)
-                    {
-                        RunOnMainThread(() => promise.Reject(new TaskCanceledException()));
-                    }
-                    else if (task.Result.StatusCode != System.Net.HttpStatusCode.OK)
-                    {
-                        RunOnMainThread(() => promise.Reject(new HttpRequestException($"Failed to upload file: {task.Result.StatusCode}")));
-                    }
-                    else
-                    {
-                        RunOnMainThread(() => promise.Resolve());
-                    }
-                });
-
-            return promise;
-        }
-
-        private static HttpRequestMessage CreateUploadFileRequest(bool useSpatialHeaders, string url, string filePath,
-            ProgressableStreamContent.ReportUploadProgress progressCallback = null, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, url);
-            request.Content = new ProgressableStreamContent(new FileStream(filePath, FileMode.Open), (uploaded, total, progress) => {
-                RunOnMainThread(() => progressCallback?.Invoke(uploaded, total, progress));
-            });
-            request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
-
-            if (useSpatialHeaders)
-            {
-                foreach (var header in GetSpatialHeaders())
-                    request.Headers.Add(header.Key, header.Value);
-            }
-
-            return request;
-        }
-
-        private static void RunOnMainThread(Action action)
-        {
-            Task.Factory.StartNew(action, CancellationToken.None, TaskCreationOptions.None, _mainThreadScheduler);
+            RequestHelper request = CreateUploadFileRequest(useSpatialHeaders, url, data, progressCallback);
+            return RestClient.Put(request);
         }
 
         //------------------------------------------------
@@ -239,10 +150,14 @@ namespace SpatialSys.UnitySDK.Editor
         //------------------------------------------------
         // HELPER / PRIVATE INTERFACE
         //------------------------------------------------
+
         private static RequestHelper CreateRequest()
         {
             RequestHelper request = new RequestHelper();
-            request.Headers = GetSpatialHeaders();
+            request.Headers["Authorization"] = $"Bearer {_authToken}";
+            // Example: UNITYSDK 1.2.3 official GITSHA00
+            // Currently the gitsha is not used, but is included for SAPI compatibility
+            request.Headers["Spatial-User-Agent"] = $"UNITYSDK {UpgradeUtility.currentVersion} {(UpgradeUtility.isOfficialVersion ? "official" : "dev")} 00000000";
 
 #if SPATIAL_UNITYSDK_STAGING
             request.EnableDebug = true;
@@ -251,16 +166,16 @@ namespace SpatialSys.UnitySDK.Editor
             return request;
         }
 
-        private static Dictionary<string, string> GetSpatialHeaders()
+        private static RequestHelper CreateUploadFileRequest(bool useSpatialHeaders, string url, byte[] data, Action<long, long, float> progressCallback = null)
         {
-            return new Dictionary<string, string> {
-                {"Authorization", $"Bearer {_authToken}"},
-                // Example: UNITYSDK 1.2.3 official GITSHA00
-                // Currently the gitsha is not used, but is included for SAPI compatibility
-                {"Spatial-User-Agent", $"UNITYSDK {UpgradeUtility.currentVersion} {(UpgradeUtility.isOfficialVersion ? "official" : "dev")} 00000000"}
-            };
+            RequestHelper request = (useSpatialHeaders) ? CreateRequest() : new RequestHelper();
+            request.Uri = url;
+            request.BodyRaw = data;
+            request.ContentType = "application/octet-stream";
+            if (progressCallback != null)
+                request.ProgressCallback += p => progressCallback((long)(data.Length * p), (long)data.Length, p);
+            return request;
         }
-
 
         private static string PackageSourceToSAPIPackageSource(PackageSource source)
         {
@@ -426,10 +341,8 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static IPromise<UploadBadgeIconResponse> UploadBadgeIcon(string badgeID, byte[] data)
         {
-            RequestHelper request = CreateRequest();
-            request.Uri = $"{API_ORIGIN}/v2/badges/{badgeID}/icon";
-            request.BodyRaw = data;
-            request.ContentType = "application/octet-stream";
+            string url = $"{API_ORIGIN}/v2/badges/{badgeID}/icon";
+            RequestHelper request = CreateUploadFileRequest(useSpatialHeaders: true, url, data, null);
             return RestClient.Put<UploadBadgeIconResponse>(request);
         }
 
