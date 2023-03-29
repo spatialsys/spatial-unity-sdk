@@ -122,6 +122,11 @@
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="issues" style="display: none; flex-grow: 1; flex-shrink: 0; height: 100%;">
+                <ui:VisualElement name="issuesActivePackage" class="block_white block_base">
+                    <ui:Label text="Testing Configuration" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
+                    <ui:Label text="Select a package to test for below" display-tooltip-when-elided="true" name="Text" class="blockText" style="margin-bottom: 8px;" />
+                    <ui:DropdownField label="Active Package" index="-1" name="issuesPackageDropDown" binding-path="_currentPackageIndex" style="height: 22px; margin-top: 0; width: auto; margin-left: 0; margin-bottom: 0; margin-right: 0;" />
+                </ui:VisualElement>
                 <ui:VisualElement name="issuesCountBlock" class="block_white block_red block_base">
                     <ui:Label text="0 errors" display-tooltip-when-elided="true" name="issuesCountTitle" class="blockTitle" />
                     <ui:Label text="You can not upload your creation to the sandbox or publish until the errors are resolved." display-tooltip-when-elided="true" name="issuesCountDescription" class="blockText" />

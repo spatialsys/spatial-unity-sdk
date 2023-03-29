@@ -14,7 +14,7 @@ namespace SpatialSys.UnitySDK.Editor
             if (t.targetLocation)
             {
                 SpatialHandles.DrawGroundPoint(t.targetLocation.position, .25f);
-                SpatialHandles.TargetTransformHandle(t.transform, ref t.targetLocation);
+                SpatialHandles.TargetTransformHandle(t.transform, t.targetLocation);
             }
         }
     }

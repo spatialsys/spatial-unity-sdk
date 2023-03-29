@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using RSG;
 using UnityEditor;
 using UnityEditor.Build.Pipeline;
@@ -22,13 +23,25 @@ namespace SpatialSys.UnitySDK.Editor
         private static float _lastUploadProgress;
         private static float _uploadStartTime;
 
+        private static MethodInfo _getImportedAssetImportDependenciesAsGUIDs;
+        private static MethodInfo _getSourceAssetImportDependenciesAsGUIDs;
+
+        static BuildUtility()
+        {
+            // Get references to internal AssetDatabase methods
+            // string[] AssetDatabase.GetSourceAssetImportDependenciesAsGUIDs(string path)
+            // string[] AssetDatabase.GetImportedAssetImportDependenciesAsGUIDs(string path)
+            _getImportedAssetImportDependenciesAsGUIDs = typeof(AssetDatabase).GetMethod("GetImportedAssetImportDependenciesAsGUIDs", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            _getSourceAssetImportDependenciesAsGUIDs = typeof(AssetDatabase).GetMethod("GetSourceAssetImportDependenciesAsGUIDs", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        }
+
         public static IPromise BuildAndUploadForSandbox()
         {
             // We must save all scenes, otherwise the bundle build will fail without explanation.
             EditorSceneManager.SaveOpenScenes();
 
             PackageConfig activeConfig = ProjectConfig.activePackage;
-            SpatialValidationSummary validationSummary;
+            IPromise<SpatialValidationSummary> validationPromise;
 
             if (activeConfig.isSpaceBasedPackage)
             {
@@ -36,59 +49,52 @@ namespace SpatialSys.UnitySDK.Editor
                 SceneAsset currentScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
                 ProjectConfig.SetActivePackageBySourceAsset(currentScene);
 
-                validationSummary = SpatialValidator.RunTestsOnActiveScene(ValidationContext.UploadingToSandbox);
+                validationPromise = SpatialValidator.RunTestsOnActiveScene(ValidationContext.UploadingToSandbox);
             }
             else
             {
-                validationSummary = SpatialValidator.RunTestsOnPackage(ValidationContext.UploadingToSandbox);
+                validationPromise = SpatialValidator.RunTestsOnPackage(ValidationContext.UploadingToSandbox);
             }
 
-            if (validationSummary == null)
-                return Promise.Rejected(new Exception("Package validation failed to run"));
+            return CheckValidationPromise(validationPromise)
+                .Then(() => {
+                    ProcessPackageAssets();
 
-            if (validationSummary.failed || validationSummary.passedWithWarnings)
-            {
-                SpatialSDKConfigWindow.OpenWindow("issues");
-                if (validationSummary.failed)
-                    return Promise.Rejected(new Exception("Package has errors"));
-            }
+                    // Auto-assign necessary bundle names
+                    AssignBundleNamesToPackageAssets();
 
-            ProcessPackageAssets();
+                    // TODO: Ensure WebGL bundle is installed.
+                    const BuildTarget TARGET = BuildTarget.WebGL;
+                    string bundleDir = Path.Combine(BUILD_DIR, TARGET.ToString());
+                    if (Directory.Exists(bundleDir))
+                        Directory.Delete(bundleDir, recursive: true);
+                    Directory.CreateDirectory(bundleDir);
 
-            // Auto-assign necessary bundle names
-            AssignBundleNamesToPackageAssets();
+                    // Compress bundles with LZ4 (ChunkBasedCompression) since web doesn't support LZMA.
+                    CompatibilityAssetBundleManifest bundleManifest = CompatibilityBuildPipeline.BuildAssetBundles(
+                        bundleDir,
+                        BuildAssetBundleOptions.ForceRebuildAssetBundle | BuildAssetBundleOptions.ChunkBasedCompression,
+                        TARGET
+                    );
 
-            // TODO: Ensure WebGL bundle is installed.
-            const BuildTarget TARGET = BuildTarget.WebGL;
-            string bundleDir = Path.Combine(BUILD_DIR, TARGET.ToString());
-            if (Directory.Exists(bundleDir))
-                Directory.Delete(bundleDir, recursive: true);
-            Directory.CreateDirectory(bundleDir);
+                    if (bundleManifest == null)
+                        return Promise.Rejected(new System.Exception("Something went wrong when trying to build asset bundle for sandbox"));
 
-            // Compress bundles with LZ4 (ChunkBasedCompression) since web doesn't support LZMA.
-            CompatibilityAssetBundleManifest bundleManifest = CompatibilityBuildPipeline.BuildAssetBundles(
-                bundleDir,
-                BuildAssetBundleOptions.ForceRebuildAssetBundle | BuildAssetBundleOptions.ChunkBasedCompression,
-                TARGET
-            );
+                    if (activeConfig is SpaceTemplateConfig spaceTemplateConfig)
+                    {
+                        // Get the variant config for the current scene
+                        SceneAsset currentSceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
+                        SpaceTemplateConfig.Variant spaceTemplateVariant = spaceTemplateConfig.variants.FirstOrDefault(v => v.scene == currentSceneAsset);
+                        if (spaceTemplateVariant == null)
+                            return Promise.Rejected(new System.Exception("The current scene isn't one that is assigned to a variant in the package configuration"));
 
-            if (bundleManifest == null)
-                return Promise.Rejected(new System.Exception("Something went wrong when trying to build asset bundle for sandbox"));
-
-            if (activeConfig is SpaceTemplateConfig spaceTemplateConfig)
-            {
-                // Get the variant config for the current scene
-                SceneAsset currentSceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
-                SpaceTemplateConfig.Variant spaceTemplateVariant = spaceTemplateConfig.variants.FirstOrDefault(v => v.scene == currentSceneAsset);
-                if (spaceTemplateVariant == null)
-                    return Promise.Rejected(new System.Exception("The current scene isn't one that is assigned to a variant in the package configuration"));
-
-                return UploadAssetBundleToSandbox(spaceTemplateVariant.bundleName, bundleDir, activeConfig.packageType);
-            }
-            else
-            {
-                return UploadAssetBundleToSandbox(activeConfig.bundleName, bundleDir, activeConfig.packageType);
-            }
+                        return UploadAssetBundleToSandbox(spaceTemplateVariant.bundleName, bundleDir, activeConfig.packageType);
+                    }
+                    else
+                    {
+                        return UploadAssetBundleToSandbox(activeConfig.bundleName, bundleDir, activeConfig.packageType);
+                    }
+                });
         }
 
         private static IPromise UploadAssetBundleToSandbox(string bundleName, string bundleDir, PackageType packageType)
@@ -123,6 +129,22 @@ namespace SpatialSys.UnitySDK.Editor
                 });
         }
 
+        private static IPromise CheckValidationPromise(IPromise<SpatialValidationSummary> validatorPromise)
+        {
+            return validatorPromise.Then((SpatialValidationSummary validationSummary) => {
+                if (validationSummary == null)
+                    return Promise.Rejected(new Exception("Package validation failed to run"));
+
+                if (validationSummary.failed || validationSummary.passedWithWarnings)
+                {
+                    SpatialSDKConfigWindow.OpenWindow("issues");
+                    if (validationSummary.failed)
+                        return Promise.Rejected(new Exception("Package has errors"));
+                }
+                return Promise.Resolved();
+            });
+        }
+
         private static void UpdateSandboxUploadProgressBar(long transferred, long total, float progress)
         {
             UpdateUploadProgressBar("Uploading sandbox asset bundle", transferred, total, progress);
@@ -132,49 +154,41 @@ namespace SpatialSys.UnitySDK.Editor
         {
             // We must save all scenes, otherwise the bundle build will fail without explanation.
             EditorSceneManager.SaveOpenScenes();
-
-            SpatialValidationSummary validationSummary = SpatialValidator.RunTestsOnPackage(ValidationContext.PublishingPackage);
-            if (validationSummary == null)
-                return Promise.Rejected(new Exception("Package validation failed to run"));
-
-            if (validationSummary.failed || validationSummary.passedWithWarnings)
-            {
-                SpatialSDKConfigWindow.OpenWindow("issues");
-                if (validationSummary.failed)
-                    return Promise.Rejected(new Exception("Package has errors"));
-            }
-
-            // Always save all assets before publishing so that the uploaded package has the latest changes
-            AssetDatabase.SaveAssets();
-
-            ProcessPackageAssets();
-
-            // Auto-assign necessary bundle names
-            // This get's done on the build machines too, but we also want to do it here just in case there's an issue
-            AssignBundleNamesToPackageAssets();
-
-            // For "Space" packages, we need to make sure we have a worldID assigned to the project
-            // Worlds are a way to manage an ecosystem of spaces that share currency, rewards, inventory, etc.
-            // Spaces by default need to be assigned to a world
-            IPromise createWorldPromise = Promise.Resolved();
-            if (ProjectConfig.activePackage.packageType == PackageType.Space)
-            {
-                createWorldPromise = WorldUtility.ValidateWorldExists()
-                    .Then(() => {
-                        // Make sure that the space package has a worldID assigned
-                        SpaceConfig spaceConfig = ProjectConfig.activePackage as SpaceConfig;
-                        spaceConfig.worldID = ProjectConfig.worldID;
-                        UnityEditor.EditorUtility.SetDirty(spaceConfig);
-                        AssetDatabase.SaveAssetIfDirty(spaceConfig);
-                    });
-            }
-
-            // Upload package
-            _lastUploadProgress = -1f;
-            UpdatePackageUploadProgressBar(0, 0, 0f);
             PackageConfig config = ProjectConfig.activePackage;
-            return createWorldPromise
+
+            return CheckValidationPromise(SpatialValidator.RunTestsOnPackage(ValidationContext.PublishingPackage))
                 .Then(() => {
+
+                    // Always save all assets before publishing so that the uploaded package has the latest changes
+                    AssetDatabase.SaveAssets();
+
+                    ProcessPackageAssets();
+
+                    // Auto-assign necessary bundle names
+                    // This get's done on the build machines too, but we also want to do it here just in case there's an issue
+                    AssignBundleNamesToPackageAssets();
+
+                    // For "Space" packages, we need to make sure we have a worldID assigned to the project
+                    // Worlds are a way to manage an ecosystem of spaces that share currency, rewards, inventory, etc.
+                    // Spaces by default need to be assigned to a world
+                    IPromise createWorldPromise = Promise.Resolved();
+                    if (ProjectConfig.activePackage.packageType == PackageType.Space)
+                    {
+                        createWorldPromise = WorldUtility.ValidateWorldExists()
+                            .Then(() => {
+                                // Make sure that the space package has a worldID assigned
+                                SpaceConfig spaceConfig = ProjectConfig.activePackage as SpaceConfig;
+                                spaceConfig.worldID = ProjectConfig.worldID;
+                                UnityEditor.EditorUtility.SetDirty(spaceConfig);
+                                AssetDatabase.SaveAssetIfDirty(spaceConfig);
+                            });
+                    }
+
+                    // Upload package
+                    _lastUploadProgress = -1f;
+                    UpdatePackageUploadProgressBar(0, 0, 0f);
+                    return createWorldPromise;
+                }).Then(() => {
                     return SpatialAPI.CreateOrUpdatePackage(config.sku, config.packageType);
                 })
                 .Then(resp => {
@@ -237,9 +251,20 @@ namespace SpatialSys.UnitySDK.Editor
         public static void PackageProject(string outputPath)
         {
             // TODO: we can also exclude dependencies from packages that are included in the builder project by default
-            List<string> dependencies = AssetDatabase.GetDependencies(AssetDatabase.GetAssetPath(ProjectConfig.activePackage))
-                .Where(d => !d.StartsWith("Packages/io.spatial.unitysdk")) // we already have these
-                .ToList();
+            HashSet<string> dependencies = AssetDatabase.GetDependencies(AssetDatabase.GetAssetPath(ProjectConfig.activePackage)).ToHashSet();
+
+            // GetDependencies doesn't include all "import time" dependencies, so we need to manually add them
+            // See: https://forum.unity.com/threads/discrepancy-between-assetdatabase-getdependencies-and-results-of-exportpackage.1295025/
+            foreach (string dep in dependencies.ToArray())
+            {
+                string[] importTimeDependencies = _getImportedAssetImportDependenciesAsGUIDs.Invoke(null, new object[] { dep }) as string[];
+                if (importTimeDependencies.Length > 0)
+                    dependencies.UnionWith(importTimeDependencies.Select(d => AssetDatabase.GUIDToAssetPath(d)));
+
+                string[] sourceAssetImportTimeDependencies = _getSourceAssetImportDependenciesAsGUIDs.Invoke(null, new object[] { dep }) as string[];
+                if (sourceAssetImportTimeDependencies.Length > 0)
+                    dependencies.UnionWith(sourceAssetImportTimeDependencies.Select(d => AssetDatabase.GUIDToAssetPath(d)));
+            }
 
             // For `.obj` files in dependencies, we need to also manually include the `.mtl` file as a dependency
             // or else when the package extracted into the builder project, the materials will not be the same
@@ -249,7 +274,10 @@ namespace SpatialSys.UnitySDK.Editor
                 .Select(d => d.Replace(".obj", ".mtl"))
                 .Where(d => File.Exists(d))
                 .ToArray();
-            dependencies.AddRange(additionalMtlDependencies);
+            dependencies.UnionWith(additionalMtlDependencies);
+
+            // Remove all unitysdk package references
+            dependencies.RemoveWhere(d => d.StartsWith("Packages/io.spatial.unitysdk")); // we already have these
 
             // Export all referenced assets from active package as a unity package
             // NOTE: Intentionally not including the ProjectConfig since that includes all packages in this project

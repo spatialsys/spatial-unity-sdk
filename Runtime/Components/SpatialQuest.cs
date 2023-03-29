@@ -51,11 +51,10 @@ namespace SpatialSys.UnitySDK
         {
             [HideInInspector]
             public uint id;
-
             public string name;
             public TaskType type;
             public int progressSteps;
-
+            public GameObject[] taskMarkers;
             public SpatialEvent onStartedEvent;
             public SpatialEvent onCompletedEvent;
         }

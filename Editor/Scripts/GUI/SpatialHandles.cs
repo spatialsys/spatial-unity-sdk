@@ -105,7 +105,7 @@ namespace SpatialSys.UnitySDK.Editor
             Handles.DrawSolidDisc(nubPosition, HandleUtility.GUIPointToWorldRay(HandleUtility.WorldToGUIPoint(nubPosition)).direction, HandleUtility.GetHandleSize(nubPosition) * smallNubSize);
         }
 
-        public static void TargetTransformHandle(Transform parent, ref Transform target)
+        public static void TargetTransformHandle(Transform parent, Transform target)
         {
             if (parent == null || target == null)
             {
@@ -121,11 +121,11 @@ namespace SpatialSys.UnitySDK.Editor
             DrawSolidCircleHandle(target.position + Vector3.up * axisOffset, .075f, Handles.yAxisColor);
             DrawSolidCircleHandle(target.position + Vector3.forward * axisOffset, .075f, Handles.zAxisColor);
 
-            PositionHandleSlider(ref target, Vector3.right, axisOffset, .15f);
-            PositionHandleSlider(ref target, Vector3.up, axisOffset, .15f);
-            PositionHandleSlider(ref target, Vector3.forward, axisOffset, .15f);
+            PositionHandleSlider(target, Vector3.right, axisOffset, .15f);
+            PositionHandleSlider(target, Vector3.up, axisOffset, .15f);
+            PositionHandleSlider(target, Vector3.forward, axisOffset, .15f);
 
-            PositionFreeMoveHandle(ref target, .31f);
+            PositionFreeMoveHandle(target, .31f);
         }
 
         private static void DrawTransformTargetHandle(Transform parent, Transform target)
@@ -284,7 +284,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
-        private static void PositionHandleSlider(ref Transform target, Vector3 direction, float handleOffset, float handleSize = .15f)
+        private static void PositionHandleSlider(Transform target, Vector3 direction, float handleOffset, float handleSize = .15f)
         {
             Handles.zTest = UnityEngine.Rendering.CompareFunction.Always;
             Handles.color = handleClear;
@@ -298,7 +298,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
-        private static void PositionFreeMoveHandle(ref Transform target, float handleSize)
+        private static void PositionFreeMoveHandle(Transform target, float handleSize)
         {
             Handles.zTest = UnityEngine.Rendering.CompareFunction.Always;
             Handles.color = handleClear;

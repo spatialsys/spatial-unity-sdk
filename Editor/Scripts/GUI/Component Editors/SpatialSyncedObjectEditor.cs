@@ -12,6 +12,7 @@ namespace SpatialSys.UnitySDK.Editor
         private SerializedProperty _syncTransformProp;
         private SerializedProperty _saveWithSpaceProp;
         private SerializedProperty _destroyOnDisconnectProp;
+        private GameObject _targetGameObject;
 
         private void InitializePropertiesIfNecessary()
         {
@@ -23,6 +24,34 @@ namespace SpatialSys.UnitySDK.Editor
             _syncTransformProp = serializedObject.FindProperty(nameof(SpatialSyncedObject.syncTransform));
             _saveWithSpaceProp = serializedObject.FindProperty(nameof(SpatialSyncedObject.saveWithSpace));
             _destroyOnDisconnectProp = serializedObject.FindProperty(nameof(SpatialSyncedObject.destroyOnCreatorDisconnect));
+        }
+
+        private void OnEnable()
+        {
+            if (target != null)
+            {
+                _targetGameObject = (target as SpatialSyncedObject).gameObject;
+            }
+            else
+            {
+                _targetGameObject = null;
+            }
+        }
+
+        private void OnDisable()
+        {
+            // when target is null here, it's been destroyed
+            if (target == null)
+            {
+                if (_targetGameObject != null)
+                {
+                    // Delete any hidden SpatialSyncedVariables components when synced object component is deleted in the editor
+                    if (_targetGameObject.TryGetComponent<SpatialSyncedVariables>(out SpatialSyncedVariables variables))
+                    {
+                        DestroyImmediate(variables);
+                    }
+                }
+            }
         }
 
         public override void DrawFields()

@@ -132,8 +132,8 @@ namespace SpatialSys.UnitySDK.Editor
                     if (TypeIsSyncable(variableType))
                     {
                         hasSomeVariables = true;
-                        var syncedVariableDate = syncedVariables.variableSettings.Find(x => x.name == variable.name);
-                        var isSynced = syncedVariableDate != null;
+                        SpatialSyncedVariables.Data syncedVariableData = syncedVariables.variableSettings.Find(x => x.name == variable.name);
+                        bool isSynced = syncedVariableData != null;
 
                         EditorGUILayout.BeginHorizontal();
 
@@ -152,23 +152,32 @@ namespace SpatialSys.UnitySDK.Editor
                         {
                             EditorGUI.BeginDisabledGroup(true);
                         }
-                        bool newSaveWithScene = EditorGUILayout.ToggleLeft(
+
+                        bool newSaveWithScene = EditorGUILayout.ToggleLeft
+                        (
                             new GUIContent("Save with Space", "When checked the value will remain consistant across sessions even when nobody is present in a space. If unchecked the value will reset once the space is empty."),
-                            isSynced ? syncedVariableDate.saveWithSpace : false,
+                            isSynced ? syncedVariableData.saveWithSpace : false,
                             new GUILayoutOption[] { GUILayout.Width(115) }
-                            );
+                        );
+
                         if (isSynced)
                         {
-                            syncedVariableDate.saveWithSpace = newSaveWithScene;
+                            if (newSaveWithScene != syncedVariableData.saveWithSpace)
+                            {
+                                Undo.RecordObject(syncedVariables, $"Save {variable.name} With Space");
+                                syncedVariableData.saveWithSpace = newSaveWithScene;
+                            }
                         }
-                        if (!isSynced)
+                        else
                         {
                             EditorGUI.EndDisabledGroup();
                         }
+
                         EditorGUILayout.EndHorizontal();
 
                         if (newIsSynced && !isSynced)
                         {
+                            Undo.RecordObject(syncedVariables, $"Sync {variable.name}");
                             syncedVariables.variableSettings.Add(new SpatialSyncedVariables.Data() {
                                 name = variable.name,
                                 declaration = variable,
@@ -177,9 +186,9 @@ namespace SpatialSys.UnitySDK.Editor
 
                         if (!newIsSynced && isSynced)
                         {
-                            syncedVariables.variableSettings.Remove(syncedVariableDate);
+                            Undo.RecordObject(syncedVariables, $"Don't Sync {variable.name}");
+                            syncedVariables.variableSettings.Remove(syncedVariableData);
                         }
-
                     }
                 }
 
@@ -236,9 +245,7 @@ namespace SpatialSys.UnitySDK.Editor
             else
             {
                 SpatialGUIUtility.HelpBox("Visual Scripting Variables component is missing", SpatialGUIUtility.HelpSectionType.Error);
-
             }
-
         }
 
         private bool TypeIsSyncable(Type type)

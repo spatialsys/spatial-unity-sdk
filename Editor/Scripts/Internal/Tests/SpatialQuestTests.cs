@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using RSG;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -67,10 +68,10 @@ namespace SpatialSys.UnitySDK.Editor
         }
 
         [ComponentTest(typeof(SpatialQuest))]
-        public static void CheckQuestBadge(SpatialQuest target)
+        public static IPromise CheckQuestBadge(SpatialQuest target)
         {
             if (target.questRewards == null || target.questRewards.Length == 0)
-                return;
+                return Promise.Resolved();
 
             if (target.questRewards.Count(r => r.type == SpatialQuest.RewardType.Badge) > 1)
             {
@@ -95,18 +96,21 @@ namespace SpatialSys.UnitySDK.Editor
                 }
                 else
                 {
-                    List<SpatialAPI.Badge> badges = BadgeManager.GetCachedBadges();
-                    if (badges != null && !badges.Exists(b => b.id == badgeReward.id))
-                    {
-                        SpatialValidator.AddResponse(new SpatialTestResponse(
-                            target,
-                            TestResponseType.Fail,
-                            $"Invalid reward badge on quest {target.questName}",
-                            "The badge reward set for this quest does not exist. Select a valid badge to reward for this quest or remove the reward."
-                        ));
-                    }
+                    return BadgeManager.FetchBadges()
+                        .Then((List<SpatialAPI.Badge> badges) => {
+                            if (badges != null && !badges.Exists(b => b.id == badgeReward.id))
+                            {
+                                SpatialValidator.AddResponse(new SpatialTestResponse(
+                                    target,
+                                    TestResponseType.Fail,
+                                    $"Invalid reward badge on quest {target.questName}",
+                                    "The badge reward set for this quest does not exist. Select a valid badge to reward for this quest or remove the reward."
+                                ));
+                            }
+                        });
                 }
             }
+            return Promise.Resolved();
         }
 
         [SceneTest]

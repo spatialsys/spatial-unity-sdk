@@ -14,6 +14,7 @@ namespace SpatialSys.UnitySDK.Editor
             SerializedProperty nameProp = property.FindPropertyRelative(nameof(SpatialQuest.Task.name));
             SerializedProperty taskTypeProp = property.FindPropertyRelative(nameof(SpatialQuest.Task.type));
             SerializedProperty progressStepsProp = property.FindPropertyRelative(nameof(SpatialQuest.Task.progressSteps));
+            SerializedProperty taskMarkersProp = property.FindPropertyRelative(nameof(SpatialQuest.Task.taskMarkers));
             SerializedProperty onStartedEventProp = property.FindPropertyRelative(nameof(SpatialQuest.Task.onStartedEvent));
             SerializedProperty onCompletedEventProp = property.FindPropertyRelative(nameof(SpatialQuest.Task.onCompletedEvent));
 
@@ -44,6 +45,10 @@ namespace SpatialSys.UnitySDK.Editor
                 rect.y += progressRect.height + EditorGUIUtility.standardVerticalSpacing;
             }
 
+            // Task markers
+            DrawProperty(ref rect, taskMarkersProp);
+
+            // Events
             DrawProperty(ref rect, onStartedEventProp);
             DrawProperty(ref rect, onCompletedEventProp);
 

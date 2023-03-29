@@ -1,3 +1,4 @@
+using UnityEditor;
 using UnityEngine;
 
 namespace SpatialSys.UnitySDK.Editor
@@ -58,8 +59,8 @@ namespace SpatialSys.UnitySDK.Editor
 
         private static void AutoFixAnimatorOptimizeGameObjects(Object gameObject)
         {
-            Object sourcePrefab = UnityEditor.PrefabUtility.GetCorrespondingObjectFromSource(gameObject);
-            var importer = UnityEditor.AssetImporter.GetAtPath(UnityEditor.AssetDatabase.GetAssetPath(sourcePrefab)) as UnityEditor.ModelImporter;
+            Object sourcePrefab = PrefabUtility.GetCorrespondingObjectFromSource(gameObject);
+            var importer = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(sourcePrefab)) as ModelImporter;
             importer.optimizeGameObjects = false;
             importer.SaveAndReimport();
         }

@@ -10,7 +10,6 @@ using UnityEditor;
 namespace SpatialSys.UnitySDK
 {
     [DisallowMultipleComponent]
-    [ExecuteInEditMode]
     public class SpatialSyncedObject : SpatialComponentBase
     {
         public override string prettyName => "Synced Object";
@@ -24,18 +23,6 @@ namespace SpatialSys.UnitySDK
 
         [HideInInspector] public string assetID; // unity prefab asset ID
         [HideInInspector] public string instanceID;
-
-        // Delete any hidden SpatialSyncedVariables components when this component is deleted in the editor
-        private void OnDestroy()
-        {
-            if (Application.isPlaying)
-                return;
-
-            if (TryGetComponent(out SpatialSyncedVariables variables))
-            {
-                DestroyImmediate(variables);
-            }
-        }
 
 #if UNITY_EDITOR
         [ContextMenu("Remove Synced Variables")]

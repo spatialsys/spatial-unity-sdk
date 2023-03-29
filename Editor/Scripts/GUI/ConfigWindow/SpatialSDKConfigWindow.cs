@@ -32,6 +32,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         private string _tab = CONFIG_TAB_NAME;
         private string _authToken;
+        private SpatialValidationSummary _issuesValidationSummary;
 
         // Config Tab Elements
         private DropdownField _configActivePackageDropdown;
@@ -61,6 +62,7 @@ namespace SpatialSys.UnitySDK.Editor
         private VisualTreeAsset _issueContainerTemplate;
         private VisualElement _issueListParent;
         private VisualElement _selectedIssue;
+        private DropdownField _issuesActivePackageDropdown;
         private List<VisualElement> _errorIssues;
         private List<VisualElement> _warningIssues;
         private Dictionary<VisualElement, SpatialTestResponse> _elementToReponse;
@@ -179,12 +181,7 @@ namespace SpatialSys.UnitySDK.Editor
                 root.Bind(new SerializedObject(ProjectConfig.activePackage));
             };
             _configActivePackageDropdown = root.Q<DropdownField>("packageConfigDropDown");
-            _configActivePackageDropdown.RegisterValueChangedCallback(evt => {
-                int index = _configActivePackageDropdown.choices.IndexOf(evt.newValue);
-                ProjectConfig.activePackageIndex = index;
-                UnityEditor.EditorUtility.SetDirty(ProjectConfig.instance);
-                rootVisualElement.Bind(new SerializedObject(ProjectConfig.activePackage));
-            });
+            _configActivePackageDropdown.RegisterValueChangedCallback(OnActivePackageDropdownValueChanged);
             _configCreatePackageTypeDropdown = root.Q<EnumField>("createPackageTypeDropdown");
             root.Q<Button>("createPackageButton").clicked += () => {
                 var package = ProjectConfig.AddNewPackage((PackageType)_configCreatePackageTypeDropdown.value);
@@ -245,11 +242,13 @@ namespace SpatialSys.UnitySDK.Editor
             };
 
             // Issues
+            _issuesActivePackageDropdown = root.Q<DropdownField>("issuesPackageDropDown");
+            _issuesActivePackageDropdown.RegisterValueChangedCallback(OnActivePackageDropdownValueChanged);
             _issuesCountBlock = root.Q("issuesCountBlock");
             _issuesCountTitle = root.Query<Label>("issuesCountTitle").First();
             _issuesCountDescription = root.Query<Label>("issuesCountDescription").First();
             _issuesRefreshButton = root.Query<Button>("refreshButton").First();
-            _issuesRefreshButton.clicked += () => RefreshIssuesButton();
+            _issuesRefreshButton.clicked += RefreshIssues;
 
             _issuesScrollBlock = root.Q("issuesScrollBlock");
 
@@ -259,14 +258,14 @@ namespace SpatialSys.UnitySDK.Editor
 
             _autoFixBlock = root.Q("autoFixBlock");
             _autoFixDescription = root.Query<Label>("autoFixDescription").First();
-            root.Query<Button>("autoFixButton").First().clicked += () => FixSelectedIssue();
+            root.Query<Button>("autoFixButton").First().clicked += FixSelectedIssue;
 
             _openSceneBlock = root.Q("openSceneBlock");
             _targetSceneName = root.Query<Label>("targetSceneName").First();
-            root.Query<Button>("openSceneButton").First().clicked += () => OpenSelectedIssueScene();
+            root.Query<Button>("openSceneButton").First().clicked += OpenSelectedIssueScene;
             _selectObjectBlock = root.Q("selectObjectBlock");
             _targetObjectName = root.Query<Label>("targetObjectName").First();
-            root.Query<Button>("selectObjectButton").First().clicked += () => OpenSelectedIssueGameObject();
+            root.Query<Button>("selectObjectButton").First().clicked += OpenSelectedIssueGameObject;
 
             // Help
             root.Query<Button>("gotoDocumentation").First().clicked += () => Application.OpenURL(UpgradeUtility.packageInfo.documentationUrl);
@@ -311,7 +310,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
             else if (tab == ISSUES_TAB_NAME)
             {
-                LoadIssues();
+                UpdateIssuesTabContents();
             }
             else if (tab == BADGES_TAB_NAME)
             {
@@ -335,21 +334,7 @@ namespace SpatialSys.UnitySDK.Editor
             rootVisualElement.Q(PROJECT_CONFIG_ELEMENT_NAME).style.display = (ProjectConfig.instance != null) ? DisplayStyle.Flex : DisplayStyle.None;
             rootVisualElement.Q(PACKAGE_CONFIG_ELEMENT_NAME).style.display = (packageConfig != null) ? DisplayStyle.Flex : DisplayStyle.None;
 
-            // Active config dropdown
-            _configActivePackageDropdown.SetEnabled(ProjectConfig.hasPackages);
-            if (_configActivePackageDropdown.enabledSelf)
-            {
-                Func<PackageConfig, string> getPackageDropdownLabel = (PackageConfig config) => $"{config.packageType} - {config.packageName}";
-
-                // Update elements
-                if (_configActivePackageDropdown.choices == null || _configActivePackageDropdown.choices.Count != ProjectConfig.packages.Count)
-                    _configActivePackageDropdown.choices = ProjectConfig.packages.Select(getPackageDropdownLabel).ToList();
-                _configActivePackageDropdown.index = ProjectConfig.activePackageIndex;
-
-                // Update the selected label
-                if (packageConfig != null)
-                    _configActivePackageDropdown.choices[ProjectConfig.activePackageIndex] = getPackageDropdownLabel(packageConfig);
-            }
+            UpdateActivePackageDropdown(_configActivePackageDropdown);
 
             // Active Package
             if (packageConfig != null)
@@ -364,6 +349,35 @@ namespace SpatialSys.UnitySDK.Editor
                 rootVisualElement.Q("avatarAnimationConfig").style.display = (packageConfig.packageType == PackageType.AvatarAnimation) ? DisplayStyle.Flex : DisplayStyle.None;
                 rootVisualElement.Q("prefabObjectConfig").style.display = (packageConfig.packageType == PackageType.PrefabObject) ? DisplayStyle.Flex : DisplayStyle.None;
             }
+        }
+
+        private void UpdateActivePackageDropdown(DropdownField dropdown)
+        {
+            dropdown.SetEnabled(ProjectConfig.hasPackages);
+            if (dropdown.enabledSelf)
+            {
+                PackageConfig packageConfig = ProjectConfig.activePackage;
+                Func<PackageConfig, string> getPackageDropdownLabel = (PackageConfig config) => $"{config.packageType} - {config.packageName}";
+
+                // Update elements
+                if (dropdown.choices == null || dropdown.choices.Count != ProjectConfig.packages.Count)
+                    dropdown.choices = ProjectConfig.packages.Select(getPackageDropdownLabel).ToList();
+                dropdown.index = ProjectConfig.activePackageIndex;
+
+                // Update the selected label
+                if (packageConfig != null)
+                    dropdown.choices[ProjectConfig.activePackageIndex] = getPackageDropdownLabel(packageConfig);
+            }
+        }
+
+        private void OnActivePackageDropdownValueChanged(ChangeEvent<string> evt)
+        {
+            var dropdownField = evt.target as DropdownField;
+            int index = dropdownField.choices.IndexOf(evt.newValue);
+            ProjectConfig.activePackageIndex = index;
+            UnityEditor.EditorUtility.SetDirty(ProjectConfig.instance);
+            rootVisualElement.Bind(new SerializedObject(ProjectConfig.activePackage));
+            InvalidateIssues();
         }
 
         private void PasteAuthToken()
@@ -392,23 +406,34 @@ namespace SpatialSys.UnitySDK.Editor
         //               Issues
         /////////////////////////////////////////
 
-        private void RefreshIssuesButton()
+        private void RefreshIssues()
         {
-            SpatialValidator.RunTestsOnPackage(ValidationContext.ManualRun);
-            LoadIssues();
+            SpatialValidator.RunTestsOnPackage(ValidationContext.ManualRun)
+                .Then(validationSummary => {
+                    _issuesValidationSummary = validationSummary;
+                    UpdateIssuesTabContents();
+                });
         }
 
-        private void LoadIssues()
+        private void InvalidateIssues()
+        {
+            _issuesValidationSummary = null;
+            UpdateIssuesTabContents();
+        }
+
+        private void UpdateIssuesTabContents()
         {
             _issueListParent.Clear();
             _selectedIssue = null;
             SelectIssue(null);
-            List<SpatialTestResponse> responses = SpatialValidator.allResponses;
+
+            UpdateActivePackageDropdown(_issuesActivePackageDropdown);
+
             _warningIssues = new List<VisualElement>();
             _errorIssues = new List<VisualElement>();
             _elementToReponse = new Dictionary<VisualElement, SpatialTestResponse>();
 
-            foreach (SpatialTestResponse response in responses)
+            foreach (SpatialTestResponse response in SpatialValidator.allResponses)
             {
                 VisualElement element = issueContainerTemplate.Instantiate();
                 if (!EditorGUIUtility.isProSkin)
@@ -442,14 +467,20 @@ namespace SpatialSys.UnitySDK.Editor
             _issuesRefreshButton.ClearClassList();
             _issuesCountBlock.AddToClassList("block_base");
             _issuesRefreshButton.AddToClassList("blockButton");
-            if (_errorIssues.Count == 0 && _warningIssues.Count == 0)
+            bool showSelectedIssue = false;
+
+            if (_issuesValidationSummary == null)
             {
-                _issuesCountTitle.text = "No issues found!";
+                // If the validation summary is null, then results are likely invalid.
+                _issuesCountTitle.text = "Check for issues";
+                _issuesCountDescription.text = "Click the button below to get started!";
+            }
+            else if (_errorIssues.Count == 0 && _warningIssues.Count == 0)
+            {
+                _issuesCountTitle.text = "No issues found";
                 _issuesCountDescription.text = "You're good to go!";
                 _issuesCountBlock.AddToClassList("block_green");
                 _issuesRefreshButton.AddToClassList("blockButton_green");
-                _issuesScrollBlock.style.display = DisplayStyle.None;
-                _selectedIssueBlock.style.display = DisplayStyle.None;
             }
             else if (_errorIssues.Count > 0)
             {
@@ -457,8 +488,7 @@ namespace SpatialSys.UnitySDK.Editor
                 _issuesCountDescription.text = "You can't upload your package to the sandbox or publish until the errors are resolved.";
                 _issuesCountBlock.AddToClassList("block_red");
                 _issuesRefreshButton.AddToClassList("blockButton_red");
-                _issuesScrollBlock.style.display = DisplayStyle.Flex;
-                _selectedIssueBlock.style.display = DisplayStyle.Flex;
+                showSelectedIssue = true;
             }
             else
             {
@@ -466,8 +496,7 @@ namespace SpatialSys.UnitySDK.Editor
                 _issuesCountDescription.text = "Warnings will not prevent you from publishing, but you should still look to resolve them as your package may not work as expected.";
                 _issuesCountBlock.AddToClassList("block_yellow");
                 _issuesRefreshButton.AddToClassList("blockButton_yellow");
-                _issuesScrollBlock.style.display = DisplayStyle.Flex;
-                _selectedIssueBlock.style.display = DisplayStyle.Flex;
+                showSelectedIssue = true;
             }
 
             if (_errorIssues.Count > 0)
@@ -478,6 +507,9 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 SelectIssue(_warningIssues[0]);
             }
+
+            _issuesScrollBlock.style.display = showSelectedIssue ? DisplayStyle.Flex : DisplayStyle.None;
+            _selectedIssueBlock.style.display = showSelectedIssue ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         private void SelectIssue(VisualElement element)
@@ -549,7 +581,7 @@ namespace SpatialSys.UnitySDK.Editor
                 response.InvokeAutoFix(); // This might switch the scene.
 
                 // Re-run tests to refresh UI
-                RefreshIssuesButton();
+                RefreshIssues();
             }
         }
 

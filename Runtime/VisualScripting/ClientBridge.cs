@@ -44,6 +44,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public delegate void AddForceToLocalAvatarDelegate(Vector3 force);
         public static AddForceToLocalAvatarDelegate AddForceToLocalAvatar;
 
+        public delegate void SetLocalAvatarMovingSpeedDelegate(float speed);
+        public static SetLocalAvatarMovingSpeedDelegate SetLocalAvatarMovingSpeed;
+
+        public delegate float GetLocalAvatarMovingSpeedDelegate();
+        public static GetLocalAvatarMovingSpeedDelegate GetLocalAvatarMovingSpeed;
+
         public delegate void SetLocalAvatarDelegate(string sku);
         public static SetLocalAvatarDelegate SetLocalAvatar;
 
@@ -96,6 +102,9 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public delegate int GetQuestTaskStatusDelegate(SpatialQuest quest, uint task);
         public static GetQuestTaskStatusDelegate GetQuestTaskStatus;
+
+        public delegate void RewardBadgeDelegate(string badgeId);
+        public static RewardBadgeDelegate RewardBadge;
 
         public delegate bool TakeoverSyncedObjectOwnerhipDelegate(SpatialSyncedObject syncedObject);
         public static TakeoverSyncedObjectOwnerhipDelegate TakeoverSyncedObjectOwnership;

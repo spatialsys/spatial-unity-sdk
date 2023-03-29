@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.SceneManagement;
 using UnityEditor.SceneManagement;
+using RSG;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -34,52 +35,53 @@ namespace SpatialSys.UnitySDK.Editor
         /// <summary>
         /// Returns a summary of the run, otherwise null if tests failed to run.
         /// </summary>
-        public static SpatialValidationSummary RunTestsOnPackage(ValidationContext context)
+        public static IPromise<SpatialValidationSummary> RunTestsOnPackage(ValidationContext context)
         {
             PackageConfig config = ProjectConfig.activePackage;
             if (config == null)
             {
                 Debug.LogError("No config found.");
-                return null;
+                return Promise<SpatialValidationSummary>.Resolved(null);
             }
 
             validationContext = context;
             LoadTestsIfNecessary();
             allResponses.Clear();
 
-            RunPackageTests(config);
-
-            if (config is SpaceConfig spaceConfig)
-            {
-                RunTestsOnSpacePackageScenes(new SceneAsset[] { spaceConfig.scene });
-            }
-            else if (config is SpaceTemplateConfig spaceTemplateConfig)
-            {
-                RunTestsOnSpacePackageScenes(spaceTemplateConfig.variants.Select(v => v.scene).ToArray());
-            }
-
-            return CreateValidationSummary();
+            return RunPackageTests(config)
+                .Then(() => {
+                    if (config is SpaceConfig spaceConfig)
+                    {
+                        return RunTestsOnSpacePackageScenes(new SceneAsset[] { spaceConfig.scene });
+                    }
+                    else if (config is SpaceTemplateConfig spaceTemplateConfig)
+                    {
+                        return RunTestsOnSpacePackageScenes(spaceTemplateConfig.variants.Select(v => v.scene).ToArray());
+                    }
+                    return Promise.Resolved();
+                })
+                .Then(() => Promise<SpatialValidationSummary>.Resolved(CreateValidationSummary()));
         }
 
         /// <summary>
         /// Returns a summary of the run, otherwise null if tests failed to run.
         /// </summary>
-        public static SpatialValidationSummary RunTestsOnActiveScene(ValidationContext context)
+        public static IPromise<SpatialValidationSummary> RunTestsOnActiveScene(ValidationContext context)
         {
             PackageConfig config = ProjectConfig.activePackage;
             if (config == null)
             {
                 Debug.LogError("No config found.");
-                return null;
+                return Promise<SpatialValidationSummary>.Resolved(null);
             }
 
             validationContext = context;
             LoadTestsIfNecessary();
             allResponses.Clear();
 
-            RunPackageTests(config);
-            RunSceneTests(SceneManager.GetActiveScene());
-            return CreateValidationSummary();
+            return RunPackageTests(config)
+                .Then(() => RunSceneTests(SceneManager.GetActiveScene()))
+                .Then(() => Promise<SpatialValidationSummary>.Resolved(CreateValidationSummary()));
         }
 
         public static void AddResponse(SpatialTestResponse response)
@@ -95,12 +97,11 @@ namespace SpatialSys.UnitySDK.Editor
             allResponses.Clear();
         }
 
-
         // ======================================================
         // INTERNAL HELPERS IMPLEMENTATION
         // ======================================================
 
-        private static void RunTestsOnSpacePackageScenes(SceneAsset[] sceneAssets)
+        private static IPromise RunTestsOnSpacePackageScenes(SceneAsset[] sceneAssets)
         {
             if (!Application.isBatchMode)
                 EditorSceneManager.SaveOpenScenes(); // We are going to swap scenes and will lose changes without this
@@ -109,14 +110,13 @@ namespace SpatialSys.UnitySDK.Editor
             string originalScenePath = previousScene.path;
             var testedScenePaths = new HashSet<string>();
 
-            foreach (SceneAsset sceneAsset in sceneAssets)
-            {
+            return BuildSequencePromise(sceneAssets, (SceneAsset sceneAsset) => {
                 if (sceneAsset == null)
-                    continue;
+                    return Promise.Resolved();
 
                 string scenePath = AssetDatabase.GetAssetPath(sceneAsset);
                 if (!testedScenePaths.Add(scenePath))
-                    continue; // We already tested this scene, although this shouldn't happen since each scene should be assigned to at most one variant.
+                    return Promise.Resolved(); // We already tested this scene, although this shouldn't happen since each scene should be assigned to at most one variant.
 
                 Scene scene;
                 if (previousScene.path != scenePath)
@@ -129,21 +129,20 @@ namespace SpatialSys.UnitySDK.Editor
                 }
 
                 previousScene = scene;
-                RunSceneTests(scene);
-            }
-
-            if (previousScene.path != originalScenePath && !string.IsNullOrEmpty(originalScenePath))
-                EditorSceneManager.OpenScene(originalScenePath);
+                return RunSceneTests(scene);
+            }).Then(() => {
+                if (previousScene.path != originalScenePath && !string.IsNullOrEmpty(originalScenePath))
+                    EditorSceneManager.OpenScene(originalScenePath);
+            });
         }
 
-        private static void RunComponentTestsOnObjectRecursively(GameObject g)
+        private static IPromise RunComponentTestsOnObjectRecursively(GameObject g)
         {
             // Ignore object and children if marked editor only
             if (g.CompareTag("EditorOnly"))
-                return;
+                return Promise.Resolved();
 
-            foreach (var component in g.GetComponents<Component>())
-            {
+            return BuildParallelPromise(g.GetComponents<Component>(), component => {
                 // Null components are missing scripts
                 if (component == null)
                 {
@@ -158,64 +157,100 @@ namespace SpatialSys.UnitySDK.Editor
                         GameObjectUtility.RemoveMonoBehavioursWithMissingScript(g as GameObject);
                     });
                     SpatialValidator.AddResponse(resp);
+                    return Promise.Resolved();
                 }
                 else
                 {
-                    RunComponentTests(component);
+                    return RunComponentTests(component);
                 }
-            }
-
-            foreach (Transform child in g.transform)
-                RunComponentTestsOnObjectRecursively(child.gameObject);
+            }).Then(() =>
+                BuildParallelPromise(GetTransformChildrenAsList(g.transform), (Transform child) => 
+                    RunComponentTestsOnObjectRecursively(child.gameObject)
+                )
+            );
         }
 
-        private static void RunComponentTests(Component target)
+        private static List<Transform> GetTransformChildrenAsList(Transform transform)
+        {
+            List<Transform> list = new List<Transform>(transform.childCount);
+            foreach (Transform child in transform)
+                list.Add(child);
+            return list;
+        }
+
+        private static IPromise RunComponentTests(Component target)
         {
             object[] targetParam = new object[] { target };
             Type targetType = target.GetType();
 
-            foreach (KeyValuePair<Type, List<MethodInfo>> pair in _componentTests)
-            {
+            return BuildParallelPromise(_componentTests, (KeyValuePair<Type, List<MethodInfo>> pair) => {
                 Type type = pair.Key;
                 if (type.IsAssignableFrom(targetType))
                 {
                     List<MethodInfo> tests = pair.Value;
-                    foreach (MethodInfo method in tests)
-                    {
-                        method.Invoke(null, targetParam);
-                    }
+                    return BuildParallelPromise(tests, (MethodInfo method) => Invoke(method, targetParam));
                 }
+                return Promise.Resolved();
+            });
+        }
+
+        private static IPromise Invoke(MethodInfo method, object[] param)
+        {
+            if (method.ReturnType == typeof(IPromise))
+            {
+                return (IPromise)method.Invoke(null, param);
+            }
+            else
+            {
+                method.Invoke(null, param);
+                return Promise.Resolved();
             }
         }
 
-        private static void RunPackageTests(PackageConfig config)
+        private static IPromise BuildSequencePromise<T>(IEnumerable<T> list, Func<T, IPromise> selector)
+        {
+            var promiseCallbackList = list.Select(element => (Func<IPromise>)(() => selector(element)));
+            return Promise.Sequence(promiseCallbackList);
+        }
+
+        private static IPromise BuildParallelPromise<T>(IEnumerable<T> list, Func<T, IPromise> selector)
+        {
+            var promiseCallbackList = list.Select(element => selector(element));
+            return Promise.All(promiseCallbackList);
+        }
+
+        private static IPromise RunPackageTests(PackageConfig config)
         {
             _currentTestScene = null;
             object[] configParam = new object[] { config };
-            foreach (MethodInfo method in _packageTests)
-            {
+            
+            return BuildParallelPromise(_packageTests, (MethodInfo method) => {
                 var attr = method.GetCustomAttribute<PackageTest>();
                 if (attr.TestAffectsPackageType(config.packageType))
-                    method.Invoke(null, configParam);
-            }
-
-            foreach (GameObject go in config.gameObjectAssets)
-                RunComponentTestsOnObjectRecursively(go);
+                {
+                    return Invoke(method, configParam);
+                }
+                return Promise.Resolved();
+            }).Then(() =>
+                BuildParallelPromise(config.gameObjectAssets, (GameObject go) => 
+                    RunComponentTestsOnObjectRecursively(go)
+                )
+            );
         }
 
-        private static void RunSceneTests(Scene scene)
+        private static IPromise RunSceneTests(Scene scene)
         {
             _currentTestScene = scene;
             object[] sceneParam = new object[] { scene };
-            foreach (MethodInfo method in _sceneTests)
-            {
-                method.Invoke(null, sceneParam);
-            }
-
-            foreach (GameObject g in scene.GetRootGameObjects())
-                RunComponentTestsOnObjectRecursively(g);
-
-            _currentTestScene = null;
+            return BuildParallelPromise(_sceneTests, (MethodInfo method) => Invoke(method, sceneParam))
+                .Then(() => 
+                    BuildParallelPromise(scene.GetRootGameObjects(), (GameObject g) => 
+                        RunComponentTestsOnObjectRecursively(g)
+                    )
+                )
+                .Then(() => {
+                    _currentTestScene = null;
+                });
         }
 
         private static void LoadTestsIfNecessary()

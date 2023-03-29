@@ -242,7 +242,7 @@ namespace SpatialSys.UnitySDK.Editor
         private static SpatialSyncedObject[] ProcessSyncedObjects(string assetPath, SpatialSyncedObject[] embeddedSyncedObjects)
         {
             // setup with all synced object prefabs used by asset
-            List<SpatialSyncedObject> syncedObjects = AssetDatabase.GetDependencies(assetPath)
+            List<SpatialSyncedObject> prefabSyncedObjects = AssetDatabase.GetDependencies(assetPath)
                 .Select(AssetDatabase.LoadAssetAtPath<SpatialSyncedObject>)
                 .Where(obj => obj != null)
                 .ToList();
@@ -251,7 +251,9 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 sceneSyncedObject.destroyOnCreatorDisconnect = false; // does not make sense so force it to false.
             }
-            syncedObjects.AddRange(embeddedSyncedObjects);
+
+            HashSet<SpatialSyncedObject> syncedObjects = new HashSet<SpatialSyncedObject>(prefabSyncedObjects);
+            syncedObjects.UnionWith(embeddedSyncedObjects);
 
             return syncedObjects.ToArray();
         }
