@@ -14,5 +14,24 @@ namespace SpatialSys.UnitySDK.Editor
                 );
             }
         }
+
+        [PackageTest(PackageType.PrefabObject)]
+        public static void EnsurePrefabHasColliders(PrefabObjectConfig config)
+        {
+            if (config.prefab == null)
+                return;
+
+            var colliders = config.prefab.GetComponentsInChildren<Collider>();
+
+            if (colliders.Length == 0)
+            {
+                SpatialValidator.AddResponse(new SpatialTestResponse(
+                    config,
+                    TestResponseType.Fail,
+                    "The prefab does not have any colliders attached",
+                    "Users will not be able to move this object without colliders. Add any type of collider to fix this issue."
+                ));
+            }
+        }
     }
 }

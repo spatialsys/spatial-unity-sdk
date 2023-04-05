@@ -17,6 +17,7 @@ namespace SpatialSys.UnitySDK
 
         public AvatarControlSettings avatarControlSettings = AvatarControlSettings.Default;
         [MinAttribute(0.1f), Tooltip("m/s"), HideInInspector] public float localAvatarMovingSpeed; // in m/s
+        [MinAttribute(0.1f), Tooltip("m/s"), HideInInspector] public float localAvatarRunSpeed; // in m/s
 
         // Set default values
         public EnvironmentSettings()
@@ -25,6 +26,7 @@ namespace SpatialSys.UnitySDK
             useSeatsAsSpawnPoints = false;
             avatarControlSettings = AvatarControlSettings.Default;
             localAvatarMovingSpeed = 3.0f; // This default should be matched with AvatarController movingSpeed.
+            localAvatarRunSpeed = 5.5f; // This default should be matched with AvatarController sprintSpeed.
         }
     }
 }

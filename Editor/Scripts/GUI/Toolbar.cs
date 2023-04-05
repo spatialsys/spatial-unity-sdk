@@ -2,9 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEditor;
 using UnityEditor.SceneManagement;
-
 using UnityToolbarExtender;
-using RSG;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -45,7 +43,7 @@ namespace SpatialSys.UnitySDK.Editor
                         $"▶️ {buttonText}",
                         !string.IsNullOrEmpty(cannotTestReason) ? cannotTestReason : buttonTooltipText
                     )) &&
-                    UnityEditor.EditorUtility.DisplayDialog("Testing Package", $"You are about to upload and test your package in the Spatial sandbox.", "Continue", "Cancel"))
+                    UnityEditor.EditorUtility.DisplayDialog("Testing Package", $"You're about to upload this package to the Spatial sandbox. This will overwrite content in your sandbox, if there is any.", "Continue", "Cancel"))
                 {
                     UpgradeUtility.PerformUpgradeIfNecessaryForTestOrPublish()
                         .Then(() => {
@@ -55,7 +53,7 @@ namespace SpatialSys.UnitySDK.Editor
                             if (exc is RSG.PromiseCancelledException)
                                 return;
 
-                            UnityEditor.EditorUtility.DisplayDialog("Sandbox Error", $"There was an unexpected error while preparing your space for sandbox testing.\n\n{exc.Message}", "OK");
+                            UnityEditor.EditorUtility.DisplayDialog("Sandbox Error", $"An unexpected error occurred while preparing your package for the sandbox.\n\n{exc.Message}", "OK");
                             Debug.LogException(exc);
                         });
                 }
@@ -78,7 +76,7 @@ namespace SpatialSys.UnitySDK.Editor
         private static string GetTestButtonErrorString()
         {
             if (!EditorUtility.isUsingSupportedUnityVersion)
-                return $"Requires Unity {EditorUtility.CLIENT_UNITY_VERSION} to test in Spatial (currently using {Application.unityVersion})";
+                return $"Unity version must be between {EditorUtility.MIN_UNITY_VERSION_STR} and {EditorUtility.MAX_UNITY_VERSION_STR} to test in Spatial (currently using {Application.unityVersion})";
             if (EditorApplication.isPlayingOrWillChangePlaymode)
                 return "Feature disabled while in play mode";
             if (ProjectConfig.activePackage == null)

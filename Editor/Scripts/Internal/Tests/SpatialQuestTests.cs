@@ -94,7 +94,7 @@ namespace SpatialSys.UnitySDK.Editor
                         "The rewarded badge is not set. Select a valid badge to reward for this quest or remove the reward."
                     ));
                 }
-                else
+                else if (!Application.isBatchMode)
                 {
                     return BadgeManager.FetchBadges()
                         .Then((List<SpatialAPI.Badge> badges) => {

@@ -1,18 +1,16 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitCategory("Spatial\\Actions")]
-    [UnitTitle("Local Actor: Set Walk Speed")]
+    [UnitTitle("Local Actor: Set Run Speed")]
 
-    [UnitSurtitle("Local Actor Walk Speed")]
+    [UnitSurtitle("Local Actor Run Speed")]
     [UnitShortTitle("Set Speed (m/s)")]
 
     [TypeIcon(typeof(SpatialComponentBase))]
-    public class SetLocalAvatarMovingSpeedNode : Unit
+    public class SetLocalAvatarRunSpeedNode : Unit
     {
         [DoNotSerialize]
         [PortLabelHidden]
@@ -26,9 +24,9 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            speed = ValueInput<float>(nameof(speed), 3.0f); // This default should be matched with AvatarController movingSpeed.
+            speed = ValueInput<float>(nameof(speed), 5.5f); // This default should be matched with AvatarController RunSpeed.
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetLocalAvatarMovingSpeed.Invoke(f.GetValue<float>(speed));
+                ClientBridge.SetLocalAvatarRunSpeed.Invoke(f.GetValue<float>(speed));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -37,13 +35,13 @@ namespace SpatialSys.UnitySDK.VisualScripting
     }
 
     [UnitCategory("Spatial\\Get Actions")]
-    [UnitTitle("Local Actor: Get Walk Speed")]
+    [UnitTitle("Local Actor: Get Run Speed")]
 
-    [UnitSurtitle("Local Actor Walk Speed")]
+    [UnitSurtitle("Local Actor Run Speed")]
     [UnitShortTitle("Get Speed (m/s)")]
 
     [TypeIcon(typeof(SpatialComponentBase))]
-    public class GetLocalAvatarMovingSpeedNode : Unit
+    public class GetLocalAvatarRunSpeedNode : Unit
     {
         [DoNotSerialize]
         [PortLabel("Speed")]
@@ -51,7 +49,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            speed = ValueOutput<float>(nameof(speed), (f) => ClientBridge.GetLocalAvatarMovingSpeed.Invoke());
+            speed = ValueOutput<float>(nameof(speed), (f) => ClientBridge.GetLocalAvatarRunSpeed.Invoke());
         }
     }
 }

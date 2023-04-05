@@ -8,7 +8,8 @@ namespace SpatialSys.UnitySDK.Editor
         public enum Scope
         {
             Global,
-            Ecosystem // AKA "World"
+            [InspectorName("Ecosystem")]
+            World
         }
 
         public enum Category

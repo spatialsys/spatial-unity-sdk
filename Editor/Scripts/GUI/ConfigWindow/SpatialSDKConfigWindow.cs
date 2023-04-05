@@ -201,7 +201,7 @@ namespace SpatialSys.UnitySDK.Editor
 
                 if (UnityEditor.EditorUtility.DisplayDialog(
                     "Publishing Package",
-                    "You are about to upload your package to Spatial for publishing.\n\nWe highly recommend testing the package in the Spatial sandbox beforehand if you haven't done so already.",
+                    "You're about to upload this package to Spatial for publishing.\n\nIt's strongly encouraged that you test this package in the Spatial sandbox, if you haven't done so already.",
                     "Continue",
                     "Cancel"))
                 {
@@ -213,7 +213,7 @@ namespace SpatialSys.UnitySDK.Editor
                             if (exc is RSG.PromiseCancelledException)
                                 return;
 
-                            UnityEditor.EditorUtility.DisplayDialog("Publishing Error", $"There was an unexpected error while publishing your space.\n\n{exc.Message}", "OK");
+                            UnityEditor.EditorUtility.DisplayDialog("Publishing Error", $"An unexpected error occurred while publishing your package.\n\n{exc.Message}", "OK");
                             Debug.LogException(exc);
                         });
                 }

@@ -22,6 +22,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public delegate void SetLocalAvatarPositionDelegate(Vector3 position);
         public static SetLocalAvatarPositionDelegate SetLocalAvatarPosition;
 
+        public delegate void SendLocalAvatarToSeatDelegate(Transform seat);
+        public static SendLocalAvatarToSeatDelegate SendLocalAvatarToSeat;
+
+        public delegate void SetLocalAvatarToStandDelegate();
+        public static SetLocalAvatarToStandDelegate SetLocalAvatarToStand;
+
         public delegate Quaternion GetLocalAvatarRotationDelegate();
         public static GetLocalAvatarRotationDelegate GetLocalAvatarRotation;
 
@@ -49,6 +55,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public delegate float GetLocalAvatarMovingSpeedDelegate();
         public static GetLocalAvatarMovingSpeedDelegate GetLocalAvatarMovingSpeed;
+
+        public delegate void SetLocalAvatarRunSpeedDelegate(float speed);
+        public static SetLocalAvatarRunSpeedDelegate SetLocalAvatarRunSpeed;
+
+        public delegate float GetLocalAvatarRunSpeedDelegate();
+        public static GetLocalAvatarRunSpeedDelegate GetLocalAvatarRunSpeed;
 
         public delegate void SetLocalAvatarDelegate(string sku);
         public static SetLocalAvatarDelegate SetLocalAvatar;
@@ -132,5 +144,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public delegate void SetSyncedAnimatorTriggerDelegate(SpatialSyncedAnimator syncedAnimator, string triggerName);
         public static SetSyncedAnimatorTriggerDelegate SetSyncedAnimatorTrigger;
+
+        public delegate void SetInputOverridesDelegate(bool movementOverride, bool jumpOverride, bool sprintOverride, bool actionButtonOverride);
+        public static SetInputOverridesDelegate SetInputOverrides;
     }
 }

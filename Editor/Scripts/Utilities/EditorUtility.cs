@@ -1,18 +1,36 @@
-using UnityEngine;
-using UnityEditor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEngine;
+using UnityEditor;
 
 namespace SpatialSys.UnitySDK.Editor
 {
     public static class EditorUtility
     {
-        public const string CLIENT_UNITY_VERSION = "2021.3.8f1";
         private const string AUTH_TOKEN_KEY = "SpatialSDK_Token";
 
-        public static bool isUsingSupportedUnityVersion => Application.unityVersion == CLIENT_UNITY_VERSION;
+        public const string MIN_UNITY_VERSION_STR = "2021.3.8f1";
+        public const string MAX_UNITY_VERSION_STR = "2021.3.21f1";
+        private static readonly Version MIN_UNITY_VERSION = GetParsedUnityVersion(MIN_UNITY_VERSION_STR);
+        private static readonly Version MAX_UNITY_VERSION = GetParsedUnityVersion(MAX_UNITY_VERSION_STR);
+        private static readonly Version CURRENT_UNITY_VERSION = GetParsedUnityVersion(Application.unityVersion);
+
+        public static bool isUsingSupportedUnityVersion => CURRENT_UNITY_VERSION != null && CURRENT_UNITY_VERSION >= MIN_UNITY_VERSION && CURRENT_UNITY_VERSION <= MAX_UNITY_VERSION;
+
+        public static Version GetParsedUnityVersion(string versionString)
+        {
+            try
+            {
+                return new Version(versionString.Replace('f', '.'));
+            }
+            catch
+            {
+                Debug.LogError($"Failed to parse Unity version string '{versionString}'; Expected format: X.X.XfX");
+                return null;
+            }
+        }
 
         public static string GetSavedAuthToken()
         {
@@ -218,6 +236,16 @@ namespace SpatialSys.UnitySDK.Editor
                         return $"- {typeInstanceCount} instance(s) of {type.Name}";
                     })
             );
+        }
+
+        public static bool IsPlatformModuleInstalled(BuildTarget targetPlatform)
+        {
+            // Internal editor class must be accessed through reflection
+            var moduleManager = Type.GetType("UnityEditor.Modules.ModuleManager,UnityEditor.dll");
+            MethodInfo isPlatformSupportLoaded = moduleManager.GetMethod("IsPlatformSupportLoaded", BindingFlags.Static | BindingFlags.NonPublic);
+            MethodInfo getTargetStringFromBuildTarget = moduleManager.GetMethod("GetTargetStringFromBuildTarget", BindingFlags.Static | BindingFlags.NonPublic);
+            string moduleName = (string)getTargetStringFromBuildTarget.Invoke(null, new object[] { targetPlatform });
+            return (bool)isPlatformSupportLoaded.Invoke(null, new object[] { moduleName });
         }
     }
 }

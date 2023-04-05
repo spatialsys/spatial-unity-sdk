@@ -63,8 +63,11 @@ namespace SpatialSys.UnitySDK.Editor
                     // Auto-assign necessary bundle names
                     AssignBundleNamesToPackageAssets();
 
-                    // TODO: Ensure WebGL bundle is installed.
                     const BuildTarget TARGET = BuildTarget.WebGL;
+
+                    if (!EditorUtility.IsPlatformModuleInstalled(TARGET))
+                        return Promise.Rejected(new System.Exception($"Platform module for {TARGET} is not installed, which is required for testing in sandbox"));
+
                     string bundleDir = Path.Combine(BUILD_DIR, TARGET.ToString());
                     if (Directory.Exists(bundleDir))
                         Directory.Delete(bundleDir, recursive: true);
@@ -78,7 +81,7 @@ namespace SpatialSys.UnitySDK.Editor
                     );
 
                     if (bundleManifest == null)
-                        return Promise.Rejected(new System.Exception("Something went wrong when trying to build asset bundle for sandbox"));
+                        return Promise.Rejected(new System.Exception("Asset bundle build failed"));
 
                     if (activeConfig is SpaceTemplateConfig spaceTemplateConfig)
                     {
