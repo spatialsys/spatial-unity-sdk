@@ -13,6 +13,11 @@ namespace SpatialSys.UnitySDK
 
         public Transform targetLocation;
 
+        private void Awake()
+        {
+            ClientBridge.InitializeSpatialAvatarTeleporter?.Invoke(this);
+        }
+
         private void OnDrawGizmos()
         {
             if (targetLocation != null)

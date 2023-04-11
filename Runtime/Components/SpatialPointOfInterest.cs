@@ -29,6 +29,21 @@ namespace SpatialSys.UnitySDK
         public bool alwaysOnTop = false;
         public SpatialEvent onTextDisplayedEvent;
 
+        private void Awake()
+        {
+            ClientBridge.InitializeSpatialPointOfInterest?.Invoke(this);
+        }
+
+        private void OnEnable()
+        {
+            ClientBridge.PointOfInterestEnabledChanged?.Invoke(this, true);
+        }
+
+        private void OnDisable()
+        {
+            ClientBridge.PointOfInterestEnabledChanged?.Invoke(this, false);
+        }
+
 #if UNITY_EDITOR
         protected override void OnValidate()
         {

@@ -10,6 +10,7 @@ namespace SpatialSys.UnitySDK.Editor
     {
         private UnityEditor.Editor _variablesEditor;
         private SerializedProperty _syncTransformProp;
+        private SerializedProperty _syncRigidbodyProp;
         private SerializedProperty _saveWithSpaceProp;
         private SerializedProperty _destroyOnDisconnectProp;
         private GameObject _targetGameObject;
@@ -22,6 +23,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
 
             _syncTransformProp = serializedObject.FindProperty(nameof(SpatialSyncedObject.syncTransform));
+            _syncRigidbodyProp = serializedObject.FindProperty(nameof(SpatialSyncedObject.syncRigidbody));
             _saveWithSpaceProp = serializedObject.FindProperty(nameof(SpatialSyncedObject.saveWithSpace));
             _destroyOnDisconnectProp = serializedObject.FindProperty(nameof(SpatialSyncedObject.destroyOnCreatorDisconnect));
         }
@@ -65,6 +67,19 @@ namespace SpatialSys.UnitySDK.Editor
             }
 
             EditorGUILayout.PropertyField(_syncTransformProp);
+            
+            if (syncedObject.GetComponent<Rigidbody>() == null)
+            {
+                GUI.enabled = false;
+                EditorGUILayout.PropertyField(_syncRigidbodyProp);
+                syncedObject.syncRigidbody = false;
+                GUI.enabled = true;
+            }
+            else
+            {
+                EditorGUILayout.PropertyField(_syncRigidbodyProp);
+            }
+            
             EditorGUILayout.PropertyField(_saveWithSpaceProp);
 
             bool enableDestroyOnDisconnect = (syncedObject.gameObject.scene.name == null || !syncedObject.gameObject.scene.name.Equals(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name));

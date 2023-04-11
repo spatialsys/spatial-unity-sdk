@@ -57,9 +57,7 @@ namespace SpatialSys.UnitySDK.Editor
             // Spatial components
             data.seats = GameObject.FindObjectsOfType<SpatialSeatHotspot>(true);
             data.entrancePoints = GameObject.FindObjectsOfType<SpatialEntrancePoint>(true);
-            data.triggerEvents = GameObject.FindObjectsOfType<SpatialTriggerEvent>(true);
             data.emptyFrames = GameObject.FindObjectsOfType<SpatialEmptyFrame>(true);
-            data.avatarTeleporters = GameObject.FindObjectsOfType<SpatialAvatarTeleporter>(true);
             data.cameraPassthroughs = GameObject.FindObjectsOfType<SpatialCameraPassthrough>(true);
             data.thumbnailCamera = GameObject.FindObjectOfType<SpatialThumbnailCamera>(true);
             if (data.thumbnailCamera != null)
@@ -67,8 +65,6 @@ namespace SpatialSys.UnitySDK.Editor
                 data.thumbnailCamera.fieldOfView = data.thumbnailCamera.TryGetComponent(out Camera camera) ? camera.fieldOfView : 85f;
             }
             data.projectorSurfaces = GameObject.FindObjectsOfType<SpatialProjectorSurface>(true);
-            data.interactables = GameObject.FindObjectsOfType<SpatialInteractable>(true);
-            data.pointsOfInterest = GameObject.FindObjectsOfType<SpatialPointOfInterest>(true);
             data.quests = GameObject.FindObjectsOfType<SpatialQuest>(true);
 
             // Unity components
@@ -79,13 +75,31 @@ namespace SpatialSys.UnitySDK.Editor
             SpatialEnvironmentSettingsOverrides environmentSettingsOverrides = GameObject.FindObjectOfType<SpatialEnvironmentSettingsOverrides>(true);
             data.environmentSettings = environmentSettingsOverrides != null ? environmentSettingsOverrides.environmentSettings : new EnvironmentSettings();
 
+            // Project Settings
+            if (!Application.isBatchMode)
+            {
+                data.savedProjectSettings = BuildUtility.SaveProjectSettingsToAsset();
+            }
+            else
+            {
+                data.savedProjectSettings = ProjectConfig.activePackage.savedProjectSettings;
+            }
+
             // Animators
             (data.syncedAnimators, data.unsyncedAnimators) = ProcessAnimators(GameObject.FindObjectsOfType<Animator>(true));
 
             // Spatial events
-            data.spatialEvents = ProcessSpatialEvents(data.triggerEvents, data.interactables, data.pointsOfInterest, data.quests);
+            SpatialTriggerEvent[] triggerEvents = GameObject.FindObjectsOfType<SpatialTriggerEvent>(true);
+            SpatialInteractable[] interactables = GameObject.FindObjectsOfType<SpatialInteractable>(true);
+            SpatialPointOfInterest[] pointsOfInterest = GameObject.FindObjectsOfType<SpatialPointOfInterest>(true);
+            data.spatialEvents = ProcessSpatialEvents(triggerEvents, interactables, pointsOfInterest, data.quests);
 
             data.syncedObjects = ProcessSyncedObjects(AssetDatabase.GetAssetPath(activeSceneAsset), GameObject.FindObjectsOfType<SpatialSyncedObject>(true));
+
+            foreach (GameObject g in GameObject.FindObjectsOfType<GameObject>())
+            {
+                ProcessGameObject(g);
+            }
         }
 
         private static void AddSpatialEvent(List<SpatialEvent> list, SpatialEvent ev)
@@ -117,6 +131,7 @@ namespace SpatialSys.UnitySDK.Editor
                     }
                     else
                     {
+                        transform.gameObject.layer = SpatialSDKPhysicsSettings.GetEffectiveLayer(transform.gameObject.layer);
                         // Remove "missing script components" from game object
                         // !! NOTE: We always want to remove "missing script" components, removing this logic may cause
                         //  assets to behave differently as the Spatial runtime available components change over time
@@ -196,10 +211,12 @@ namespace SpatialSys.UnitySDK.Editor
                     AddSpatialEvent(spatialEventsList, quest.onStartedEvent);
                     AddSpatialEvent(spatialEventsList, quest.onCompletedEvent);
                     AddSpatialEvent(spatialEventsList, quest.onResetEvent);
+                    AddSpatialEvent(spatialEventsList, quest.onPreviouslyCompleted);
                     foreach (SpatialQuest.Task task in quest.tasks)
                     {
                         AddSpatialEvent(spatialEventsList, task.onStartedEvent);
                         AddSpatialEvent(spatialEventsList, task.onCompletedEvent);
+                        AddSpatialEvent(spatialEventsList, task.onPreviouslyCompleted);
                     }
                 }
             }
@@ -261,6 +278,12 @@ namespace SpatialSys.UnitySDK.Editor
         public static void ProcessPrefabObject(SpatialPrefabObject prefabObject)
         {
             GameObject gameObject = prefabObject.gameObject;
+            Transform[] transform = gameObject.GetComponentsInChildren<Transform>(true);
+            foreach (Transform t in transform)
+            {
+                ProcessGameObject(t.gameObject);
+            }
+
             ProcessRootGameObject(gameObject);
             ProcessCameras(gameObject.GetComponentsInChildren<Camera>(true));
 
@@ -274,6 +297,11 @@ namespace SpatialSys.UnitySDK.Editor
             prefabObject.spatialEvents = ProcessSpatialEvents(prefabObject.triggerEvents, prefabObject.interactables, prefabObject.pointsOfInterest, null);
 
             prefabObject.syncedObjects = ProcessSyncedObjects(AssetDatabase.GetAssetPath(gameObject), gameObject.GetComponentsInChildren<SpatialSyncedObject>(true));
+        }
+
+        public static void ProcessGameObject(GameObject gameObject)
+        {
+            gameObject.layer = SpatialSDKPhysicsSettings.GetEffectiveLayer(gameObject.layer);
         }
     }
 }

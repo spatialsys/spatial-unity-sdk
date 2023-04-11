@@ -30,7 +30,7 @@ namespace SpatialSys.UnitySDK.Editor
 
     public class NodeFilter
     {
-        public static int VS_FILTER_VERSION = 6; // increment when we want to force users to rebuild nodes on update
+        public static int VS_FILTER_VERSION = 8; // increment when we want to force users to rebuild nodes on update
 
         public static readonly HashSet<string> namespaceAllowList = new HashSet<string>() {
             "UnityEngine",
@@ -52,6 +52,7 @@ namespace SpatialSys.UnitySDK.Editor
             "UnityEngine.UIModule",
             "UnityEngine.UI",
             "UnityEngine.ParticleSystemModule",
+            "UnityEngine.VehiclesModule",
 
             "Unity.TextMeshPro",
 
@@ -113,11 +114,14 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(Exception),
             typeof(AotList),
             typeof(AotDictionary),
+            typeof(WheelCollider),
+            typeof(WheelHit),
 
             //Spatial Types
             typeof(SpatialPlatform),
             typeof(SpatialQuestTaskType),
             typeof(SpatialQuestStatus),
+            typeof(SpatialCameraMode),
 
             typeof(ParticleSystem),
         };
@@ -129,6 +133,14 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(UnityEngine.SceneManagement.Scene),//Scene.GetRootGameobjets is dangerous
             typeof(UnityEngine.SceneManagement.SceneManager),//Load/Unload scene is dangerous
             typeof(TMPro.TMP_PackageResourceImporterWindow),//compile errors. (editor only)
+        };
+
+        // Allow these specific members (nodes)
+        // members contained in this list may normally be filtered out by other rules
+        public static readonly MemberInfo[][] memberAllowList = {
+            typeof(WheelCollider).GetMember(nameof(WheelCollider.GetGroundHit)),
+            typeof(WheelCollider).GetMember(nameof(WheelCollider.GetWorldPose)),
+            typeof(Vector3).GetMember(nameof(Vector3.OrthoNormalize)),
         };
 
         //Block specific members (nodes) from instantiating in the AOT graph
@@ -261,6 +273,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         private static List<Type> supportedTypes = new List<Type>();
         private static List<MemberInfo> blockedMembers = new List<MemberInfo>();
+        private static List<MemberInfo> allowedMembers = new List<MemberInfo>();
 
         private static bool _initialized;
 
@@ -274,6 +287,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             supportedTypes = new List<Type>();
             blockedMembers = memberBlockList.SelectMany(x => x).ToList();
+            allowedMembers = memberAllowList.SelectMany(x => x).ToList();
 
             IEnumerable<Assembly> filteredAssemblies = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(a => assemblyAllowList.Contains(a.GetName().Name));
@@ -295,6 +309,15 @@ namespace SpatialSys.UnitySDK.Editor
             InitializeIfNecessary();
 
             AnalyticsIdentifier analytics = unit.GetAnalyticsIdentifier();
+
+            if (unit is MemberUnit allowedMemberUnit)
+            {
+                Unity.VisualScripting.Member info = allowedMemberUnit.member;
+                if (allowedMembers.Contains(info.info))
+                {
+                    return new NodeFilterResponse(true, analytics.Identifier, "MemberAllowList");
+                }
+            }
 
             //easiest way to remove pointer and ref nodes.
             if (analytics.Identifier.Contains("*") || analytics.Identifier.Contains("&"))

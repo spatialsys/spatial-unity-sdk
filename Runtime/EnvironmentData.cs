@@ -10,15 +10,11 @@ namespace SpatialSys.UnitySDK
 
         public SpatialSeatHotspot[] seats;
         public SpatialEntrancePoint[] entrancePoints;
-        public SpatialTriggerEvent[] triggerEvents;
         public SpatialEmptyFrame[] emptyFrames;
-        public SpatialAvatarTeleporter[] avatarTeleporters;
         public SpatialSyncedAnimator[] syncedAnimators;
         public SpatialCameraPassthrough[] cameraPassthroughs;
         public SpatialThumbnailCamera thumbnailCamera;
         public SpatialProjectorSurface[] projectorSurfaces;
-        public SpatialInteractable[] interactables;
-        public SpatialPointOfInterest[] pointsOfInterest;
         public SpatialQuest[] quests;
         public SpatialSyncedObject[] syncedObjects;
 
@@ -30,6 +26,7 @@ namespace SpatialSys.UnitySDK
         public bool enableFog;
 
         public EnvironmentSettings environmentSettings;
+        public SavedProjectSettings savedProjectSettings;
 
         public SpatialEvent[] spatialEvents;
     }

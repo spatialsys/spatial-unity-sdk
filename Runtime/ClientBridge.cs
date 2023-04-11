@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace SpatialSys.UnitySDK.VisualScripting
+namespace SpatialSys.UnitySDK
 {
     public class ClientBridge
     {
@@ -145,7 +145,44 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public delegate void SetSyncedAnimatorTriggerDelegate(SpatialSyncedAnimator syncedAnimator, string triggerName);
         public static SetSyncedAnimatorTriggerDelegate SetSyncedAnimatorTrigger;
 
-        public delegate void SetInputOverridesDelegate(bool movementOverride, bool jumpOverride, bool sprintOverride, bool actionButtonOverride);
+        public delegate void SetInputOverridesDelegate(bool movementOverride, bool jumpOverride, bool sprintOverride, bool actionButtonOverride, UnityEngine.Object rootObject = null);
         public static SetInputOverridesDelegate SetInputOverrides;
+
+        public delegate void OnInputGraphRootObjectDestroyedDelegate(UnityEngine.Object rootObject);
+        public static OnInputGraphRootObjectDestroyedDelegate OnInputGraphRootObjectDestroyed;
+
+        //Component Initialization
+        public delegate void InitializeSpatialInteractableDelegate(SpatialInteractable spatialInteractable);
+        public static InitializeSpatialInteractableDelegate InitializeSpatialInteractable;
+
+        public delegate void InitializeSpatialPointOfInterestDelegate(SpatialPointOfInterest spatialPointOfInterest);
+        public static InitializeSpatialPointOfInterestDelegate InitializeSpatialPointOfInterest;
+
+        public delegate void PointOfInterestEnabledChangedDelegate(SpatialPointOfInterest spatialPointOfInterest, bool enabled);
+        public static PointOfInterestEnabledChangedDelegate PointOfInterestEnabledChanged;
+
+        public delegate bool GetIsSceneInitializedDelegate();
+        public static GetIsSceneInitializedDelegate GetIsSceneInitialized;
+
+        public delegate Transform GetCameraTargetOverrideDelegate();
+        public static GetCameraTargetOverrideDelegate GetCameraTargetOverride;
+
+        public delegate void SetCameraTargetOverrideDelegate(Transform target, SpatialCameraMode mode);
+        public static SetCameraTargetOverrideDelegate SetCameraTargetOverride;
+
+        public delegate void ClearCameraTargetOverrideDelegate();
+        public static ClearCameraTargetOverrideDelegate ClearCameraTargetOverride;
+
+        public delegate void InitializeSpatialSeatHotspotDelegate(SpatialSeatHotspot spatialHotspot);
+        public static InitializeSpatialSeatHotspotDelegate InitializeSpatialSeatHotspot;
+
+        public delegate void InitializeSpatialAvatarTeleporterDelegate(SpatialAvatarTeleporter spatialAvatarTeleporter);
+        public static InitializeSpatialAvatarTeleporterDelegate InitializeSpatialAvatarTeleporter;
+
+        public delegate void InitializeSpatialTriggerEventDelegate(SpatialTriggerEvent spatialTriggerEvent);
+        public static InitializeSpatialTriggerEventDelegate InitializeSpatialTriggerEvent;
+
+        public delegate void TriggerEventEnabledChangedDelegate(SpatialTriggerEvent spatialTriggerEvent, bool enabled);
+        public static TriggerEventEnabledChangedDelegate TriggerEventEnabledChanged;
     }
 }

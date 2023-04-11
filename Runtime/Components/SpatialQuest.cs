@@ -7,7 +7,7 @@ namespace SpatialSys.UnitySDK
     [DisallowMultipleComponent]
     public class SpatialQuest : SpatialComponentBase
     {
-        public const int LATEST_VERSION = 1;
+        public const int LATEST_VERSION = 2;
 
         public override string prettyName => "Quest";
         public override string tooltip => $"This components describes a quest and its tasks.";
@@ -23,6 +23,8 @@ namespace SpatialSys.UnitySDK
         public string questName;
         public string description;
         public bool startAutomatically = false;
+        [Tooltip("If enabled, the user's progress will be saved to the cloud and restored when they rejoin the space. If disabled, the quest progress is reset on the next join.")]
+        public bool saveUserProgress = true;
         public bool tasksAreOrdered = true;
 
         [Tooltip("Plays a confetti animation when the quest is completed")]
@@ -32,6 +34,7 @@ namespace SpatialSys.UnitySDK
 
         public SpatialEvent onStartedEvent;
         public SpatialEvent onCompletedEvent;
+        public SpatialEvent onPreviouslyCompleted;
         public SpatialEvent onResetEvent;
 
         [Serializable]
@@ -57,6 +60,7 @@ namespace SpatialSys.UnitySDK
             public GameObject[] taskMarkers;
             public SpatialEvent onStartedEvent;
             public SpatialEvent onCompletedEvent;
+            public SpatialEvent onPreviouslyCompleted;
         }
 
         // NOTE: If any new types are introduced here, make sure to also add validation checks for them
@@ -78,6 +82,8 @@ namespace SpatialSys.UnitySDK
         protected override void OnValidate()
         {
             base.OnValidate();
+
+            UpgradeDataIfNecessary();
 
             // Check if a new instance or a duplicate was just made
             if (id == 0 || (Event.current != null && Event.current.type == EventType.ExecuteCommand && Event.current.commandName == "Duplicate"))
@@ -104,6 +110,18 @@ namespace SpatialSys.UnitySDK
             {
                 if (task.id == 0)
                     task.id = tasks.Select(task => task.id).Max() + 1;
+            }
+        }
+
+        public void UpgradeDataIfNecessary()
+        {
+            if (version == LATEST_VERSION)
+                return;
+
+            if (version == 1)
+            {
+                saveUserProgress = false; // for any v1 quests, we default to not saving progress
+                version = 2;
             }
         }
 #endif

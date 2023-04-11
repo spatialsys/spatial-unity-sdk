@@ -1,7 +1,4 @@
-using System;
-using UnityEngine;
 using Unity.VisualScripting;
-using SpatialSys.UnitySDK;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
@@ -85,6 +82,45 @@ namespace SpatialSys.UnitySDK.VisualScripting
         }
     }
 
+    [UnitTitle("Spatial Quest: On Quest Previously Completed")]
+    [UnitSurtitle("Spatial Quest")]
+    [UnitShortTitle("On Quest Previously Completed")]
+    [UnitCategory("Events\\Spatial")]
+    [TypeIcon(typeof(SpatialQuest))]
+    public class SpatialQuestEventOnPreviouslyCompleted : EventUnit<SpatialQuest>
+    {
+        public static string eventName = "SpatialQuestOnPreviouslyCompleted";
+
+        [NullMeansSelf]
+        [PortLabelHidden]
+        [DoNotSerialize]
+        public ValueInput questRef { get; private set; }
+        protected override bool register => true;
+
+        public override EventHook GetHook(GraphReference reference)
+        {
+            return new EventHook(eventName);
+        }
+
+        protected override void Definition()
+        {
+            base.Definition();
+            questRef = ValueInput<SpatialQuest>(nameof(questRef), null).NullMeansSelf();
+        }
+
+        protected override bool ShouldTrigger(Flow flow, SpatialQuest args)
+        {
+            if (args == null)
+            {
+                return false;
+            }
+            if (flow.GetValue<SpatialQuest>(questRef) == args)
+            {
+                return true;
+            }
+            return false;
+        }
+    }
 
     [UnitTitle("Spatial Quest: On Quest Reset")]
     [UnitSurtitle("Spatial Quest")]
@@ -139,7 +175,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         [PortLabelHidden]
         [DoNotSerialize]
         public ValueInput questRef { get; private set; }
-        
+
         [DoNotSerialize]
         public ValueInput taskID { get; private set; }
 
@@ -181,7 +217,49 @@ namespace SpatialSys.UnitySDK.VisualScripting
         [PortLabelHidden]
         [DoNotSerialize]
         public ValueInput questRef { get; private set; }
-        
+
+        [DoNotSerialize]
+        public ValueInput taskID { get; private set; }
+
+        protected override bool register => true;
+
+        public override EventHook GetHook(GraphReference reference)
+        {
+            return new EventHook(eventName);
+        }
+
+        protected override void Definition()
+        {
+            base.Definition();
+            questRef = ValueInput<SpatialQuest>(nameof(questRef), null).NullMeansSelf();
+            taskID = ValueInput<uint>(nameof(taskID), 0);
+        }
+
+        protected override bool ShouldTrigger(Flow flow, (SpatialQuest, uint) args)
+        {
+            var taskId = flow.GetValue<uint>(taskID);
+            if (flow.GetValue<SpatialQuest>(questRef) == args.Item1 && taskId == args.Item2)
+            {
+                return true;
+            }
+            return false;
+        }
+    }
+
+    [UnitTitle("Spatial Quest: On Task Previously Completed")]
+    [UnitSurtitle("Spatial Quest")]
+    [UnitShortTitle("On Task Previously Completed")]
+    [UnitCategory("Events\\Spatial")]
+    [TypeIcon(typeof(SpatialQuest))]
+    public class SpatialQuestEventOnTaskPreviouslyCompleted : EventUnit<(SpatialQuest, uint)>
+    {
+        public static string eventName = "SpatialQuestOnTaskPreviouslyCompleted";
+
+        [NullMeansSelf]
+        [PortLabelHidden]
+        [DoNotSerialize]
+        public ValueInput questRef { get; private set; }
+
         [DoNotSerialize]
         public ValueInput taskID { get; private set; }
 

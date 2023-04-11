@@ -17,6 +17,7 @@ namespace SpatialSys.UnitySDK.Editor
             SerializedProperty taskMarkersProp = property.FindPropertyRelative(nameof(SpatialQuest.Task.taskMarkers));
             SerializedProperty onStartedEventProp = property.FindPropertyRelative(nameof(SpatialQuest.Task.onStartedEvent));
             SerializedProperty onCompletedEventProp = property.FindPropertyRelative(nameof(SpatialQuest.Task.onCompletedEvent));
+            SerializedProperty onPreviouslyCompletedEventProp = property.FindPropertyRelative(nameof(SpatialQuest.Task.onPreviouslyCompleted));
 
             EditorGUI.BeginProperty(rect, label, property);
 
@@ -51,6 +52,7 @@ namespace SpatialSys.UnitySDK.Editor
             // Events
             DrawProperty(ref rect, onStartedEventProp);
             DrawProperty(ref rect, onCompletedEventProp);
+            DrawProperty(ref rect, onPreviouslyCompletedEventProp);
 
             EditorGUI.EndProperty();
 

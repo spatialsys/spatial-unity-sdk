@@ -1,4 +1,3 @@
-
 namespace SpatialSys.UnitySDK
 {
     public enum InputPhase

@@ -126,6 +126,11 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 string typeFullName = table[row][0];
                 Type type = ReflectionCacheUtility.GetTypeFromFullNameCached(typeFullName);
+                if (type == null)
+                {
+                    Debug.LogWarning($"Could not find type {typeFullName} in the reflection cache. The component type allowlist might be outdated.");
+                    continue;
+                }
                 componentTypeStatuses[type] = new PackageComponentStatusCollection() {
                     spaceStatus = table.GetComponentStatusAtCell(row, spaceColumn),
                     spaceTemplateStatus = table.GetComponentStatusAtCell(row, spaceTemplateColumn),

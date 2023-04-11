@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -63,6 +65,33 @@ namespace SpatialSys.UnitySDK.Editor
             var importer = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(sourcePrefab)) as ModelImporter;
             importer.optimizeGameObjects = false;
             importer.SaveAndReimport();
+        }
+
+        [ComponentTest(typeof(SpatialAvatar))]
+        public static void EnsureAnimOverrridesLoop(SpatialAvatar avatarPrefab)
+        {
+            // All these animations need to loop to work properly
+            var animsThatShouldLoop = new AnimationClip[] {
+                avatarPrefab.animOverrides.idle,
+                avatarPrefab.animOverrides.walk,
+                avatarPrefab.animOverrides.jog,
+                avatarPrefab.animOverrides.run,
+                avatarPrefab.animOverrides.jumpInAir,
+                avatarPrefab.animOverrides.fall,
+                avatarPrefab.animOverrides.sit,
+            };
+
+            AnimationClip[] animsThatFailedTest = animsThatShouldLoop.Where(anim => anim != null && !anim.isLooping).ToArray();
+            if (animsThatFailedTest.Length > 0)
+            {
+                SpatialValidator.AddResponse(new SpatialTestResponse(
+                    animsThatFailedTest[0],
+                    TestResponseType.Fail,
+                    "Some avatar animation override clips are not set to loop",
+                    "The following animation clips must be set to loop: " + string.Join(", ", animsThatFailedTest.Select(anim => anim.name))
+                        + "\nLook for the 'Loop Time' setting inside the animation clip inspector, or the model importer settings if the animation is imported from a model."
+                ));
+            }
         }
     }
 }

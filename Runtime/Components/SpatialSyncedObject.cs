@@ -18,6 +18,7 @@ namespace SpatialSys.UnitySDK
         public override bool isExperimental => true;
 
         public bool syncTransform = true;
+        public bool syncRigidbody = false;
         public bool saveWithSpace = false;
         public bool destroyOnCreatorDisconnect = false;
 

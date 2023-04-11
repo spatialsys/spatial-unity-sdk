@@ -36,5 +36,10 @@ namespace SpatialSys.UnitySDK
         public SpatialEvent onInteractEvent;
         public SpatialEvent onEnterEvent;
         public SpatialEvent onExitEvent;
+
+        private void Awake()
+        {
+            ClientBridge.InitializeSpatialInteractable?.Invoke(this);
+        }
     }
 }

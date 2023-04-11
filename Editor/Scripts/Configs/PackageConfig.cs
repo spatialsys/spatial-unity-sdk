@@ -18,6 +18,8 @@ namespace SpatialSys.UnitySDK.Editor
         [Tooltip("Display name of the asset as it would show up in Spatial")]
         public string packageName;
         public Texture2D thumbnail = null;
+        [HideInInspector]
+        public SavedProjectSettings savedProjectSettings;
 
         public abstract PackageType packageType { get; }
         public abstract Vector2Int thumbnailDimensions { get; }

@@ -166,6 +166,7 @@ namespace SpatialSys.UnitySDK.Editor
                             {
                                 Undo.RecordObject(syncedVariables, $"Save {variable.name} With Space");
                                 syncedVariableData.saveWithSpace = newSaveWithScene;
+                                UnityEditor.EditorUtility.SetDirty(syncedVariables);
                             }
                         }
                         else
@@ -182,12 +183,14 @@ namespace SpatialSys.UnitySDK.Editor
                                 name = variable.name,
                                 declaration = variable,
                             });
+                            UnityEditor.EditorUtility.SetDirty(syncedVariables);
                         }
 
                         if (!newIsSynced && isSynced)
                         {
                             Undo.RecordObject(syncedVariables, $"Don't Sync {variable.name}");
                             syncedVariables.variableSettings.Remove(syncedVariableData);
+                            UnityEditor.EditorUtility.SetDirty(syncedVariables);
                         }
                     }
                 }
@@ -204,7 +207,7 @@ namespace SpatialSys.UnitySDK.Editor
                 List<SpatialSyncedVariables.Data> toRemove = new List<SpatialSyncedVariables.Data>();
                 foreach (SpatialSyncedVariables.Data variableSetting in syncedVariables.variableSettings)
                 {
-                    if (!variables.declarations.IsDefined(variableSetting.name))
+                    if (string.IsNullOrEmpty(variableSetting.name) || !variables.declarations.IsDefined(variableSetting.name))
                     {
                         toRemove.Add(variableSetting);
                         continue;

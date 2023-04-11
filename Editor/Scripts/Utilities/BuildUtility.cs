@@ -14,6 +14,7 @@ namespace SpatialSys.UnitySDK.Editor
 {
     public static class BuildUtility
     {
+        private const string SAVED_PROJECT_SETTINGS_ASSET_PATH = "Assets/Spatial/SavedProjectSettings.asset";
         public static string BUILD_DIR = "Exports";
         public static string PACKAGE_EXPORT_PATH = Path.Combine(BUILD_DIR, "spaces.unitypackage");
         public static readonly string[] INVALID_BUNDLE_NAME_CHARS = new string[] { " ", "_", ".", ",", "(", ")", "[", "]", "{", "}", "!", "@", "#", "$", "%", "^", "&", "*", "+", "=", "|", "\\", "/", "?", "<", ">", "`", "~", "'", "\"", ":", ";" };
@@ -171,6 +172,8 @@ namespace SpatialSys.UnitySDK.Editor
                     // This get's done on the build machines too, but we also want to do it here just in case there's an issue
                     AssignBundleNamesToPackageAssets();
 
+                    config.savedProjectSettings = SaveProjectSettingsToAsset();
+
                     // For "Space" packages, we need to make sure we have a worldID assigned to the project
                     // Worlds are a way to manage an ecosystem of spaces that share currency, rewards, inventory, etc.
                     // Spaces by default need to be assigned to a world
@@ -246,7 +249,8 @@ namespace SpatialSys.UnitySDK.Editor
                     {
                         bodyMessage = GetExceptionMessage(exc);
                     }
-
+                    
+                    Debug.LogException(exc);
                     UnityEditor.EditorUtility.DisplayDialog("Publishing failed", bodyMessage, "OK");
                 });
         }
@@ -415,7 +419,6 @@ namespace SpatialSys.UnitySDK.Editor
             return safeStr;
         }
 
-
         public static void ProcessPackageAssets()
         {
             PackageConfig config = ProjectConfig.activePackage;
@@ -433,6 +436,20 @@ namespace SpatialSys.UnitySDK.Editor
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
+        }
+
+        public static SavedProjectSettings SaveProjectSettingsToAsset()
+        {
+            SavedProjectSettings projSettings = ScriptableObject.CreateInstance<SavedProjectSettings>();
+            projSettings.customCollisionSettings = SpatialSDKPhysicsSettings.SavePhysicsSettings();
+            projSettings.customCollision2DSettings = SpatialSDKPhysicsSettings.SavePhysicsSettings(get2D: true);
+            UnityEditor.EditorUtility.SetDirty(projSettings);
+            projSettings.name = "SavedProjectSettings";
+
+            AssetDatabase.CreateAsset(projSettings, SAVED_PROJECT_SETTINGS_ASSET_PATH);
+            AssetDatabase.SaveAssets();
+
+            return projSettings;
         }
     }
 }
