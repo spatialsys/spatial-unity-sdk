@@ -6,13 +6,13 @@ using Unity.VisualScripting;
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitCategory("Spatial\\Actions")]
-    [UnitTitle("Local Actor: Set Walk Speed")]
+    [UnitTitle("Local Actor: Set Use Variable Height Jump")]
 
     [UnitSurtitle("Local Actor Control Settings")]
-    [UnitShortTitle("Set Walk Speed (m/s)")]
+    [UnitShortTitle("Set Use Variable Height Jump")]
 
     [TypeIcon(typeof(SpatialComponentBase))]
-    public class SetLocalAvatarMovingSpeedNode : Unit
+    public class SetLocalAvatarUseVariableHeightJumpNode : Unit
     {
         [DoNotSerialize]
         [PortLabelHidden]
@@ -22,14 +22,14 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public ControlOutput outputTrigger { get; private set; }
 
         [DoNotSerialize]
-        [PortLabel("Walk Speed")]
-        public ValueInput speed { get; private set; }
+        [PortLabel("Use Variable Height Jump")]
+        public ValueInput useVariableHeight { get; private set; }
 
         protected override void Definition()
         {
-            speed = ValueInput<float>(nameof(speed), 3.0f); // This default should be matched with AvatarController movingSpeed.
+            useVariableHeight = ValueInput<bool>(nameof(useVariableHeight), true); // This default should be matched with AvatarController
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetLocalAvatarMovingSpeed.Invoke(f.GetValue<float>(speed));
+                ClientBridge.SetLocalAvatarUseVariableHeightJump.Invoke(f.GetValue<bool>(useVariableHeight));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -37,22 +37,22 @@ namespace SpatialSys.UnitySDK.VisualScripting
         }
     }
 
-    [UnitCategory("Spatial\\Get Actions")]
-    [UnitTitle("Local Actor: Get Walk Speed")]
+    [UnitCategory("Spatial\\Actions")]
+    [UnitTitle("Local Actor: Get Use Variable Height Jump")]
 
     [UnitSurtitle("Local Actor Control Settings")]
-    [UnitShortTitle("Get Walk Speed (m/s)")]
+    [UnitShortTitle("Get Use Variable Height Jump")]
 
     [TypeIcon(typeof(SpatialComponentBase))]
-    public class GetLocalAvatarMovingSpeedNode : Unit
+    public class GetLocalAvatarUseVariableHeightJumpNode : Unit
     {
         [DoNotSerialize]
-        [PortLabel("Walk Speed")]
-        public ValueOutput speed { get; private set; }
+        [PortLabel("Use Variable Height Jump")]
+        public ValueOutput useVariableHeight { get; private set; }
 
         protected override void Definition()
         {
-            speed = ValueOutput<float>(nameof(speed), (f) => ClientBridge.GetLocalAvatarMovingSpeed.Invoke());
+            useVariableHeight = ValueOutput<bool>(nameof(useVariableHeight), (f) => ClientBridge.GetLocalAvatarUseVariableHeightJump.Invoke());
         }
     }
 }

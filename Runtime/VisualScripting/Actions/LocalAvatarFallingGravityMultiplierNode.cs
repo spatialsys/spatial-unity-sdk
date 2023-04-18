@@ -4,13 +4,13 @@ using Unity.VisualScripting;
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitCategory("Spatial\\Actions")]
-    [UnitTitle("Local Actor: Set Run Speed")]
+    [UnitTitle("Local Actor: Set Falling Gravity Multiplier")]
 
     [UnitSurtitle("Local Actor Control Settings")]
-    [UnitShortTitle("Set Run Speed (m/s)")]
+    [UnitShortTitle("Set Falling Gravity Multiplier")]
 
     [TypeIcon(typeof(SpatialComponentBase))]
-    public class SetLocalAvatarRunSpeedNode : Unit
+    public class SetLocalAvatarFallingGravityMultiplierNode : Unit
     {
         [DoNotSerialize]
         [PortLabelHidden]
@@ -20,14 +20,15 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public ControlOutput outputTrigger { get; private set; }
 
         [DoNotSerialize]
-        [PortLabel("Run Speed")]
-        public ValueInput speed { get; private set; }
+        [PortLabel("Gravity Multiplier")]
+
+        public ValueInput multiplier { get; private set; }
 
         protected override void Definition()
         {
-            speed = ValueInput<float>(nameof(speed), 5.5f); // This default should be matched with AvatarController RunSpeed.
+            multiplier = ValueInput<float>(nameof(multiplier), 1.0f); // This default should be matched with AvatarController
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetLocalAvatarRunSpeed.Invoke(f.GetValue<float>(speed));
+                ClientBridge.SetLocalAvatarFallingGravityMultiplier.Invoke(f.GetValue<float>(multiplier));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -35,22 +36,22 @@ namespace SpatialSys.UnitySDK.VisualScripting
         }
     }
 
-    [UnitCategory("Spatial\\Get Actions")]
-    [UnitTitle("Local Actor: Get Run Speed")]
+    [UnitCategory("Spatial\\Actions")]
+    [UnitTitle("Local Actor: Get Falling Gravity Multiplier")]
 
     [UnitSurtitle("Local Actor Control Settings")]
-    [UnitShortTitle("Get Run Speed (m/s)")]
+    [UnitShortTitle("Get Falling Gravity Multiplier")]
 
     [TypeIcon(typeof(SpatialComponentBase))]
-    public class GetLocalAvatarRunSpeedNode : Unit
+    public class GetLocalAvatarFallingGravityMultiplierNode : Unit
     {
         [DoNotSerialize]
-        [PortLabel("Run Speed")]
-        public ValueOutput speed { get; private set; }
+        [PortLabel("Gravity Multiplier")]
+        public ValueOutput multiplier { get; private set; }
 
         protected override void Definition()
         {
-            speed = ValueOutput<float>(nameof(speed), (f) => ClientBridge.GetLocalAvatarRunSpeed.Invoke());
+            multiplier = ValueOutput<float>(nameof(multiplier), (f) => ClientBridge.GetLocalAvatarFallingGravityMultiplier.Invoke());
         }
     }
 }

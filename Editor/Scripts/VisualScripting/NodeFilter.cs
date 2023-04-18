@@ -30,7 +30,7 @@ namespace SpatialSys.UnitySDK.Editor
 
     public class NodeFilter
     {
-        public static int VS_FILTER_VERSION = 8; // increment when we want to force users to rebuild nodes on update
+        public static int VS_FILTER_VERSION = 9; // increment when we want to force users to rebuild nodes on update
 
         public static readonly HashSet<string> namespaceAllowList = new HashSet<string>() {
             "UnityEngine",

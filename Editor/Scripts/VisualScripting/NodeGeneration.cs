@@ -73,7 +73,7 @@ namespace SpatialSys.UnitySDK.Editor
             return reg.Replace(target, $"$1{jsonArrayContents}$3");
         }
 
-#if !SPATIAL_INTERNAL
+#if !SPATIAL_UNITYSDK_INTERNAL
         [InitializeOnLoadMethod]
         private static void OnScriptsReloaded()
         {

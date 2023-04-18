@@ -28,8 +28,6 @@ namespace SpatialSys.UnitySDK.VisualScripting
         [DoNotSerialize]
         public ValueInput actionButton { get; private set; }
 
-        private UnityEngine.Object _rootObject;
-
         protected override void Definition()
         {
             movement = ValueInput<bool>(nameof(movement), true);
@@ -43,7 +41,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
                     f.GetValue<bool>(jump),
                     f.GetValue<bool>(sprint),
                     f.GetValue<bool>(actionButton),
-                    _rootObject
+                    f.stack.self
                 );
                 return outputTrigger;
             });
@@ -53,17 +51,10 @@ namespace SpatialSys.UnitySDK.VisualScripting
             Succession(inputTrigger, outputTrigger);
         }
 
-        public override void Instantiate(GraphReference instance)
-        {
-            base.Instantiate(instance);
-            _rootObject = instance.rootObject;
-        }
-
         public override void Uninstantiate(GraphReference instance)
         {
             base.Uninstantiate(instance);
-            ClientBridge.OnInputGraphRootObjectDestroyed.Invoke(instance.rootObject);
-            _rootObject = null;
+            ClientBridge.OnInputGraphRootObjectDestroyed.Invoke(instance.gameObject);
         }
     }
 }

@@ -6,7 +6,7 @@ using UnityEditorInternal;
 
 namespace SpatialSys.UnitySDK.Editor
 {
-#if !SPATIAL_INTERNAL
+#if !SPATIAL_UNITYSDK_INTERNAL
     [InitializeOnLoad]
 #endif
     public static class SpatialGameObjectCollisionHeader
@@ -62,7 +62,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         static SpatialGameObjectCollisionHeader()
         {
-#if !SPATIAL_INTERNAL
+#if !SPATIAL_UNITYSDK_INTERNAL
             UnityEditor.Editor.finishedDefaultHeaderGUI += SpatialCollisionHeader;
 #endif
         }

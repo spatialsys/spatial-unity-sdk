@@ -9,7 +9,7 @@ using UnityEditor;
 
 namespace SpatialSys.UnitySDK
 {
-#if !SPATIAL_INTERNAL && UNITY_EDITOR
+#if !SPATIAL_UNITYSDK_INTERNAL && UNITY_EDITOR
     [InitializeOnLoad]
 #endif
     public static class SpatialSDKPhysicsSettings
@@ -72,7 +72,7 @@ namespace SpatialSys.UnitySDK
 
         static SpatialSDKPhysicsSettings()
         {
-#if !SPATIAL_INTERNAL && UNITY_EDITOR
+#if !SPATIAL_UNITYSDK_INTERNAL && UNITY_EDITOR
             EditorApplication.update += VerifyLayers;
 #endif
         }

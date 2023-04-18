@@ -62,6 +62,36 @@ namespace SpatialSys.UnitySDK
         public delegate float GetLocalAvatarRunSpeedDelegate();
         public static GetLocalAvatarRunSpeedDelegate GetLocalAvatarRunSpeed;
 
+        public delegate void SetLocalAvatarJumpHeightDelegate(float height);
+        public static SetLocalAvatarJumpHeightDelegate SetLocalAvatarJumpHeight;
+
+        public delegate float GetLocalAvatarJumpHeightDelegate();
+        public static GetLocalAvatarJumpHeightDelegate GetLocalAvatarJumpHeight;
+
+        public delegate void SetLocalAvatarGravityMultiplierDelegate(float multiplier);
+        public static SetLocalAvatarGravityMultiplierDelegate SetLocalAvatarGravityMultiplier;
+
+        public delegate float GetLocalAvatarGravityMultiplierDelegate();
+        public static GetLocalAvatarGravityMultiplierDelegate GetLocalAvatarGravityMultiplier;
+
+        public delegate void SetLocalAvatarFallingGravityMultiplierDelegate(float multiplier);
+        public static SetLocalAvatarFallingGravityMultiplierDelegate SetLocalAvatarFallingGravityMultiplier;
+
+        public delegate float GetLocalAvatarFallingGravityMultiplierDelegate();
+        public static GetLocalAvatarFallingGravityMultiplierDelegate GetLocalAvatarFallingGravityMultiplier;
+
+        public delegate void SetLocalAvatarUseVariableHeightJumpDelegate(bool useVariableHeightJump);
+        public static SetLocalAvatarUseVariableHeightJumpDelegate SetLocalAvatarUseVariableHeightJump;
+
+        public delegate bool GetLocalAvatarUseVariableHeightJumpDelegate();
+        public static GetLocalAvatarUseVariableHeightJumpDelegate GetLocalAvatarUseVariableHeightJump;
+
+        public delegate void SetLocalAvatarMaxJumpCountDelegate(int maxJumpCount);
+        public static SetLocalAvatarMaxJumpCountDelegate SetLocalAvatarMaxJumpCount;
+
+        public delegate int GetLocalAvatarMaxJumpCountDelegate();
+        public static GetLocalAvatarMaxJumpCountDelegate GetLocalAvatarMaxJumpCount;
+
         public delegate void SetLocalAvatarDelegate(string sku);
         public static SetLocalAvatarDelegate SetLocalAvatar;
 

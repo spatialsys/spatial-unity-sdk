@@ -4,13 +4,13 @@ using Unity.VisualScripting;
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitCategory("Spatial\\Actions")]
-    [UnitTitle("Local Actor: Set Run Speed")]
+    [UnitTitle("Local Actor: Set Maximum Jump Count")]
 
     [UnitSurtitle("Local Actor Control Settings")]
-    [UnitShortTitle("Set Run Speed (m/s)")]
+    [UnitShortTitle("Set Max Jump Count")]
 
     [TypeIcon(typeof(SpatialComponentBase))]
-    public class SetLocalAvatarRunSpeedNode : Unit
+    public class SetLocalAvatarMaxJumpCountNode : Unit
     {
         [DoNotSerialize]
         [PortLabelHidden]
@@ -20,14 +20,14 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public ControlOutput outputTrigger { get; private set; }
 
         [DoNotSerialize]
-        [PortLabel("Run Speed")]
-        public ValueInput speed { get; private set; }
+        [PortLabel("Maximum Jump Count")]
+        public ValueInput maxJumpCount { get; private set; }
 
         protected override void Definition()
         {
-            speed = ValueInput<float>(nameof(speed), 5.5f); // This default should be matched with AvatarController RunSpeed.
+            maxJumpCount = ValueInput<int>(nameof(maxJumpCount), 1); // This default should be matched with AvatarController
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetLocalAvatarRunSpeed.Invoke(f.GetValue<float>(speed));
+                ClientBridge.SetLocalAvatarMaxJumpCount.Invoke(f.GetValue<int>(maxJumpCount));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -35,22 +35,22 @@ namespace SpatialSys.UnitySDK.VisualScripting
         }
     }
 
-    [UnitCategory("Spatial\\Get Actions")]
-    [UnitTitle("Local Actor: Get Run Speed")]
+    [UnitCategory("Spatial\\Actions")]
+    [UnitTitle("Local Actor: Get Maximum Jump Count")]
 
     [UnitSurtitle("Local Actor Control Settings")]
-    [UnitShortTitle("Get Run Speed (m/s)")]
+    [UnitShortTitle("Get Max Jump Count")]
 
     [TypeIcon(typeof(SpatialComponentBase))]
-    public class GetLocalAvatarRunSpeedNode : Unit
+    public class GetLocalAvatarMaxJumpCountNode : Unit
     {
         [DoNotSerialize]
-        [PortLabel("Run Speed")]
-        public ValueOutput speed { get; private set; }
+        [PortLabel("Maximum Jump Count")]
+        public ValueOutput maxJumpCount { get; private set; }
 
         protected override void Definition()
         {
-            speed = ValueOutput<float>(nameof(speed), (f) => ClientBridge.GetLocalAvatarRunSpeed.Invoke());
+            maxJumpCount = ValueOutput<int>(nameof(maxJumpCount), (f) => ClientBridge.GetLocalAvatarMaxJumpCount.Invoke());
         }
     }
 }

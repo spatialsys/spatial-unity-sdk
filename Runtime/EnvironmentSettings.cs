@@ -12,21 +12,32 @@ namespace SpatialSys.UnitySDK
         }
 
         public const int VERSION = 1;
-        public bool disableTeleport;
-        public bool useSeatsAsSpawnPoints;
+
+        public bool disableTeleport = false;
+        public bool useSeatsAsSpawnPoints = false;
 
         public AvatarControlSettings avatarControlSettings = AvatarControlSettings.Default;
-        [MinAttribute(0.1f), Tooltip("m/s"), HideInInspector] public float localAvatarMovingSpeed; // in m/s
-        [MinAttribute(0.1f), Tooltip("m/s"), HideInInspector] public float localAvatarRunSpeed; // in m/s
 
-        // Set default values
-        public EnvironmentSettings()
-        {
-            disableTeleport = false;
-            useSeatsAsSpawnPoints = false;
-            avatarControlSettings = AvatarControlSettings.Default;
-            localAvatarMovingSpeed = 3.0f; // This default should be matched with AvatarController movingSpeed.
-            localAvatarRunSpeed = 5.5f; // This default should be matched with AvatarController sprintSpeed.
-        }
+        // Default values set below should be set to be backwards compatible: these values are loaded in packages using old SDK version that don't have these settings available.
+        [HideInInspector, MinAttribute(0.0f), Tooltip("The normal movement speed (m/s)")]
+        public float localAvatarMovingSpeed = 3.0f;
+
+        [HideInInspector, MinAttribute(0.0f), Tooltip("Movement speed when running (m/s)")]
+        public float localAvatarRunSpeed = 5.5f;
+
+        [HideInInspector, MinAttribute(0.1f), Tooltip("Jump height in meters")]
+        public float localAvatarJumpHeight = 1.2f;
+
+        [HideInInspector, MinAttribute(0.1f), Tooltip("Gravity multiplier - based on the physics gravity Y value")]
+        public float localAvatarGravityMultiplier = 1.5f;
+
+        [HideInInspector, MinAttribute(0.1f), Tooltip("Additional gravity multiplier used when falling - Stacks with the default gravity multiplier defined above")]
+        public float localAvatarFallingGravityMultiplier = 1.0f;
+
+        [HideInInspector, Tooltip("Jump higher depending on how long jump button is held")]
+        public bool localAvatarUseVariableHeightJump = false;
+
+        [HideInInspector, Tooltip("Maximum jump count that can be performed")]
+        public int localAvatarMaxJumpCount = 1;
     }
 }

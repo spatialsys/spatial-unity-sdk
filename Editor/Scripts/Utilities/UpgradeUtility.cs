@@ -39,7 +39,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         static UpgradeUtility()
         {
-#if !SPATIAL_UNITYSDK_DISABLE_UPGRADE_CHECK
+#if !SPATIAL_UNITYSDK_DISABLE_UPGRADE_CHECK && !SPATIAL_UNITYSDK_INTERNAL
             // Check if it has been enough time since we asked user to update
             bool doSuggestUpdateCheck = !EditorUtility.TryGetDateTimeFromEditorPrefs(LAST_AUTO_UPDATE_DATE_PREFS_KEY, out System.DateTime lastCheckDate) ||
                 (System.DateTime.Now - lastCheckDate).TotalMinutes >= AUTO_UPDATE_INTERVAL_MINUTES;
@@ -64,7 +64,7 @@ namespace SpatialSys.UnitySDK.Editor
         /// </summary>
         public static IPromise<bool> CheckForUpgrade(UpgradeCheckType checkType = UpgradeCheckType.Default)
         {
-#if SPATIAL_UNITYSDK_DISABLE_UPGRADE_CHECK
+#if SPATIAL_UNITYSDK_DISABLE_UPGRADE_CHECK && !SPATIAL_UNITYSDK_INTERNAL
             return Promise<bool>.Resolved(false);
 #else
             bool fetchPackageInfo = true;
@@ -137,7 +137,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static IPromise<bool> UpgradeToLatest()
         {
-#if SPATIAL_UNITYSDK_DISABLE_UPGRADE_CHECK
+#if SPATIAL_UNITYSDK_DISABLE_UPGRADE_CHECK && !SPATIAL_UNITYSDK_INTERNAL
             return Promise<bool>.Resolved(false);
 #else
             // We're already doing an upgrade, wait for it to complete

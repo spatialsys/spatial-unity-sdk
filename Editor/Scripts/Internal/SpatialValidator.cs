@@ -60,6 +60,7 @@ namespace SpatialSys.UnitySDK.Editor
                     }
                     return Promise.Resolved();
                 })
+                .Catch(HandleInternalTestException)
                 .Then(() => Promise<SpatialValidationSummary>.Resolved(CreateValidationSummary()));
         }
 
@@ -81,6 +82,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             return RunPackageTests(config)
                 .Then(() => RunSceneTests(SceneManager.GetActiveScene()))
+                .Catch(HandleInternalTestException)
                 .Then(() => Promise<SpatialValidationSummary>.Resolved(CreateValidationSummary()));
         }
 
@@ -164,7 +166,7 @@ namespace SpatialSys.UnitySDK.Editor
                     return RunComponentTests(component);
                 }
             }).Then(() =>
-                BuildParallelPromise(GetTransformChildrenAsList(g.transform), (Transform child) => 
+                BuildParallelPromise(GetTransformChildrenAsList(g.transform), (Transform child) =>
                     RunComponentTestsOnObjectRecursively(child.gameObject)
                 )
             );
@@ -196,14 +198,21 @@ namespace SpatialSys.UnitySDK.Editor
 
         private static IPromise Invoke(MethodInfo method, object[] param)
         {
-            if (method.ReturnType == typeof(IPromise))
+            try
             {
-                return (IPromise)method.Invoke(null, param);
+                if (method.ReturnType == typeof(IPromise))
+                {
+                    return (IPromise)method.Invoke(null, param);
+                }
+                else
+                {
+                    method.Invoke(null, param);
+                    return Promise.Resolved();
+                }
             }
-            else
+            catch (Exception exc)
             {
-                method.Invoke(null, param);
-                return Promise.Resolved();
+                return Promise.Rejected(exc.InnerException ?? exc);
             }
         }
 
@@ -223,19 +232,21 @@ namespace SpatialSys.UnitySDK.Editor
         {
             _currentTestScene = null;
             object[] configParam = new object[] { config };
-            
-            return BuildParallelPromise(_packageTests, (MethodInfo method) => {
-                var attr = method.GetCustomAttribute<PackageTest>();
-                if (attr.TestAffectsPackageType(config.packageType))
-                {
-                    return Invoke(method, configParam);
-                }
-                return Promise.Resolved();
-            }).Then(() =>
-                BuildParallelPromise(config.gameObjectAssets, (GameObject go) => 
-                    RunComponentTestsOnObjectRecursively(go)
-                )
-            );
+
+            return BuildParallelPromise(_packageTests,
+                (MethodInfo method) => {
+                    var attr = method.GetCustomAttribute<PackageTest>();
+                    if (attr.TestAffectsPackageType(config.packageType))
+                    {
+                        return Invoke(method, configParam);
+                    }
+                    return Promise.Resolved();
+                })
+                .Then(() => {
+                    BuildParallelPromise(config.gameObjectAssets, (GameObject go) =>
+                        RunComponentTestsOnObjectRecursively(go)
+                    );
+                });
         }
 
         private static IPromise RunSceneTests(Scene scene)
@@ -243,14 +254,38 @@ namespace SpatialSys.UnitySDK.Editor
             _currentTestScene = scene;
             object[] sceneParam = new object[] { scene };
             return BuildParallelPromise(_sceneTests, (MethodInfo method) => Invoke(method, sceneParam))
-                .Then(() => 
-                    BuildParallelPromise(scene.GetRootGameObjects(), (GameObject g) => 
+                .Then(() =>
+                    BuildParallelPromise(scene.GetRootGameObjects(), (GameObject g) =>
                         RunComponentTestsOnObjectRecursively(g)
                     )
                 )
                 .Then(() => {
                     _currentTestScene = null;
                 });
+        }
+
+        private static void HandleInternalTestException(Exception exception)
+        {
+            Debug.LogException(exception);
+
+            string responseDescription = exception.Message;
+            const int MAX_STACKTRACE_LENGTH = 5000; // Including too many characters in output can cause GUI errors.
+            if (exception.StackTrace.Length > MAX_STACKTRACE_LENGTH)
+            {
+                string truncatedStacktrace = exception.StackTrace.Substring(0, MAX_STACKTRACE_LENGTH);
+                responseDescription += $"\n\n{truncatedStacktrace}\n...\n\nStacktrace truncated - Check the console window for the full stacktrace.";
+            }
+            else
+            {
+                responseDescription += $"\n\n{exception.StackTrace}";
+            }
+
+            AddResponse(new SpatialTestResponse(
+                targetObject: null,
+                TestResponseType.Fail,
+                "An unhandled internal exception occurred while running validation tests",
+                responseDescription
+            ));
         }
 
         private static void LoadTestsIfNecessary()

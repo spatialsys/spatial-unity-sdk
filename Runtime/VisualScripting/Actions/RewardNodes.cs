@@ -22,9 +22,6 @@ namespace SpatialSys.UnitySDK.VisualScripting
         [DoNotSerialize]
         public ValueInput badgeID { get; private set; }
 
-        [DoNotSerialize]
-        public string badgeIDTest;
-
         protected override void Definition()
         {
             badgeID = ValueInput<string>(nameof(badgeID), "");
