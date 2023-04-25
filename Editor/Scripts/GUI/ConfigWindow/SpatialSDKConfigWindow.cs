@@ -418,6 +418,7 @@ namespace SpatialSys.UnitySDK.Editor
         private void InvalidateIssues()
         {
             _issuesValidationSummary = null;
+            SpatialValidator.ClearResponses();
             UpdateIssuesTabContents();
         }
 
@@ -441,7 +442,7 @@ namespace SpatialSys.UnitySDK.Editor
                     element.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>("Packages/io.spatial.unitysdk/Editor/Scripts/GUI/ConfigWindow/SpatialValidatorWindow_LightModeOverride.uss"));
                 }
                 // It's important to note that when this tree is instantiated it has an extra "root" element that we can't really see inside the UI-builder.
-                // So bellow, "issueContainer" != element, it's a child of this extra root element... 
+                // So below, "issueContainer" != element, it's a child of this extra root element... 
 
                 element.Q(response.responseType == TestResponseType.Fail ? "errorIcon" : "warningIcon").style.display = DisplayStyle.Flex;
                 _issueListParent.Add(element);
