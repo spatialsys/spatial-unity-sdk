@@ -8,6 +8,8 @@ namespace SpatialSys.UnitySDK.Editor
     /// </summary>
     public abstract class PackageConfig : ScriptableObject
     {
+        public const int MAX_NAME_LENGTH = 50;
+
 #pragma warning disable 414 // suppress "never assigned" warnings until we use it
         [HideInInspector]
         public int version; // version of this config model; Used for making backwards-compatible changes

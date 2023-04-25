@@ -15,7 +15,11 @@ namespace SpatialSys.UnitySDK
         public AnimatorEvent animatorEvent;
         public QuestEvent questEvent;
 
-        public bool isSyncedEvent => (unityEventIsSynced || animatorEvent.events.Any(e => e.syncedAnimator != null));
+        public bool hasUnityEvent => unityEvent?.GetPersistentEventCount() > 0;
+        public bool hasAnimatorEvent => animatorEvent?.events?.Count > 0;
+        public bool hasQuestEvent => questEvent?.events?.Count > 0;
+
+        public bool isSyncedEvent => (unityEventIsSynced || (hasAnimatorEvent && animatorEvent.events.Any(e => e.syncedAnimator != null)));
     }
 
     [System.Serializable]

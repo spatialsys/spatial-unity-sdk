@@ -32,6 +32,33 @@ namespace SpatialSys.UnitySDK.Editor
         }
 
         [PackageTest]
+        public static void CheckPackageName(PackageConfig config)
+        {
+            if (string.IsNullOrEmpty(config.packageName))
+            {
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(
+                        config,
+                        TestResponseType.Fail,
+                        "Package name is empty",
+                        "The package name is empty. Please enter a name for the package."
+                    )
+                );
+            }
+            else if (config.packageName.Length > PackageConfig.MAX_NAME_LENGTH)
+            {
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(
+                        config,
+                        TestResponseType.Fail,
+                        "Package name is too long",
+                        $"The package name is too long. Please enter a name that is {PackageConfig.MAX_NAME_LENGTH} characters or less."
+                    )
+                );
+            }
+        }
+
+        [PackageTest]
         public static void CheckPackageFileSizeLimit(PackageConfig config)
         {
             string[] dependencies = GetPackageDependencies(config);
@@ -45,8 +72,8 @@ namespace SpatialSys.UnitySDK.Editor
                 SpatialValidator.AddResponse(
                     new SpatialTestResponse(
                         null,
-                        TestResponseType.Fail,
-                        "Package is too large to upload to Spatial",
+                        SpatialValidator.validationContext == ValidationContext.UploadingToSandbox ? TestResponseType.Warning : TestResponseType.Fail,
+                        "Package is too large to publish to Spatial",
                         $"The package is {totalSize / 1024f / 1024f}MB, but the maximum size is {BuildUtility.MAX_PACKAGE_SIZE / 1024 / 1024}MB. " +
                         "The size of the package is equal to the raw file size of all your assets which get uploaded to Spatial. Import settings will not change this. " +
                         "Sometimes, texture and audio source assets can be very large on disk, and it can help to downscale them or re-export them in a different format." +

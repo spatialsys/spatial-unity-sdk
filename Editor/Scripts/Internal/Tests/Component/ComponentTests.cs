@@ -1,4 +1,5 @@
 using System;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace SpatialSys.UnitySDK.Editor
@@ -10,8 +11,8 @@ namespace SpatialSys.UnitySDK.Editor
         {
             Type targetType = target.GetType();
 
-            // Ignore this component if it has a [EditorOnly] attribute. These are automatically removed during scene build
-            if (targetType.GetCustomAttributes(typeof(EditorOnlyAttribute), true).Length > 0)
+            // This component is automatically removed during scene build
+            if (targetType.IsEditorOnlyType())
                 return;
 
             if (!ValidComponents.IsComponentTypeAllowedForPackageType(ProjectConfig.activePackage, targetType))
@@ -24,19 +25,17 @@ namespace SpatialSys.UnitySDK.Editor
                     "Certain components are not allowed. To fix this error remove the offending component from the object."
                 );
 
-                // TODO: not including this fix right now because it can fail if a component has a requirement (inputModule requires EventSystem etc.)
-                /*
-                resp.SetAutoFix(isSafe: false, "Deletes the component from the offending gameObject.",
+                resp.SetAutoFix(isSafe: false, "Deletes the component, as well as any other components that depend on it, from the offending object",
                     (target) => {
-                        GameObject g = ((Component)target).gameObject;
-                        GameObject.DestroyImmediate(target);
-                        //target will be null so we need to select an mark dirty here.
-                        UnityEditor.Selection.activeObject = g;
-                        UnityEditor.EditorUtility.SetDirty(g);
+                        Component component = (Component)target;
+                        GameObject go = component.gameObject;
+                        EditorUtility.RemoveComponentAndDependents(component);
+
+                        UnityEditor.Selection.activeGameObject = go;
+                        UnityEditor.EditorUtility.SetDirty(go);
                         EditorSceneManager.SaveOpenScenes();
                     }
                 );
-                */
 
                 SpatialValidator.AddResponse(resp);
             }

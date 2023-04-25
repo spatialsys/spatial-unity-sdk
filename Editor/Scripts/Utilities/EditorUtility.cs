@@ -19,6 +19,16 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static bool isUsingSupportedUnityVersion => CURRENT_UNITY_VERSION != null && CURRENT_UNITY_VERSION >= MIN_UNITY_VERSION && CURRENT_UNITY_VERSION <= MAX_UNITY_VERSION;
 
+        public static readonly HashSet<string> defaultTags = new HashSet<string> {
+            "Untagged",
+            "Respawn",
+            "Finish",
+            "EditorOnly",
+            "MainCamera",
+            "Player",
+            "GameController",
+        };
+
         public static Version GetParsedUnityVersion(string versionString)
         {
             try
@@ -246,6 +256,64 @@ namespace SpatialSys.UnitySDK.Editor
             MethodInfo getTargetStringFromBuildTarget = moduleManager.GetMethod("GetTargetStringFromBuildTarget", BindingFlags.Static | BindingFlags.NonPublic);
             string moduleName = (string)getTargetStringFromBuildTarget.Invoke(null, new object[] { targetPlatform });
             return (bool)isPlatformSupportLoaded.Invoke(null, new object[] { moduleName });
+        }
+
+        public static bool IsEditorOnlyType(this Type type)
+        {
+            return type != null && type.GetCustomAttributes(typeof(EditorOnlyAttribute), inherit: true).Length > 0;
+        }
+
+        /// <summary>
+        /// Removes the `target` component and any dependent components on the game object (if necessary) recursively.
+        /// </summary>
+        public static void RemoveComponentAndDependents(Component target)
+        {
+            if (target == null)
+                return; // Component or script is missing. Use RemoveMonoBehavioursWithMissingScript instead.
+
+            Type targetType = target.GetType();
+            GameObject attachedGO = target.gameObject;
+            bool isLastComponent = attachedGO.GetComponents(targetType).Length == 1;
+
+            // Remove any dependent components before removing the target component.
+            // We only need to do this when it's the last component instance on the object.
+            if (isLastComponent)
+            {
+                IEnumerable<Type> otherAttachedComponentTypes = attachedGO.GetComponents<Component>()
+                    .Select(comp => comp.GetType())
+                    .Distinct()
+                    .Where(type => type != targetType);
+
+                foreach (Type t in otherAttachedComponentTypes)
+                {
+                    if (t.RequiresComponentType(targetType))
+                    {
+                        Component[] dependentComps = target.GetComponents(t);
+                        foreach (Component c in dependentComps)
+                            RemoveComponentAndDependents(c);
+                    }
+                }
+            }
+
+            UnityEngine.Object.DestroyImmediate(target);
+        }
+
+        /// <summary>
+        /// Returns true if this type requires `componentTypeToCheck` type (via the RequireComponent attribute)
+        /// </summary>
+        public static bool RequiresComponentType(this Type targetComponentType, Type componentTypeToCheck)
+        {
+            if (targetComponentType == null || componentTypeToCheck == null)
+                return false;
+
+            IEnumerable<RequireComponent> allRequireComponentAttributes = targetComponentType.GetCustomAttributes<RequireComponent>(inherit: true);
+            foreach (RequireComponent requireAttr in allRequireComponentAttributes)
+            {
+                if (requireAttr.m_Type0 == componentTypeToCheck || requireAttr.m_Type1 == componentTypeToCheck || requireAttr.m_Type2 == componentTypeToCheck)
+                    return true;
+            }
+
+            return false;
         }
     }
 }

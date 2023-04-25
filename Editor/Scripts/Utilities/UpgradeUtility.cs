@@ -64,7 +64,7 @@ namespace SpatialSys.UnitySDK.Editor
         /// </summary>
         public static IPromise<bool> CheckForUpgrade(UpgradeCheckType checkType = UpgradeCheckType.Default)
         {
-#if SPATIAL_UNITYSDK_DISABLE_UPGRADE_CHECK && !SPATIAL_UNITYSDK_INTERNAL
+#if SPATIAL_UNITYSDK_DISABLE_UPGRADE_CHECK || SPATIAL_UNITYSDK_INTERNAL
             return Promise<bool>.Resolved(false);
 #else
             bool fetchPackageInfo = true;
@@ -137,7 +137,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static IPromise<bool> UpgradeToLatest()
         {
-#if SPATIAL_UNITYSDK_DISABLE_UPGRADE_CHECK && !SPATIAL_UNITYSDK_INTERNAL
+#if SPATIAL_UNITYSDK_DISABLE_UPGRADE_CHECK || SPATIAL_UNITYSDK_INTERNAL
             return Promise<bool>.Resolved(false);
 #else
             // We're already doing an upgrade, wait for it to complete

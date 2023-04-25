@@ -284,7 +284,7 @@ namespace SpatialSys.UnitySDK.Editor
                     "You should try to use primitives or low density meshes for colliders where possible. "
                     + "High density collision geometry will impact the performance of your space.\n"
 
-                    + "Here's a list of all objects with high density mesh colliders:\n - " + string.Join("\n - ", response.meshColliderVertCounts.Where(m => m.Item2 > 50).Select(m => $"{m.Item2} - {m.Item1}"))
+                    + "Here's a list of all objects with high density mesh colliders:\n - " + string.Join("\n - ", response.meshColliderVertCounts.Take(30).Select(m => $"{m.Item2} - {m.Item1}"))
                 ));
             }
 
@@ -319,7 +319,7 @@ namespace SpatialSys.UnitySDK.Editor
                     TestResponseType.Warning,
                     $"Scene {scene.name} has too many vertices.",
                     "The scene has too many high detail models. It is recommended that you stay within the suggested limits or your asset may not perform well on all platforms.\n"
-                    + "Here's a list of all objects with high vertex counts:\n - " + string.Join("\n - ", response.meshVertCounts.Where(m => m.Item2 > 50).Select(m => $"{m.Item2} - {m.Item1}"))
+                    + "Here's a list of all objects with high vertex counts:\n - " + string.Join("\n - ", response.meshVertCounts.Take(30).Select(m => $"{m.Item2} - {m.Item1}"))
                 ));
             }
 
@@ -344,7 +344,7 @@ namespace SpatialSys.UnitySDK.Editor
                     $"Space Templates are limited to {PerformanceResponse.MAX_SUGGESTED_SHARED_TEXTURE_MB} MB of shared textures. "
                     + "High memory usage can cause application crashes on lower end devices. It is highly recommended that you stay within the suggested limits. "
                     + "Compressing your textures will help reduce their size.\n"
-                    + "Here's a list of all textures used by the scene:\n - " + string.Join("\n - ", response.textureMemorySizesMB.Where(m => m.Item2 > 0.1f).Select(m => $"{m.Item2:0.00}MB - {m.Item1}"))
+                    + "Here's a list of all textures used by the scene:\n - " + string.Join("\n - ", response.textureMemorySizesMB.Take(40).Select(m => $"{m.Item2:0.00}MB - {m.Item1}"))
                 ));
             }
         }

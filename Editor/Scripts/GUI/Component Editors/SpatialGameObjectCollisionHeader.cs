@@ -2,7 +2,6 @@ using System;
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
-using UnityEditorInternal;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -13,6 +12,7 @@ namespace SpatialSys.UnitySDK.Editor
     {
         private const string LAYER_WARNING_KEY = "SpatialSDK_LayerWarning";
         private const string COLLISION_HELP_DOCS = "https://docs.spatial.io/custom-collision";
+        private const string TAGS_HELP_DOCS = "https://docs.spatial.io/custom-collision#80061bf481e6466e82b37a143f9b4a82";
 
         private static bool _initialized;
         private static Texture2D _backgroundTexture;
@@ -21,7 +21,7 @@ namespace SpatialSys.UnitySDK.Editor
         private static GUIStyle _logoStyle;
         private static bool _showLayerWarning = false;
 
-        //controls the layers and the order in which they are showin in the dropdown.
+        //controls the layers and the order in which they are shown in the dropdown.
         private static readonly int[] layerValues = new int[]{
             31,
             14,
@@ -89,6 +89,24 @@ namespace SpatialSys.UnitySDK.Editor
             }
 
             EditorGUILayout.BeginVertical(new GUIStyle() { margin = new RectOffset(8, 0, 0, 0) });
+
+#if !SPATIAL_UNITYSDK_INTERNAL
+            if (!EditorUtility.defaultTags.Contains(g.tag))
+            {
+                SpatialGUIUtility.HelpBox(
+                    "Spatial does not support custom tags.",
+                    "For more information on why this is the case, and how to work around it, click the button below.",
+                    SpatialGUIUtility.HelpSectionType.Warning
+                );
+                GUILayout.Space(2);
+                if (GUILayout.Button("Help"))
+                {
+                    Application.OpenURL(TAGS_HELP_DOCS);
+                }
+                GUILayout.Space(2);
+            }
+#endif
+
             EditorGUILayout.BeginHorizontal(_areaStyle);
             {
                 GUILayout.Box(_iconTexture, _logoStyle);
@@ -145,6 +163,7 @@ namespace SpatialSys.UnitySDK.Editor
                 }
             }
             EditorGUILayout.EndHorizontal();
+
             if (_showLayerWarning)
             {
                 SpatialGUIUtility.HelpBox(

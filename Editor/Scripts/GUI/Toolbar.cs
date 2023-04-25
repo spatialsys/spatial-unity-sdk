@@ -42,8 +42,7 @@ namespace SpatialSys.UnitySDK.Editor
                 if (GUILayout.Button(new GUIContent(
                         $"▶️ {buttonText}",
                         !string.IsNullOrEmpty(cannotTestReason) ? cannotTestReason : buttonTooltipText
-                    )) &&
-                    UnityEditor.EditorUtility.DisplayDialog("Testing Package", $"You're about to upload this package to the Spatial sandbox. This will overwrite content in your sandbox, if there is any.", "Continue", "Cancel"))
+                    )))
                 {
                     UpgradeUtility.PerformUpgradeIfNecessaryForTestOrPublish()
                         .Then(() => {

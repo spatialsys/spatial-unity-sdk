@@ -8,6 +8,8 @@ namespace SpatialSys.UnitySDK
     public class SpatialQuest : SpatialComponentBase
     {
         public const int LATEST_VERSION = 2;
+        public const int MAX_NAME_LENGTH = 50;
+        public const int MAX_DESCRIPTION_LENGTH = 500;
 
         public override string prettyName => "Quest";
         public override string tooltip => $"This components describes a quest and its tasks.";
@@ -21,6 +23,7 @@ namespace SpatialSys.UnitySDK
         public int version = LATEST_VERSION;
 
         public string questName;
+        [TextArea(1, 3)]
         public string description;
         public bool startAutomatically = false;
         [Tooltip("If enabled, the user's progress will be saved to the cloud and restored when they rejoin the space. If disabled, the quest progress is reset on the next join.")]

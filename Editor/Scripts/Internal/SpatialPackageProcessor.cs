@@ -114,7 +114,7 @@ namespace SpatialSys.UnitySDK.Editor
             foreach (var component in rootGO.GetComponentsInChildren<Component>(true))
             {
                 // component can be null if script is missing
-                if (component != null && component.GetType().GetCustomAttributes(typeof(EditorOnlyAttribute), true).Length > 0)
+                if (component != null && component.GetType().IsEditorOnlyType())
                     UnityEngine.Object.DestroyImmediate(component);
             }
 
@@ -224,6 +224,9 @@ namespace SpatialSys.UnitySDK.Editor
             // Give animation events an animator ID or remove them if null
             foreach (SpatialEvent spatialEvent in spatialEventsList)
             {
+                if (!spatialEvent.hasAnimatorEvent)
+                    continue;
+
                 for (int i = spatialEvent.animatorEvent.events.Count - 1; i >= 0; i--)
                 {
                     AnimatorEvent.AnimatorEventEntry animatorEvent = spatialEvent.animatorEvent.events[i];

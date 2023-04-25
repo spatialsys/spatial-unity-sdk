@@ -6,7 +6,7 @@
     "com.unity.visualscripting": "1.8.0"
   },
   "displayName": "Spatial Unity SDK",
-  "version": "0.53.0",
+  "version": "0.54.0",
   "unity": "2021.3",
   "description": "This package allows creators to build 3D spaces using the Unity editor and publish them to Spatial",
   "keywords": [

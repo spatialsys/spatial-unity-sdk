@@ -42,6 +42,26 @@ namespace SpatialSys.UnitySDK.Editor
                 ));
             }
 
+            if (target.questName.Length > SpatialQuest.MAX_NAME_LENGTH)
+            {
+                SpatialValidator.AddResponse(new SpatialTestResponse(
+                    target,
+                    TestResponseType.Fail,
+                    "Quest name is too long.",
+                    $"Quest names must be less than {SpatialQuest.MAX_NAME_LENGTH} characters"
+                ));
+            }
+
+            if (target.description.Length > SpatialQuest.MAX_DESCRIPTION_LENGTH)
+            {
+                SpatialValidator.AddResponse(new SpatialTestResponse(
+                    target,
+                    TestResponseType.Fail,
+                    "Quest description is too long.",
+                    $"Quest descriptions must be less than {SpatialQuest.MAX_DESCRIPTION_LENGTH} characters"
+                ));
+            }
+
             if (target.tasks.Length == 0)
             {
                 SpatialValidator.AddResponse(new SpatialTestResponse(
@@ -53,6 +73,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
             else
             {
+
                 // TODO: if a quest only has one task, then it shouldn't need a name and description?
                 bool allTasksHaveNamesAndDescriptions = target.tasks.All(task => !string.IsNullOrEmpty(task.name));
                 if (!allTasksHaveNamesAndDescriptions)
@@ -62,6 +83,17 @@ namespace SpatialSys.UnitySDK.Editor
                         TestResponseType.Fail,
                         "One or more quest tasks do not have a name",
                         "For all quest tasks to be valid, they must be given a name."
+                    ));
+                }
+
+                bool allTaskNamesAreWithinLimit = target.tasks.Where(task => task.name != null).All(task => task.name.Length <= SpatialQuest.MAX_NAME_LENGTH);
+                if (!allTaskNamesAreWithinLimit)
+                {
+                    SpatialValidator.AddResponse(new SpatialTestResponse(
+                        target,
+                        TestResponseType.Fail,
+                        "One or more quest tasks have a name that is too long",
+                        $"Quest task names must be less than {SpatialQuest.MAX_NAME_LENGTH} characters"
                     ));
                 }
             }
@@ -165,7 +197,7 @@ namespace SpatialSys.UnitySDK.Editor
             Dictionary<uint, SpatialQuest> questIdToQuest = questsInScene.ToDictionary(quest => quest.id, quest => quest);
 
             // Validate all "Quest" events
-            Dictionary<SpatialEvent, Component> questEvents = allEvents.Where(kvp => kvp.Key.questEvent?.events?.Count > 0).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            Dictionary<SpatialEvent, Component> questEvents = allEvents.Where(kvp => kvp.Key.hasQuestEvent).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
             foreach (KeyValuePair<SpatialEvent, Component> kvp in questEvents)
             {
                 SpatialEvent e = kvp.Key;
