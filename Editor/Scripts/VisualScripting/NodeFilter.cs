@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using UnityEngine;
 using Unity.VisualScripting;
 using UnityEditor;
@@ -30,13 +31,12 @@ namespace SpatialSys.UnitySDK.Editor
 
     public class NodeFilter
     {
-        public static int VS_FILTER_VERSION = 9; // increment when we want to force users to rebuild nodes on update
-
         public static readonly HashSet<string> namespaceAllowList = new HashSet<string>() {
             "UnityEngine",
             "UnityEngine.UI",
             "Unity.VisualScripting",
             "System",
+            "System.Collections",
             "TMPro",
             "SpatialSys.UnitySDK.VisualScripting",
         };
@@ -60,6 +60,7 @@ namespace SpatialSys.UnitySDK.Editor
             "Unity.VisualScripting.State",//state graph nodes (enter, exit)
 
             "mscorlib",
+            "netstandard",//collections
         };
 
         //Custom types from non unity assemblies need to be added here to have their nodes generated
@@ -71,6 +72,7 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(bool),
             typeof(int),
             typeof(float),
+            typeof(byte),
             typeof(string),
             typeof(Vector2),
             typeof(Vector3),
@@ -115,14 +117,20 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(AotList),
             typeof(AotDictionary),
             typeof(WheelCollider),
+            typeof(WheelFrictionCurve),
             typeof(WheelHit),
+            typeof(ICollection),
+            typeof(IList),
+            typeof(ArrayList),
 
             //Spatial Types
             typeof(SpatialPlatform),
             typeof(SpatialQuestTaskType),
             typeof(SpatialQuestStatus),
             typeof(SpatialCameraMode),
+            typeof(NetworkEventTargets),
 
+            //Additional types
             typeof(ParticleSystem),
         };
 
@@ -141,6 +149,7 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(WheelCollider).GetMember(nameof(WheelCollider.GetGroundHit)),
             typeof(WheelCollider).GetMember(nameof(WheelCollider.GetWorldPose)),
             typeof(Vector3).GetMember(nameof(Vector3.OrthoNormalize)),
+            typeof(UnityEngine.Mathf).GetMember(nameof(UnityEngine.Mathf.SmoothDamp)),
         };
 
         //Block specific members (nodes) from instantiating in the AOT graph
@@ -237,6 +246,9 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(Boolean).GetMember(nameof(Boolean.Parse)),
             typeof(Boolean).GetMember(nameof(Boolean.TryParse)),
             typeof(Boolean).GetMember(nameof(Boolean.TryFormat)),
+            typeof(Byte).GetMember(nameof(Byte.Parse)),
+            typeof(Byte).GetMember(nameof(Byte.TryParse)),
+            typeof(Byte).GetMember(nameof(Byte.TryFormat)),
 
             //UnityEngine.AudioModule (editor only / we don't have a gamepad module)
             typeof(AudioSource).GetMember(nameof(AudioSource.PlayOnGamepad)),

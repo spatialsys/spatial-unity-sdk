@@ -14,6 +14,12 @@ namespace SpatialSys.UnitySDK.Editor
             ToolbarExtender.RightToolbarGUI.Add(OnToolbarGUI);
         }
 
+        private static int _selectedTarget = 0;
+        private static string[] _targetOptions = new string[]
+        {
+            "WebGL", "OSX", "Windows", 
+        };
+
         static void OnToolbarGUI()
         {
             GUILayout.FlexibleSpace();
@@ -27,6 +33,9 @@ namespace SpatialSys.UnitySDK.Editor
                 PackageConfig activeConfig = ProjectConfig.activePackage;
                 string buttonText, buttonTooltipText;
 
+#if SPATIAL_UNITYSDK_STAGING
+                _selectedTarget = EditorGUILayout.Popup(_selectedTarget, _targetOptions, GUILayout.Width(80)); 
+#endif
                 if (activeConfig == null || activeConfig.isSpaceBasedPackage)
                 {
                     Scene scene = EditorSceneManager.GetActiveScene();
@@ -46,7 +55,12 @@ namespace SpatialSys.UnitySDK.Editor
                 {
                     UpgradeUtility.PerformUpgradeIfNecessaryForTestOrPublish()
                         .Then(() => {
-                            return BuildUtility.BuildAndUploadForSandbox();
+                            BuildTarget target = BuildTarget.WebGL;
+                            switch (_selectedTarget) {
+                                case 1: target = BuildTarget.StandaloneOSX; break;
+                                case 2: target = BuildTarget.StandaloneWindows; break;
+                            }
+                            return BuildUtility.BuildAndUploadForSandbox(target);
                         })
                         .Catch(exc => {
                             if (exc is RSG.PromiseCancelledException)

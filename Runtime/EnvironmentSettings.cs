@@ -11,8 +11,6 @@ namespace SpatialSys.UnitySDK
             Override,
         }
 
-        public const int VERSION = 1;
-
         public bool disableTeleport = false;
         public bool useSeatsAsSpawnPoints = false;
 

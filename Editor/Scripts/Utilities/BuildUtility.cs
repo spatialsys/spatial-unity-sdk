@@ -36,12 +36,14 @@ namespace SpatialSys.UnitySDK.Editor
             _getSourceAssetImportDependenciesAsGUIDs = typeof(AssetDatabase).GetMethod("GetSourceAssetImportDependenciesAsGUIDs", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
         }
 
-        public static IPromise BuildAndUploadForSandbox()
+        public static IPromise BuildAndUploadForSandbox(BuildTarget target = BuildTarget.WebGL)
         {
             // We must save all scenes, otherwise the bundle build will fail without explanation.
             EditorSceneManager.SaveOpenScenes();
 
             PackageConfig activeConfig = ProjectConfig.activePackage;
+            activeConfig.savedProjectSettings = SaveProjectSettingsToAsset();
+
             IPromise<SpatialValidationSummary> validationPromise;
 
             if (activeConfig.isSpaceBasedPackage)
@@ -64,12 +66,10 @@ namespace SpatialSys.UnitySDK.Editor
                     // Auto-assign necessary bundle names
                     AssignBundleNamesToPackageAssets();
 
-                    const BuildTarget TARGET = BuildTarget.WebGL;
+                    if (!EditorUtility.IsPlatformModuleInstalled(target))
+                        return Promise.Rejected(new System.Exception($"Platform module for {target} is not installed, which is required for testing in sandbox"));
 
-                    if (!EditorUtility.IsPlatformModuleInstalled(TARGET))
-                        return Promise.Rejected(new System.Exception($"Platform module for {TARGET} is not installed, which is required for testing in sandbox"));
-
-                    string bundleDir = Path.Combine(BUILD_DIR, TARGET.ToString());
+                    string bundleDir = Path.Combine(BUILD_DIR, target.ToString());
                     if (Directory.Exists(bundleDir))
                         Directory.Delete(bundleDir, recursive: true);
                     Directory.CreateDirectory(bundleDir);
@@ -78,11 +78,13 @@ namespace SpatialSys.UnitySDK.Editor
                     CompatibilityAssetBundleManifest bundleManifest = CompatibilityBuildPipeline.BuildAssetBundles(
                         bundleDir,
                         BuildAssetBundleOptions.ForceRebuildAssetBundle | BuildAssetBundleOptions.ChunkBasedCompression,
-                        TARGET
+                        target
                     );
 
                     if (bundleManifest == null)
                         return Promise.Rejected(new System.Exception("Asset bundle build failed"));
+
+                    bool openBrowser = target == BuildTarget.WebGL;
 
                     if (activeConfig is SpaceTemplateConfig spaceTemplateConfig)
                     {
@@ -92,16 +94,16 @@ namespace SpatialSys.UnitySDK.Editor
                         if (spaceTemplateVariant == null)
                             return Promise.Rejected(new System.Exception("The current scene isn't one that is assigned to a variant in the package configuration"));
 
-                        return UploadAssetBundleToSandbox(spaceTemplateVariant.bundleName, bundleDir, activeConfig.packageType);
+                        return UploadAssetBundleToSandbox(spaceTemplateVariant.bundleName, bundleDir, activeConfig.packageType, openBrowser);
                     }
                     else
                     {
-                        return UploadAssetBundleToSandbox(activeConfig.bundleName, bundleDir, activeConfig.packageType);
+                        return UploadAssetBundleToSandbox(activeConfig.bundleName, bundleDir, activeConfig.packageType, openBrowser);
                     }
                 });
         }
 
-        private static IPromise UploadAssetBundleToSandbox(string bundleName, string bundleDir, PackageType packageType)
+        private static IPromise UploadAssetBundleToSandbox(string bundleName, string bundleDir, PackageType packageType, bool openBrowser)
         {
             if (string.IsNullOrEmpty(bundleName))
                 return Promise.Rejected(new System.Exception("Unable to retrieve the asset bundle name from the prefab. Make sure an asset is assigned in the package configuration."));
@@ -120,7 +122,17 @@ namespace SpatialSys.UnitySDK.Editor
                 .Then(resp => {
                     byte[] bundleBytes = File.ReadAllBytes(bundlePath);
                     SpatialAPI.UploadFile(useSpatialHeaders: false, resp.url, bundleBytes, UpdateSandboxUploadProgressBar)
-                        .Then(resp => EditorUtility.OpenSandboxInBrowser())
+                        .Then(resp => 
+                        {
+                            if (openBrowser)
+                            {
+                                EditorUtility.OpenSandboxInBrowser();
+                            }
+                            else
+                            {
+                                UnityEditor.EditorUtility.DisplayDialog("Upload complete", "Sandbox content uploaded.", "OK");
+                            }
+                        })
                         .Catch(exc => {
                             UnityEditor.EditorUtility.DisplayDialog("Asset bundle upload error", GetExceptionMessage(exc), "OK");
                             Debug.LogError(exc);
@@ -159,6 +171,7 @@ namespace SpatialSys.UnitySDK.Editor
             // We must save all scenes, otherwise the bundle build will fail without explanation.
             EditorSceneManager.SaveOpenScenes();
             PackageConfig config = ProjectConfig.activePackage;
+            config.savedProjectSettings = SaveProjectSettingsToAsset();
 
             return CheckValidationPromise(SpatialValidator.RunTestsOnPackage(ValidationContext.PublishingPackage))
                 .Then(() => {
@@ -171,8 +184,6 @@ namespace SpatialSys.UnitySDK.Editor
                     // Auto-assign necessary bundle names
                     // This get's done on the build machines too, but we also want to do it here just in case there's an issue
                     AssignBundleNamesToPackageAssets();
-
-                    config.savedProjectSettings = SaveProjectSettingsToAsset();
 
                     // For "Space" packages, we need to make sure we have a worldID assigned to the project
                     // Worlds are a way to manage an ecosystem of spaces that share currency, rewards, inventory, etc.
@@ -249,7 +260,7 @@ namespace SpatialSys.UnitySDK.Editor
                     {
                         bodyMessage = GetExceptionMessage(exc);
                     }
-                    
+
                     Debug.LogException(exc);
                     UnityEditor.EditorUtility.DisplayDialog("Publishing failed", bodyMessage, "OK");
                 });
@@ -368,23 +379,10 @@ namespace SpatialSys.UnitySDK.Editor
             }
             else
             {
+                // Multiple variants/assets are not supported for package types that aren't SpaceTemplate.
                 string assetBundleName = GetBundleNameForPackageAsset(config.packageName);
-
-                switch (config)
-                {
-                    case SpaceConfig spaceConfig:
-                        EditorUtility.SetAssetBundleName(spaceConfig.scene, assetBundleName);
-                        break;
-                    case AvatarConfig avatarConfig:
-                        EditorUtility.SetAssetBundleName(avatarConfig.prefab, assetBundleName);
-                        break;
-                    case AvatarAnimationConfig avatarAnimConfig:
-                        EditorUtility.SetAssetBundleName(avatarAnimConfig.prefab, assetBundleName);
-                        break;
-                    case PrefabObjectConfig prefabObjectConfig:
-                        EditorUtility.SetAssetBundleName(prefabObjectConfig.prefab, assetBundleName);
-                        break;
-                }
+                UnityEngine.Object firstAsset = config.assets.FirstOrDefault();
+                EditorUtility.SetAssetBundleName(firstAsset, assetBundleName);
             }
 
             UnityEditor.EditorUtility.SetDirty(config);
@@ -425,29 +423,24 @@ namespace SpatialSys.UnitySDK.Editor
 
             foreach (UnityEngine.Object asset in config.assets)
             {
-                switch (asset)
-                {
-                    case SpatialPrefabObject prefabObject:
-                        SpatialPackageProcessor.ProcessPrefabObject(prefabObject);
-                        UnityEditor.EditorUtility.SetDirty(asset);
-                        break;
-                }
+                if (asset is SpatialPackageAsset packageAsset)
+                    SpatialPackageProcessor.ProcessPackageAsset(packageAsset);
             }
 
             AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
+            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
         }
 
         public static SavedProjectSettings SaveProjectSettingsToAsset()
         {
             SavedProjectSettings projSettings = ScriptableObject.CreateInstance<SavedProjectSettings>();
+            projSettings.publishedSDKVersion = PackageManagerUtility.currentVersion;
             projSettings.customCollisionSettings = SpatialSDKPhysicsSettings.SavePhysicsSettings();
             projSettings.customCollision2DSettings = SpatialSDKPhysicsSettings.SavePhysicsSettings(get2D: true);
-            UnityEditor.EditorUtility.SetDirty(projSettings);
             projSettings.name = "SavedProjectSettings";
 
             AssetDatabase.CreateAsset(projSettings, SAVED_PROJECT_SETTINGS_ASSET_PATH);
-            AssetDatabase.SaveAssets();
+            AssetDatabase.ImportAsset(SAVED_PROJECT_SETTINGS_ASSET_PATH, ImportAssetOptions.ForceUpdate);
 
             return projSettings;
         }

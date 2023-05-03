@@ -6,5 +6,6 @@ namespace SpatialSys.UnitySDK
     [DisallowMultipleComponent]
     public abstract class SpatialPackageAsset : SpatialComponentBase
     {
+        [HideInInspector] public SavedProjectSettings savedProjectSettings;
     }
 }

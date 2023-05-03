@@ -7,12 +7,14 @@ namespace SpatialSys.UnitySDK.Editor
     public class SpaceTemplateConfig : PackageConfig
     {
         public static readonly Vector2Int MINI_THUMBNAIL_TEXTURE_DIMENSIONS = new Vector2Int(64, 64);
+        private const PackageType PACKAGE_TYPE = PackageType.SpaceTemplate;
 
         public Variant[] variants = new Variant[1] { new Variant() };
 
-        public override PackageType packageType => PackageType.SpaceTemplate;
+        public override PackageType packageType => PACKAGE_TYPE;
         public override Vector2Int thumbnailDimensions => new Vector2Int(1024, 512);
         public override string bundleName => throw new System.InvalidOperationException("Access the bundle names through the variants array");
+        public override string validatorID => GetValidatorID();
 
         public override bool allowTransparentThumbnails => false;
 
@@ -71,6 +73,11 @@ namespace SpatialSys.UnitySDK.Editor
                 if (string.IsNullOrEmpty(variant.id))
                     variant.id = Variant.NewID();
             }
+        }
+
+        public static string GetValidatorID()
+        {
+            return PACKAGE_TYPE.ToString();
         }
     }
 }

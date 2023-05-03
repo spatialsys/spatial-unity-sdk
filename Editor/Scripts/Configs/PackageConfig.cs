@@ -10,6 +10,13 @@ namespace SpatialSys.UnitySDK.Editor
     {
         public const int MAX_NAME_LENGTH = 50;
 
+        public enum Scope
+        {
+            Global,
+            [InspectorName("Ecosystem")]
+            World
+        }
+
 #pragma warning disable 414 // suppress "never assigned" warnings until we use it
         [HideInInspector]
         public int version; // version of this config model; Used for making backwards-compatible changes
@@ -26,6 +33,10 @@ namespace SpatialSys.UnitySDK.Editor
         public abstract PackageType packageType { get; }
         public abstract Vector2Int thumbnailDimensions { get; }
         public abstract string bundleName { get; }
+        /// <summary>
+        /// A unique string used to identify which validation rules to use (e.g. in ValidComponents)
+        /// </summary>
+        public abstract string validatorID { get; }
 
         /// <summary>
         /// Can the thumbnail have no transparent pixels?

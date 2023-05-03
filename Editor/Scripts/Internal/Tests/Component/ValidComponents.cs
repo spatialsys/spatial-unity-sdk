@@ -14,46 +14,31 @@ namespace SpatialSys.UnitySDK.Editor
             Allowed = 1
         }
 
-        public struct PackageComponentStatusCollection
+        public class PackageComponentStatusCollection
         {
-            public ComponentStatus spaceStatus;
-            public ComponentStatus spaceTemplateStatus;
-            public ComponentStatus globalAvatarStatus;
-            public ComponentStatus worldAvatarStatus;
-            public ComponentStatus avatarAnimationStatus;
-            public ComponentStatus prefabObjectStatus;
+            public ComponentStatus defaultStatus = ComponentStatus.Blocked;
+            public Dictionary<string, ComponentStatus> validatorIDToComponentStatus;
 
             public ComponentStatus GetComponentStatusForPackageType(PackageConfig packageConfig)
             {
-                switch (packageConfig.packageType)
-                {
-                    case PackageType.Space:
-                        return spaceStatus;
-                    case PackageType.SpaceTemplate:
-                        return spaceTemplateStatus;
-                    case PackageType.Avatar:
-                        AvatarConfig avatarConfig = packageConfig as AvatarConfig;
-                        return avatarConfig.usageContext == AvatarConfig.Scope.Global ? globalAvatarStatus : worldAvatarStatus;
-                    case PackageType.AvatarAnimation:
-                        return avatarAnimationStatus;
-                    case PackageType.PrefabObject:
-                        return prefabObjectStatus;
-                }
+                if (validatorIDToComponentStatus != null && validatorIDToComponentStatus.TryGetValue(packageConfig.validatorID, out ComponentStatus status))
+                    return status;
 
-                // Unhandled package types allows all component by default for convenience.
-                return ComponentStatus.Allowed;
+                return defaultStatus;
             }
 
             public static PackageComponentStatusCollection AllowAll()
             {
-                return new PackageComponentStatusCollection() {
-                    spaceStatus = ComponentStatus.Allowed,
-                    spaceTemplateStatus = ComponentStatus.Allowed,
-                    globalAvatarStatus = ComponentStatus.Allowed,
-                    worldAvatarStatus = ComponentStatus.Allowed,
-                    avatarAnimationStatus = ComponentStatus.Allowed,
-                    prefabObjectStatus = ComponentStatus.Allowed
-                };
+                return new PackageComponentStatusCollection() { defaultStatus = ComponentStatus.Allowed };
+            }
+
+            public static PackageComponentStatusCollection Allow(params string[] validatorIDs)
+            {
+                var statusCollection = new PackageComponentStatusCollection();
+                statusCollection.validatorIDToComponentStatus = new Dictionary<string, ComponentStatus>();
+                foreach (string id in validatorIDs)
+                    statusCollection.validatorIDToComponentStatus.Add(id, ComponentStatus.Allowed);
+                return statusCollection;
             }
         }
 
@@ -115,13 +100,6 @@ namespace SpatialSys.UnitySDK.Editor
             var table = new CsvTable(csvFilePath);
             _initialized = true;
 
-            int spaceColumn = table.GetColumnIndex(PackageType.Space.ToString());
-            int spaceTemplateColumn = table.GetColumnIndex(PackageType.SpaceTemplate.ToString());
-            int globalAvatarColumn = table.GetColumnIndex("GlobalAvatar");
-            int worldAvatarColumn = table.GetColumnIndex("WorldAvatar");
-            int avatarAnimationColumn = table.GetColumnIndex(PackageType.AvatarAnimation.ToString());
-            int prefabObjectColumn = table.GetColumnIndex(PackageType.PrefabObject.ToString());
-
             for (int row = 0; row < table.rowCount; row++)
             {
                 string typeFullName = table[row][0];
@@ -131,14 +109,19 @@ namespace SpatialSys.UnitySDK.Editor
                     Debug.LogWarning($"Could not find type {typeFullName} in the reflection cache. The component type allowlist might be outdated.");
                     continue;
                 }
-                componentTypeStatuses[type] = new PackageComponentStatusCollection() {
-                    spaceStatus = table.GetComponentStatusAtCell(row, spaceColumn),
-                    spaceTemplateStatus = table.GetComponentStatusAtCell(row, spaceTemplateColumn),
-                    globalAvatarStatus = table.GetComponentStatusAtCell(row, globalAvatarColumn),
-                    worldAvatarStatus = table.GetComponentStatusAtCell(row, worldAvatarColumn),
-                    avatarAnimationStatus = table.GetComponentStatusAtCell(row, avatarAnimationColumn),
-                    prefabObjectStatus = table.GetComponentStatusAtCell(row, prefabObjectColumn)
-                };
+
+                var statusCollection = new PackageComponentStatusCollection();
+                statusCollection.validatorIDToComponentStatus = new Dictionary<string, ComponentStatus>();
+
+                // Column 0 is the component type name. Every column after should be validator IDs.
+                for (int col = 1; col < table.columnCount; col++)
+                {
+                    string validatorID = table.GetColumnName(col);
+                    ComponentStatus compStatus = table.GetComponentStatusAtCell(row, col);
+                    statusCollection.validatorIDToComponentStatus.Add(validatorID, compStatus);
+                }
+
+                componentTypeStatuses[type] = statusCollection;
             }
         }
 

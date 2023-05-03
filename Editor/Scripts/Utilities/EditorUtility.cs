@@ -29,6 +29,11 @@ namespace SpatialSys.UnitySDK.Editor
             "GameController",
         };
 
+        public static readonly HashSet<string> strippableEditorComponents = new HashSet<string> {
+            "ProBuilderMesh",
+            "ProBuilderShape"
+        };
+
         public static Version GetParsedUnityVersion(string versionString)
         {
             try
@@ -97,7 +102,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static void OpenDocumentationPage()
         {
-            Help.BrowseURL(UpgradeUtility.packageInfo.documentationUrl);
+            Help.BrowseURL(PackageManagerUtility.documentationUrl);
         }
 
         public static string CreateFolderHierarchy(params string[] folders)
@@ -260,7 +265,15 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static bool IsEditorOnlyType(this Type type)
         {
-            return type != null && type.GetCustomAttributes(typeof(EditorOnlyAttribute), inherit: true).Length > 0;
+            return type != null && (
+                (type.GetCustomAttributes(typeof(EditorOnlyAttribute), inherit: true).Length > 0) ||
+                type.IsStripabbleEditorOnlyType()
+            );
+        }
+
+        public static bool IsStripabbleEditorOnlyType(this Type type)
+        {
+            return strippableEditorComponents.Contains(type.Name);
         }
 
         /// <summary>

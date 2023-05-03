@@ -40,6 +40,12 @@ namespace SpatialSys.UnitySDK
         public delegate int GetLocalActorPlatformDelegate();
         public static GetLocalActorPlatformDelegate GetLocalActorPlatform;
 
+        public delegate void GetActorProfilePictureDelegate(int actorNumber, Action<Texture2D> callback);
+        public static GetActorProfilePictureDelegate GetActorProfilePicture;
+
+        public delegate string GetActorNameDelegate(int actorNumber);
+        public static GetActorNameDelegate GetActorName;
+
         // bool = actorNumber is valid
         public delegate Tuple<bool, int> GetActorPlatformDelegate(int actorNumber);
         public static GetActorPlatformDelegate GetActorPlatform;
@@ -116,6 +122,9 @@ namespace SpatialSys.UnitySDK
         public delegate Vector3 GetCameraForwardDelegate();
         public static GetCameraForwardDelegate GetCameraForward;
 
+        public delegate bool IsCameraRoomModeDelegate();
+        public static IsCameraRoomModeDelegate IsCameraRoomMode;
+
         public delegate void SendToastDelegate(string message, float duration);
         public static SendToastDelegate SendToast;
 
@@ -131,23 +140,35 @@ namespace SpatialSys.UnitySDK
         public static QuestDelegate CompleteQuest;
         public static QuestDelegate ResetQuest;
 
-        public delegate void QuestTaskDelegate(SpatialQuest quest, uint taskId);
+        public delegate void QuestTaskDelegate(SpatialQuest quest, uint taskID);
         public static QuestTaskDelegate StartQuestTask;
         public static QuestTaskDelegate AddQuestTaskProgress;
         public static QuestTaskDelegate CompleteQuestTask;
 
-        public delegate int GetQuestTaskProgressDelegate(SpatialQuest quest, uint task);
+        public delegate int GetQuestTaskProgressDelegate(SpatialQuest quest, uint taskID);
         public static GetQuestTaskProgressDelegate GetQuestTaskProgress;
 
         public delegate int GetQuestStatusDelegate(SpatialQuest quest);
         public static GetQuestStatusDelegate GetQuestStatus;
 
-        public delegate int GetQuestTaskStatusDelegate(SpatialQuest quest, uint task);
+        public delegate int GetQuestTaskStatusDelegate(SpatialQuest quest, uint taskID);
         public static GetQuestTaskStatusDelegate GetQuestTaskStatus;
 
-        public delegate void RewardBadgeDelegate(string badgeId);
+        public delegate void RewardBadgeDelegate(string badgeID);
         public static RewardBadgeDelegate RewardBadge;
 
+        public delegate void AddBackpackItemDelegate(string itemID, int quantity, Action<bool> callback);
+        public static AddBackpackItemDelegate AddBackpackItem;
+
+        public struct GetBackpackItemResponse
+        {
+            public bool userOwnsItem;
+            public int amount;
+        }
+        public delegate void GetBackpackItemDelegate(string itemID, Action<ClientBridge.GetBackpackItemResponse> callback);
+        public static GetBackpackItemDelegate GetBackpackItem;
+
+        //Synced objects
         public delegate bool TakeoverSyncedObjectOwnerhipDelegate(SpatialSyncedObject syncedObject);
         public static TakeoverSyncedObjectOwnerhipDelegate TakeoverSyncedObjectOwnership;
 
@@ -214,5 +235,12 @@ namespace SpatialSys.UnitySDK
 
         public delegate void TriggerEventEnabledChangedDelegate(SpatialTriggerEvent spatialTriggerEvent, bool enabled);
         public static TriggerEventEnabledChangedDelegate TriggerEventEnabledChanged;
+
+        //Network events (RPC)
+        public delegate void SendSDKNetworkEventByteDelegate(bool everyone, byte eventID, object[] args);
+        public static SendSDKNetworkEventByteDelegate SendSDKNetworkEventByte;
+
+        public delegate void SendSDKNetworkEventToActorByteDelegate(int targetActor, byte eventID, object[] args);
+        public static SendSDKNetworkEventToActorByteDelegate SendSDKNetworkEventToActorByte;
     }
 }

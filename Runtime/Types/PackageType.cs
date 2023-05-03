@@ -1,3 +1,4 @@
+using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
@@ -9,5 +10,7 @@ namespace SpatialSys.UnitySDK
         Avatar = 1,
         AvatarAnimation = 2,
         PrefabObject = 3,
+        [InspectorName(null)] // Not ready for public use yet
+        Wearable = 5,
     }
 }

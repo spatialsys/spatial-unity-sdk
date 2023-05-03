@@ -52,6 +52,15 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
+        private static Dictionary<PackageType, Type> _packageTypeToConfigTypes = new Dictionary<PackageType, Type>() {
+            { PackageType.Space, typeof(SpaceConfig) },
+            { PackageType.SpaceTemplate, typeof(SpaceTemplateConfig) },
+            { PackageType.Avatar, typeof(AvatarConfig) },
+            { PackageType.AvatarAnimation, typeof(AvatarAnimationConfig) },
+            { PackageType.PrefabObject, typeof(PrefabObjectConfig) },
+            { PackageType.Wearable, typeof(WearableConfig) }
+        };
+
 #pragma warning disable 414
         [SerializeField, HideInInspector] private int _configVersion; // version of this config model; Used for making backwards-compatible changes
 #pragma warning restore 414
@@ -138,42 +147,24 @@ namespace SpatialSys.UnitySDK.Editor
                 throw new System.Exception("ProjectConfig does not exist");
 
             // Get the C# type from the enum
-            Type packageConfigType = null;
-            switch (type)
-            {
-                case PackageType.Space:
-                    packageConfigType = typeof(SpaceConfig);
-                    break;
-                case PackageType.SpaceTemplate:
-                    packageConfigType = typeof(SpaceTemplateConfig);
-                    break;
-                case PackageType.Avatar:
-                    packageConfigType = typeof(AvatarConfig);
-                    break;
-                case PackageType.AvatarAnimation:
-                    packageConfigType = typeof(AvatarAnimationConfig);
-                    break;
-                case PackageType.PrefabObject:
-                    packageConfigType = typeof(PrefabObjectConfig);
-                    break;
-                default:
-                    throw new System.Exception($"Package type {type} is not yet supported");
-            }
+            Type packageConfigType = _packageTypeToConfigTypes[type];
 
             // Get a unique name for the new package
-            string name = $"{type}_1";
-            int i = 2;
-            while (AssetDatabase.FindAssets($"{name} t:{packageConfigType.Name}").Length > 0
-                || File.Exists($"{CONFIG_DIRECTORY}/{name}.asset"))
+            string name = null;
+            string assetPath = null;
+            for (int i = 1; i < int.MaxValue; i++)
             {
                 name = $"{type}_{i}";
-                i++;
+                assetPath = Path.Combine(CONFIG_DIRECTORY, $"{name}.asset");
+
+                if (AssetDatabase.FindAssets($"{name} t:{packageConfigType.Name}").Length == 0 && !File.Exists(assetPath))
+                    break;
             }
 
             // Create new package asset
-            var package = CreateInstance(packageConfigType.Name) as PackageConfig;
+            var package = (PackageConfig)ScriptableObject.CreateInstance(packageConfigType);
             package.packageName = name;
-            AssetDatabase.CreateAsset(package, $"{CONFIG_DIRECTORY}/{package.packageName}.asset");
+            AssetDatabase.CreateAsset(package, assetPath);
             instance._packages.Add(package);
             UnityEditor.EditorUtility.SetDirty(instance);
             AssetDatabase.SaveAssets();

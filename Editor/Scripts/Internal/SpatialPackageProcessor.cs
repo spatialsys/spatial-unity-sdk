@@ -76,13 +76,13 @@ namespace SpatialSys.UnitySDK.Editor
             data.environmentSettings = environmentSettingsOverrides != null ? environmentSettingsOverrides.environmentSettings : new EnvironmentSettings();
 
             // Project Settings
-            if (!Application.isBatchMode)
+            if (Application.isBatchMode)
             {
-                data.savedProjectSettings = BuildUtility.SaveProjectSettingsToAsset();
+                data.savedProjectSettings = ProjectConfig.activePackage.savedProjectSettings;
             }
             else
             {
-                data.savedProjectSettings = ProjectConfig.activePackage.savedProjectSettings;
+                data.savedProjectSettings = BuildUtility.SaveProjectSettingsToAsset();
             }
 
             // Animators
@@ -278,7 +278,24 @@ namespace SpatialSys.UnitySDK.Editor
             return syncedObjects.ToArray();
         }
 
-        public static void ProcessPrefabObject(SpatialPrefabObject prefabObject)
+        public static void ProcessPackageAsset(SpatialPackageAsset asset)
+        {
+            if (Application.isBatchMode)
+            {
+                asset.savedProjectSettings = ProjectConfig.activePackage.savedProjectSettings;
+            }
+            else
+            {
+                asset.savedProjectSettings = BuildUtility.SaveProjectSettingsToAsset();
+            }
+
+            if (asset is SpatialPrefabObject prefabObject)
+                ProcessPrefabObject(prefabObject);
+
+            UnityEditor.EditorUtility.SetDirty(asset);
+        }
+
+        private static void ProcessPrefabObject(SpatialPrefabObject prefabObject)
         {
             GameObject gameObject = prefabObject.gameObject;
             Transform[] transform = gameObject.GetComponentsInChildren<Transform>(true);
@@ -300,9 +317,10 @@ namespace SpatialSys.UnitySDK.Editor
             prefabObject.spatialEvents = ProcessSpatialEvents(prefabObject.triggerEvents, prefabObject.interactables, prefabObject.pointsOfInterest, null);
 
             prefabObject.syncedObjects = ProcessSyncedObjects(AssetDatabase.GetAssetPath(gameObject), gameObject.GetComponentsInChildren<SpatialSyncedObject>(true));
+            UnityEditor.EditorUtility.SetDirty(prefabObject);
         }
 
-        public static void ProcessGameObject(GameObject gameObject)
+        private static void ProcessGameObject(GameObject gameObject)
         {
             gameObject.layer = SpatialSDKPhysicsSettings.GetEffectiveLayer(gameObject.layer);
         }

@@ -59,7 +59,7 @@ namespace SpatialSys.UnitySDK.Editor
             request.Body = new CreateOrUpdatePackageRequest() {
                 sku = sku,
                 unityVersion = Application.unityVersion,
-                spatialSdkVersion = UpgradeUtility.currentVersion,
+                spatialSdkVersion = PackageManagerUtility.currentVersion,
                 packageSource = PackageSourceToSAPIPackageSource(PackageSource.Unity),
                 packageType = PackageTypeToSAPIPackageType(packageType)
             };
@@ -157,7 +157,7 @@ namespace SpatialSys.UnitySDK.Editor
             request.Headers["Authorization"] = $"Bearer {_authToken}";
             // Example: UNITYSDK 1.2.3 official GITSHA00
             // Currently the gitsha is not used, but is included for SAPI compatibility
-            request.Headers["Spatial-User-Agent"] = $"UNITYSDK {UpgradeUtility.currentVersion} {(UpgradeUtility.isOfficialVersion ? "official" : "dev")} 00000000";
+            request.Headers["Spatial-User-Agent"] = $"UNITYSDK {PackageManagerUtility.currentVersion} {(PackageManagerUtility.isOfficialVersion ? "official" : "dev")} 00000000";
 
 #if SPATIAL_UNITYSDK_STAGING
             request.EnableDebug = true;

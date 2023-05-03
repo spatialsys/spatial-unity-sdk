@@ -1,4 +1,6 @@
 using UnityEditor;
+using UnityEditor.Compilation;
+using UnityEngine;
 using Unity.VisualScripting;
 
 using System;
@@ -12,11 +14,11 @@ namespace SpatialSys.UnitySDK.Editor
     public static class NodeGeneration
     {
         private const string SETTINGS_ASSET_PATH = "ProjectSettings/VisualScriptingSettings.asset";
-        private const string VS_VERSION_PREF = "InitializedVSVersion";
+        private const string GENERATED_VS_NODES_VERSION_PREFS_KEY = "Spatial_GeneratedVSNodesVersion";
 
         static NodeGeneration()
         {
-            if (EditorPrefs.GetInt(VS_VERSION_PREF, -1) != NodeFilter.VS_FILTER_VERSION)
+            if (PlayerPrefs.GetString(GENERATED_VS_NODES_VERSION_PREFS_KEY) != PackageManagerUtility.currentVersion)
             {
                 EditorApplication.update += CheckForNodeRebuild;
             }
@@ -30,7 +32,10 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 EditorApplication.update -= CheckForNodeRebuild;
                 UnityEditor.EditorUtility.DisplayDialog("Spatial Scripting Initialization", "Hold tight while we make sure your visual scripting settings are just right", "OK");
-                EditorPrefs.SetInt(VS_VERSION_PREF, NodeFilter.VS_FILTER_VERSION);
+
+                PlayerPrefs.SetString(GENERATED_VS_NODES_VERSION_PREFS_KEY, PackageManagerUtility.currentVersion);
+                PlayerPrefs.Save();
+
                 SetTypesAndAssemblies();
             }
         }
@@ -59,9 +64,12 @@ namespace SpatialSys.UnitySDK.Editor
             settingsAssetContents = settingsAssetContents.SetJSONArrayValueHelper("typeOptions", typesToGenerate.Select(type => type.FullName));
 
             File.WriteAllText(SETTINGS_ASSET_PATH, settingsAssetContents);
-            UnityEditor.EditorPrefs.SetInt(VS_VERSION_PREF, NodeFilter.VS_FILTER_VERSION);
+
+            PlayerPrefs.SetString(GENERATED_VS_NODES_VERSION_PREFS_KEY, PackageManagerUtility.currentVersion);
+            PlayerPrefs.Save();
+
             AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
-            UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
+            CompilationPipeline.RequestScriptCompilation();
         }
 
         private static string SetJSONArrayValueHelper(this string target, string arrayContainerName, IEnumerable<string> arrayContents)
@@ -77,7 +85,7 @@ namespace SpatialSys.UnitySDK.Editor
         [InitializeOnLoadMethod]
         private static void OnScriptsReloaded()
         {
-            if (EditorPrefs.GetInt(VS_VERSION_PREF, -1) == NodeFilter.VS_FILTER_VERSION)
+            if (PlayerPrefs.GetString(GENERATED_VS_NODES_VERSION_PREFS_KEY) == PackageManagerUtility.currentVersion)
             {
                 UnitBase.Rebuild();
             }

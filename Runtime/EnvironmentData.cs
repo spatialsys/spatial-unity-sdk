@@ -3,11 +3,9 @@ using UnityEngine.Rendering;
 
 namespace SpatialSys.UnitySDK
 {
-    // TODO: Figure out how to rename to SceneData without breaking component reference from old bundles after client load
+    // Don't rename class name otherwise component reference will break.
     public class EnvironmentData : MonoBehaviour
     {
-        public const int VERSION = 1;
-
         public SpatialSeatHotspot[] seats;
         public SpatialEntrancePoint[] entrancePoints;
         public SpatialEmptyFrame[] emptyFrames;

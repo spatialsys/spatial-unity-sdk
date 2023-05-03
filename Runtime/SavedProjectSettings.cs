@@ -1,7 +1,6 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
 
 namespace SpatialSys.UnitySDK
 {
@@ -22,9 +21,8 @@ namespace SpatialSys.UnitySDK
 
     public class SavedProjectSettings : ScriptableObject
     {
-        [HideInInspector]
-        public List<CollisionPair> customCollisionSettings;
-        [HideInInspector]
-        public List<CollisionPair> customCollision2DSettings;
+        [HideInInspector] public string publishedSDKVersion;
+        [HideInInspector] public List<CollisionPair> customCollisionSettings;
+        [HideInInspector] public List<CollisionPair> customCollision2DSettings;
     }
 }

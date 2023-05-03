@@ -268,7 +268,7 @@ namespace SpatialSys.UnitySDK.Editor
             root.Query<Button>("selectObjectButton").First().clicked += OpenSelectedIssueGameObject;
 
             // Help
-            root.Query<Button>("gotoDocumentation").First().clicked += () => Application.OpenURL(UpgradeUtility.packageInfo.documentationUrl);
+            root.Query<Button>("gotoDocumentation").First().clicked += () => Application.OpenURL(PackageManagerUtility.documentationUrl);
             root.Query<Button>("gotoSupport").First().clicked += () => Application.OpenURL(SUPPORT_URL);
             root.Query<Button>("gotoDiscord").First().clicked += () => Application.OpenURL(DISCORD_URL);
 
@@ -348,6 +348,7 @@ namespace SpatialSys.UnitySDK.Editor
                 rootVisualElement.Q("avatarConfig").style.display = (packageConfig.packageType == PackageType.Avatar) ? DisplayStyle.Flex : DisplayStyle.None;
                 rootVisualElement.Q("avatarAnimationConfig").style.display = (packageConfig.packageType == PackageType.AvatarAnimation) ? DisplayStyle.Flex : DisplayStyle.None;
                 rootVisualElement.Q("prefabObjectConfig").style.display = (packageConfig.packageType == PackageType.PrefabObject) ? DisplayStyle.Flex : DisplayStyle.None;
+                rootVisualElement.Q("wearableConfig").style.display = (packageConfig.packageType == PackageType.Wearable) ? DisplayStyle.Flex : DisplayStyle.None;
             }
         }
 
@@ -384,15 +385,23 @@ namespace SpatialSys.UnitySDK.Editor
         {
             string clipboard = GUIUtility.systemCopyBuffer;
 
-            if (string.IsNullOrWhiteSpace(clipboard) || !clipboard.StartsWith("sandbox"))
+            if (string.IsNullOrWhiteSpace(clipboard))
             {
-                Debug.LogError("Invalid access token, try clicking copy to clipboard again. Pasted text: " + clipboard);
+                UnityEditor.EditorUtility.DisplayDialog("System clipboard is empty", "Unable to paste the access token since the system clipboard is empty. Try copying the access token to your clipboard again.", "OK");
                 return;
             }
+
+            if (!clipboard.StartsWith("sandbox"))
+            {
+                UnityEditor.EditorUtility.DisplayDialog("Invalid access token", "The access token provided is incorrectly formatted. Try copying the access token to your clipboard again.", "OK");
+                return;
+            }
+
             _authToken = clipboard;
             EditorUtility.SaveAuthToken(clipboard);
             UpdateAuthWarning();
-            GUIUtility.systemCopyBuffer = "";
+            GUIUtility.systemCopyBuffer = null;
+            UnityEditor.EditorUtility.DisplayDialog("Success", "You have successfully authenticated with Spatial!", "Begin creating");
         }
 
         private void UpdateAuthWarning()

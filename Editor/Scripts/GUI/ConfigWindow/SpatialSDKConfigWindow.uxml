@@ -42,7 +42,7 @@
                 </ui:VisualElement>
                 <ui:VisualElement name="WarningBlock" class="block_white block_base block_yellow">
                     <ui:Label text="No sharing!" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
-                    <ui:Label text="Your access token should not be shared with anybody." display-tooltip-when-elided="true" name="Text" class="blockText" />
+                    <ui:Label text="Your access token should not be shared with anybody. Spatial will never ask you for this token." display-tooltip-when-elided="true" name="Text" class="blockText" />
                     <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: none;">
                         <ui:Button text="Get Login Token" display-tooltip-when-elided="true" name="Button1" class="blockButton" />
                         <ui:VisualElement name="Filler" style="flex-grow: 1;" />
@@ -57,7 +57,7 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement name="config" style="display: none;">
+            <ui:VisualElement name="config" style="display: flex;">
                 <ui:VisualElement name="configNull" style="align-items: center; display: flex; flex-shrink: 0; justify-content: space-around; flex-basis: auto;">
                     <ui:VisualElement name="notLoggedInBlock" class="block_white block_red block_base">
                         <ui:Label text="Config file not found" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
@@ -119,6 +119,11 @@
                         <uie:PropertyField binding-path="prefab" label="Prefab" name="prefab" />
                         <uie:PropertyField binding-path="thumbnail" label="Thumbnail" name="thumbnail" />
                     </ui:VisualElement>
+                    <ui:VisualElement name="wearableConfig" style="margin-top: 10px; display: flex;">
+                        <uie:PropertyField binding-path="prefab" label="Prefab" name="prefab" />
+                        <uie:PropertyField binding-path="usageContext" label="Usage Context" name="usageContext" />
+                        <uie:PropertyField binding-path="thumbnail" label="Thumbnail" name="thumbnail" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="issues" style="display: none; flex-grow: 1; flex-shrink: 0; height: 100%;">
@@ -171,7 +176,7 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement name="badges" style="display: flex;">
+            <ui:VisualElement name="badges" style="display: none;">
                 <ui:VisualElement name="badgeInfo" class="block_white block_base">
                     <ui:Label text="Badges" display-tooltip-when-elided="true" name="Badges" class="blockTitle" />
                     <ui:Label text="In this section, you can create badges to reward users when they finish a quest. Badges can be worn by users under their nametag, so they provide a very nice way to promote your space and show off their accomplishments." display-tooltip-when-elided="true" name="Description" class="blockText" />

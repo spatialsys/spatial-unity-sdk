@@ -51,4 +51,27 @@ namespace SpatialSys.UnitySDK.VisualScripting
             avatarRotation = ValueOutput<Quaternion>(nameof(avatarRotation), (f) => ClientBridge.GetLocalAvatarRotation.Invoke());
         }
     }
+
+    [UnitTitle("Spatial Actor: Get Name")]
+    [UnitSurtitle("Spatial Actor")]
+    [UnitShortTitle("Get Name")]
+    [UnitCategory("Spatial\\Get Actions")]
+    [TypeIcon(typeof(SpatialComponentBase))]
+    public class GetActorNameNode : Unit
+    {
+        [DoNotSerialize]
+        [NullMeansSelf]
+        public ValueInput actor { get; private set; }
+       
+        [DoNotSerialize]
+        [PortLabel("Name")]
+        public ValueOutput actorName { get; private set; }
+
+        protected override void Definition()
+        {
+            actor = ValueInput<int>(nameof(actor), -1);
+
+            actorName = ValueOutput<string>(nameof(actorName), (f) => ClientBridge.GetActorName.Invoke(f.GetValue<int>(actor)));
+        }
+    }
 }
