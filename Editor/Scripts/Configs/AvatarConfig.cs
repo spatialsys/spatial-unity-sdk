@@ -21,7 +21,7 @@ namespace SpatialSys.UnitySDK.Editor
         }
 
         public SpatialAvatar prefab;
-        public Scope usageContext = Scope.Global; // AKA "avatar scope"
+        public Scope usageContext = Scope.Universal; // AKA "scope"
         public Category category = Category.Unspecified;
 
         public override PackageType packageType => PACKAGE_TYPE;

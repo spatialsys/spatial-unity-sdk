@@ -45,11 +45,13 @@ namespace SpatialSys.UnitySDK
         {
             public RewardType type;
             public string id;
+            public int amount = 1; // only used for item reward type
         }
 
         public enum RewardType
         {
             Badge = 0,
+            Item = 1,
         }
 
         [Serializable]

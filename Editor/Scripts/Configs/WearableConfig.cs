@@ -8,7 +8,7 @@ namespace SpatialSys.UnitySDK.Editor
         private const PackageType PACKAGE_TYPE = PackageType.Wearable;
 
         public SpatialWearable prefab;
-        public Scope usageContext = Scope.Global; // AKA "wearable scope"
+        public Scope usageContext = Scope.Universal; // AKA "wearable scope"
 
         public override PackageType packageType => PACKAGE_TYPE;
         public override Vector2Int thumbnailDimensions => new Vector2Int(512, 512);

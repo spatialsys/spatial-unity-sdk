@@ -52,12 +52,27 @@ namespace SpatialSys.UnitySDK.Editor
                     rect.y += idRect.height + EditorGUIUtility.standardVerticalSpacing;
                 }
             }
+            else if (typeProp.enumValueIndex == (int)SpatialQuest.RewardType.Item)
+            {
+                SerializedProperty amountProp = property.FindPropertyRelative(nameof(SpatialQuest.Reward.amount));
+
+                Rect idRect = new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight);
+                EditorGUI.PropertyField(idRect, idProp);
+                rect.y += idRect.height + EditorGUIUtility.standardVerticalSpacing;
+
+                Rect amountRect = new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight);
+                EditorGUI.PropertyField(amountRect, amountProp);
+                rect.y += amountRect.height + EditorGUIUtility.standardVerticalSpacing;
+            }
 
             EditorGUI.EndProperty();
         }
+
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            return 50;
+            SerializedProperty typeProp = property.FindPropertyRelative(nameof(SpatialQuest.Reward.type));
+            int lines = typeProp.enumValueIndex == (int)SpatialQuest.RewardType.Badge ? 2 : 3;
+            return EditorGUIUtility.singleLineHeight * lines + EditorGUIUtility.standardVerticalSpacing * (lines - 1);
         }
 
         private void RetrieveBadgeOptions()

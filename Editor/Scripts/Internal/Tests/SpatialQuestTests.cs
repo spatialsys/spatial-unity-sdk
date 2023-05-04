@@ -100,10 +100,20 @@ namespace SpatialSys.UnitySDK.Editor
         }
 
         [ComponentTest(typeof(SpatialQuest))]
-        public static IPromise CheckQuestBadge(SpatialQuest target)
+        public static IPromise CheckQuestRewards(SpatialQuest target)
         {
             if (target.questRewards == null || target.questRewards.Length == 0)
                 return Promise.Resolved();
+
+            if (target.questRewards.Any(r => r.type == SpatialQuest.RewardType.Item && (string.IsNullOrEmpty(r.id) || r.amount <= 0)))
+            {
+                SpatialValidator.AddResponse(new SpatialTestResponse(
+                    target,
+                    TestResponseType.Fail,
+                    "Quest has an invalid item reward",
+                    "Reward id (Item ID), which can be found in Spatial Studio must be set. Additionally, the amount must be greater than 0."
+                ));
+            }
 
             if (target.questRewards.Count(r => r.type == SpatialQuest.RewardType.Badge) > 1)
             {
@@ -114,7 +124,7 @@ namespace SpatialSys.UnitySDK.Editor
                     "Only one badge can be rewarded per quest. Remove everything else."
                 ));
             }
-            else
+            else if (target.questRewards.Any(r => r.type == SpatialQuest.RewardType.Badge))
             {
                 var badgeReward = target.questRewards.First(r => r.type == SpatialQuest.RewardType.Badge);
                 if (string.IsNullOrEmpty(badgeReward.id))
@@ -142,6 +152,7 @@ namespace SpatialSys.UnitySDK.Editor
                         });
                 }
             }
+
             return Promise.Resolved();
         }
 

@@ -65,7 +65,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         private static void ValidateAvatarVertexCount(AvatarConfig config, int vertexCount)
         {
-            int vertexCountLimit = (config.usageContext == AvatarConfig.Scope.Global) ? 50000 : 200000;
+            int vertexCountLimit = (config.usageContext == AvatarConfig.Scope.Universal) ? 50000 : 200000;
 
             if (vertexCount > vertexCountLimit)
             {
@@ -82,7 +82,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         private static void ValidateAvatarTriangleCount(AvatarConfig config, int triangleCount)
         {
-            int triangleCountLimit = (config.usageContext == AvatarConfig.Scope.Global) ? 22500 : 200000;
+            int triangleCountLimit = (config.usageContext == AvatarConfig.Scope.Universal) ? 22500 : 200000;
 
             if (triangleCount > triangleCountLimit)
             {
@@ -100,7 +100,7 @@ namespace SpatialSys.UnitySDK.Editor
         private static void ValidateAvatarSubMeshCount(AvatarConfig config, int subMeshCount)
         {
             // Submeshes correspond to a unique material and mesh, which we can use to approximate the draw calls it will use.
-            int subMeshCountLimit = (config.usageContext == AvatarConfig.Scope.Global) ? 4 : 100;
+            int subMeshCountLimit = (config.usageContext == AvatarConfig.Scope.Universal) ? 4 : 100;
 
             if (subMeshCount > subMeshCountLimit)
             {
@@ -118,7 +118,7 @@ namespace SpatialSys.UnitySDK.Editor
         private static void ValidateAvatarBoundsSize(AvatarConfig config, Vector3 boundsSize)
         {
             // We're using a float since the avatar can be oriented in any axis (e.g. X-axis might be the avatar's height, depending on where it's exported from).
-            float boundsSizeLimit = (config.usageContext == AvatarConfig.Scope.Global) ? 2.5f : 25f;
+            float boundsSizeLimit = (config.usageContext == AvatarConfig.Scope.Universal) ? 2.5f : 25f;
 
             if (boundsSize.x > boundsSizeLimit || boundsSize.y > boundsSizeLimit || boundsSize.z > boundsSizeLimit)
             {
@@ -147,7 +147,7 @@ namespace SpatialSys.UnitySDK.Editor
             if (config.prefab == null)
                 return;
 
-            int textureSizeLimit = (config.usageContext == AvatarConfig.Scope.Global) ? 1024 : 4096;
+            int textureSizeLimit = (config.usageContext == AvatarConfig.Scope.Universal) ? 1024 : 4096;
             Object[] assetDeps = UnityEditor.EditorUtility.CollectDependencies(new Object[] { config.prefab });
 
             foreach (Object asset in assetDeps)
@@ -170,12 +170,12 @@ namespace SpatialSys.UnitySDK.Editor
         }
 
         /// <summary>
-        /// If the avatar is intended for Global usage context, ensure there are no scripting-related components attached.
+        /// If the avatar is intended for Universal usage context, ensure there are no scripting-related components attached.
         /// </summary>
         [PackageTest(PackageType.Avatar)]
-        public static void EnsureGlobalAvatarHasNoScriptingComponents(AvatarConfig config)
+        public static void EnsureUniversalAvatarHasNoScriptingComponents(AvatarConfig config)
         {
-            if (config.usageContext != AvatarConfig.Scope.Global)
+            if (config.usageContext != AvatarConfig.Scope.Universal)
                 return;
 
             if (config.prefab == null)
@@ -188,7 +188,7 @@ namespace SpatialSys.UnitySDK.Editor
                     new SpatialTestResponse(
                         scriptingComponents[0],
                         TestResponseType.Fail,
-                        "Visual Scripting is not allowed on avatars intended for a Global usage context",
+                        "Visual Scripting is not allowed on avatars intended for a Universal usage context",
                         "This restriction is to keep functionality consistent across all spaces. " +
                             "You may learn more about these restrictions and avatar usage contexts by reading the Avatar packages documentation. " +
                             $"Remove the following components to fix this issue:\n{EditorUtility.GetComponentNamesWithInstanceCountString(scriptingComponents)}"

@@ -1,4 +1,4 @@
-Type Name,Space,SpaceTemplate,Avatar_Global,Avatar_World,AvatarAnimation,PrefabObject,Wearable_Global_Aura,Wearable_World_Aura
+Type Name,Space,SpaceTemplate,Avatar_Universal,Avatar_World,AvatarAnimation,PrefabObject,Wearable_Universal_Aura,Wearable_World_Aura
 SpatialSys.UnitySDK.SpatialAvatar,Y,Y,Y,Y,N,N,N,N
 SpatialSys.UnitySDK.SpatialAvatarAnimation,Y,Y,N,N,Y,N,N,N
 SpatialSys.UnitySDK.SpatialAvatarTeleporter,Y,Y,N,N,N,N,N,N
