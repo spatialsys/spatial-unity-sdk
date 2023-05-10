@@ -15,7 +15,7 @@ namespace SpatialSys.UnitySDK.Editor
     [InitializeOnLoad]
     public class SpatialSDKConfigWindow : EditorWindow
     {
-        private static readonly string ACCESS_TOKEN_URL = $"https://{SpatialAPI.SPATIAL_ORIGIN}/account";
+        private static readonly string ACCESS_TOKEN_URL = $"https://{SpatialAPI.SPATIAL_ORIGIN}/studio/account";
 
         private const string SUPPORT_URL = "https://support.spatial.io/hc/en-us";
         private const string DISCORD_URL = "https://discord.com/invite/spatial";

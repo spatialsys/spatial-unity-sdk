@@ -37,7 +37,7 @@ namespace SpatialSys.UnitySDK
         public SpatialEvent onEnterEvent;
         public SpatialEvent onExitEvent;
 
-        private void Awake()
+        private void Start()
         {
             ClientBridge.InitializeSpatialInteractable?.Invoke(this);
         }

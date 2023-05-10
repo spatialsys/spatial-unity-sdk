@@ -116,4 +116,55 @@ namespace SpatialSys.UnitySDK.VisualScripting
             yield return outputTrigger;
         }
     }
+
+    [UnitTitle("Spatial: Use Backpack Item")]
+    [UnitSurtitle("Spatial")]
+    [UnitShortTitle("Use Backpack Item")]
+    [UnitCategory("Spatial\\Actions")]
+    [TypeIcon(typeof(SpatialComponentBase))]
+    public class UseBackpackItemNode : Unit
+    {
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlInput inputTrigger { get; private set; }
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlOutput outputTrigger { get; private set; }
+
+        [DoNotSerialize]
+        public ValueInput itemID { get; private set; }
+
+        [DoNotSerialize]
+        public ValueOutput succeeded { get; private set; }
+
+        protected override void Definition()
+        {
+            itemID = ValueInput<string>(nameof(itemID), "");
+            succeeded = ValueOutput<bool>(nameof(succeeded));
+
+            inputTrigger = ControlInputCoroutine(nameof(inputTrigger), ExecuteAsync);
+            outputTrigger = ControlOutput(nameof(outputTrigger));
+            Succession(inputTrigger, outputTrigger);
+        }
+
+        private IEnumerator ExecuteAsync(Flow flow)
+        {
+            var id = flow.GetValue<string>(itemID);
+            if (!string.IsNullOrEmpty(id))
+            {
+                bool completed = false;
+                ClientBridge.UseBackpackItem.Invoke(id, success => {
+                    completed = true;
+                    flow.SetValue(succeeded, success);
+                });
+                yield return new WaitUntil(() => completed);
+            }
+            else
+            {
+                flow.SetValue(succeeded, false);
+            }
+
+            yield return outputTrigger;
+        }
+    }
 }

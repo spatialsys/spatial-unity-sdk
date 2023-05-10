@@ -168,6 +168,9 @@ namespace SpatialSys.UnitySDK
         public delegate void GetBackpackItemDelegate(string itemID, Action<ClientBridge.GetBackpackItemResponse> callback);
         public static GetBackpackItemDelegate GetBackpackItem;
 
+        public delegate void UseBackpackItemDelegate(string itemID, Action<bool> callback);
+        public static UseBackpackItemDelegate UseBackpackItem;
+
         //Synced objects
         public delegate bool TakeoverSyncedObjectOwnerhipDelegate(SpatialSyncedObject syncedObject);
         public static TakeoverSyncedObjectOwnerhipDelegate TakeoverSyncedObjectOwnership;
@@ -235,6 +238,27 @@ namespace SpatialSys.UnitySDK
 
         public delegate void TriggerEventEnabledChangedDelegate(SpatialTriggerEvent spatialTriggerEvent, bool enabled);
         public static TriggerEventEnabledChangedDelegate TriggerEventEnabledChanged;
+
+        public delegate void SetLocalActorNametagSubtextDelegate(string subtext);
+        public static SetLocalActorNametagSubtextDelegate SetLocalActorNametagSubtext;
+
+        public delegate void SetLocalActorNametagBarVisibleDelegate(bool visible);
+        public static SetLocalActorNametagBarVisibleDelegate SetLocalActorNametagBarVisible;
+
+        public delegate void SetLocalActorNametagBarValueDelegate(float value);
+        public static SetLocalActorNametagBarValueDelegate SetLocalActorNametagBarValue;
+
+        public delegate string GetActorNametagDisplayNameDelegate(int actor);
+        public static GetActorNametagDisplayNameDelegate GetActorNametagDisplayName;
+
+        public delegate string GetActorNametagSubtextDelegate(int actor);
+        public static GetActorNametagSubtextDelegate GetActorNametagSubtext;
+
+        public delegate bool GetActorNametagBarVisibleDelegate(int actor);
+        public static GetActorNametagBarVisibleDelegate GetActorNametagBarVisible;
+
+        public delegate float GetActorNametagBarValueDelegate(int actor);
+        public static GetActorNametagBarValueDelegate GetActorNametagBarValue;
 
         //Network events (RPC)
         public delegate void SendSDKNetworkEventByteDelegate(bool everyone, byte eventID, object[] args);

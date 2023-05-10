@@ -31,7 +31,7 @@ namespace SpatialSys.UnitySDK
         [HideInInspector, FormerlySerializedAs("onEnter"), Obsolete("Use onExitEvent instead.")]
         public UnityEvent deprecated_onExit;
 
-        private void Awake()
+        private void Start()
         {
             ClientBridge.InitializeSpatialTriggerEvent?.Invoke(this);
         }

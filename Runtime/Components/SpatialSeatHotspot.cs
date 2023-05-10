@@ -11,7 +11,7 @@ namespace SpatialSys.UnitySDK
         [Tooltip("When checked, avatars will always face a specified direction along the blue axis. Disable this for chairs that you can sit on in any orientation like stools")]
         public bool forceAvatarOrientation = true;
 
-        private void Awake()
+        private void Start()
         {
             ClientBridge.InitializeSpatialSeatHotspot?.Invoke(this);
         }

@@ -13,7 +13,7 @@ namespace SpatialSys.UnitySDK
 
         public Transform targetLocation;
 
-        private void Awake()
+        private void Start()
         {
             ClientBridge.InitializeSpatialAvatarTeleporter?.Invoke(this);
         }

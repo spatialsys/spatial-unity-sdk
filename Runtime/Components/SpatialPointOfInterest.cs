@@ -29,7 +29,7 @@ namespace SpatialSys.UnitySDK
         public bool alwaysOnTop = false;
         public SpatialEvent onTextDisplayedEvent;
 
-        private void Awake()
+        private void Start()
         {
             ClientBridge.InitializeSpatialPointOfInterest?.Invoke(this);
         }
