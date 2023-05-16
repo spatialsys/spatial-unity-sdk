@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEditor;
 
 namespace SpatialSys.UnitySDK.Editor
@@ -16,14 +17,14 @@ namespace SpatialSys.UnitySDK.Editor
         public const int LATEST_VERSION = 1;
 
         public static ProjectConfig instance => AssetDatabase.LoadAssetAtPath<ProjectConfig>(ASSET_PATH);
-        public static string worldID
+        public static string defaultWorldID
         {
-            get => instance?._worldID;
+            get => instance?._defaultWorldID;
             set
             {
                 if (instance == null)
                     return;
-                instance._worldID = value;
+                instance._defaultWorldID = value;
                 UnityEditor.EditorUtility.SetDirty(instance);
                 AssetDatabase.SaveAssets();
             }
@@ -58,13 +59,15 @@ namespace SpatialSys.UnitySDK.Editor
             { PackageType.Avatar, typeof(AvatarConfig) },
             { PackageType.AvatarAnimation, typeof(AvatarAnimationConfig) },
             { PackageType.PrefabObject, typeof(PrefabObjectConfig) },
-            { PackageType.Wearable, typeof(WearableConfig) }
+            { PackageType.AvatarAttachment, typeof(AvatarAttachmentConfig) }
         };
 
 #pragma warning disable 414
         [SerializeField, HideInInspector] private int _configVersion; // version of this config model; Used for making backwards-compatible changes
 #pragma warning restore 414
-        [SerializeField, HideInInspector] private string _worldID;
+        [FormerlySerializedAs("_worldID")]
+        [Tooltip("The world that packages (such as spaces) will be added to by default when publishing. Changing this will not move existing packages to the new world.")]
+        [SerializeField] private string _defaultWorldID;
 
         [SerializeField] private List<PackageConfig> _packages = new List<PackageConfig>();
         [SerializeField] private int _currentPackageIndex = 0;

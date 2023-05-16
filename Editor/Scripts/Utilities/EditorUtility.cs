@@ -18,6 +18,7 @@ namespace SpatialSys.UnitySDK.Editor
         private static readonly Version CURRENT_UNITY_VERSION = GetParsedUnityVersion(Application.unityVersion);
 
         public static bool isUsingSupportedUnityVersion => CURRENT_UNITY_VERSION != null && CURRENT_UNITY_VERSION >= MIN_UNITY_VERSION && CURRENT_UNITY_VERSION <= MAX_UNITY_VERSION;
+        public static bool isAuthenticated => !string.IsNullOrEmpty(GetSavedAuthToken());
 
         public static readonly HashSet<string> defaultTags = new HashSet<string> {
             "Untagged",

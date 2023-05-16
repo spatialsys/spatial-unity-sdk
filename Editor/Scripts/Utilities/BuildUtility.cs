@@ -122,8 +122,7 @@ namespace SpatialSys.UnitySDK.Editor
                 .Then(resp => {
                     byte[] bundleBytes = File.ReadAllBytes(bundlePath);
                     SpatialAPI.UploadFile(useSpatialHeaders: false, resp.url, bundleBytes, UpdateSandboxUploadProgressBar)
-                        .Then(resp => 
-                        {
+                        .Then(resp => {
                             if (openBrowser)
                             {
                                 EditorUtility.OpenSandboxInBrowser();
@@ -191,11 +190,11 @@ namespace SpatialSys.UnitySDK.Editor
                     IPromise createWorldPromise = Promise.Resolved();
                     if (ProjectConfig.activePackage.packageType == PackageType.Space)
                     {
-                        createWorldPromise = WorldUtility.ValidateWorldExists()
+                        createWorldPromise = WorldUtility.AssignDefaultWorldToProjectIfNecessary()
                             .Then(() => {
                                 // Make sure that the space package has a worldID assigned
                                 SpaceConfig spaceConfig = ProjectConfig.activePackage as SpaceConfig;
-                                spaceConfig.worldID = ProjectConfig.worldID;
+                                spaceConfig.worldID = ProjectConfig.defaultWorldID;
                                 UnityEditor.EditorUtility.SetDirty(spaceConfig);
                                 AssetDatabase.SaveAssetIfDirty(spaceConfig);
                             });

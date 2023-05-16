@@ -11,6 +11,6 @@ namespace SpatialSys.UnitySDK
         AvatarAnimation = 2,
         PrefabObject = 3,
         [InspectorName(null)] // Not ready for public use yet
-        Wearable = 5,
+        AvatarAttachment = 5,
     }
 }

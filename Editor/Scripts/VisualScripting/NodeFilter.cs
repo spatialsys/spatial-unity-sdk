@@ -130,12 +130,14 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(IDictionary),
             typeof(IOrderedDictionary),
             typeof(OrderedDictionary),
+            typeof(CombineInstance),
 
             //Spatial Types
             typeof(SpatialPlatform),
             typeof(SpatialQuestTaskType),
             typeof(SpatialQuestStatus),
             typeof(SpatialCameraMode),
+            typeof(SpatialCameraRotationMode),
             typeof(NetworkEventTargets),
 
             //Additional types

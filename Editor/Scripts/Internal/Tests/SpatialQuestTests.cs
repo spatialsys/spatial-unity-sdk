@@ -136,21 +136,22 @@ namespace SpatialSys.UnitySDK.Editor
                         "The rewarded badge is not set. Select a valid badge to reward for this quest or remove the reward."
                     ));
                 }
-                else if (!Application.isBatchMode)
-                {
-                    return BadgeManager.FetchBadges()
-                        .Then((List<SpatialAPI.Badge> badges) => {
-                            if (badges != null && !badges.Exists(b => b.id == badgeReward.id))
-                            {
-                                SpatialValidator.AddResponse(new SpatialTestResponse(
-                                    target,
-                                    TestResponseType.Fail,
-                                    $"Invalid reward badge on quest {target.questName}",
-                                    "The badge reward set for this quest does not exist. Select a valid badge to reward for this quest or remove the reward."
-                                ));
-                            }
-                        });
-                }
+                // FIXME: Re-enable this test as part of DEV-22162; We need to fetch badges for a specific world that the space belongs to
+                // else if (!Application.isBatchMode)
+                // {
+                //     return WorldUtility.FetchBadges()
+                //         .Then((List<SpatialAPI.Badge> badges) => {
+                //             if (badges != null && !badges.Exists(b => b.id == badgeReward.id))
+                //             {
+                //                 SpatialValidator.AddResponse(new SpatialTestResponse(
+                //                     target,
+                //                     TestResponseType.Fail,
+                //                     $"Invalid reward badge on quest {target.questName}",
+                //                     "The badge reward set for this quest does not exist. Select a valid badge to reward for this quest or remove the reward."
+                //                 ));
+                //             }
+                //         });
+                // }
             }
 
             return Promise.Resolved();

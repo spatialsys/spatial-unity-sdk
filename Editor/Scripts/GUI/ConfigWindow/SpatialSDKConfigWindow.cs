@@ -6,9 +6,6 @@ using UnityEditor.UIElements;
 using System.Linq;
 using UnityEditor.SceneManagement;
 using System;
-using System.IO;
-using RSG;
-using Proyecto26;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -16,16 +13,15 @@ namespace SpatialSys.UnitySDK.Editor
     public class SpatialSDKConfigWindow : EditorWindow
     {
         private static readonly string ACCESS_TOKEN_URL = $"https://{SpatialAPI.SPATIAL_ORIGIN}/studio/account";
+        private string spatialStudioURL => $"https://{SpatialAPI.SPATIAL_ORIGIN}/studio/worlds/{ProjectConfig.defaultWorldID}";
 
         private const string SUPPORT_URL = "https://support.spatial.io/hc/en-us";
         private const string DISCORD_URL = "https://discord.com/invite/spatial";
-        private const string BADGE_TEMPLATE_URL = "https://www.canva.com/design/DAFccMdm0M8/jQM0Ra4kqvFVoGMK0lSgpQ/view?mode=preview";
 
         private static bool _isOpen = false;
 
         private const string CONFIG_TAB_NAME = "config";
         private const string ISSUES_TAB_NAME = "issues";
-        private const string BADGES_TAB_NAME = "badges";
         private const string PROJECT_CONFIG_NULL_ELEMENT_NAME = "configNull";
         private const string PROJECT_CONFIG_ELEMENT_NAME = "projectConfig";
         private const string PACKAGE_CONFIG_ELEMENT_NAME = "packageConfig";
@@ -36,6 +32,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         // Config Tab Elements
         private DropdownField _configActivePackageDropdown;
+        private DropdownField _configDefaultWorldSelectionDropdown;
         private EnumField _configCreatePackageTypeDropdown;
         private VisualElement _packageConfigSKUEmptyElement;
         private VisualElement _packageConfigSKUElement;
@@ -85,34 +82,6 @@ namespace SpatialSys.UnitySDK.Editor
         private Label _targetSceneName;
         private VisualElement _selectObjectBlock;
         private Label _targetObjectName;
-
-        // Badge Tab Elements
-        private const string _badgeTemplatePath = "Packages/io.spatial.unitysdk/Editor/Scripts/GUI/ConfigWindow/BadgeElement/BadgeElement.uxml";
-        private VisualTreeAsset badgeTemplate
-        {
-            get
-            {
-                if (_badgeTemplate == null)
-                {
-                    _badgeTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(_badgeTemplatePath);
-                    if (_badgeTemplate == null)
-                    {
-                        Debug.LogError("Badge Template could not be found. Your Spatial SDK installation may be corrupted.");
-                    }
-                }
-                return _badgeTemplate;
-            }
-        }
-        private VisualTreeAsset _badgeTemplate;
-        private VisualElement _badgeListParent;
-        private VisualElement _newBadge;
-        private TextField _newBadgeName;
-        private TextField _newBadgeDescription;
-        private VisualElement _newBadgeIcon;
-        private Label _newBadgeError;
-        private Label _badgeManagerStatus;
-        Dictionary<string, VisualElement> _badgeElements = new Dictionary<string, VisualElement>();
-        private byte[] _badgeIconToUpload;
 
         public static void OpenWindow(string startingTab)
         {
@@ -168,20 +137,38 @@ namespace SpatialSys.UnitySDK.Editor
             root.Query<Button>("accountButton").First().clicked += () => SetTab("account");
             root.Query<Button>("configButton").First().clicked += () => SetTab(CONFIG_TAB_NAME);
             root.Query<Button>("issuesButton").First().clicked += () => SetTab(ISSUES_TAB_NAME);
-            root.Query<Button>("badgesButton").First().clicked += () => SetTab(BADGES_TAB_NAME);
             root.Query<Button>("helpButton").First().clicked += () => SetTab("help");
 
             // Account
             root.Query<Button>("getToken").First().clicked += () => Application.OpenURL(ACCESS_TOKEN_URL);
             root.Query<Button>("pasteToken").First().clicked += () => PasteAuthToken();
 
-            // Config 
+            // Config
+            root.Query<Button>("openStudio").First().clicked += () => Application.OpenURL(spatialStudioURL);
             root.Query<Button>("newConfigButton").First().clicked += () => {
                 ProjectConfig.Create();
                 root.Bind(new SerializedObject(ProjectConfig.activePackage));
             };
             _configActivePackageDropdown = root.Q<DropdownField>("packageConfigDropDown");
             _configActivePackageDropdown.RegisterValueChangedCallback(OnActivePackageDropdownValueChanged);
+            _configDefaultWorldSelectionDropdown = root.Q<DropdownField>("defaultWorldDropDown");
+            _configDefaultWorldSelectionDropdown.RegisterValueChangedCallback(OnDefaultWorldSelectionDropdownValueChanged);
+            root.Q<Button>("refreshWorldsButton").clicked += () => {
+                UpdateDefaultWorldSelectionDropdown();
+                WorldUtility.FetchWorlds().Then(() => UpdateDefaultWorldSelectionDropdown());
+            };
+            root.Q<Button>("createWorldsButton").clicked += () => {
+                SpatialAPI.CreateWorld()
+                    .Then(resp => {
+                        ProjectConfig.defaultWorldID = resp.id;
+                        return WorldUtility.FetchWorlds();
+                    })
+                    .Then(() => UpdateDefaultWorldSelectionDropdown())
+                    .Catch(ex => {
+                        UnityEditor.EditorUtility.DisplayDialog("Failed to create new world", ex.Message, "OK");
+                        Debug.LogError($"Failed to create new world: {ex.Message}");
+                    });
+            };
             _configCreatePackageTypeDropdown = root.Q<EnumField>("createPackageTypeDropdown");
             root.Q<Button>("createPackageButton").clicked += () => {
                 var package = ProjectConfig.AddNewPackage((PackageType)_configCreatePackageTypeDropdown.value);
@@ -225,21 +212,6 @@ namespace SpatialSys.UnitySDK.Editor
             _packageConfigSKUEmptyElement = root.Q(PACKAGE_CONFIG_ELEMENT_NAME).Q("packageSKUEmpty");
             _packageConfigSKUElement = root.Q(PACKAGE_CONFIG_ELEMENT_NAME).Q("packageSKU");
             _configPackageType = root.Q(PACKAGE_CONFIG_ELEMENT_NAME).Query<Label>("packageTypeValue").First();
-
-            // Badges
-            _badgeListParent = root.Q("badgesScroll");
-            root.Query<Button>("changeIconButton").First().clicked += () => ChangeBadgeIcon(null);
-            root.Query<Button>("createBadgeButton").First().clicked += () => CreateBadge();
-            _newBadge = root.Query<VisualElement>("newBadge").First();
-            _newBadgeName = root.Query<TextField>("newBadgeName").First();
-            _newBadgeDescription = root.Query<TextField>("newBadgeDescription").First();
-            _newBadgeIcon = root.Query<VisualElement>("newBadgeIcon").First();
-            _newBadgeError = root.Query<Label>("newBadgeError").First();
-            _badgeManagerStatus = root.Query<Label>("badgeManagerStatus").First();
-            root.Query<Button>("gotoBadgeTemplate").First().clicked += () => {
-                Application.OpenURL(BADGE_TEMPLATE_URL);
-                Debug.Log($"Opening Browser: {BADGE_TEMPLATE_URL}");
-            };
 
             // Issues
             _issuesActivePackageDropdown = root.Q<DropdownField>("issuesPackageDropDown");
@@ -296,7 +268,6 @@ namespace SpatialSys.UnitySDK.Editor
             rootVisualElement.Q("account").style.display = DisplayStyle.None;
             rootVisualElement.Q(CONFIG_TAB_NAME).style.display = DisplayStyle.None;
             rootVisualElement.Q(ISSUES_TAB_NAME).style.display = DisplayStyle.None;
-            rootVisualElement.Q(BADGES_TAB_NAME).style.display = DisplayStyle.None;
             rootVisualElement.Q("help").style.display = DisplayStyle.None;
 
             rootVisualElement.Q(tab).style.display = DisplayStyle.Flex;
@@ -312,16 +283,11 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 UpdateIssuesTabContents();
             }
-            else if (tab == BADGES_TAB_NAME)
-            {
-                RefreshBadges();
-            }
 
             // Tab buttons
             rootVisualElement.Q("accountButton").RemoveFromClassList("tabButtonSelected");
             rootVisualElement.Q("configButton").RemoveFromClassList("tabButtonSelected");
             rootVisualElement.Q("issuesButton").RemoveFromClassList("tabButtonSelected");
-            rootVisualElement.Q("badgesButton").RemoveFromClassList("tabButtonSelected");
             rootVisualElement.Q("helpButton").RemoveFromClassList("tabButtonSelected");
 
             rootVisualElement.Q(tab + "Button").AddToClassList("tabButtonSelected");
@@ -335,6 +301,7 @@ namespace SpatialSys.UnitySDK.Editor
             rootVisualElement.Q(PACKAGE_CONFIG_ELEMENT_NAME).style.display = (packageConfig != null) ? DisplayStyle.Flex : DisplayStyle.None;
 
             UpdateActivePackageDropdown(_configActivePackageDropdown);
+            UpdateDefaultWorldSelectionDropdown();
 
             // Active Package
             if (packageConfig != null)
@@ -348,7 +315,7 @@ namespace SpatialSys.UnitySDK.Editor
                 rootVisualElement.Q("avatarConfig").style.display = (packageConfig.packageType == PackageType.Avatar) ? DisplayStyle.Flex : DisplayStyle.None;
                 rootVisualElement.Q("avatarAnimationConfig").style.display = (packageConfig.packageType == PackageType.AvatarAnimation) ? DisplayStyle.Flex : DisplayStyle.None;
                 rootVisualElement.Q("prefabObjectConfig").style.display = (packageConfig.packageType == PackageType.PrefabObject) ? DisplayStyle.Flex : DisplayStyle.None;
-                rootVisualElement.Q("wearableConfig").style.display = (packageConfig.packageType == PackageType.Wearable) ? DisplayStyle.Flex : DisplayStyle.None;
+                rootVisualElement.Q("avatarAttachmentConfig").style.display = (packageConfig.packageType == PackageType.AvatarAttachment) ? DisplayStyle.Flex : DisplayStyle.None;
             }
         }
 
@@ -381,6 +348,36 @@ namespace SpatialSys.UnitySDK.Editor
             InvalidateIssues();
         }
 
+        private void UpdateDefaultWorldSelectionDropdown()
+        {
+            _configDefaultWorldSelectionDropdown.SetEnabled(!WorldUtility.isFetchingWorlds && WorldUtility.worlds.Length > 0);
+            _configDefaultWorldSelectionDropdown.choices = WorldUtility.worlds.Select(w => $"{w.displayName} ({w.id})").ToList();
+
+            int index = System.Array.FindIndex(WorldUtility.worlds, w => w.id == ProjectConfig.defaultWorldID);
+            if (index >= 0)
+            {
+                _configDefaultWorldSelectionDropdown.index = index;
+            }
+            else if (string.IsNullOrEmpty(ProjectConfig.defaultWorldID))
+            {
+                _configDefaultWorldSelectionDropdown.choices.Add($"None (Create New World)");
+                _configDefaultWorldSelectionDropdown.index = _configDefaultWorldSelectionDropdown.choices.Count - 1;
+            }
+            else
+            {
+                _configDefaultWorldSelectionDropdown.choices.Add($"Invalid World ({ProjectConfig.defaultWorldID})");
+                _configDefaultWorldSelectionDropdown.index = _configDefaultWorldSelectionDropdown.choices.Count - 1;
+            }
+        }
+
+        private void OnDefaultWorldSelectionDropdownValueChanged(ChangeEvent<string> evt)
+        {
+            var dropdownField = evt.target as DropdownField;
+            int index = dropdownField.choices.IndexOf(evt.newValue);
+            if (index >= 0 && index < WorldUtility.worlds.Length)
+                ProjectConfig.defaultWorldID = WorldUtility.worlds[index].id;
+        }
+
         private void PasteAuthToken()
         {
             string clipboard = GUIUtility.systemCopyBuffer;
@@ -402,6 +399,9 @@ namespace SpatialSys.UnitySDK.Editor
             UpdateAuthWarning();
             GUIUtility.systemCopyBuffer = null;
             UnityEditor.EditorUtility.DisplayDialog("Success", "You have successfully authenticated with Spatial!", "Begin creating");
+
+            if (EditorUtility.isAuthenticated)
+                WorldUtility.FetchWorlds().Then(() => UpdateDefaultWorldSelectionDropdown());
         }
 
         private void UpdateAuthWarning()
@@ -628,183 +628,6 @@ namespace SpatialSys.UnitySDK.Editor
             }
 
             Selection.activeObject = response.targetObject;
-        }
-
-        /////////////////////////////////////////
-        //               Badges
-        /////////////////////////////////////////
-
-        private void RefreshBadges()
-        {
-            _badgeListParent.Clear();
-            _badgeElements.Clear();
-
-            CallBadgeApiFunction("Fetching badges", null, BadgeManager.FetchBadges())
-                .Then(badges => {
-                    foreach (var b in badges)
-                        CreateBadgeElement(b);
-                });
-        }
-
-        private void CreateBadgeElement(SpatialAPI.Badge badge)
-        {
-            VisualElement element = badgeTemplate.Instantiate();
-            if (!EditorGUIUtility.isProSkin)
-            {
-                element.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>("Packages/io.spatial.unitysdk/Editor/Scripts/GUI/ConfigWindow/SpatialValidatorWindow_LightModeOverride.uss"));
-            }
-            _badgeListParent.Add(element);
-            _badgeElements.Add(badge.id, element);
-
-            var idLabel = element.Query<TextField>("badgeId").First();
-            var nameText = element.Query<TextField>("name").First();
-            var descriptionText = element.Query<TextField>("description").First();
-            var badgeIcon = element.Query<VisualElement>("badgeIcon").First();
-
-            // Set layout values
-            idLabel.value = badge.id;
-            nameText.value = badge.name;
-            descriptionText.value = badge.description;
-
-            BadgeManager.GetBadgeIcon(badge.id).Then(texture => {
-                badgeIcon.style.backgroundImage = texture;
-            });
-
-            // Add events
-            element.Query<Button>("deleteButton").First().clicked += () => DeleteBadge(badge.id);
-            element.Query<Button>("saveButton").First().clicked += () => UpdateBadge(badge.id, nameText.value, descriptionText.value);
-            element.Query<Button>("changeIconButton").First().clicked += () => ChangeBadgeIcon(badge.id);
-        }
-
-        private void CreateBadge()
-        {
-            if (_badgeIconToUpload == null || _badgeIconToUpload.Length == 0)
-            {
-                _newBadgeError.text = "Select a badge icon before creating";
-                return;
-            }
-
-            CallBadgeApiFunction("Creating badge", null, BadgeManager.CreateBadge(_newBadgeName.value, _newBadgeDescription.value, _badgeIconToUpload))
-                .Then(badge => {
-                    CreateBadgeElement(badge);
-                    _newBadgeName.value = "";
-                    _newBadgeDescription.value = "";
-                    _newBadgeIcon.style.backgroundImage = null;
-                    _badgeIconToUpload = null;
-                });
-        }
-
-        private void ChangeBadgeIcon(string badgeID)
-        {
-            // Open file and load data
-            string path = UnityEditor.EditorUtility.OpenFilePanel("Select badge icon", "", "png");
-            if (path.Length == 0)
-                return;
-
-            byte[] fileContent = File.ReadAllBytes(path);
-
-            CallBadgeApiFunction("Uploading badge icon", badgeID, BadgeManager.UpdateBadgeIcon(badgeID, fileContent))
-                .Then(texture => {
-                    if (badgeID == null)
-                    {
-                        _badgeIconToUpload = fileContent;
-                        _newBadgeIcon.style.backgroundImage = texture;
-                    }
-                    else
-                    {
-                        VisualElement element = _badgeElements[badgeID];
-                        var badgeIcon = element.Query<VisualElement>("badgeIcon").First();
-
-                        badgeIcon.style.backgroundImage = texture;
-                    }
-                });
-        }
-
-        private void DeleteBadge(string badgeID)
-        {
-            CallBadgeApiFunction("Deleting badge", badgeID, BadgeManager.DeleteBadge(badgeID))
-                .Then(() => {
-                    VisualElement element = _badgeElements[badgeID];
-                    _badgeElements.Remove(badgeID);
-                    _badgeListParent.Remove(element);
-                });
-        }
-
-        private void UpdateBadge(string badgeID, string name, string description)
-        {
-            CallBadgeApiFunction("Updating badge", badgeID, BadgeManager.UpdateBadge(badgeID, name, description))
-                .Then(() => {
-                    VisualElement element = _badgeElements[badgeID];
-                    var nameText = element.Query<TextField>("name").First();
-                    var descriptionText = element.Query<TextField>("description").First();
-
-                    // Set layout values
-                    nameText.value = name;
-                    descriptionText.value = description;
-                });
-        }
-        private IPromise CallBadgeApiFunction(string message, string badgeID, IPromise promise)
-        {
-            SetBadgeManagerStatus(message);
-            SetBadgeError(badgeID);
-            return promise
-                .Then(() => {
-                    SetBadgeManagerStatus("");
-                }).Catch(exception => {
-                    SetBadgeManagerStatus("");
-                    SetBadgeError(badgeID, exception);
-                    throw exception;
-                });
-        }
-
-        private IPromise<T> CallBadgeApiFunction<T>(string message, string badgeID, IPromise<T> promise)
-        {
-            SetBadgeManagerStatus(message);
-            SetBadgeError(badgeID);
-            return promise
-                .Then(response => {
-                    SetBadgeManagerStatus("");
-                    return response;
-                }).Catch(exception => {
-                    SetBadgeManagerStatus("");
-                    SetBadgeError(badgeID, exception);
-                    throw exception;
-                });
-        }
-
-        private void SetBadgeManagerStatus(string text)
-        {
-            _badgeManagerStatus.text = text;
-
-            bool enabled = text.Length == 0;
-            _newBadge.SetEnabled(enabled);
-            _badgeListParent.SetEnabled(enabled);
-        }
-
-        private void SetBadgeError(string badgeID, Exception exception = null)
-        {
-            string message = "";
-            if (exception != null)
-            {
-                if (exception is RequestException)
-                {
-                    message = (exception as RequestException).ServerMessage;
-                }
-                else
-                {
-                    message = exception.Message;
-                }
-                Debug.LogException(exception);
-            }
-
-            if (badgeID == null)
-            {
-                _newBadgeError.text = message;
-            }
-            else
-            {
-                _badgeElements[badgeID].Query<Label>("error").First().text = message;
-            }
         }
     }
 }

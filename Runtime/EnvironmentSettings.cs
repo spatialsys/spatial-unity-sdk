@@ -14,6 +14,9 @@ namespace SpatialSys.UnitySDK
         public bool disableTeleport = false;
         public bool useSeatsAsSpawnPoints = false;
 
+        [Space(5), Tooltip("Web Only")]
+        public SpatialCameraRotationMode cameraRotationMode = SpatialCameraRotationMode.AutoRotate;
+
         public AvatarControlSettings avatarControlSettings = AvatarControlSettings.Default;
 
         // Default values set below should be set to be backwards compatible: these values are loaded in packages using old SDK version that don't have these settings available.

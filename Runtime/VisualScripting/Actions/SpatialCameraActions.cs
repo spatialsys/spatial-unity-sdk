@@ -64,4 +64,56 @@ namespace SpatialSys.UnitySDK.VisualScripting
             Succession(inputTrigger, outputTrigger);
         }
     }
+
+    [UnitCategory("Spatial\\Actions")]
+    [UnitTitle("Spatial Camera: Set Rotation Mode")]
+
+    [UnitSurtitle("Spatial Camera")]
+    [UnitShortTitle("Set Rotation Mode")]
+
+    [TypeIcon(typeof(SpatialComponentBase))]
+    public class SetCameraRotationModeNode : Unit
+    {
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlInput inputTrigger { get; private set; }
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlOutput outputTrigger { get; private set; }
+
+        [DoNotSerialize]
+        [PortLabel("Rotation Mode")]
+        public ValueInput cameraRotationMode { get; private set; }
+
+        protected override void Definition()
+        {
+            cameraRotationMode = ValueInput<SpatialCameraRotationMode>(nameof(cameraRotationMode), SpatialCameraRotationMode.AutoRotate);
+            inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
+                ClientBridge.SetCameraRotationMode.Invoke(f.GetValue<SpatialCameraRotationMode>(cameraRotationMode));
+                return outputTrigger;
+            });
+
+            outputTrigger = ControlOutput(nameof(outputTrigger));
+            Succession(inputTrigger, outputTrigger);
+        }
+    }
+
+    [UnitCategory("Spatial\\Get Actions")]
+    [UnitTitle("Spatial Camera: Get Rotation Mode")]
+
+    [UnitSurtitle("Spatial Camera")]
+    [UnitShortTitle("Get Rotation Mode")]
+
+    [TypeIcon(typeof(SpatialComponentBase))]
+    public class GetCameraRotationModeNode : Unit
+    {
+        [DoNotSerialize]
+        [PortLabel("Rotation Mode")]
+        public ValueOutput cameraRotationMode { get; private set; }
+
+        protected override void Definition()
+        {
+            cameraRotationMode = ValueOutput<SpatialCameraRotationMode>(nameof(cameraRotationMode), (f) => (SpatialCameraRotationMode)ClientBridge.GetCameraRotationMode.Invoke());
+        }
+    }
 }

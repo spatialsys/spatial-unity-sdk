@@ -4,6 +4,36 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
+    [UnitTitle("Spatial: Set Backpack Menu Open")]
+    [UnitSurtitle("Spatial")]
+    [UnitShortTitle("Set Backpack Menu Open")]
+    [UnitCategory("Spatial\\Actions")]
+    [TypeIcon(typeof(SpatialComponentBase))]
+    public class SetBackpackMenuOpenNode : Unit
+    {
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlInput inputTrigger { get; private set; }
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlOutput outputTrigger { get; private set; }
+
+        [DoNotSerialize]
+        public ValueInput open { get; private set; }
+
+        protected override void Definition()
+        {
+            open = ValueInput<bool>(nameof(open));
+
+            inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
+                ClientBridge.SetBackpackMenuOpen.Invoke(f.GetValue<bool>(open));
+                return outputTrigger;
+            });
+            outputTrigger = ControlOutput(nameof(outputTrigger));
+            Succession(inputTrigger, outputTrigger);
+        }
+    }
+
     [UnitTitle("Spatial: Add Backpack Item")]
     [UnitSurtitle("Spatial")]
     [UnitShortTitle("Add Backpack Item")]
@@ -165,6 +195,86 @@ namespace SpatialSys.UnitySDK.VisualScripting
             }
 
             yield return outputTrigger;
+        }
+    }
+
+    [UnitTitle("Spatial: Set Backpack Item Enabled")]
+    [UnitSurtitle("Spatial")]
+    [UnitShortTitle("Set Backpack Item Enabled")]
+    [UnitCategory("Spatial\\Actions")]
+    [TypeIcon(typeof(SpatialComponentBase))]
+    public class SetBackpackItemEnabledNode : Unit
+    {
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlInput inputTrigger { get; private set; }
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlOutput outputTrigger { get; private set; }
+
+        [DoNotSerialize]
+        public ValueInput itemID { get; private set; }
+
+        [DoNotSerialize]
+        public ValueInput enabled { get; private set; }
+
+        [DoNotSerialize]
+        public ValueInput disabledMessage { get; private set; }
+
+        protected override void Definition()
+        {
+            itemID = ValueInput<string>(nameof(itemID), "");
+            enabled = ValueInput<bool>(nameof(enabled), true);
+            disabledMessage = ValueInput<string>(nameof(disabledMessage), null);
+
+            inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
+                ClientBridge.SetBackpackItemEnabled.Invoke(f.GetValue<string>(itemID), f.GetValue<bool>(enabled), f.GetValue<string>(disabledMessage));
+                return outputTrigger;
+            });
+
+            outputTrigger = ControlOutput(nameof(outputTrigger));
+
+            Succession(inputTrigger, outputTrigger);
+        }
+    }
+
+    [UnitTitle("Spatial: Set Backpack Item Type Enabled")]
+    [UnitSurtitle("Spatial")]
+    [UnitShortTitle("Set Backpack Item Type Enabled")]
+    [UnitCategory("Spatial\\Actions")]
+    [TypeIcon(typeof(SpatialComponentBase))]
+    public class SetBackpackItemTypeEnabledNode : Unit
+    {
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlInput inputTrigger { get; private set; }
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlOutput outputTrigger { get; private set; }
+
+        [DoNotSerialize]
+        public ValueInput itemType { get; private set; }
+
+        [DoNotSerialize]
+        public ValueInput enabled { get; private set; }
+
+        [DoNotSerialize]
+        public ValueInput disabledMessage { get; private set; }
+
+        protected override void Definition()
+        {
+            itemType = ValueInput<ItemType>(nameof(itemType), ItemType.Avatar);
+            enabled = ValueInput<bool>(nameof(enabled), true);
+            disabledMessage = ValueInput<string>(nameof(disabledMessage), null);
+
+            inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
+                ClientBridge.SetBackpackItemTypeEnabled.Invoke(f.GetValue<ItemType>(itemType), f.GetValue<bool>(enabled), f.GetValue<string>(disabledMessage));
+                return outputTrigger;
+            });
+
+            outputTrigger = ControlOutput(nameof(outputTrigger));
+
+            Succession(inputTrigger, outputTrigger);
         }
     }
 }

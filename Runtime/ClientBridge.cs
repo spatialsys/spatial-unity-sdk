@@ -16,11 +16,17 @@ namespace SpatialSys.UnitySDK
         public delegate bool GetAvatarExistsDelegate(int actorNumber);
         public static GetAvatarExistsDelegate GetAvatarExists;
 
+        public delegate void MoveLocalAvatarDelegate(Vector2 moveInput, bool sprint);
+        public static MoveLocalAvatarDelegate MoveLocalAvatar;
+
         public delegate Vector3 GetLocalAvatarPositionDelegate();
         public static GetLocalAvatarPositionDelegate GetLocalAvatarPosition;
 
         public delegate void SetLocalAvatarPositionDelegate(Vector3 position);
         public static SetLocalAvatarPositionDelegate SetLocalAvatarPosition;
+
+        public delegate void SetLocalAvatarPositionRotationDelegate(Vector3 position, Quaternion rotation);
+        public static SetLocalAvatarPositionRotationDelegate SetLocalAvatarPositionRotation;
 
         public delegate void SendLocalAvatarToSeatDelegate(Transform seat);
         public static SendLocalAvatarToSeatDelegate SendLocalAvatarToSeat;
@@ -36,6 +42,12 @@ namespace SpatialSys.UnitySDK
 
         public delegate Quaternion GetAvatarRotationWithActorDelegate(int actorNumber);
         public static GetAvatarRotationWithActorDelegate GetAvatarRotationWithActor;
+
+        public delegate Transform GetLocalAvatarBoneTransformDelegate(HumanBodyBones humanBoneId);
+        public static GetLocalAvatarBoneTransformDelegate GetLocalAvatarBoneTransform;
+
+        public delegate Transform GetAvatarBoneTransformDelegate(int actorNumber, HumanBodyBones humanBoneId);
+        public static GetAvatarBoneTransformDelegate GetAvatarBoneTransform;
 
         public delegate int GetLocalActorPlatformDelegate();
         public static GetLocalActorPlatformDelegate GetLocalActorPlatform;
@@ -128,7 +140,7 @@ namespace SpatialSys.UnitySDK
         public delegate void SendToastDelegate(string message, float duration);
         public static SendToastDelegate SendToast;
 
-        public delegate void PlayLocalAvatarEmoteAnimationDelegate(string sku);
+        public delegate void PlayLocalAvatarEmoteAnimationDelegate(string sku, bool immediately = false);
         public static PlayLocalAvatarEmoteAnimationDelegate PlayLocalAvatarEmoteAnimation;
 
         public delegate void SpawnPrefabObjectDelegate(string sku, Vector3 position, Quaternion rotation);
@@ -157,6 +169,9 @@ namespace SpatialSys.UnitySDK
         public delegate void RewardBadgeDelegate(string badgeID);
         public static RewardBadgeDelegate RewardBadge;
 
+        public delegate void SetBackpackMenuOpenDelegate(bool open);
+        public static SetBackpackMenuOpenDelegate SetBackpackMenuOpen;
+
         public delegate void AddBackpackItemDelegate(string itemID, int quantity, Action<bool> callback);
         public static AddBackpackItemDelegate AddBackpackItem;
 
@@ -170,6 +185,12 @@ namespace SpatialSys.UnitySDK
 
         public delegate void UseBackpackItemDelegate(string itemID, Action<bool> callback);
         public static UseBackpackItemDelegate UseBackpackItem;
+
+        public delegate void SetBackpackItemEnabledDelegate(string itemID, bool enabled, string disabledMessage);
+        public static SetBackpackItemEnabledDelegate SetBackpackItemEnabled;
+
+        public delegate void SetBackpackItemTypeEnabledDelegate(ItemType itemType, bool enabled, string disabledMessage);
+        public static SetBackpackItemTypeEnabledDelegate SetBackpackItemTypeEnabled;
 
         //Synced objects
         public delegate bool TakeoverSyncedObjectOwnerhipDelegate(SpatialSyncedObject syncedObject);
@@ -226,6 +247,12 @@ namespace SpatialSys.UnitySDK
 
         public delegate void ClearCameraTargetOverrideDelegate();
         public static ClearCameraTargetOverrideDelegate ClearCameraTargetOverride;
+
+        public delegate void SetCameraRotationModeDelegate(SpatialCameraRotationMode mode);
+        public static SetCameraRotationModeDelegate SetCameraRotationMode;
+
+        public delegate SpatialCameraRotationMode GetCameraRotationModeDelegate();
+        public static GetCameraRotationModeDelegate GetCameraRotationMode;
 
         public delegate void InitializeSpatialSeatHotspotDelegate(SpatialSeatHotspot spatialHotspot);
         public static InitializeSpatialSeatHotspotDelegate InitializeSpatialSeatHotspot;

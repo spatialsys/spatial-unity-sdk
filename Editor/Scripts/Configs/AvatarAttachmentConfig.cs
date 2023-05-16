@@ -3,17 +3,17 @@ using System.Collections.Generic;
 
 namespace SpatialSys.UnitySDK.Editor
 {
-    public class WearableConfig : PackageConfig
+    public class AvatarAttachmentConfig : PackageConfig
     {
-        private const PackageType PACKAGE_TYPE = PackageType.Wearable;
+        private const PackageType PACKAGE_TYPE = PackageType.AvatarAttachment;
 
-        public SpatialWearable prefab;
-        public Scope usageContext = Scope.Universal; // AKA "wearable scope"
+        public SpatialAvatarAttachment prefab;
+        public Scope usageContext = Scope.Universal;
 
         public override PackageType packageType => PACKAGE_TYPE;
         public override Vector2Int thumbnailDimensions => new Vector2Int(512, 512);
         public override string bundleName => EditorUtility.GetAssetBundleName(prefab);
-        public override string validatorID => prefab != null ? GetValidatorID(usageContext, prefab.type) : null;
+        public override string validatorID => prefab != null ? GetValidatorID(usageContext, prefab.primarySlotType) : null;
         public override IEnumerable<Object> assets
         {
             get
@@ -23,9 +23,9 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
-        public static string GetValidatorID(Scope usageContext, SpatialWearable.Type type)
+        public static string GetValidatorID(Scope usageContext, SpatialAvatarAttachment.SlotType primarySlotType)
         {
-            return $"{PACKAGE_TYPE}_{usageContext}_{type}";
+            return $"{PACKAGE_TYPE}_{usageContext}_{primarySlotType}";
         }
     }
 }
