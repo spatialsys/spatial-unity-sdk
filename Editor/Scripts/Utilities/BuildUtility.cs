@@ -44,8 +44,10 @@ namespace SpatialSys.UnitySDK.Editor
             PackageConfig activeConfig = ProjectConfig.activePackage;
             activeConfig.savedProjectSettings = SaveProjectSettingsToAsset();
 
-            IPromise<SpatialValidationSummary> validationPromise;
+            if (activeConfig is AvatarAttachmentConfig avatarAttachmentConfig)
+                AvatarAttachmentComponentTests.EnforceValidSetup(avatarAttachmentConfig.prefab);
 
+            IPromise<SpatialValidationSummary> validationPromise;
             if (activeConfig.isSpaceBasedPackage)
             {
                 // Make sure the active package is set to the one that contains the active scene
@@ -171,6 +173,9 @@ namespace SpatialSys.UnitySDK.Editor
             EditorSceneManager.SaveOpenScenes();
             PackageConfig config = ProjectConfig.activePackage;
             config.savedProjectSettings = SaveProjectSettingsToAsset();
+
+            if (config is AvatarAttachmentConfig avatarAttachmentConfig)
+                AvatarAttachmentComponentTests.EnforceValidSetup(avatarAttachmentConfig.prefab);
 
             return CheckValidationPromise(SpatialValidator.RunTestsOnPackage(ValidationContext.PublishingPackage))
                 .Then(() => {

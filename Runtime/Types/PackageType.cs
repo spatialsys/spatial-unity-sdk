@@ -10,7 +10,6 @@ namespace SpatialSys.UnitySDK
         Avatar = 1,
         AvatarAnimation = 2,
         PrefabObject = 3,
-        [InspectorName(null)] // Not ready for public use yet
         AvatarAttachment = 5,
     }
 }

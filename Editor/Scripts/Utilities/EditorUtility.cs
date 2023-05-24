@@ -32,7 +32,10 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static readonly HashSet<string> strippableEditorComponents = new HashSet<string> {
             "ProBuilderMesh",
-            "ProBuilderShape"
+            "ProBuilderShape",
+            "BezierShape",
+            "PolyShape",
+            "Entity",
         };
 
         public static Version GetParsedUnityVersion(string versionString)
@@ -266,10 +269,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static bool IsEditorOnlyType(this Type type)
         {
-            return type != null && (
-                (type.GetCustomAttributes(typeof(EditorOnlyAttribute), inherit: true).Length > 0) ||
-                type.IsStripabbleEditorOnlyType()
-            );
+            return type != null && type.GetCustomAttributes(typeof(EditorOnlyAttribute), inherit: true).Length > 0;
         }
 
         public static bool IsStripabbleEditorOnlyType(this Type type)

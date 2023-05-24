@@ -4,7 +4,7 @@ using Unity.VisualScripting;
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitCategory("Spatial\\Get Actions")]
-    [UnitTitle("Get Local Actor Bone Transform")]
+    [UnitTitle("Local Actor: Get Bone Transform")]
 
     [UnitSurtitle("Local Actor")]
     [UnitShortTitle("Get Bone Transform")]
@@ -28,7 +28,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     }
 
     [UnitCategory("Spatial\\Get Actions")]
-    [UnitTitle("Get Actor Bone Transform")]
+    [UnitTitle("Actor: Get Bone Transform")]
 
     [UnitSurtitle("Actor")]
     [UnitShortTitle("Get Bone Transform")]

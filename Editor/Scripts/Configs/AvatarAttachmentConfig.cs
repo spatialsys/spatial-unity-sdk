@@ -8,12 +8,12 @@ namespace SpatialSys.UnitySDK.Editor
         private const PackageType PACKAGE_TYPE = PackageType.AvatarAttachment;
 
         public SpatialAvatarAttachment prefab;
-        public Scope usageContext = Scope.Universal;
+        public Scope usageContext = Scope.World;
 
         public override PackageType packageType => PACKAGE_TYPE;
         public override Vector2Int thumbnailDimensions => new Vector2Int(512, 512);
         public override string bundleName => EditorUtility.GetAssetBundleName(prefab);
-        public override string validatorID => prefab != null ? GetValidatorID(usageContext, prefab.primarySlotType) : null;
+        public override string validatorID => prefab != null ? GetValidatorID(usageContext, prefab.primarySlot) : null;
         public override IEnumerable<Object> assets
         {
             get
@@ -23,9 +23,12 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
-        public static string GetValidatorID(Scope usageContext, SpatialAvatarAttachment.SlotType primarySlotType)
+        public static string GetValidatorID(Scope usageContext, SpatialAvatarAttachment.Slot primarySlot)
         {
-            return $"{PACKAGE_TYPE}_{usageContext}_{primarySlotType}";
+            if (primarySlot == SpatialAvatarAttachment.Slot.Aura)
+                return $"{PACKAGE_TYPE}_{usageContext}_{primarySlot}";
+
+            return $"{PACKAGE_TYPE}_{usageContext}";
         }
     }
 }

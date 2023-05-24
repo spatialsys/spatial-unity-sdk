@@ -5,7 +5,7 @@ namespace SpatialSys.UnitySDK
     {
         Avatar,
         Emote,
-        Wearable,
+        AvatarAttachment,
         PrefabObject,
         Generic
     }

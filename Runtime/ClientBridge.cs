@@ -110,8 +110,14 @@ namespace SpatialSys.UnitySDK
         public delegate int GetLocalAvatarMaxJumpCountDelegate();
         public static GetLocalAvatarMaxJumpCountDelegate GetLocalAvatarMaxJumpCount;
 
+        public delegate void TriggerJumpLocalAvatarDelegate();
+        public static TriggerJumpLocalAvatarDelegate TriggerJumpLocalAvatar;
+
         public delegate void SetLocalAvatarDelegate(string sku);
         public static SetLocalAvatarDelegate SetLocalAvatar;
+
+        public delegate void ResetLocalAvatarDelegate();
+        public static ResetLocalAvatarDelegate ResetLocalAvatar;
 
         public delegate bool IsLocalOwnerDelegate();
         public static IsLocalOwnerDelegate IsLocalOwner;
@@ -169,6 +175,7 @@ namespace SpatialSys.UnitySDK
         public delegate void RewardBadgeDelegate(string badgeID);
         public static RewardBadgeDelegate RewardBadge;
 
+        // Backpack
         public delegate void SetBackpackMenuOpenDelegate(bool open);
         public static SetBackpackMenuOpenDelegate SetBackpackMenuOpen;
 
@@ -178,7 +185,7 @@ namespace SpatialSys.UnitySDK
         public struct GetBackpackItemResponse
         {
             public bool userOwnsItem;
-            public int amount;
+            public ulong amount;
         }
         public delegate void GetBackpackItemDelegate(string itemID, Action<ClientBridge.GetBackpackItemResponse> callback);
         public static GetBackpackItemDelegate GetBackpackItem;
@@ -191,6 +198,26 @@ namespace SpatialSys.UnitySDK
 
         public delegate void SetBackpackItemTypeEnabledDelegate(ItemType itemType, bool enabled, string disabledMessage);
         public static SetBackpackItemTypeEnabledDelegate SetBackpackItemTypeEnabled;
+
+        // World Currency
+        public delegate ulong GetWorldCurrencyBalanceDelegate();
+        public static GetWorldCurrencyBalanceDelegate GetWorldCurrencyBalance;
+
+        public delegate void AwardWorldCurrencyDelegate(ulong amount, Action<bool> callback);
+        public static AwardWorldCurrencyDelegate AwardWorldCurrency;
+
+        // Shop
+        public delegate void SetShopMenuOpenDelegate(bool open);
+        public static SetShopMenuOpenDelegate SetShopMenuOpen;
+
+        public delegate void SetShopItemEnabledDelegate(string itemID, bool enabled, string disabledMessage);
+        public static SetShopItemEnabledDelegate SetShopItemEnabled;
+
+        public delegate void SetShopItemVisibilityDelegate(string itemID, bool visible);
+        public static SetShopItemVisibilityDelegate SetShopItemVisibility;
+
+        public delegate void PurchaseShopItemDelegate(string itemID, ulong amount, Action<bool> callback);
+        public static PurchaseShopItemDelegate PurchaseShopItem;
 
         //Synced objects
         public delegate bool TakeoverSyncedObjectOwnerhipDelegate(SpatialSyncedObject syncedObject);
@@ -262,6 +289,9 @@ namespace SpatialSys.UnitySDK
 
         public delegate void InitializeSpatialTriggerEventDelegate(SpatialTriggerEvent spatialTriggerEvent);
         public static InitializeSpatialTriggerEventDelegate InitializeSpatialTriggerEvent;
+
+        public delegate void InitializeSpatialClimbableDelegate(SpatialClimbable climbable);
+        public static InitializeSpatialClimbableDelegate InitializeSpatialClimbable;
 
         public delegate void TriggerEventEnabledChangedDelegate(SpatialTriggerEvent spatialTriggerEvent, bool enabled);
         public static TriggerEventEnabledChangedDelegate TriggerEventEnabledChanged;

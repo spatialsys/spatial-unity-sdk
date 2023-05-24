@@ -388,12 +388,6 @@ namespace SpatialSys.UnitySDK.Editor
                 return;
             }
 
-            if (!clipboard.StartsWith("sandbox"))
-            {
-                UnityEditor.EditorUtility.DisplayDialog("Invalid access token", "The access token provided is incorrectly formatted. Try copying the access token to your clipboard again.", "OK");
-                return;
-            }
-
             _authToken = clipboard;
             EditorUtility.SaveAuthToken(clipboard);
             UpdateAuthWarning();
@@ -406,7 +400,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         private void UpdateAuthWarning()
         {
-            bool validAuthToken = _authToken.StartsWith("sandbox_") && _authToken.Length > 16;
+            bool validAuthToken = _authToken.Length > 16;
             rootVisualElement.Q("notLoggedInBlock").style.display = validAuthToken ? DisplayStyle.None : DisplayStyle.Flex;
             rootVisualElement.Q("loggedInBlock").style.display = validAuthToken ? DisplayStyle.Flex : DisplayStyle.None;
         }

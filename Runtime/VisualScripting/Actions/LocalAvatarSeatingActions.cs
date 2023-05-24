@@ -5,8 +5,8 @@ using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
-    [UnitTitle("Spatial Local Avatar: Sit Down")]
-    [UnitSurtitle("Spatial Local Avatar")]
+    [UnitTitle("Local Actor: Sit Down")]
+    [UnitSurtitle("Local Actor")]
     [UnitShortTitle("Sit Down")]
     [UnitCategory("Spatial\\Actions")]
     [TypeIcon(typeof(SpatialSeatHotspot))]
@@ -38,8 +38,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
         }
     }
 
-    [UnitTitle("Spatial Local Avatar: Stand Up")]
-    [UnitSurtitle("Spatial Local Avatar")]
+    [UnitTitle("Local Actor: Stand Up")]
+    [UnitSurtitle("Local Actor")]
     [UnitShortTitle("Stand Up")]
     [UnitCategory("Spatial\\Actions")]
     [TypeIcon(typeof(SpatialSeatHotspot))]

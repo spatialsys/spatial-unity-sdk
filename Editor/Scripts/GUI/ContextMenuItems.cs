@@ -18,6 +18,18 @@ namespace SpatialSys.UnitySDK.Editor
             return go;
         }
 
+        static GameObject CreateGameObjectPrimitive(MenuCommand menuCommand, string name, PrimitiveType primitive)
+        {
+            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.name = name;
+            // Ensure it gets reparented if this was a context click (otherwise does nothing)
+            GameObjectUtility.SetParentAndAlign(go, menuCommand.context as GameObject);
+            // Register the creation in the undo system
+            Undo.RegisterCreatedObjectUndo(go, "Create " + go.name);
+            Selection.activeObject = go;
+            return go;
+        }
+
         static GameObject CreateGameObjectWithTrigger(MenuCommand menuCommand, string name)
         {
             var go = CreateGameObject(menuCommand, name);
@@ -64,6 +76,15 @@ namespace SpatialSys.UnitySDK.Editor
             teleporter.targetLocation = targetLocation;
         }
 
+        [MenuItem("GameObject/Spatial/Climbable", false, 23)]
+        static void CreateClimbable(MenuCommand menuCommand)
+        {
+            GameObject go = CreateGameObjectPrimitive(menuCommand, "Climbable", PrimitiveType.Cube);
+            go.AddComponent<SpatialClimbable>();
+            go.transform.localScale = new Vector3(2, 4, 1);
+            go.transform.position = new Vector3(0, 2, 0);
+        }
+
         // Objects
         [MenuItem("GameObject/Spatial/Empty Frame", false, 40)]
         static void CreateEmptyFrame(MenuCommand menuCommand)
@@ -89,7 +110,7 @@ namespace SpatialSys.UnitySDK.Editor
             CreateGameObject(menuCommand, "Point of Interest").AddComponent<SpatialPointOfInterest>();
         }
 
-        [MenuItem("GameObject/Spatial/Quest", false, 44)]
+        [MenuItem("GameObject/Spatial/Quest", false, 45)]
         static void CreateQuest(MenuCommand menuCommand)
         {
             CreateGameObject(menuCommand, "Quest").AddComponent<SpatialQuest>();

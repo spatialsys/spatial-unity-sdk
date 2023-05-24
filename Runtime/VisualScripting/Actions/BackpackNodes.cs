@@ -70,22 +70,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            var id = flow.GetValue<string>(itemID);
-            var qty = flow.GetValue<int>(amount);
-            if (!string.IsNullOrEmpty(id) && qty > 0)
-            {
-                bool completed = false;
-                ClientBridge.AddBackpackItem.Invoke(id, qty, success => {
-                    completed = true;
-                    flow.SetValue(succeeded, success);
-                });
-                yield return new WaitUntil(() => completed);
-            }
-            else
-            {
-                flow.SetValue(succeeded, false);
-            }
-
+            bool completed = false;
+            ClientBridge.AddBackpackItem.Invoke(flow.GetValue<string>(itemID), flow.GetValue<int>(amount), success => {
+                completed = true;
+                flow.SetValue(succeeded, success);
+            });
+            yield return new WaitUntil(() => completed);
             yield return outputTrigger;
         }
     }
@@ -117,7 +107,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             itemID = ValueInput<string>(nameof(itemID), "");
             isOwned = ValueOutput<bool>(nameof(isOwned));
-            amount = ValueOutput<int>(nameof(amount));
+            amount = ValueOutput<ulong>(nameof(amount));
 
             inputTrigger = ControlInputCoroutine(nameof(inputTrigger), ExecuteAsync);
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -126,23 +116,13 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            var id = flow.GetValue<string>(itemID);
-            if (!string.IsNullOrEmpty(id))
-            {
-                bool completed = false;
-                ClientBridge.GetBackpackItem.Invoke(id, resp => {
-                    completed = true;
-                    flow.SetValue(isOwned, resp.userOwnsItem);
-                    flow.SetValue(amount, resp.amount);
-                });
-                yield return new WaitUntil(() => completed);
-            }
-            else
-            {
-                flow.SetValue(isOwned, false);
-                flow.SetValue(amount, 0);
-            }
-
+            bool completed = false;
+            ClientBridge.GetBackpackItem.Invoke(flow.GetValue<string>(itemID), resp => {
+                completed = true;
+                flow.SetValue(isOwned, resp.userOwnsItem);
+                flow.SetValue(amount, resp.amount);
+            });
+            yield return new WaitUntil(() => completed);
             yield return outputTrigger;
         }
     }
@@ -179,21 +159,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            var id = flow.GetValue<string>(itemID);
-            if (!string.IsNullOrEmpty(id))
-            {
-                bool completed = false;
-                ClientBridge.UseBackpackItem.Invoke(id, success => {
-                    completed = true;
-                    flow.SetValue(succeeded, success);
-                });
-                yield return new WaitUntil(() => completed);
-            }
-            else
-            {
-                flow.SetValue(succeeded, false);
-            }
-
+            bool completed = false;
+            ClientBridge.UseBackpackItem.Invoke(flow.GetValue<string>(itemID), success => {
+                completed = true;
+                flow.SetValue(succeeded, success);
+            });
+            yield return new WaitUntil(() => completed);
             yield return outputTrigger;
         }
     }

@@ -6,11 +6,9 @@ using Unity.VisualScripting;
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitCategory("Spatial\\Actions")]
-    [UnitTitle("Spatial: Teleport Local Avatar")]
-
-    [UnitSurtitle("Spatial")]
-    [UnitShortTitle("Teleport Local Avatar")]
-
+    [UnitTitle("Local Actor: Teleport Avatar")]
+    [UnitSurtitle("Local Actor")]
+    [UnitShortTitle("Teleport Avatar")]
     [TypeIcon(typeof(SpatialComponentBase))]
     public class TeleportAvatarSelfNode : Unit
     {
@@ -40,11 +38,9 @@ namespace SpatialSys.UnitySDK.VisualScripting
     }
 
     [UnitCategory("Spatial\\Actions")]
-    [UnitTitle("Spatial: Teleport Local Avatar")]
-
-    [UnitSurtitle("Spatial")]
-    [UnitShortTitle("Teleport Local Avatar")]
-
+    [UnitTitle("Local Actor: Teleport Avatar")]
+    [UnitSurtitle("Local Actor")]
+    [UnitShortTitle("Teleport Avatar")]
     [TypeIcon(typeof(SpatialComponentBase))]
     public class TeleportAvatarSelfWithRotationNode : Unit
     {

@@ -1,15 +1,16 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
-    [UnitCategory("Spatial\\Actions")]
-    [UnitTitle("Local Actor: Play Emote Animation")]
-
+    [UnitTitle("Local Actor: Trigger Jump")]
     [UnitSurtitle("Local Actor")]
-    [UnitShortTitle("Play Emote Animation")]
-
-    [TypeIcon(typeof(SpatialAvatarAnimation))]
-    public class PlayAvatarEmoteAnimationNode : Unit
+    [UnitShortTitle("Trigger Jump")]
+    [UnitCategory("Spatial\\Actions")]
+    [TypeIcon(typeof(SpatialComponentBase))]
+    public class LocalAvatarJumpNode : Unit
     {
         [DoNotSerialize]
         [PortLabelHidden]
@@ -18,19 +19,10 @@ namespace SpatialSys.UnitySDK.VisualScripting
         [PortLabelHidden]
         public ControlOutput outputTrigger { get; private set; }
 
-        [DoNotSerialize]
-        public ValueInput sku { get; private set; }
-
-        [DoNotSerialize]
-        public ValueInput immediately { get; private set; }
-
         protected override void Definition()
         {
-            sku = ValueInput<string>(nameof(sku), "");
-            immediately = ValueInput<bool>(nameof(immediately), false);
-
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.PlayLocalAvatarEmoteAnimation?.Invoke(f.GetValue<string>(sku), f.GetValue<bool>(immediately));
+                ClientBridge.TriggerJumpLocalAvatar?.Invoke();
                 return outputTrigger;
             });
 

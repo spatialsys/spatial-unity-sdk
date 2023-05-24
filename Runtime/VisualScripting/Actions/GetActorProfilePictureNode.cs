@@ -5,8 +5,8 @@ using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
-    [UnitTitle("Spatial Actor: Get Profile Picture")]
-    [UnitSurtitle("Spatial Actor")]
+    [UnitTitle("Actor: Get Profile Picture")]
+    [UnitSurtitle("Actor")]
     [UnitShortTitle("Get Profile Picture")]
     [UnitCategory("Spatial\\Actions")]
     [TypeIcon(typeof(SpatialComponentBase))]

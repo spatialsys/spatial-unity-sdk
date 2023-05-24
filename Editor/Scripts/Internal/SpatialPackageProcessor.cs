@@ -114,8 +114,18 @@ namespace SpatialSys.UnitySDK.Editor
             foreach (var component in rootGO.GetComponentsInChildren<Component>(true))
             {
                 // component can be null if script is missing
-                if (component != null && component.GetType().IsEditorOnlyType())
-                    UnityEngine.Object.DestroyImmediate(component);
+                if (component != null)
+                {
+                    Type type = component.GetType();
+                    if (type.IsEditorOnlyType())
+                    {
+                        UnityEngine.Object.DestroyImmediate(component);
+                    }
+                    else if (type.IsProBuilderMesh())
+                    {
+                        ProBuilderStripUtility.Strip(component);
+                    }
+                }
             }
 
             // Delete all game objects that have the "EditorOnly" tag

@@ -11,6 +11,31 @@ namespace SpatialSys.UnitySDK.Editor
         /// Checks that there's an animator component on the prefab, and the animator has a valid humanoid rig.
         /// </summary>
         [ComponentTest(typeof(SpatialAvatar))]
+        public static void EnsureTransformIsIdentity(SpatialAvatar avatarPrefab)
+        {
+            Transform transform = avatarPrefab.transform;
+            if (transform.localPosition != Vector3.zero || transform.localRotation != Quaternion.identity || transform.localScale != Vector3.one)
+            {
+                var resp = new SpatialTestResponse(
+                    avatarPrefab,
+                    TestResponseType.Fail,
+                    "The avatar must have an identity transform",
+                    "Make sure the avatar's transform position is set to 0,0,0, rotation is set to 0,0,0, and scale is set to 1,1,1."
+                );
+                resp.SetAutoFix(true, "Reset Transform", (component) => {
+                    GameObject prefab = ((SpatialAvatar)component).gameObject;
+                    prefab.transform.localPosition = Vector3.zero;
+                    prefab.transform.localRotation = Quaternion.identity;
+                    prefab.transform.localScale = Vector3.one;
+                });
+                SpatialValidator.AddResponse(resp);
+            }
+        }
+
+        /// <summary>
+        /// Checks that there's an animator component on the prefab, and the animator has a valid humanoid rig.
+        /// </summary>
+        [ComponentTest(typeof(SpatialAvatar))]
         public static void EnsureAnimatorRigIsHumanoid(SpatialAvatar avatarPrefab)
         {
             Animator animator;

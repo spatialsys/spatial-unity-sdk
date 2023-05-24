@@ -12,7 +12,7 @@ namespace SpatialSys.UnitySDK.Editor
             Type targetType = target.GetType();
 
             // This component is automatically removed during scene build
-            if (targetType.IsEditorOnlyType())
+            if (targetType.IsEditorOnlyType() || targetType.IsStripabbleEditorOnlyType())
                 return;
 
             if (!ValidComponents.IsComponentTypeAllowedForPackageType(ProjectConfig.activePackage, targetType))

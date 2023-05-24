@@ -14,6 +14,16 @@ namespace SpatialSys.UnitySDK
 
         [Tooltip("Optionally override specific animations for this avatar")]
         public SpatialAvatarAnimOverrides animOverrides;
+
+#if UNITY_EDITOR
+        protected override void OnValidate()
+        {
+            // Root level transform should always be identity
+            transform.localPosition = Vector3.zero;
+            transform.localRotation = Quaternion.identity;
+            transform.localScale = Vector3.one;
+        }
+#endif
     }
 
     public enum SpatialAvatarDefaultAnimSetType
@@ -43,6 +53,10 @@ namespace SpatialSys.UnitySDK
         public AnimationClip jumpLandWalking;
         [Tooltip("The land part of the jump animation, when the avatar is running")]
         public AnimationClip jumpLandRunning;
+        [Tooltip("The land part of the jump animation, when the avatar is landing from a high jump")]
+        public AnimationClip jumpLandHigh;
+        [Tooltip("The double jump animation")]
+        public AnimationClip jumpMultiple;
 
         [Tooltip("The fall animation when the avatar is falling from very high up")]
         public AnimationClip fall;
