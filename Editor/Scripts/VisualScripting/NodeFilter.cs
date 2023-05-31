@@ -85,6 +85,7 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(double),
             typeof(byte),
             typeof(string),
+            typeof(DateTime),
             typeof(Vector2),
             typeof(Vector3),
             typeof(Vector4),
@@ -166,6 +167,9 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(WheelCollider).GetMember(nameof(WheelCollider.GetWorldPose)),
             typeof(Vector3).GetMember(nameof(Vector3.OrthoNormalize)),
             typeof(UnityEngine.Mathf).GetMember(nameof(UnityEngine.Mathf.SmoothDamp)),
+            typeof(UnityEngine.Physics).GetMember(nameof(UnityEngine.Physics.Raycast)),
+
+            // Allow only basic overload of Parse/TryParse methods.
             new MemberInfo[] {
                 typeof(float).GetMethod(nameof(float.Parse), new Type[] { typeof(string) }),
                 typeof(int).GetMethod(nameof(int.Parse), new Type[] { typeof(string) }),
@@ -177,6 +181,7 @@ namespace SpatialSys.UnitySDK.Editor
                 typeof(ulong).GetMethod(nameof(ulong.Parse), new Type[] { typeof(string) }),
                 typeof(short).GetMethod(nameof(short.Parse), new Type[] { typeof(string) }),
                 typeof(ushort).GetMethod(nameof(ushort.Parse), new Type[] { typeof(string) }),
+                typeof(DateTime).GetMethod(nameof(DateTime.Parse), new Type[] { typeof(string) }),
 
                 typeof(float).GetMethod(nameof(float.TryParse), new Type[] { typeof(string), typeof(float).MakeByRefType() }),
                 typeof(int).GetMethod(nameof(int.TryParse), new Type[] { typeof(string), typeof(int).MakeByRefType() }),
@@ -188,7 +193,7 @@ namespace SpatialSys.UnitySDK.Editor
                 typeof(ulong).GetMethod(nameof(ulong.TryParse), new Type[] { typeof(string), typeof(ulong).MakeByRefType() }),
                 typeof(short).GetMethod(nameof(short.TryParse), new Type[] { typeof(string), typeof(short).MakeByRefType() }),
                 typeof(ushort).GetMethod(nameof(ushort.TryParse), new Type[] { typeof(string), typeof(ushort).MakeByRefType() }),
-                
+                typeof(DateTime).GetMethod(nameof(DateTime.TryParse), new Type[] { typeof(string), typeof(DateTime).MakeByRefType() }),
             }
         };
 
@@ -307,7 +312,11 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(ushort).GetMember(nameof(ushort.Parse)),
             typeof(ushort).GetMember(nameof(ushort.TryParse)),
             typeof(ushort).GetMember(nameof(ushort.TryFormat)),
-
+            typeof(DateTime).GetMember(nameof(DateTime.Parse)),
+            typeof(DateTime).GetMember(nameof(DateTime.ParseExact)),
+            typeof(DateTime).GetMember(nameof(DateTime.TryParse)),
+            typeof(DateTime).GetMember(nameof(DateTime.TryParseExact)),
+            typeof(DateTime).GetMember(nameof(DateTime.TryFormat)),
 
             //UnityEngine.AudioModule (editor only / we don't have a gamepad module)
             typeof(AudioSource).GetMember(nameof(AudioSource.PlayOnGamepad)),

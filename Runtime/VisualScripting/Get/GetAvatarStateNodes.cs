@@ -6,6 +6,8 @@ using Unity.VisualScripting;
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitTitle("Actor: Avatar State")]
+    [UnitSurtitle("Actor")]
+    [UnitShortTitle("Avatar State")]
     [UnitCategory("Spatial\\Get Actions")]
     [TypeIcon(typeof(SpatialComponentBase))]
     public class GetAvatarStateNode : Unit
@@ -34,6 +36,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
     }
 
     [UnitTitle("Local Actor: Avatar State")]
+    [UnitSurtitle("Local Actor")]
+    [UnitShortTitle("Avatar State")]
     [UnitCategory("Spatial\\Get Actions")]
     [TypeIcon(typeof(SpatialComponentBase))]
     public class GetLocalAvatarStateNode : Unit

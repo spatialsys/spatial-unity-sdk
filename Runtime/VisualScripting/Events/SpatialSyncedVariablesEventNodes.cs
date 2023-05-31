@@ -22,6 +22,10 @@ namespace SpatialSys.UnitySDK.VisualScripting
         [DoNotSerialize]
         public ValueInput variableName { get; private set; }
 
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ValueOutput value { get; private set; }
+
         protected override bool register => true;
 
         public override EventHook GetHook(GraphReference reference)
@@ -34,6 +38,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             base.Definition();
             syncedVariablesRef = ValueInput<SpatialSyncedVariables>(nameof(syncedVariablesRef), null).NullMeansSelf();
             variableName = ValueInput<string>(nameof(variableName), null);
+            value = ValueOutput<object>(nameof(value));
         }
 
         protected override bool ShouldTrigger(Flow flow, (SpatialSyncedVariables, string) args)
@@ -43,6 +48,18 @@ namespace SpatialSys.UnitySDK.VisualScripting
                 return true;
             }
             return false;
+        }
+
+        protected override void AssignArguments(Flow flow, (SpatialSyncedVariables, string) args)
+        {
+            foreach (SpatialSyncedVariables.Data data in args.Item1.variableSettings)
+            {
+                if (data.name == args.Item2)
+                {
+                    flow.SetValue(value, data.declaration.value);
+                    break;
+                }
+            }
         }
     }
 }

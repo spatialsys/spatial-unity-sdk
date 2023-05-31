@@ -47,6 +47,11 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 if (_targetGameObject != null)
                 {
+                    // Check target object really doesn't have a SpatialSyncedObject
+                    if (_targetGameObject.TryGetComponent<SpatialSyncedObject>(out SpatialSyncedObject obj))
+                    {
+                        return;
+                    }
                     // Delete any hidden SpatialSyncedVariables components when synced object component is deleted in the editor
                     if (_targetGameObject.TryGetComponent<SpatialSyncedVariables>(out SpatialSyncedVariables variables))
                     {
