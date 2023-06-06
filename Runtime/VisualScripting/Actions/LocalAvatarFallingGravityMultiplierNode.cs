@@ -28,7 +28,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             multiplier = ValueInput<float>(nameof(multiplier), 1.0f); // This default should be matched with AvatarController
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetLocalAvatarFallingGravityMultiplier.Invoke(f.GetValue<float>(multiplier));
+                ClientBridge.SetLocalAvatarFallingGravityMultiplier?.Invoke(f.GetValue<float>(multiplier));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -51,7 +51,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            multiplier = ValueOutput<float>(nameof(multiplier), (f) => ClientBridge.GetLocalAvatarFallingGravityMultiplier.Invoke());
+            multiplier = ValueOutput<float>(nameof(multiplier), (f) => ClientBridge.GetLocalAvatarFallingGravityMultiplier?.Invoke() ?? 1.0f);
         }
     }
 }

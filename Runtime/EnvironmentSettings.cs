@@ -24,10 +24,10 @@ namespace SpatialSys.UnitySDK
         public float localAvatarMovingSpeed = 3.0f;
 
         [HideInInspector, MinAttribute(0.0f), Tooltip("Movement speed when running (m/s)")]
-        public float localAvatarRunSpeed = 5.5f;
+        public float localAvatarRunSpeed = 6.875f;
 
         [HideInInspector, MinAttribute(0.1f), Tooltip("Jump height in meters")]
-        public float localAvatarJumpHeight = 1.2f;
+        public float localAvatarJumpHeight = 1.5f;
 
         [HideInInspector, MinAttribute(0.1f), Tooltip("Gravity multiplier - based on the physics gravity Y value")]
         public float localAvatarGravityMultiplier = 1.5f;
@@ -36,9 +36,9 @@ namespace SpatialSys.UnitySDK
         public float localAvatarFallingGravityMultiplier = 1.0f;
 
         [HideInInspector, Tooltip("Jump higher depending on how long jump button is held")]
-        public bool localAvatarUseVariableHeightJump = false;
+        public bool localAvatarUseVariableHeightJump = true;
 
         [HideInInspector, Tooltip("Maximum jump count that can be performed")]
-        public int localAvatarMaxJumpCount = 1;
+        public int localAvatarMaxJumpCount = 2;
     }
 }

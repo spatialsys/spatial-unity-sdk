@@ -25,9 +25,9 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            height = ValueInput<float>(nameof(height), 1.2f); // This default should be matched with AvatarController
+            height = ValueInput<float>(nameof(height), 1.5f); // This default should be matched with AvatarController
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetLocalAvatarJumpHeight.Invoke(f.GetValue<float>(height));
+                ClientBridge.SetLocalAvatarJumpHeight?.Invoke(f.GetValue<float>(height));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -50,7 +50,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            height = ValueOutput<float>(nameof(height), (f) => ClientBridge.GetLocalAvatarJumpHeight.Invoke());
+            height = ValueOutput<float>(nameof(height), (f) => ClientBridge.GetLocalAvatarJumpHeight?.Invoke() ?? 1.5f);
         }
     }
 }

@@ -13,6 +13,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         protected override bool register => true;
 
         [DoNotSerialize]
+        [PortLabel("Item ID or Package SKU")]
         public ValueInput itemID { get; private set; }
 
         [DoNotSerialize]
@@ -26,7 +27,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         protected override void Definition()
         {
             base.Definition();
-            itemID = ValueInput<string>(nameof(itemID), "");
+            itemID = ValueInput<string>(nameof(itemID), ""); // is actually item ID or package SKU
             isEquipped = ValueOutput<bool>(nameof(isEquipped));
         }
 

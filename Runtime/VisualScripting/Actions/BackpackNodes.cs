@@ -60,7 +60,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         protected override void Definition()
         {
             itemID = ValueInput<string>(nameof(itemID), "");
-            amount = ValueInput<int>(nameof(amount), 1);
+            amount = ValueInput<ulong>(nameof(amount), 1);
             succeeded = ValueOutput<bool>(nameof(succeeded));
 
             inputTrigger = ControlInputCoroutine(nameof(inputTrigger), ExecuteAsync);
@@ -71,7 +71,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         private IEnumerator ExecuteAsync(Flow flow)
         {
             bool completed = false;
-            ClientBridge.AddBackpackItem.Invoke(flow.GetValue<string>(itemID), flow.GetValue<int>(amount), success => {
+            ClientBridge.AddBackpackItem.Invoke(flow.GetValue<string>(itemID), flow.GetValue<ulong>(amount), success => {
                 completed = true;
                 flow.SetValue(succeeded, success);
             });

@@ -34,6 +34,36 @@ namespace SpatialSys.UnitySDK.VisualScripting
         }
     }
 
+    [UnitTitle("Spatial: Select Shop Menu Item")]
+    [UnitSurtitle("Spatial")]
+    [UnitShortTitle("Select Shop Menu Item")]
+    [UnitCategory("Spatial\\Actions")]
+    [TypeIcon(typeof(SpatialComponentBase))]
+    public class SelectShopMenuItemNode : Unit
+    {
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlInput inputTrigger { get; private set; }
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlOutput outputTrigger { get; private set; }
+
+        [DoNotSerialize]
+        public ValueInput itemID { get; private set; }
+
+        protected override void Definition()
+        {
+            itemID = ValueInput<string>(nameof(itemID));
+
+            inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
+                ClientBridge.SelectShopMenuItem.Invoke(f.GetValue<string>(itemID));
+                return outputTrigger;
+            });
+            outputTrigger = ControlOutput(nameof(outputTrigger));
+            Succession(inputTrigger, outputTrigger);
+        }
+    }
+
     [UnitTitle("Spatial: Set Shop Item Enabled")]
     [UnitSurtitle("Spatial")]
     [UnitShortTitle("Set Shop Item Enabled")]

@@ -43,6 +43,9 @@ namespace SpatialSys.UnitySDK
         public delegate Quaternion GetAvatarRotationWithActorDelegate(int actorNumber);
         public static GetAvatarRotationWithActorDelegate GetAvatarRotationWithActor;
 
+        public delegate bool GetLocalAvatarBodyExistDelegate();
+        public static GetLocalAvatarBodyExistDelegate GetLocalAvatarBodyExist;
+
         public delegate Transform GetLocalAvatarBoneTransformDelegate(HumanBodyBones humanBoneId);
         public static GetLocalAvatarBoneTransformDelegate GetLocalAvatarBoneTransform;
 
@@ -152,6 +155,16 @@ namespace SpatialSys.UnitySDK
         public delegate void SpawnPrefabObjectDelegate(string sku, Vector3 position, Quaternion rotation);
         public static SpawnPrefabObjectDelegate SpawnPrefabObject;
 
+        // Avatar Attachments
+        public delegate void EquipAvatarAttachmentPackageDelegate(string sku, bool equip, Action<bool> callback);
+        public static EquipAvatarAttachmentPackageDelegate EquipAvatarAttachmentPackage;
+
+        public delegate void EquipAvatarAttachmentItemDelegate(string itemID, bool equip, Action<bool> callback);
+        public static EquipAvatarAttachmentItemDelegate EquipAvatarAttachmentItem;
+
+        public delegate bool IsAvatarAttachmentEquippedDelegate(string itemOrPackageID);
+        public static IsAvatarAttachmentEquippedDelegate IsAvatarAttachmentEquipped;
+
         // Quests
         public delegate void QuestDelegate(SpatialQuest quest);
         public static QuestDelegate StartQuest;
@@ -179,7 +192,7 @@ namespace SpatialSys.UnitySDK
         public delegate void SetBackpackMenuOpenDelegate(bool open);
         public static SetBackpackMenuOpenDelegate SetBackpackMenuOpen;
 
-        public delegate void AddBackpackItemDelegate(string itemID, int quantity, Action<bool> callback);
+        public delegate void AddBackpackItemDelegate(string itemID, ulong quantity, Action<bool> callback);
         public static AddBackpackItemDelegate AddBackpackItem;
 
         public struct GetBackpackItemResponse
@@ -209,6 +222,9 @@ namespace SpatialSys.UnitySDK
         // Shop
         public delegate void SetShopMenuOpenDelegate(bool open);
         public static SetShopMenuOpenDelegate SetShopMenuOpen;
+
+        public delegate void SelectShopMenuItemDelegate(string itemID);
+        public static SelectShopMenuItemDelegate SelectShopMenuItem;
 
         public delegate void SetShopItemEnabledDelegate(string itemID, bool enabled, string disabledMessage);
         public static SetShopItemEnabledDelegate SetShopItemEnabled;
