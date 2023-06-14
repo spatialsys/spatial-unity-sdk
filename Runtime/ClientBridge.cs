@@ -173,8 +173,10 @@ namespace SpatialSys.UnitySDK
 
         public delegate void QuestTaskDelegate(SpatialQuest quest, uint taskID);
         public static QuestTaskDelegate StartQuestTask;
-        public static QuestTaskDelegate AddQuestTaskProgress;
         public static QuestTaskDelegate CompleteQuestTask;
+        public delegate void QuestTaskProgressDelegate(SpatialQuest quest, uint taskID, int progress);
+        public static QuestTaskProgressDelegate AddQuestTaskProgress;
+        public static QuestTaskProgressDelegate SetQuestTaskProgress;
 
         public delegate int GetQuestTaskProgressDelegate(SpatialQuest quest, uint taskID);
         public static GetQuestTaskProgressDelegate GetQuestTaskProgress;
@@ -194,6 +196,9 @@ namespace SpatialSys.UnitySDK
 
         public delegate void AddBackpackItemDelegate(string itemID, ulong quantity, Action<bool> callback);
         public static AddBackpackItemDelegate AddBackpackItem;
+
+        public delegate void DeleteBackpackItemDelegate(string itemID, Action<bool> callback);
+        public static DeleteBackpackItemDelegate DeleteBackpackItem;
 
         public struct GetBackpackItemResponse
         {
@@ -339,5 +344,15 @@ namespace SpatialSys.UnitySDK
 
         public delegate void SendSDKNetworkEventToActorByteDelegate(int targetActor, byte eventID, object[] args);
         public static SendSDKNetworkEventToActorByteDelegate SendSDKNetworkEventToActorByte;
+
+        //Internal
+        public delegate void SpatialInternalAnalyticsEventDelegate(string eventName, params Tuple<string, string>[] args);
+        public static SpatialInternalAnalyticsEventDelegate SpatialInternalAnalyticsEvent;
+
+        public delegate void PlaySpatialSFXPositionDelegate(SpatialSFX sfx, Vector3 position, float extraVolume, float extraPitch);
+        public static PlaySpatialSFXPositionDelegate PlaySpatialSFXPosition;
+
+        public delegate void PlaySpatialSFXSourceDelegate(SpatialSFX sfx, AudioSource source, float extraVolume, float extraPitch);
+        public static PlaySpatialSFXSourceDelegate PlaySpatialSFXSource;
     }
 }

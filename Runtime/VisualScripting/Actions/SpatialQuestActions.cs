@@ -29,7 +29,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             questRef = ValueInput<SpatialQuest>(nameof(questRef), null).NullMeansSelf();
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.StartQuest.Invoke(f.GetValue<SpatialQuest>(questRef));
+                ClientBridge.StartQuest?.Invoke(f.GetValue<SpatialQuest>(questRef));
                 return outputTrigger;
             });
 
@@ -62,7 +62,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             questRef = ValueInput<SpatialQuest>(nameof(questRef), null).NullMeansSelf();
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.CompleteQuest.Invoke(f.GetValue<SpatialQuest>(questRef));
+                ClientBridge.CompleteQuest?.Invoke(f.GetValue<SpatialQuest>(questRef));
                 return outputTrigger;
             });
 
@@ -95,7 +95,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             questRef = ValueInput<SpatialQuest>(nameof(questRef), null).NullMeansSelf();
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.ResetQuest.Invoke(f.GetValue<SpatialQuest>(questRef));
+                ClientBridge.ResetQuest?.Invoke(f.GetValue<SpatialQuest>(questRef));
                 return outputTrigger;
             });
 
@@ -132,7 +132,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             taskID = ValueInput<uint>(nameof(taskID), 0);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.StartQuestTask.Invoke(f.GetValue<SpatialQuest>(questRef), f.GetValue<uint>(taskID));
+                ClientBridge.StartQuestTask?.Invoke(f.GetValue<SpatialQuest>(questRef), f.GetValue<uint>(taskID));
                 return outputTrigger;
             });
 
@@ -169,7 +169,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             taskID = ValueInput<uint>(nameof(taskID), 0);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.CompleteQuestTask.Invoke(f.GetValue<SpatialQuest>(questRef), f.GetValue<uint>(taskID));
+                ClientBridge.CompleteQuestTask?.Invoke(f.GetValue<SpatialQuest>(questRef), f.GetValue<uint>(taskID));
                 return outputTrigger;
             });
 
@@ -198,14 +198,56 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public ValueInput questRef { get; private set; }
         [DoNotSerialize]
         public ValueInput taskID { get; private set; }
+        [DoNotSerialize]
+        public ValueInput progress { get; private set; }
 
         protected override void Definition()
         {
             questRef = ValueInput<SpatialQuest>(nameof(questRef), null).NullMeansSelf();
             taskID = ValueInput<uint>(nameof(taskID), 0);
+            progress = ValueInput<int>(nameof(progress), 1);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.AddQuestTaskProgress.Invoke(f.GetValue<SpatialQuest>(questRef), f.GetValue<uint>(taskID));
+                ClientBridge.AddQuestTaskProgress?.Invoke(f.GetValue<SpatialQuest>(questRef), f.GetValue<uint>(taskID), f.GetValue<int>(progress));
+                return outputTrigger;
+            });
+
+            outputTrigger = ControlOutput(nameof(outputTrigger));
+
+            Succession(inputTrigger, outputTrigger);
+        }
+    }
+    [UnitTitle("Spatial Quest: Set Task Progress")]
+    [UnitSurtitle("Spatial Quest")]
+    [UnitShortTitle("Set Task Progress")]
+    [UnitCategory("Spatial\\Actions")]
+    [TypeIcon(typeof(SpatialQuest))]
+    public class SpatialQuestSetTaskProgressNode : Unit
+    {
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlInput inputTrigger { get; private set; }
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlOutput outputTrigger { get; private set; }
+
+        [NullMeansSelf]
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ValueInput questRef { get; private set; }
+        [DoNotSerialize]
+        public ValueInput taskID { get; private set; }
+        [DoNotSerialize]
+        public ValueInput progress { get; private set; }
+
+        protected override void Definition()
+        {
+            questRef = ValueInput<SpatialQuest>(nameof(questRef), null).NullMeansSelf();
+            taskID = ValueInput<uint>(nameof(taskID), 0);
+            progress = ValueInput<int>(nameof(progress), 1);
+
+            inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
+                ClientBridge.SetQuestTaskProgress?.Invoke(f.GetValue<SpatialQuest>(questRef), f.GetValue<uint>(taskID), f.GetValue<int>(progress));
                 return outputTrigger;
             });
 

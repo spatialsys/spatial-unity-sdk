@@ -39,6 +39,7 @@ namespace SpatialSys.UnitySDK.Editor
             "System.Collections",
             "System.Collections.Specialized",
             "TMPro",
+            "SpatialSys.UnitySDK",
             "SpatialSys.UnitySDK.VisualScripting",
         };
 
@@ -146,6 +147,7 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(SpatialCameraMode),
             typeof(SpatialCameraRotationMode),
             typeof(NetworkEventTargets),
+            typeof(SpatialSFX),
 
             //Additional types
             typeof(ParticleSystem),

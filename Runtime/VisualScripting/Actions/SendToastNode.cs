@@ -30,7 +30,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             duration = ValueInput<float>(nameof(duration), 1f);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SendToast.Invoke(f.GetValue<string>(message), f.GetValue<float>(duration));
+                ClientBridge.SendToast?.Invoke(f.GetValue<string>(message), f.GetValue<float>(duration));
                 return outputTrigger;
             });
 

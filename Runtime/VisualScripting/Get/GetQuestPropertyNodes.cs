@@ -204,7 +204,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             questRef = ValueInput<SpatialQuest>(nameof(questRef), null).NullMeansSelf();
 
             status = ValueOutput<SpatialQuestStatus>(nameof(status), (f) =>
-                (SpatialQuestStatus)ClientBridge.GetQuestStatus.Invoke(f.GetValue<SpatialQuest>(questRef))
+                (SpatialQuestStatus)ClientBridge.GetQuestStatus?.Invoke(f.GetValue<SpatialQuest>(questRef))
             );
         }
     }
@@ -232,7 +232,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             taskID = ValueInput<uint>(nameof(taskID), 0);
 
             taskProgress = ValueOutput<int>(nameof(taskProgress), (f) =>
-                ClientBridge.GetQuestTaskProgress.Invoke(f.GetValue<SpatialQuest>(questRef), f.GetValue<uint>(taskID))
+                ClientBridge.GetQuestTaskProgress?.Invoke(f.GetValue<SpatialQuest>(questRef), f.GetValue<uint>(taskID)) ?? 0
             );
         }
     }
@@ -259,7 +259,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             taskID = ValueInput<uint>(nameof(taskID), 0);
 
             taskStatus = ValueOutput<SpatialQuestStatus>(nameof(taskStatus), (f) =>
-                (SpatialQuestStatus)ClientBridge.GetQuestTaskStatus.Invoke(f.GetValue<SpatialQuest>(questRef), f.GetValue<uint>(taskID))
+                (SpatialQuestStatus)ClientBridge.GetQuestTaskStatus?.Invoke(f.GetValue<SpatialQuest>(questRef), f.GetValue<uint>(taskID))
             );
         }
     }
@@ -281,7 +281,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             questId = ValueInput<uint>(nameof(questId), 0);
 
-            questRef = ValueOutput<SpatialQuest>(nameof(questRef), (f) => 
+            questRef = ValueOutput<SpatialQuest>(nameof(questRef), (f) =>
                 GameObject.FindObjectsOfType<SpatialQuest>().FirstOrDefault(q => q.id == f.GetValue<uint>(questId))
             );
         }

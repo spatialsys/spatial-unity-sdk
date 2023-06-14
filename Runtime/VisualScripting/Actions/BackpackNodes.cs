@@ -80,6 +80,48 @@ namespace SpatialSys.UnitySDK.VisualScripting
         }
     }
 
+    [UnitTitle("Spatial: Delete Backpack Item")]
+    [UnitSurtitle("Spatial")]
+    [UnitShortTitle("Delete Backpack Item")]
+    [UnitCategory("Spatial\\Actions")]
+    [TypeIcon(typeof(SpatialComponentBase))]
+    public class DeleteBackpackItemNode : Unit
+    {
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlInput inputTrigger { get; private set; }
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlOutput outputTrigger { get; private set; }
+
+        [DoNotSerialize]
+        public ValueInput itemID { get; private set; }
+
+        [DoNotSerialize]
+        public ValueOutput succeeded { get; private set; }
+
+        protected override void Definition()
+        {
+            itemID = ValueInput<string>(nameof(itemID), "");
+            succeeded = ValueOutput<bool>(nameof(succeeded));
+
+            inputTrigger = ControlInputCoroutine(nameof(inputTrigger), ExecuteAsync);
+            outputTrigger = ControlOutput(nameof(outputTrigger));
+            Succession(inputTrigger, outputTrigger);
+        }
+
+        private IEnumerator ExecuteAsync(Flow flow)
+        {
+            bool completed = false;
+            ClientBridge.DeleteBackpackItem.Invoke(flow.GetValue<string>(itemID), success => {
+                completed = true;
+                flow.SetValue(succeeded, success);
+            });
+            yield return new WaitUntil(() => completed);
+            yield return outputTrigger;
+        }
+    }
+
     [UnitTitle("Spatial: Get Backpack Item")]
     [UnitSurtitle("Spatial")]
     [UnitShortTitle("Get Backpack Item")]

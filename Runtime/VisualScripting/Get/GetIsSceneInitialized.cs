@@ -16,7 +16,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public ValueOutput isInitialized { get; private set; }
         protected override void Definition()
         {
-            isInitialized = ValueOutput<bool>(nameof(isInitialized), (f) => ClientBridge.GetIsSceneInitialized.Invoke());
+            isInitialized = ValueOutput<bool>(nameof(isInitialized), (f) => ClientBridge.GetIsSceneInitialized?.Invoke() ?? true);
         }
     }
 }
