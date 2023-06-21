@@ -18,20 +18,23 @@
                 <ui:VisualElement name="notLoggedInBlock" class="block_white block_red block_base">
                     <ui:Label text="Not Logged In" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
                     <ui:Label text="Follow the steps below to link your Spatial account with Unity." display-tooltip-when-elided="true" name="Text" class="blockText" />
-                    <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: none;">
-                        <ui:Button text="Get Login Token" display-tooltip-when-elided="true" name="Button1" class="blockButton" />
-                        <ui:VisualElement name="Filler" style="flex-grow: 1;" />
+                </ui:VisualElement>
+                <ui:VisualElement name="loggingInBlock" class="block_white block_base block_yellow">
+                    <ui:Label text="Logging In..." display-tooltip-when-elided="true" name="Header" class="blockTitle" />
+                    <ui:Label text="Hang tight!" display-tooltip-when-elided="true" name="Text" class="blockText" />
+                </ui:VisualElement>
+                <ui:VisualElement name="loggedInBlock" class="block_white block_base block_green" style="flex-direction: row; flex-grow: 1; flex-shrink: 1;">
+                    <ui:VisualElement name="LeftLayout" style="flex-grow: 1;">
+                        <ui:Label text="Logged In" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
+                        <ui:Label text="as Username (username@email.com)" display-tooltip-when-elided="true" name="loggedInAsText" class="blockText" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="RightLayout">
+                        <ui:VisualElement name="ButtonGroup" style="min-height: auto; min-width: auto; display: flex; justify-content: flex-end; flex-direction: row;">
+                            <ui:Button text="Log Out" display-tooltip-when-elided="true" name="logout" class="blockButton" />
+                        </ui:VisualElement>
                     </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:VisualElement name="loggedInBlock" class="block_white block_base block_green">
-                    <ui:Label text="Logged In" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
-                    <ui:Label text="You’re all set!" display-tooltip-when-elided="true" name="Text" class="blockText" />
-                    <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: none;">
-                        <ui:Button text="Get Login Token" display-tooltip-when-elided="true" name="Button1" class="blockButton" />
-                        <ui:VisualElement name="Filler" style="flex-grow: 1;" />
-                    </ui:VisualElement>
-                </ui:VisualElement>
-                <ui:VisualElement name="Block_1st" class="block_white block_base">
+                <ui:VisualElement name="GetTokenBlock" class="block_white block_base">
                     <ui:Label text="1st" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
                     <ui:Label text="Copy your access token from your profile by clicking the button below and logging into your Spatial account." display-tooltip-when-elided="true" name="Text" class="blockText" />
                     <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px;">
@@ -42,10 +45,6 @@
                 <ui:VisualElement name="WarningBlock" class="block_white block_base block_yellow">
                     <ui:Label text="No sharing!" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
                     <ui:Label text="Your access token should not be shared with anybody. Spatial will never ask you for this token." display-tooltip-when-elided="true" name="Text" class="blockText" />
-                    <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: none;">
-                        <ui:Button text="Get Login Token" display-tooltip-when-elided="true" name="Button1" class="blockButton" />
-                        <ui:VisualElement name="Filler" style="flex-grow: 1;" />
-                    </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:VisualElement name="PasteTokenBlock" class="block_white block_base">
                     <ui:Label text="2nd" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
@@ -71,7 +70,7 @@
                     <ui:VisualElement name="header" style="flex-direction: row; margin-bottom: 8px;">
                         <ui:Label text="Project Configuration" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
                         <ui:VisualElement name="Filler" style="flex-grow: 1; height: 0;" />
-                        <ui:Button text="Open Spatial Studio" display-tooltip-when-elided="true" name="openStudio" class="blockButton blockButton_small" style="margin-right: 10px;" />
+                        <ui:Button text="Open Spatial Studio" display-tooltip-when-elided="true" name="openStudio" class="blockButton blockButton_small" />
                     </ui:VisualElement>
                     <ui:VisualElement name="worldSelector" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 0; margin-bottom: 3px;">
                         <ui:DropdownField label="Default World" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="defaultWorldDropDown" style="margin-left: 0; margin-right: 5px; margin-top: 0; margin-bottom: 0;" />

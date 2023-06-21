@@ -10,11 +10,13 @@ namespace SpatialSys.UnitySDK.Editor
         public static bool isFetchingWorlds { get; private set; }
         public static bool initialFetchComplete { get; private set; }
 
+        private static bool _clearedWhileFetching = false;
+
         [InitializeOnLoadMethod]
         private static void OnScriptsReloaded()
         {
             // Only fetch badges if a world id exists on this project
-            if (EditorUtility.isAuthenticated && string.IsNullOrEmpty(ProjectConfig.defaultWorldID))
+            if (AuthUtility.isAuthenticated && string.IsNullOrEmpty(ProjectConfig.defaultWorldID))
             {
                 FetchWorlds();
             }
@@ -35,15 +37,30 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static IPromise FetchWorlds()
         {
+            if (!AuthUtility.isAuthenticated)
+            {
+                ClearWorlds();
+                return Promise.Resolved();
+            }
+
             initialFetchComplete = true;
             isFetchingWorlds = true;
+            _clearedWhileFetching = false;
             return SpatialAPI.GetWorlds()
                 .Then(resp => {
-                    worlds = resp.worlds;
+                    if (!_clearedWhileFetching)
+                        worlds = resp.worlds;
                 })
                 .Finally(() => {
                     isFetchingWorlds = false;
+                    _clearedWhileFetching = false;
                 });
+        }
+
+        public static void ClearWorlds()
+        {
+            worlds = new SpatialAPI.World[0];
+            _clearedWhileFetching = true;
         }
     }
 }

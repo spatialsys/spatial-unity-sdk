@@ -9,8 +9,6 @@ namespace SpatialSys.UnitySDK.Editor
 {
     public static class EditorUtility
     {
-        private const string AUTH_TOKEN_KEY = "SpatialSDK_Token";
-
         public const string MIN_UNITY_VERSION_STR = "2021.3.8f1";
         public const string MAX_UNITY_VERSION_STR = "2021.3.21f1";
         private static readonly Version MIN_UNITY_VERSION = GetParsedUnityVersion(MIN_UNITY_VERSION_STR);
@@ -18,7 +16,6 @@ namespace SpatialSys.UnitySDK.Editor
         private static readonly Version CURRENT_UNITY_VERSION = GetParsedUnityVersion(Application.unityVersion);
 
         public static bool isUsingSupportedUnityVersion => CURRENT_UNITY_VERSION != null && CURRENT_UNITY_VERSION >= MIN_UNITY_VERSION && CURRENT_UNITY_VERSION <= MAX_UNITY_VERSION;
-        public static bool isAuthenticated => !string.IsNullOrEmpty(GetSavedAuthToken());
 
         public static readonly HashSet<string> defaultTags = new HashSet<string> {
             "Untagged",
@@ -49,16 +46,6 @@ namespace SpatialSys.UnitySDK.Editor
                 Debug.LogError($"Failed to parse Unity version string '{versionString}'; Expected format: X.X.XfX");
                 return null;
             }
-        }
-
-        public static string GetSavedAuthToken()
-        {
-            return EditorPrefs.GetString(AUTH_TOKEN_KEY);
-        }
-
-        public static void SaveAuthToken(string token)
-        {
-            EditorPrefs.SetString(AUTH_TOKEN_KEY, token);
         }
 
         public static bool TryGetDateTimeFromEditorPrefs(string key, out DateTime result)

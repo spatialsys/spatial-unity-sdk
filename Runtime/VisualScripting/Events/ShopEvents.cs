@@ -44,9 +44,39 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [UnitShortTitle("On Shop Item Purchased")]
     [UnitCategory("Events\\Spatial")]
     [TypeIcon(typeof(SpatialComponentBase))]
-    public class OnShopItemPurchasedNode : EventUnit<string>
+    public class OnShopSpecificItemPurchasedNode : EventUnit<string>
     {
         public static string eventName = "SpatialOnShopItemPurchased";
+        protected override bool register => true;
+
+        [DoNotSerialize]
+        public ValueInput itemID { get; private set; }
+
+        public override EventHook GetHook(GraphReference reference)
+        {
+            return new EventHook(eventName);
+        }
+
+        protected override void Definition()
+        {
+            base.Definition();
+            itemID = ValueInput<string>(nameof(itemID), "");
+        }
+
+        protected override bool ShouldTrigger(Flow flow, string arg)
+        {
+            return flow.GetValue<string>(itemID) == arg;
+        }
+    }
+
+    [UnitTitle("Spatial: On Shop Any Item Purchased")]
+    [UnitSurtitle("Spatial")]
+    [UnitShortTitle("On Shop Any Item Purchased")]
+    [UnitCategory("Events\\Spatial")]
+    [TypeIcon(typeof(SpatialComponentBase))]
+    public class OnShopItemPurchasedNode : EventUnit<string>
+    {
+        public static string eventName = "SpatialOnShopAnyItemPurchased";
         protected override bool register => true;
 
         [DoNotSerialize]

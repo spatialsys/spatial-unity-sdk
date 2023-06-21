@@ -17,18 +17,36 @@ namespace SpatialSys.UnitySDK.Editor
 #endif
 
         private static readonly string API_ORIGIN = $"https://api.{SPATIAL_ORIGIN}";
-        private static string _authToken => EditorUtility.GetSavedAuthToken();
+
+        //------------------------------------------------
+        // GET USER DATA
+        //------------------------------------------------
+
+        public static IPromise<GetUserDataResponse> GetUserData()
+        {
+            RequestHelper request = CreateRequest();
+            request.Uri = $"{API_ORIGIN}/v2/sdk/me";
+            return RestClient.Get<GetUserDataResponse>(request);
+        }
+
+        [Serializable]
+        public struct GetUserDataResponse
+        {
+            public string username;
+            public string email;
+        }
 
         //------------------------------------------------
         // UPLOAD TO SANDBOX
         //------------------------------------------------
 
-        public static IPromise<UploadSandboxBundleResponse> UploadSandboxBundle(PackageType packageType)
+        public static IPromise<UploadSandboxBundleResponse> UploadSandboxBundle(string sku, PackageType packageType)
         {
             RequestHelper request = CreateRequest();
             request.Uri = $"{API_ORIGIN}/sdk/v1/sandbox/bundle";
             request.Body = new UploadSandboxBundleRequest() {
-                type = PackageTypeToSAPIPackageType(packageType)
+                type = PackageTypeToSAPIPackageType(packageType),
+                sku = sku
             };
             return RestClient.Post<UploadSandboxBundleResponse>(request);
         }
@@ -37,6 +55,7 @@ namespace SpatialSys.UnitySDK.Editor
         public struct UploadSandboxBundleRequest
         {
             public string type;
+            public string sku;
         }
 
         [Serializable]
@@ -101,6 +120,35 @@ namespace SpatialSys.UnitySDK.Editor
             public string sku;
             public int version;
             public string downloadUrl;
+        }
+
+        //------------------------------------------------
+        // GET PACKAGE
+        //------------------------------------------------
+
+        public static IPromise<GetPackageResponse> GetPackage(string sku)
+        {
+            RequestHelper request = CreateRequest();
+            request.Uri = $"{API_ORIGIN}/v2/packages/{sku}";
+            return RestClient.Get<GetPackageResponse>(request);
+        }
+
+        [Serializable]
+        public struct GetPackageResponse
+        {
+            public string name;
+            public string thumbnail;
+            public string sku;
+            public string packageSource;
+            public string packageType;
+            public string creatorID;
+            public string creatorName;
+            public int currentVersion;
+            public int latestSuccessfulVersion;
+
+            // Only for space packages
+            public string worldID;
+            public string spaceID;
         }
 
         //------------------------------------------------
@@ -190,7 +238,7 @@ namespace SpatialSys.UnitySDK.Editor
         private static RequestHelper CreateRequest()
         {
             RequestHelper request = new RequestHelper();
-            request.Headers["Authorization"] = $"Bearer {_authToken}";
+            request.Headers["Authorization"] = $"Bearer {AuthUtility.accessToken}";
             // Example: UNITYSDK 1.2.3 official GITSHA00
             // Currently the gitsha is not used, but is included for SAPI compatibility
             request.Headers["Spatial-User-Agent"] = $"UNITYSDK {PackageManagerUtility.currentVersion} {(PackageManagerUtility.isOfficialVersion ? "official" : "dev")} 00000000";

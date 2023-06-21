@@ -1,11 +1,12 @@
+using RSG;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
+using UnityEditor.UIElements;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UIElements;
-using UnityEditor.UIElements;
-using System.Linq;
-using UnityEditor.SceneManagement;
-using System;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -103,6 +104,7 @@ namespace SpatialSys.UnitySDK.Editor
         private void OnDisable()
         {
             _isOpen = false;
+            AuthUtility.onAuthStatusChanged -= HandleAuthStatusChanged;
         }
 
         // Needed to refresh the UI bindings after recompile
@@ -142,6 +144,7 @@ namespace SpatialSys.UnitySDK.Editor
             // Account
             root.Query<Button>("getToken").First().clicked += () => Application.OpenURL(ACCESS_TOKEN_URL);
             root.Query<Button>("pasteToken").First().clicked += () => PasteAuthToken();
+            root.Query<Button>("logout").First().clicked += AuthUtility.LogOut;
 
             // Config
             root.Query<Button>("openStudio").First().clicked += () => Application.OpenURL(spatialStudioURL);
@@ -249,8 +252,8 @@ namespace SpatialSys.UnitySDK.Editor
             if (ProjectConfig.activePackage != null)
                 root.Bind(new SerializedObject(ProjectConfig.activePackage));
 
-            _authToken = EditorUtility.GetSavedAuthToken();
-            UpdateAuthWarning();
+            HandleAuthStatusChanged();
+            AuthUtility.onAuthStatusChanged += HandleAuthStatusChanged;
         }
 
         private void Update()
@@ -388,21 +391,33 @@ namespace SpatialSys.UnitySDK.Editor
                 return;
             }
 
-            _authToken = clipboard;
-            EditorUtility.SaveAuthToken(clipboard);
-            UpdateAuthWarning();
-            GUIUtility.systemCopyBuffer = null;
-            UnityEditor.EditorUtility.DisplayDialog("Success", "You have successfully authenticated with Spatial!", "Begin creating");
+            AuthUtility.LogInWithDialogPopup(clipboard);
 
-            if (EditorUtility.isAuthenticated)
-                WorldUtility.FetchWorlds().Then(() => UpdateDefaultWorldSelectionDropdown());
+            if (GUIUtility.systemCopyBuffer == clipboard)
+                GUIUtility.systemCopyBuffer = null;
         }
 
-        private void UpdateAuthWarning()
+        private void HandleAuthStatusChanged()
         {
-            bool validAuthToken = _authToken.Length > 16;
-            rootVisualElement.Q("notLoggedInBlock").style.display = validAuthToken ? DisplayStyle.None : DisplayStyle.Flex;
-            rootVisualElement.Q("loggedInBlock").style.display = validAuthToken ? DisplayStyle.Flex : DisplayStyle.None;
+            VisualElement loggedInBlock = rootVisualElement.Q("loggedInBlock");
+
+            rootVisualElement.Q("notLoggedInBlock").style.display = !AuthUtility.isAuthenticated && !AuthUtility.isAuthenticating ? DisplayStyle.Flex : DisplayStyle.None;
+            rootVisualElement.Q("loggingInBlock").style.display = AuthUtility.isAuthenticating ? DisplayStyle.Flex : DisplayStyle.None;
+
+            if (AuthUtility.isAuthenticated)
+            {
+                loggedInBlock.style.display = DisplayStyle.Flex;
+                loggedInBlock.Q<TextElement>("loggedInAsText").text = $"as {AuthUtility.userAlias}";
+
+                WorldUtility.FetchWorlds().Then(() => UpdateDefaultWorldSelectionDropdown());
+            }
+            else
+            {
+                loggedInBlock.style.display = DisplayStyle.None;
+
+                WorldUtility.ClearWorlds();
+                UpdateDefaultWorldSelectionDropdown();
+            }
         }
 
         /////////////////////////////////////////

@@ -12,6 +12,7 @@ namespace SpatialSys.UnitySDK.Editor
         private const int FETCH_INTERVAL_MINUTES = 120;
         private const string LAST_AUTO_UPDATE_DATE_PREFS_KEY = "SpatialSDK_UpgradeUtility_LastAutoUpdateDate";
         private const int AUTO_UPDATE_INTERVAL_MINUTES = 120;
+        private const string FIRST_INIT_SESSION_PREFS_KEY = "SpatialSDK_UpgradeUtility_FirstInit";
 
         public enum UpgradeCheckType
         {
@@ -22,23 +23,30 @@ namespace SpatialSys.UnitySDK.Editor
 
         static UpgradeUtility()
         {
-#if !SPATIAL_UNITYSDK_DISABLE_UPGRADE_CHECK && !SPATIAL_UNITYSDK_INTERNAL
+            bool isFirstInit = false;
+
+            if (!SessionState.GetBool(FIRST_INIT_SESSION_PREFS_KEY, defaultValue: false))
+            {
+                SessionState.SetBool(FIRST_INIT_SESSION_PREFS_KEY, true);
+                isFirstInit = true;
+            }
+
             // Check if it has been enough time since we asked user to update
             bool doSuggestUpdateCheck = !EditorUtility.TryGetDateTimeFromEditorPrefs(LAST_AUTO_UPDATE_DATE_PREFS_KEY, out System.DateTime lastCheckDate) ||
                 (System.DateTime.Now - lastCheckDate).TotalMinutes >= AUTO_UPDATE_INTERVAL_MINUTES;
 
-            // But also perform an update check anyway if the user just opened the editor.
-            bool editorWasJustOpened = Time.realtimeSinceStartup < 20;
-            if (!EditorApplication.isPlayingOrWillChangePlaymode && (editorWasJustOpened || doSuggestUpdateCheck))
+            // But also perform an update check anyway if the user just opened the editor (first initialization).
+            if (!EditorApplication.isPlayingOrWillChangePlaymode && (isFirstInit || doSuggestUpdateCheck))
             {
+#if !SPATIAL_UNITYSDK_DISABLE_UPGRADE_CHECK && !SPATIAL_UNITYSDK_INTERNAL
                 CheckForUpgrade(UpgradeCheckType.ForceFetch)
                     .Then(upgradeRequired => {
                         EditorUtility.SetDateTimeToEditorPrefs(LAST_AUTO_UPDATE_DATE_PREFS_KEY, System.DateTime.Now);
                         if (upgradeRequired)
                             ShowUpgradeDialog();
                     });
-            }
 #endif
+            }
         }
 
         /// <summary>
