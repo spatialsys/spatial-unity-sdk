@@ -217,6 +217,17 @@ namespace SpatialSys.UnitySDK
         public delegate void SetBackpackItemTypeEnabledDelegate(ItemType itemType, bool enabled, string disabledMessage);
         public static SetBackpackItemTypeEnabledDelegate SetBackpackItemTypeEnabled;
 
+        // Consumables
+        public struct GetConsumableItemStateResponse
+        {
+            public bool isActive;
+            public float durationRemaining;
+            public bool onCooldown;
+            public float cooldownRemaining;
+        }
+        public delegate void GetConsumableItemStateDelegate(string itemID, Action<GetConsumableItemStateResponse> callback);
+        public static GetConsumableItemStateDelegate GetConsumableItemState;
+
         // World Currency
         public delegate ulong GetWorldCurrencyBalanceDelegate();
         public static GetWorldCurrencyBalanceDelegate GetWorldCurrencyBalance;

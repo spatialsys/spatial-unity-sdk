@@ -257,7 +257,13 @@ namespace SpatialSys.UnitySDK.Editor
             request.BodyRaw = data;
             request.ContentType = "application/octet-stream";
             if (progressCallback != null)
-                request.ProgressCallback += p => progressCallback((long)(data.Length * p), (long)data.Length, p);
+            {
+                request.ProgressCallback += (float p) => {
+                    // Unity web request progress goes from 0 to 0.5 when uploading data. Remap the upload value from 0 to 1.
+                    float uploadProgress = Mathf.Clamp01(p * 2f);
+                    progressCallback((long)(data.Length * uploadProgress), (long)data.Length, uploadProgress);
+                };
+            }
             return request;
         }
 

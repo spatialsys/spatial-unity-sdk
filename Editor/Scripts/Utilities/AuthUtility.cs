@@ -14,7 +14,7 @@ namespace SpatialSys.UnitySDK.Editor
         FailedToAuthenticate = 2,
         Authenticated = 3,
     }
-    //
+
     public static class AuthUtility
     {
         private const string ACCESS_TOKEN_PREFS_KEY = "SpatialSDK_Token";
@@ -46,6 +46,10 @@ namespace SpatialSys.UnitySDK.Editor
 
         static AuthUtility()
         {
+            // Restore field values after recompile
+            SetAuthStatus((AuthStatus)SessionState.GetInt(AUTH_STATUS_SESSION_PREFS_KEY, defaultValue: (int)AuthStatus.NotAuthenticated));
+
+#if !SPATIAL_UNITYSDK_INTERNAL
             bool isFirstInit = false;
             if (!SessionState.GetBool(FIRST_INIT_SESSION_PREFS_KEY, defaultValue: false))
             {
@@ -53,10 +57,6 @@ namespace SpatialSys.UnitySDK.Editor
                 isFirstInit = true;
             }
 
-            // Restore field values after recompile
-            SetAuthStatus((AuthStatus)SessionState.GetInt(AUTH_STATUS_SESSION_PREFS_KEY, defaultValue: (int)AuthStatus.NotAuthenticated));
-
-#if !SPATIAL_UNITYSDK_INTERNAL
             // Only show failure dialog on the first initialization (usually when opening the editor).
             // Subsequent failures will be handled when calling other API endpoints like uploading to sandbox, uploading package, etc.
             ReauthenticateSessionIfNecessary(showFailureDialog: isFirstInit);

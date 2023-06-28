@@ -334,9 +334,6 @@ namespace SpatialSys.UnitySDK.Editor
             if (progress <= _lastUploadProgress)
                 return;
 
-            // For some reason, web request progress goes from 0 to 0.5 while uploading, then jumps to 1 at the end. Remap the value to 0 to 1.
-            progress = Mathf.Clamp01(progress * 2f);
-
             _lastUploadProgress = progress;
 
             long transferredKb = Mathf.FloorToInt(transferred / 1024f);
