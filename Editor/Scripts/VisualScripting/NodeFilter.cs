@@ -132,6 +132,7 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(WheelCollider),
             typeof(WheelFrictionCurve),
             typeof(WheelHit),
+            typeof(JointSpring),
             typeof(ICollection),
             typeof(IList),
             typeof(ArrayList),

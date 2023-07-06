@@ -161,12 +161,16 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public ValueInput amount { get; private set; } // total amount in inventory right now
 
         [DoNotSerialize]
+        public ValueInput showToastMessage { get; private set; }
+
+        [DoNotSerialize]
         public ValueOutput succeeded { get; private set; }
 
         protected override void Definition()
         {
             itemID = ValueInput<string>(nameof(itemID), "");
             amount = ValueInput<ulong>(nameof(amount), 1);
+            showToastMessage = ValueInput<bool>(nameof(showToastMessage), true);
             succeeded = ValueOutput<bool>(nameof(succeeded));
 
             inputTrigger = ControlInputCoroutine(nameof(inputTrigger), ExecuteAsync);
@@ -177,7 +181,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         private IEnumerator ExecuteAsync(Flow flow)
         {
             bool completed = false;
-            ClientBridge.PurchaseShopItem.Invoke(flow.GetValue<string>(itemID), flow.GetValue<ulong>(amount), success => {
+            ClientBridge.PurchaseShopItem.Invoke(flow.GetValue<string>(itemID), flow.GetValue<ulong>(amount), flow.GetValue<bool>(showToastMessage), success => {
                 completed = true;
                 flow.SetValue(succeeded, success);
             });

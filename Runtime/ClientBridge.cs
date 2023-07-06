@@ -194,7 +194,7 @@ namespace SpatialSys.UnitySDK
         public delegate void SetBackpackMenuOpenDelegate(bool open);
         public static SetBackpackMenuOpenDelegate SetBackpackMenuOpen;
 
-        public delegate void AddBackpackItemDelegate(string itemID, ulong quantity, Action<bool> callback);
+        public delegate void AddBackpackItemDelegate(string itemID, ulong quantity, bool showToast, Action<bool> callback);
         public static AddBackpackItemDelegate AddBackpackItem;
 
         public delegate void DeleteBackpackItemDelegate(string itemID, Action<bool> callback);
@@ -248,7 +248,7 @@ namespace SpatialSys.UnitySDK
         public delegate void SetShopItemVisibilityDelegate(string itemID, bool visible);
         public static SetShopItemVisibilityDelegate SetShopItemVisibility;
 
-        public delegate void PurchaseShopItemDelegate(string itemID, ulong amount, Action<bool> callback);
+        public delegate void PurchaseShopItemDelegate(string itemID, ulong amount, bool showToast, Action<bool> callback);
         public static PurchaseShopItemDelegate PurchaseShopItem;
 
         //Synced objects
@@ -365,5 +365,8 @@ namespace SpatialSys.UnitySDK
 
         public delegate void PlaySpatialSFXSourceDelegate(SpatialSFX sfx, AudioSource source, float extraVolume, float extraPitch);
         public static PlaySpatialSFXSourceDelegate PlaySpatialSFXSource;
+
+        public delegate void CreateFloatingTextDelegate(string text, FloatingTextAnimStyle style, Vector3 position, Vector3 force, Color color, bool gravity, AnimationCurve scaleCurve, AnimationCurve alphaCurve, float lifetime);
+        public static CreateFloatingTextDelegate CreateFloatingText;
     }
 }

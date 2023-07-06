@@ -76,6 +76,86 @@ namespace SpatialSys.UnitySDK.VisualScripting
         }
     }
 
+    [UnitTitle("Spatial: On Backpack Any Item Owned Changed")]
+    [UnitSurtitle("Spatial")]
+    [UnitShortTitle("On Backpack Any Item Owned Changed")]
+    [UnitCategory("Events\\Spatial\\Space Economy")]
+    [TypeIcon(typeof(SpatialComponentBase))]
+    public class OnBackpackAnyItemOwnedChangedNode : EventUnit<(string, bool)>
+    {
+        public static string eventName = "SpatialOnBackpackAnyItemOwnedChanged";
+        protected override bool register => true;
+
+        [DoNotSerialize]
+        public ValueOutput itemID { get; private set; }
+
+        [DoNotSerialize]
+        public ValueOutput isOwned { get; private set; }
+
+        public override EventHook GetHook(GraphReference reference)
+        {
+            return new EventHook(eventName);
+        }
+
+        protected override void Definition()
+        {
+            base.Definition();
+            itemID = ValueOutput<string>(nameof(itemID));
+            isOwned = ValueOutput<bool>(nameof(isOwned));
+        }
+
+        protected override bool ShouldTrigger(Flow flow, (string, bool) args)
+        {
+            return true;
+        }
+
+        protected override void AssignArguments(Flow flow, (string, bool) args)
+        {
+            flow.SetValue(itemID, args.Item1);
+            flow.SetValue(isOwned, args.Item2);
+        }
+    }
+
+
+    [UnitTitle("Spatial: On Backpack Item Amount Changed")]
+    [UnitSurtitle("Spatial")]
+    [UnitShortTitle("On Backpack Item Amount Changed")]
+    [UnitCategory("Events\\Spatial\\Space Economy")]
+    [TypeIcon(typeof(SpatialComponentBase))]
+    public class OnBackpackItemAmountChangedNode : EventUnit<(string, ulong)>
+    {
+        public static string eventName = "SpatialOnBackpackItemAmountChanged";
+        protected override bool register => true;
+
+        [DoNotSerialize]
+        public ValueInput itemID { get; private set; }
+
+        [DoNotSerialize]
+        public ValueOutput amount { get; private set; }
+
+        public override EventHook GetHook(GraphReference reference)
+        {
+            return new EventHook(eventName);
+        }
+
+        protected override void Definition()
+        {
+            base.Definition();
+            itemID = ValueInput<string>(nameof(itemID), "");
+            amount = ValueOutput<ulong>(nameof(amount));
+        }
+
+        protected override bool ShouldTrigger(Flow flow, (string, ulong) args)
+        {
+            return flow.GetValue<string>(itemID) == args.Item1;
+        }
+
+        protected override void AssignArguments(Flow flow, (string, ulong) args)
+        {
+            flow.SetValue(amount, args.Item2);
+        }
+    }
+
     [UnitTitle("Spatial: On Backpack Item Used")]
     [UnitSurtitle("Spatial")]
     [UnitShortTitle("On Backpack Item Used")]
