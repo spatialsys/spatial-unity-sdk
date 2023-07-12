@@ -19,12 +19,12 @@ namespace SpatialSys.UnitySDK.Editor
                 return;
 
             // Validate that the active scene is part of the active package
-            if (ProjectConfig.activePackage is SpaceConfig spaceConfig)
+            if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig)
             {
                 if (spaceConfig.scene != activeSceneAsset)
                     return;
             }
-            else if (ProjectConfig.activePackage is SpaceTemplateConfig spaceTemplateConfig)
+            else if (ProjectConfig.activePackageConfig is SpaceTemplateConfig spaceTemplateConfig)
             {
                 if (spaceTemplateConfig.variants == null ||
                     !Array.Exists(spaceTemplateConfig.variants, (variant) => variant.scene == activeSceneAsset))
@@ -78,7 +78,7 @@ namespace SpatialSys.UnitySDK.Editor
             // Project Settings
             if (Application.isBatchMode)
             {
-                data.savedProjectSettings = ProjectConfig.activePackage.savedProjectSettings;
+                data.savedProjectSettings = ProjectConfig.activePackageConfig.savedProjectSettings;
             }
             else
             {
@@ -292,7 +292,7 @@ namespace SpatialSys.UnitySDK.Editor
         {
             if (Application.isBatchMode)
             {
-                asset.savedProjectSettings = ProjectConfig.activePackage.savedProjectSettings;
+                asset.savedProjectSettings = ProjectConfig.activePackageConfig.savedProjectSettings;
             }
             else
             {

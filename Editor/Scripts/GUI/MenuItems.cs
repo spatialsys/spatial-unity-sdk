@@ -8,19 +8,19 @@ namespace SpatialSys.UnitySDK.Editor
         [MenuItem("Spatial SDK/Account")]
         public static void OpenAccount()
         {
-            SpatialSDKConfigWindow.OpenWindow("account");
+            SpatialSDKConfigWindow.OpenWindow(SpatialSDKConfigWindow.ACCOUNT_TAB_NAME);
         }
 
         [MenuItem("Spatial SDK/Configuration")]
         public static void OpenConfig()
         {
-            SpatialSDKConfigWindow.OpenWindow("config");
+            SpatialSDKConfigWindow.OpenWindow(SpatialSDKConfigWindow.CONFIG_TAB_NAME);
         }
 
         [MenuItem("Spatial SDK/Help")]
         public static void OpenHelp()
         {
-            SpatialSDKConfigWindow.OpenWindow("help");
+            SpatialSDKConfigWindow.OpenWindow(SpatialSDKConfigWindow.HELP_TAB_NAME);
         }
 
         [MenuItem("Spatial SDK/Visual Scripting/Regenerate Nodes")]

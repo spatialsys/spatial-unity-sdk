@@ -16,6 +16,8 @@ namespace SpatialSys.UnitySDK.Editor
         public const string ASSET_PATH = "Assets/Spatial/ProjectConfig.asset";
         public const int LATEST_VERSION = 1;
 
+        private const string ACTIVE_PACKAGE_INDEX_PREFS_KEY = "Spatial_ActivePackageIndex";
+
         public static ProjectConfig instance => AssetDatabase.LoadAssetAtPath<ProjectConfig>(ASSET_PATH);
         public static string defaultWorldID
         {
@@ -31,25 +33,25 @@ namespace SpatialSys.UnitySDK.Editor
         }
         public static bool hasPackages => instance != null && instance._packages.Count > 0;
         public static IReadOnlyList<PackageConfig> packages => instance?._packages;
-        public static PackageConfig activePackage
+        public static PackageConfig activePackageConfig => hasPackages ? packages[activePackageIndex] : null;
+        public static int activePackageIndex
         {
             get
             {
-                if (instance == null || instance._currentPackageIndex < 0 || instance._currentPackageIndex >= packages.Count)
-                    return null;
-                return packages[instance._currentPackageIndex];
+                if (!hasPackages)
+                    return -1;
+                int rawValue = PlayerPrefs.GetInt(ACTIVE_PACKAGE_INDEX_PREFS_KEY, defaultValue: 0);
+                return Mathf.Clamp(rawValue, 0, instance._packages.Count - 1);
             }
-        }
-        public static int activePackageIndex
-        {
-            get => instance?._currentPackageIndex ?? -1;
             set
             {
-                if (instance == null || value < 0 || value >= packages.Count)
+                if (!hasPackages)
+                {
+                    PlayerPrefs.DeleteKey(ACTIVE_PACKAGE_INDEX_PREFS_KEY);
                     return;
-                instance._currentPackageIndex = value;
-                UnityEditor.EditorUtility.SetDirty(instance);
-                AssetDatabase.SaveAssets();
+                }
+                PlayerPrefs.SetInt(ACTIVE_PACKAGE_INDEX_PREFS_KEY, Mathf.Clamp(value, 0, instance._packages.Count - 1));
+                PlayerPrefs.Save();
             }
         }
 
@@ -70,7 +72,6 @@ namespace SpatialSys.UnitySDK.Editor
         [SerializeField] private string _defaultWorldID;
 
         [SerializeField] private List<PackageConfig> _packages = new List<PackageConfig>();
-        [SerializeField] private int _currentPackageIndex = 0;
 
         public static void Create()
         {
@@ -98,7 +99,7 @@ namespace SpatialSys.UnitySDK.Editor
                 {
                     PackageConfig_OLD oldConfig = AssetDatabase.LoadAssetAtPath<PackageConfig_OLD>(AssetDatabase.GUIDToAssetPath(oldPackageConfigs[i]));
 
-                    SpaceTemplateConfig newConfig = AddNewPackage(PackageType.SpaceTemplate) as SpaceTemplateConfig;
+                    SpaceTemplateConfig newConfig = AddNewPackage(PackageType.SpaceTemplate, makeActive: false) as SpaceTemplateConfig;
                     newConfig.packageName = oldConfig.packageName;
                     newConfig.sku = oldConfig.sku;
 
@@ -140,11 +141,10 @@ namespace SpatialSys.UnitySDK.Editor
             }
 
             UnityEditor.EditorUtility.SetDirty(config);
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
+            AssetDatabase.SaveAssetIfDirty(config);
         }
 
-        public static PackageConfig AddNewPackage(PackageType type)
+        public static PackageConfig AddNewPackage(PackageType type, bool makeActive)
         {
             if (instance == null)
                 throw new System.Exception("ProjectConfig does not exist");
@@ -170,7 +170,10 @@ namespace SpatialSys.UnitySDK.Editor
             AssetDatabase.CreateAsset(package, assetPath);
             instance._packages.Add(package);
             UnityEditor.EditorUtility.SetDirty(instance);
-            AssetDatabase.SaveAssets();
+            AssetDatabase.SaveAssetIfDirty(instance);
+
+            if (makeActive)
+                activePackageIndex = instance._packages.Count - 1;
 
             return package;
         }
@@ -182,7 +185,7 @@ namespace SpatialSys.UnitySDK.Editor
         public static void SetActivePackageBySourceAsset(UnityEngine.Object sourceAsset)
         {
             // The active package already uses this source asset.
-            if (activePackage != null && activePackage.ContainsAsset(sourceAsset))
+            if (activePackageConfig != null && activePackageConfig.ContainsAsset(sourceAsset))
                 return;
 
             foreach (PackageConfig package in ProjectConfig.packages)
@@ -197,23 +200,17 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static void SetActivePackage(PackageConfig package)
         {
-            if (activePackage == package)
+            if (activePackageConfig == package)
                 return;
 
             if (instance == null)
                 throw new System.Exception("ProjectConfig does not exist");
 
             int index = instance._packages.IndexOf(package);
-            if (index >= 0)
-            {
-                instance._currentPackageIndex = index;
-                UnityEditor.EditorUtility.SetDirty(instance);
-                AssetDatabase.SaveAssets();
-            }
-            else
-            {
+            if (index == -1)
                 throw new System.Exception("Package does not exist in ProjectConfig");
-            }
+
+            activePackageIndex = index;
         }
 
         public static void RemovePackage(PackageConfig package)
@@ -230,9 +227,8 @@ namespace SpatialSys.UnitySDK.Editor
             AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(package));
 
             // Make sure our selected package remains the same and that index is valid
-            if (instance._currentPackageIndex >= index)
-                instance._currentPackageIndex--;
-            instance._currentPackageIndex = Mathf.Clamp(instance._currentPackageIndex, 0, instance._packages.Count - 1);
+            if (index <= activePackageIndex)
+                activePackageIndex = activePackageIndex;
 
             // Save changes
             UnityEditor.EditorUtility.SetDirty(instance);

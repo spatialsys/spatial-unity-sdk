@@ -11,6 +11,7 @@
             <ui:Button text="Account" display-tooltip-when-elided="true" name="accountButton" class="tabButton tabButtonSelected" style="margin-left: 0;" />
             <ui:Button text="Config" display-tooltip-when-elided="true" name="configButton" class="tabButton" />
             <ui:Button text="Issues" display-tooltip-when-elided="true" name="issuesButton" class="tabButton" />
+            <ui:Button text="Utilities" display-tooltip-when-elided="true" name="utilitiesButton" class="tabButton" />
             <ui:Button text="Help" display-tooltip-when-elided="true" name="helpButton" class="tabButton" />
         </ui:VisualElement>
         <ui:ScrollView>
@@ -56,14 +57,21 @@
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="config" style="display: flex;">
-                <ui:VisualElement name="configNull" style="align-items: center; display: flex; flex-shrink: 0; justify-content: space-around; flex-basis: auto;">
-                    <ui:VisualElement name="notLoggedInBlock" class="block_white block_red block_base">
-                        <ui:Label text="Config file not found" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
-                        <ui:Label text="Unable to locate a config in this project. Click the button below to get started!" display-tooltip-when-elided="true" name="Text" class="blockText" />
-                        <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: flex;">
-                            <ui:Button text="Create Project Config" display-tooltip-when-elided="true" name="newConfigButton" class="blockButton blockButton_red" />
-                            <ui:VisualElement name="Filler" style="flex-grow: 1;" />
-                        </ui:VisualElement>
+                <ui:VisualElement name="configNull" class="block_white block_red block_base">
+                    <ui:Label text="Config file not found" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
+                    <ui:Label text="Unable to locate a config in this project. Click the button below to get started!" display-tooltip-when-elided="true" name="Text" class="blockText" />
+                    <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: flex;">
+                        <ui:Button text="Create Project Config" display-tooltip-when-elided="true" name="newConfigButton" class="blockButton blockButton_red" />
+                        <ui:VisualElement name="Filler" style="flex-grow: 1;" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement name="notLoggedInBlock" class="block_white block_base block_red" style="flex-direction: row; flex-grow: 1; flex-shrink: 1;">
+                    <ui:VisualElement name="LeftLayout" style="flex-grow: 1;">
+                        <ui:Label text="Not Logged In" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
+                        <ui:Label text="You need to log into your Spatial account in order to publish your package." display-tooltip-when-elided="true" name="Text" class="blockText" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="RightLayout" style="justify-content: center;">
+                        <ui:Button text="Go" display-tooltip-when-elided="true" name="accountButton" class="blockButton" />
                     </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:VisualElement name="projectConfig" class="block_white block_base">
@@ -178,6 +186,17 @@
                     <ui:Label text="name of taget here" display-tooltip-when-elided="true" name="targetSceneName" class="blockText" />
                     <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: flex;">
                         <ui:Button text="Open" display-tooltip-when-elided="true" name="openSceneButton" class="blockButton" />
+                        <ui:VisualElement name="Filler" style="flex-grow: 1;" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="utilities" style="align-items: center; display: none;">
+                <ui:VisualElement name="OptimizationBlock" class="block_white block_base">
+                    <ui:Label text="Optimization" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
+                    <ui:Label text="By optimizing the compression settings of textures, models and audio assets, you can effectively decrease the loading time of rooms and minimize the risk of app crashes." display-tooltip-when-elided="true" name="Text" class="blockText" />
+                    <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: flex;">
+                        <ui:Button text="Optimize Assets" display-tooltip-when-elided="true" name="optimizeAssets" class="blockButton" style="margin-right: 12px;" />
+                        <ui:Button text="Optimize Assets (Folder)" display-tooltip-when-elided="true" name="optimizeAssetsFolder" class="blockButton" />
                         <ui:VisualElement name="Filler" style="flex-grow: 1;" />
                     </ui:VisualElement>
                 </ui:VisualElement>

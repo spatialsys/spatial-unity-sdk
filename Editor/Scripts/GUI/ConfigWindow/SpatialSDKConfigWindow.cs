@@ -21,14 +21,17 @@ namespace SpatialSys.UnitySDK.Editor
 
         private static bool _isOpen = false;
 
-        private const string CONFIG_TAB_NAME = "config";
-        private const string ISSUES_TAB_NAME = "issues";
+        public const string ACCOUNT_TAB_NAME = "account";
+        public const string CONFIG_TAB_NAME = "config";
+        public const string ISSUES_TAB_NAME = "issues";
+        public const string UTILITIES_TAB_NAME = "utilities";
+        public const string HELP_TAB_NAME = "help";
+
         private const string PROJECT_CONFIG_NULL_ELEMENT_NAME = "configNull";
         private const string PROJECT_CONFIG_ELEMENT_NAME = "projectConfig";
         private const string PACKAGE_CONFIG_ELEMENT_NAME = "packageConfig";
 
         private string _tab = CONFIG_TAB_NAME;
-        private string _authToken;
         private SpatialValidationSummary _issuesValidationSummary;
 
         // Config Tab Elements
@@ -84,11 +87,24 @@ namespace SpatialSys.UnitySDK.Editor
         private VisualElement _selectObjectBlock;
         private Label _targetObjectName;
 
+        public static SpatialSDKConfigWindow OpenWindow()
+        {
+            var window = GetWindow<SpatialSDKConfigWindow>("Spatial Portal");
+            window.minSize = new Vector2(640, 480);
+            return window;
+        }
+
         public static void OpenWindow(string startingTab)
         {
-            SpatialSDKConfigWindow wnd = GetWindow<SpatialSDKConfigWindow>("Spatial Portal");
-            wnd.minSize = new Vector2(640, 480);
-            wnd.SetTab(startingTab);
+            SpatialSDKConfigWindow window = OpenWindow();
+            window.SetTab(startingTab);
+        }
+
+        public static void OpenIssuesTabWithSummary(SpatialValidationSummary validationSummary)
+        {
+            SpatialSDKConfigWindow window = OpenWindow();
+            window._issuesValidationSummary = validationSummary;
+            window.SetTab(ISSUES_TAB_NAME);
         }
 
         static SpatialSDKConfigWindow()
@@ -136,10 +152,11 @@ namespace SpatialSys.UnitySDK.Editor
             }
             root.Add(element);
 
-            root.Query<Button>("accountButton").First().clicked += () => SetTab("account");
+            root.Query<Button>("accountButton").ForEach(btn => btn.clicked += () => SetTab(ACCOUNT_TAB_NAME));
             root.Query<Button>("configButton").First().clicked += () => SetTab(CONFIG_TAB_NAME);
             root.Query<Button>("issuesButton").First().clicked += () => SetTab(ISSUES_TAB_NAME);
-            root.Query<Button>("helpButton").First().clicked += () => SetTab("help");
+            root.Query<Button>("utilitiesButton").First().clicked += () => SetTab(UTILITIES_TAB_NAME);
+            root.Query<Button>("helpButton").First().clicked += () => SetTab(HELP_TAB_NAME);
 
             // Account
             root.Query<Button>("getToken").First().clicked += () => Application.OpenURL(ACCESS_TOKEN_URL);
@@ -150,7 +167,7 @@ namespace SpatialSys.UnitySDK.Editor
             root.Query<Button>("openStudio").First().clicked += () => Application.OpenURL(spatialStudioURL);
             root.Query<Button>("newConfigButton").First().clicked += () => {
                 ProjectConfig.Create();
-                root.Bind(new SerializedObject(ProjectConfig.activePackage));
+                root.Bind(new SerializedObject(ProjectConfig.activePackageConfig));
             };
             _configActivePackageDropdown = root.Q<DropdownField>("packageConfigDropDown");
             _configActivePackageDropdown.RegisterValueChangedCallback(OnActivePackageDropdownValueChanged);
@@ -173,12 +190,9 @@ namespace SpatialSys.UnitySDK.Editor
                     });
             };
             _configCreatePackageTypeDropdown = root.Q<EnumField>("createPackageTypeDropdown");
-            root.Q<Button>("createPackageButton").clicked += () => {
-                var package = ProjectConfig.AddNewPackage((PackageType)_configCreatePackageTypeDropdown.value);
-                ProjectConfig.SetActivePackage(package);
-            };
+            root.Q<Button>("createPackageButton").clicked += () => ProjectConfig.AddNewPackage((PackageType)_configCreatePackageTypeDropdown.value, makeActive: true);
             root.Q<Button>("skuCopyButton").clicked += () => {
-                EditorGUIUtility.systemCopyBuffer = ProjectConfig.activePackage.sku;
+                EditorGUIUtility.systemCopyBuffer = ProjectConfig.activePackageConfig.sku;
             };
 
             _publishPackageButton = root.Q<Button>("publishPackageButton");
@@ -209,8 +223,8 @@ namespace SpatialSys.UnitySDK.Editor
                 }
             };
             root.Q<Button>("deletePackageButton").clicked += () => {
-                if (UnityEditor.EditorUtility.DisplayDialog("Delete Package", $"Are you sure you want to delete {ProjectConfig.activePackage.packageName}?", "Yes", "No"))
-                    ProjectConfig.RemovePackage(ProjectConfig.activePackage);
+                if (UnityEditor.EditorUtility.DisplayDialog("Delete Package", $"Are you sure you want to delete {ProjectConfig.activePackageConfig.packageName}?", "Yes", "No"))
+                    ProjectConfig.RemovePackage(ProjectConfig.activePackageConfig);
             };
             _packageConfigSKUEmptyElement = root.Q(PACKAGE_CONFIG_ELEMENT_NAME).Q("packageSKUEmpty");
             _packageConfigSKUElement = root.Q(PACKAGE_CONFIG_ELEMENT_NAME).Q("packageSKU");
@@ -242,6 +256,14 @@ namespace SpatialSys.UnitySDK.Editor
             _targetObjectName = root.Query<Label>("targetObjectName").First();
             root.Query<Button>("selectObjectButton").First().clicked += OpenSelectedIssueGameObject;
 
+            // Utilities
+            root.Query<Button>("optimizeAssets").First().clicked += () => {
+                AssetImportUtility.OptimizeAllAssets();
+            };
+            root.Query<Button>("optimizeAssetsFolder").First().clicked += () => {
+                AssetImportUtility.OptimizeAssetsInFolder();
+            };
+
             // Help
             root.Query<Button>("gotoDocumentation").First().clicked += () => Application.OpenURL(PackageManagerUtility.documentationUrl);
             root.Query<Button>("gotoSupport").First().clicked += () => Application.OpenURL(SUPPORT_URL);
@@ -249,8 +271,8 @@ namespace SpatialSys.UnitySDK.Editor
 
             _issueListParent = root.Q("issuesScroll");
 
-            if (ProjectConfig.activePackage != null)
-                root.Bind(new SerializedObject(ProjectConfig.activePackage));
+            if (ProjectConfig.activePackageConfig != null)
+                root.Bind(new SerializedObject(ProjectConfig.activePackageConfig));
 
             HandleAuthStatusChanged();
             AuthUtility.onAuthStatusChanged += HandleAuthStatusChanged;
@@ -268,10 +290,11 @@ namespace SpatialSys.UnitySDK.Editor
             _tab = tab;
 
             // Tab contents
-            rootVisualElement.Q("account").style.display = DisplayStyle.None;
+            rootVisualElement.Q(ACCOUNT_TAB_NAME).style.display = DisplayStyle.None;
             rootVisualElement.Q(CONFIG_TAB_NAME).style.display = DisplayStyle.None;
             rootVisualElement.Q(ISSUES_TAB_NAME).style.display = DisplayStyle.None;
-            rootVisualElement.Q("help").style.display = DisplayStyle.None;
+            rootVisualElement.Q(UTILITIES_TAB_NAME).style.display = DisplayStyle.None;
+            rootVisualElement.Q(HELP_TAB_NAME).style.display = DisplayStyle.None;
 
             rootVisualElement.Q(tab).style.display = DisplayStyle.Flex;
 
@@ -279,8 +302,6 @@ namespace SpatialSys.UnitySDK.Editor
             if (tab == CONFIG_TAB_NAME)
             {
                 UpdateConfigTabContents();
-
-                _configActivePackageDropdown.index = ProjectConfig.activePackageIndex;
             }
             else if (tab == ISSUES_TAB_NAME)
             {
@@ -291,6 +312,7 @@ namespace SpatialSys.UnitySDK.Editor
             rootVisualElement.Q("accountButton").RemoveFromClassList("tabButtonSelected");
             rootVisualElement.Q("configButton").RemoveFromClassList("tabButtonSelected");
             rootVisualElement.Q("issuesButton").RemoveFromClassList("tabButtonSelected");
+            rootVisualElement.Q("utilitiesButton").RemoveFromClassList("tabButtonSelected");
             rootVisualElement.Q("helpButton").RemoveFromClassList("tabButtonSelected");
 
             rootVisualElement.Q(tab + "Button").AddToClassList("tabButtonSelected");
@@ -298,13 +320,13 @@ namespace SpatialSys.UnitySDK.Editor
 
         private void UpdateConfigTabContents()
         {
-            PackageConfig packageConfig = ProjectConfig.activePackage;
+            UpdateActivePackageDropdown(_configActivePackageDropdown);
+            UpdateDefaultWorldSelectionDropdown();
+
+            PackageConfig packageConfig = ProjectConfig.activePackageConfig;
             rootVisualElement.Q(PROJECT_CONFIG_NULL_ELEMENT_NAME).style.display = (ProjectConfig.instance == null) ? DisplayStyle.Flex : DisplayStyle.None;
             rootVisualElement.Q(PROJECT_CONFIG_ELEMENT_NAME).style.display = (ProjectConfig.instance != null) ? DisplayStyle.Flex : DisplayStyle.None;
             rootVisualElement.Q(PACKAGE_CONFIG_ELEMENT_NAME).style.display = (packageConfig != null) ? DisplayStyle.Flex : DisplayStyle.None;
-
-            UpdateActivePackageDropdown(_configActivePackageDropdown);
-            UpdateDefaultWorldSelectionDropdown();
 
             // Active Package
             if (packageConfig != null)
@@ -324,20 +346,28 @@ namespace SpatialSys.UnitySDK.Editor
 
         private void UpdateActivePackageDropdown(DropdownField dropdown)
         {
-            dropdown.SetEnabled(ProjectConfig.hasPackages);
-            if (dropdown.enabledSelf)
+            if (ProjectConfig.hasPackages)
             {
-                PackageConfig packageConfig = ProjectConfig.activePackage;
+                dropdown.SetEnabled(true);
+
+                PackageConfig packageConfig = ProjectConfig.activePackageConfig;
                 Func<PackageConfig, string> getPackageDropdownLabel = (PackageConfig config) => $"{config.packageType} - {config.packageName}";
 
                 // Update elements
                 if (dropdown.choices == null || dropdown.choices.Count != ProjectConfig.packages.Count)
                     dropdown.choices = ProjectConfig.packages.Select(getPackageDropdownLabel).ToList();
-                dropdown.index = ProjectConfig.activePackageIndex;
 
                 // Update the selected label
                 if (packageConfig != null)
                     dropdown.choices[ProjectConfig.activePackageIndex] = getPackageDropdownLabel(packageConfig);
+
+                dropdown.index = ProjectConfig.activePackageIndex;
+            }
+            else
+            {
+                dropdown.SetEnabled(false);
+                dropdown.choices = new List<string>() { "None (Create New Package)" };
+                dropdown.index = 0;
             }
         }
 
@@ -347,8 +377,8 @@ namespace SpatialSys.UnitySDK.Editor
             int index = dropdownField.choices.IndexOf(evt.newValue);
             ProjectConfig.activePackageIndex = index;
             UnityEditor.EditorUtility.SetDirty(ProjectConfig.instance);
-            rootVisualElement.Bind(new SerializedObject(ProjectConfig.activePackage));
-            InvalidateIssues();
+            rootVisualElement.Bind(new SerializedObject(ProjectConfig.activePackageConfig));
+            UpdateIssuesTabContents();
         }
 
         private void UpdateDefaultWorldSelectionDropdown()
@@ -361,14 +391,21 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 _configDefaultWorldSelectionDropdown.index = index;
             }
-            else if (string.IsNullOrEmpty(ProjectConfig.defaultWorldID))
-            {
-                _configDefaultWorldSelectionDropdown.choices.Add($"None (Create New World)");
-                _configDefaultWorldSelectionDropdown.index = _configDefaultWorldSelectionDropdown.choices.Count - 1;
-            }
             else
             {
-                _configDefaultWorldSelectionDropdown.choices.Add($"Invalid World ({ProjectConfig.defaultWorldID})");
+                if (!AuthUtility.isAuthenticated)
+                {
+                    _configDefaultWorldSelectionDropdown.choices.Add("(Not Logged In)");
+                }
+                else if (string.IsNullOrEmpty(ProjectConfig.defaultWorldID))
+                {
+                    _configDefaultWorldSelectionDropdown.choices.Add($"None (Create New World)");
+                }
+                else
+                {
+                    _configDefaultWorldSelectionDropdown.choices.Add($"Invalid World ({ProjectConfig.defaultWorldID})");
+                }
+
                 _configDefaultWorldSelectionDropdown.index = _configDefaultWorldSelectionDropdown.choices.Count - 1;
             }
         }
@@ -401,7 +438,9 @@ namespace SpatialSys.UnitySDK.Editor
         {
             VisualElement loggedInBlock = rootVisualElement.Q("loggedInBlock");
 
-            rootVisualElement.Q("notLoggedInBlock").style.display = !AuthUtility.isAuthenticated && !AuthUtility.isAuthenticating ? DisplayStyle.Flex : DisplayStyle.None;
+            rootVisualElement.Query("notLoggedInBlock").ForEach(block => {
+                block.style.display = !AuthUtility.isAuthenticated && !AuthUtility.isAuthenticating ? DisplayStyle.Flex : DisplayStyle.None;
+            });
             rootVisualElement.Q("loggingInBlock").style.display = AuthUtility.isAuthenticating ? DisplayStyle.Flex : DisplayStyle.None;
 
             if (AuthUtility.isAuthenticated)
@@ -433,20 +472,13 @@ namespace SpatialSys.UnitySDK.Editor
                 });
         }
 
-        private void InvalidateIssues()
-        {
-            _issuesValidationSummary = null;
-            SpatialValidator.ClearResponses();
-            UpdateIssuesTabContents();
-        }
-
         private void UpdateIssuesTabContents()
         {
+            UpdateActivePackageDropdown(_issuesActivePackageDropdown);
+
             _issueListParent.Clear();
             _selectedIssue = null;
             SelectIssue(null);
-
-            UpdateActivePackageDropdown(_issuesActivePackageDropdown);
 
             _warningIssues = new List<VisualElement>();
             _errorIssues = new List<VisualElement>();
@@ -488,9 +520,9 @@ namespace SpatialSys.UnitySDK.Editor
             _issuesRefreshButton.AddToClassList("blockButton");
             bool showSelectedIssue = false;
 
-            if (_issuesValidationSummary == null)
+            if (_issuesValidationSummary == null || _issuesValidationSummary.targetPackage != ProjectConfig.activePackageConfig)
             {
-                // If the validation summary is null, then results are likely invalid.
+                // The results aren't applicable to the current package, or the results aren't valid anymore.
                 _issuesCountTitle.text = "Check for issues";
                 _issuesCountDescription.text = "Click the button below to get started!";
             }

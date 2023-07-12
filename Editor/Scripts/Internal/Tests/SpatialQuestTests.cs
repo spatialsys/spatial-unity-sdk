@@ -12,7 +12,7 @@ namespace SpatialSys.UnitySDK.Editor
         public static void DoNotAllowQuestRewardsInSpaceTemplates(SpatialQuest target)
         {
             // If this is a Space Template, then warn if the quest rewards a badge
-            if (ProjectConfig.activePackage.packageType != PackageType.SpaceTemplate || target.questRewards == null)
+            if (ProjectConfig.activePackageConfig.packageType != PackageType.SpaceTemplate || target.questRewards == null)
                 return;
 
             if (target.questRewards.Length > 0)

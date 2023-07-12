@@ -137,12 +137,6 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static bool ValidateCategoryField(SpatialAvatarAttachment attachment, out string message)
         {
-            if (attachment.category == SpatialAvatarAttachment.Category.Unspecified)
-            {
-                message = "The category is required. Set the category on the prefab to fix this issue.";
-                return false;
-            }
-
             if (attachment.primarySlot == SpatialAvatarAttachment.Slot.Aura && attachment.category != SpatialAvatarAttachment.Category.Aura)
             {
                 message = "For aura attachments, the category must be set to Aura";

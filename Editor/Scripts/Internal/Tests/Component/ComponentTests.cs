@@ -12,10 +12,10 @@ namespace SpatialSys.UnitySDK.Editor
             Type targetType = target.GetType();
 
             // This component is automatically removed during scene build
-            if (targetType.IsEditorOnlyType() || targetType.IsStripabbleEditorOnlyType())
+            if (targetType.IsEditorOnlyType() || targetType.IsStrippableEditorOnlyType())
                 return;
 
-            if (!ValidComponents.IsComponentTypeAllowedForPackageType(ProjectConfig.activePackage, targetType))
+            if (!ValidComponents.IsComponentTypeAllowedForPackageType(ProjectConfig.activePackageConfig, targetType))
             {
                 // Maybe do some type specific messages. For example reasure people that we have an event system active etc.
                 SpatialTestResponse resp = new SpatialTestResponse(

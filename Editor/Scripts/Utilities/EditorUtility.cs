@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -9,6 +10,9 @@ namespace SpatialSys.UnitySDK.Editor
 {
     public static class EditorUtility
     {
+        public const string STORAGE_DIRECTORY = "Assets/Spatial";
+        public const string TEMP_DIRECTORY = STORAGE_DIRECTORY + "/Temp";
+
         public const string MIN_UNITY_VERSION_STR = "2021.3.8f1";
         public const string MAX_UNITY_VERSION_STR = "2021.3.21f1";
         private static readonly Version MIN_UNITY_VERSION = GetParsedUnityVersion(MIN_UNITY_VERSION_STR);
@@ -94,22 +98,6 @@ namespace SpatialSys.UnitySDK.Editor
         public static void OpenDocumentationPage()
         {
             Help.BrowseURL(PackageManagerUtility.documentationUrl);
-        }
-
-        public static string CreateFolderHierarchy(params string[] folders)
-        {
-            string path = "Assets";
-            foreach (string folder in folders)
-            {
-                string newPath = path + $"/{folder}";
-
-                if (!AssetDatabase.IsValidFolder(newPath))
-                    AssetDatabase.CreateFolder(path, folder);
-
-                path = newPath;
-            }
-
-            return path;
         }
 
         public static string GetAssetBundleName(UnityEngine.Object asset)
@@ -259,7 +247,7 @@ namespace SpatialSys.UnitySDK.Editor
             return type != null && type.GetCustomAttributes(typeof(EditorOnlyAttribute), inherit: true).Length > 0;
         }
 
-        public static bool IsStripabbleEditorOnlyType(this Type type)
+        public static bool IsStrippableEditorOnlyType(this Type type)
         {
             return strippableEditorComponents.Contains(type.Name);
         }
@@ -315,6 +303,56 @@ namespace SpatialSys.UnitySDK.Editor
             }
 
             return false;
+        }
+
+        public static GameObject CreatePrefabCopyForTemporaryModification(UnityEngine.Object prefabAsset)
+        {
+            if (prefabAsset == null)
+                return null;
+
+            Directory.CreateDirectory(TEMP_DIRECTORY);
+            string sourcePrefabPath = AssetDatabase.GetAssetPath(prefabAsset);
+            string tempPrefabPath = Path.Combine(TEMP_DIRECTORY, $"{prefabAsset.name}.prefab");
+            if (!AssetDatabase.CopyAsset(sourcePrefabPath, tempPrefabPath))
+                return null;
+
+            return AssetDatabase.LoadAssetAtPath<GameObject>(tempPrefabPath);
+        }
+
+        /// <summary>
+        /// Creates a backup file of the specified asset, which will allow for completely reverting all changes easily.
+        /// Use RestoreAssetFromBackup to revert the asset to the backed up state.
+        /// </summary>
+        public static void CreateAssetBackup(UnityEngine.Object asset)
+        {
+            string origPath = AssetDatabase.GetAssetPath(asset);
+            string backupPath = origPath + ".backup~"; // ~ hides the asset and avoids unnecessary import.
+            File.Copy(origPath, backupPath, overwrite: true);
+        }
+
+        /// <summary>
+        /// Deletes the backup file of the specified asset without restoring, if there is one found. Does nothing if there was no backup created.
+        /// </summary>
+        public static void DeleteAssetBackup(UnityEngine.Object asset)
+        {
+            string origPath = AssetDatabase.GetAssetPath(asset);
+            string backupPath = origPath + ".backup~";
+            if (File.Exists(backupPath))
+                File.Delete(backupPath);
+        }
+
+        /// <summary>
+        /// Tries to restore the asset from the backup file and deletes the backup afterwards. Does nothing if there was no backup created.
+        /// </summary>
+        public static void RestoreAssetFromBackup(UnityEngine.Object asset)
+        {
+            string origPath = AssetDatabase.GetAssetPath(asset);
+            string backupPath = origPath + ".backup~";
+            if (!File.Exists(backupPath))
+                return;
+            File.Copy(backupPath, origPath, overwrite: true);
+            File.Delete(backupPath);
+            AssetDatabase.ImportAsset(origPath, ImportAssetOptions.ForceSynchronousImport);
         }
     }
 }

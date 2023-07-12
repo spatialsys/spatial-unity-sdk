@@ -26,7 +26,10 @@ namespace SpatialSys.UnitySDK.Editor
         {
             RequestHelper request = CreateRequest();
             request.Uri = $"{API_ORIGIN}/v2/sdk/me";
-            return RestClient.Get<GetUserDataResponse>(request);
+
+            IPromise<GetUserDataResponse> resp = RestClient.Get<GetUserDataResponse>(request);
+            resp.Catch(HandleRequestException);
+            return resp;
         }
 
         [Serializable]
@@ -48,7 +51,10 @@ namespace SpatialSys.UnitySDK.Editor
                 type = PackageTypeToSAPIPackageType(packageType),
                 sku = sku
             };
-            return RestClient.Post<UploadSandboxBundleResponse>(request);
+
+            IPromise<UploadSandboxBundleResponse> resp = RestClient.Post<UploadSandboxBundleResponse>(request);
+            resp.Catch(HandleRequestException);
+            return resp;
         }
 
         [Serializable]
@@ -83,7 +89,9 @@ namespace SpatialSys.UnitySDK.Editor
                 packageType = PackageTypeToSAPIPackageType(packageType)
             };
 
-            return RestClient.Post<CreateOrUpdatePackageResponse>(request);
+            IPromise<CreateOrUpdatePackageResponse> resp = RestClient.Post<CreateOrUpdatePackageResponse>(request);
+            resp.Catch(HandleRequestException);
+            return resp;
         }
 
         [Serializable]
@@ -111,7 +119,10 @@ namespace SpatialSys.UnitySDK.Editor
         {
             string url = $"{API_ORIGIN}/sdk/v1/package/{sku}/{version}";
             RequestHelper request = CreateUploadFileRequest(useSpatialHeaders: true, url, packageFileData, progressCallback);
-            return RestClient.Put<UploadPackageResponse>(request);
+
+            IPromise<UploadPackageResponse> resp = RestClient.Put<UploadPackageResponse>(request);
+            resp.Catch(HandleRequestException);
+            return resp;
         }
 
         [Serializable]
@@ -130,7 +141,10 @@ namespace SpatialSys.UnitySDK.Editor
         {
             RequestHelper request = CreateRequest();
             request.Uri = $"{API_ORIGIN}/v2/packages/{sku}";
-            return RestClient.Get<GetPackageResponse>(request);
+
+            IPromise<GetPackageResponse> resp = RestClient.Get<GetPackageResponse>(request);
+            resp.Catch(HandleRequestException);
+            return resp;
         }
 
         [Serializable]
@@ -171,7 +185,9 @@ namespace SpatialSys.UnitySDK.Editor
             request.Uri = $"{API_ORIGIN}/v2/worlds";
             request.Body = new CreateWorldRequest() { };
 
-            return RestClient.Post<CreateWorldResponse>(request);
+            IPromise<CreateWorldResponse> resp = RestClient.Post<CreateWorldResponse>(request);
+            resp.Catch(HandleRequestException);
+            return resp;
         }
 
         [Serializable]
@@ -191,7 +207,9 @@ namespace SpatialSys.UnitySDK.Editor
             RequestHelper request = CreateRequest();
             request.Uri = $"{API_ORIGIN}/v2/worlds";
 
-            return RestClient.Get<GetWorldsResponse>(request);
+            IPromise<GetWorldsResponse> resp = RestClient.Get<GetWorldsResponse>(request);
+            resp.Catch(HandleRequestException);
+            return resp;
         }
 
         [Serializable]
@@ -215,7 +233,10 @@ namespace SpatialSys.UnitySDK.Editor
         {
             RequestHelper request = CreateRequest();
             request.Uri = $"{API_ORIGIN}/v2/worlds/{worldID}/badges";
-            return RestClient.Get<GetBadgesResponse>(request);
+
+            IPromise<GetBadgesResponse> resp = RestClient.Get<GetBadgesResponse>(request);
+            resp.Catch(HandleRequestException);
+            return resp;
         }
 
         [Serializable]
@@ -265,6 +286,12 @@ namespace SpatialSys.UnitySDK.Editor
                 };
             }
             return request;
+        }
+
+        private static void HandleRequestException(Exception exc)
+        {
+            if (exc is RequestException requestException && requestException.StatusCode == 401)
+                AuthUtility.SetAuthStatus(AuthStatus.NotAuthenticated);
         }
 
         private static string PackageSourceToSAPIPackageSource(PackageSource source)

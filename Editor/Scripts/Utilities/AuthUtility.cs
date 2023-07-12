@@ -114,7 +114,7 @@ namespace SpatialSys.UnitySDK.Editor
             return Regex.IsMatch(token, "^[a-zA-Z0-9._-]+$");
         }
 
-        private static void SetAuthStatus(AuthStatus status)
+        public static void SetAuthStatus(AuthStatus status)
         {
             authStatus = status;
             SessionState.SetInt(AUTH_STATUS_SESSION_PREFS_KEY, (int)status);

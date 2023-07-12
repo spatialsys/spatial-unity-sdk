@@ -37,11 +37,20 @@ namespace SpatialSys.UnitySDK
         public delegate Quaternion GetLocalAvatarRotationDelegate();
         public static GetLocalAvatarRotationDelegate GetLocalAvatarRotation;
 
+        public delegate Vector3 GetLocalAvatarVelocityDelegate();
+        public static GetLocalAvatarVelocityDelegate GetLocalAvatarVelocity;
+
+        public delegate bool GetLocalAvatarGroundedDelegate();
+        public static GetLocalAvatarGroundedDelegate GetLocalAvatarGrounded;
+
         public delegate Vector3 GetAvatarPositionWithActorDelegate(int actorNumber);
         public static GetAvatarPositionWithActorDelegate GetAvatarPositionWithActor;
 
         public delegate Quaternion GetAvatarRotationWithActorDelegate(int actorNumber);
         public static GetAvatarRotationWithActorDelegate GetAvatarRotationWithActor;
+
+        public delegate Vector3 GetAvatarVelocityWithActorDelegate(int actorNumber);
+        public static GetAvatarVelocityWithActorDelegate GetAvatarVelocityWithActor;
 
         public delegate bool GetLocalAvatarBodyExistDelegate();
         public static GetLocalAvatarBodyExistDelegate GetLocalAvatarBodyExist;
@@ -368,5 +377,63 @@ namespace SpatialSys.UnitySDK
 
         public delegate void CreateFloatingTextDelegate(string text, FloatingTextAnimStyle style, Vector3 position, Vector3 force, Color color, bool gravity, AnimationCurve scaleCurve, AnimationCurve alphaCurve, float lifetime);
         public static CreateFloatingTextDelegate CreateFloatingText;
+
+        //Player Camera
+        public delegate void SetPlayerCameraThirdPersonOffsetDelegate(Vector3 offset);
+        public static SetPlayerCameraThirdPersonOffsetDelegate SetPlayerCameraThirdPersonOffset;
+
+        public delegate void SetPlayerCameraThirdPersonFOVDelegate(float fov);
+        public static SetPlayerCameraThirdPersonFOVDelegate SetPlayerCameraThirdPersonFOV;
+
+        public delegate void SetPlayerCameraFirstPersonFOVDelegate(float fov);
+        public static SetPlayerCameraFirstPersonFOVDelegate SetPlayerCameraFirstPersonFOV;
+
+        public delegate void SetPlayerCameraForceFirstPersonDelegate(bool forceFirstPerson);
+        public static SetPlayerCameraForceFirstPersonDelegate SetPlayerCameraForceFirstPerson;
+
+        public delegate void SetPlayerCameraLockRotationDelegate(bool lockPosition);
+        public static SetPlayerCameraLockRotationDelegate SetPlayerCameraLockRotation;
+
+        public delegate void SetPlayerCameraZoomDistanceDelegate(float distance);
+        public static SetPlayerCameraZoomDistanceDelegate SetPlayerCameraZoomDistance;
+
+        public delegate void SetPlayercameraMinZoomDistanceDelegate(float distance);
+        public static SetPlayercameraMinZoomDistanceDelegate SetPlayerCameraMinZoomDistance;
+
+        public delegate void SetPlayerCameraMaxZoomDistanceDelegate(float distance);
+        public static SetPlayerCameraMaxZoomDistanceDelegate SetPlayerCameraMaxZoomDistance;
+        //Feel
+        public delegate void SetPlayerCameraShakeAmplitudeDelegate(float amplitude);
+        public static SetPlayerCameraShakeAmplitudeDelegate SetPlayerCameraShakeAmplitude;
+
+        public delegate void SetPlayerCameraShakeFrequencyDelegate(float frequency);
+        public static SetPlayerCameraShakeFrequencyDelegate SetPlayerCameraShakeFrequency;
+
+        public delegate void SetPlayerCameraWobbleAmplitudeDelegate(float amplitude);
+        public static SetPlayerCameraWobbleAmplitudeDelegate SetPlayerCameraWobbleAmplitude;
+
+        public delegate void SetPlayerCameraWobbleFrequencyDelegate(float frequency);
+        public static SetPlayerCameraWobbleFrequencyDelegate SetPlayerCameraWobbleFrequency;
+
+        public delegate void PlayerCameraShakeForceDelegate(float force);
+        public static PlayerCameraShakeForceDelegate PlayerCameraShakeForce;
+
+        public delegate void PlayerCameraShakeVelocityDelegate(Vector3 velocity);
+        public static PlayerCameraShakeVelocityDelegate PlayerCameraShakeVelocity;
+
+        public delegate void PlayerCameraWobbleForceDelegate(float force);
+        public static PlayerCameraWobbleForceDelegate PlayerCameraWobbleForce;
+
+        public delegate void PlayerCameraWobbleVelocityDelegate(Vector3 velocity);
+        public static PlayerCameraWobbleVelocityDelegate PlayerCameraWobbleVelocity;
+
+        public delegate void PlayerCameraAddKickDelegate(Vector2 kickDegrees);
+        public static PlayerCameraAddKickDelegate PlayerCameraAddKick;
+
+        public delegate void SetPlayerCameraKickDecaySpeedActionDelegate(float decaySpeed);
+        public static SetPlayerCameraKickDecaySpeedActionDelegate SetPlayerCameraKickDecaySpeed;
+
+        public delegate Action InitializeVirtualCameraDelegate(SpatialVirtualCamera virtualCamera);
+        public static InitializeVirtualCameraDelegate InitializeSpatialVirtualCamera;
     }
 }

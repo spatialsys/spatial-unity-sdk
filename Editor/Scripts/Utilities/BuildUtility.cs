@@ -41,14 +41,13 @@ namespace SpatialSys.UnitySDK.Editor
             // We must save all scenes, otherwise the bundle build will fail without explanation.
             EditorSceneManager.SaveOpenScenes();
 
-            PackageConfig activeConfig = ProjectConfig.activePackage;
-            activeConfig.savedProjectSettings = SaveProjectSettingsToAsset();
+            ProjectConfig.activePackageConfig.savedProjectSettings = SaveProjectSettingsToAsset();
 
-            if (activeConfig is AvatarAttachmentConfig avatarAttachmentConfig)
+            if (ProjectConfig.activePackageConfig is AvatarAttachmentConfig avatarAttachmentConfig)
                 AvatarAttachmentComponentTests.EnforceValidSetup(avatarAttachmentConfig.prefab);
 
             IPromise<SpatialValidationSummary> validationPromise;
-            if (activeConfig.isSpaceBasedPackage)
+            if (ProjectConfig.activePackageConfig.isSpaceBasedPackage)
             {
                 // Make sure the active package is set to the one that contains the active scene
                 SceneAsset currentScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
@@ -64,6 +63,20 @@ namespace SpatialSys.UnitySDK.Editor
             return CheckValidationPromise(validationPromise)
                 .Then(() => {
                     ProcessPackageAssets();
+
+                    // Create a new backup to the package config asset in case we modify it, so it's easy to revert any changes made to it.
+                    EditorUtility.CreateAssetBackup(ProjectConfig.activePackageConfig);
+
+                    if (ProjectConfig.activePackageConfig is AvatarConfig avatarConfig)
+                    {
+                        // Create a temporary prefab copy so that when validation and fixes are enforced, it won't make destructive changes to the original prefab. The temporary prefab copy will be uploaded instead.
+                        GameObject newPrefab = EditorUtility.CreatePrefabCopyForTemporaryModification(avatarConfig.prefab);
+
+                        avatarConfig.prefab = newPrefab.GetComponent<SpatialAvatar>();
+                        UnityEditor.EditorUtility.SetDirty(avatarConfig);
+
+                        AvatarPackageTests.EnforceValidBoneOrientations(avatarConfig.prefab);
+                    }
 
                     // Auto-assign necessary bundle names
                     AssignBundleNamesToPackageAssets();
@@ -88,7 +101,7 @@ namespace SpatialSys.UnitySDK.Editor
 
                     bool openBrowser = target == BuildTarget.WebGL;
 
-                    if (activeConfig is SpaceTemplateConfig spaceTemplateConfig)
+                    if (ProjectConfig.activePackageConfig is SpaceTemplateConfig spaceTemplateConfig)
                     {
                         // Get the variant config for the current scene
                         SceneAsset currentSceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
@@ -96,16 +109,22 @@ namespace SpatialSys.UnitySDK.Editor
                         if (spaceTemplateVariant == null)
                             return Promise.Rejected(new System.Exception("The current scene isn't one that is assigned to a variant in the package configuration"));
 
-                        return UploadAssetBundleToSandbox(activeConfig.sku, spaceTemplateVariant.bundleName, bundleDir, activeConfig.packageType, openBrowser);
+                        return UploadAssetBundleToSandbox(ProjectConfig.activePackageConfig, spaceTemplateVariant.bundleName, bundleDir, openBrowser);
                     }
                     else
                     {
-                        return UploadAssetBundleToSandbox(activeConfig.sku, activeConfig.bundleName, bundleDir, activeConfig.packageType, openBrowser);
+                        return UploadAssetBundleToSandbox(ProjectConfig.activePackageConfig, ProjectConfig.activePackageConfig.bundleName, bundleDir, openBrowser);
                     }
+                })
+                .Finally(() => {
+                    AssetDatabase.DeleteAsset(EditorUtility.TEMP_DIRECTORY);
+
+                    // Restore config file to previous values, if any has changed.
+                    EditorUtility.RestoreAssetFromBackup(ProjectConfig.activePackageConfig);
                 });
         }
 
-        private static IPromise UploadAssetBundleToSandbox(string packageSKU, string bundleName, string bundleDir, PackageType packageType, bool openBrowser)
+        private static IPromise UploadAssetBundleToSandbox(PackageConfig packageConfig, string bundleName, string bundleDir, bool openBrowser)
         {
             if (string.IsNullOrEmpty(bundleName))
                 return Promise.Rejected(new System.Exception("Unable to retrieve the asset bundle name from the prefab. Make sure an asset is assigned in the package configuration."));
@@ -120,7 +139,7 @@ namespace SpatialSys.UnitySDK.Editor
             _lastUploadProgress = -1f;
             _uploadStartTime = Time.realtimeSinceStartup;
             UpdateSandboxUploadProgressBar(0, 0, 0f);
-            return SpatialAPI.UploadSandboxBundle(packageSKU, packageType)
+            return SpatialAPI.UploadSandboxBundle(packageConfig.sku, packageConfig.packageType)
                 .Then(resp => {
                     byte[] bundleBytes = File.ReadAllBytes(bundlePath);
                     SpatialAPI.UploadFile(useSpatialHeaders: false, resp.url, bundleBytes, UpdateSandboxUploadProgressBar)
@@ -159,7 +178,7 @@ namespace SpatialSys.UnitySDK.Editor
 
                 if (validationSummary.failed || validationSummary.passedWithWarnings)
                 {
-                    SpatialSDKConfigWindow.OpenWindow("issues");
+                    SpatialSDKConfigWindow.OpenIssuesTabWithSummary(validationSummary);
                     if (validationSummary.failed)
                         return Promise.Rejected(new Exception("Package has errors"));
                 }
@@ -176,10 +195,9 @@ namespace SpatialSys.UnitySDK.Editor
         {
             // We must save all scenes, otherwise the bundle build will fail without explanation.
             EditorSceneManager.SaveOpenScenes();
-            PackageConfig config = ProjectConfig.activePackage;
-            config.savedProjectSettings = SaveProjectSettingsToAsset();
+            ProjectConfig.activePackageConfig.savedProjectSettings = SaveProjectSettingsToAsset();
 
-            if (config is AvatarAttachmentConfig avatarAttachmentConfig)
+            if (ProjectConfig.activePackageConfig is AvatarAttachmentConfig avatarAttachmentConfig)
                 AvatarAttachmentComponentTests.EnforceValidSetup(avatarAttachmentConfig.prefab);
 
             return CheckValidationPromise(SpatialValidator.RunTestsOnPackage(ValidationContext.PublishingPackage))
@@ -189,6 +207,20 @@ namespace SpatialSys.UnitySDK.Editor
 
                     ProcessPackageAssets();
 
+                    // Create a new backup to the package config asset in case we modify it, so it's easy to revert any changes made to it.
+                    EditorUtility.CreateAssetBackup(ProjectConfig.activePackageConfig);
+
+                    if (ProjectConfig.activePackageConfig is AvatarConfig avatarConfig)
+                    {
+                        // Create a temporary prefab copy so that when validation and fixes are enforced, it won't make destructive changes to the original prefab. The temporary prefab copy will be uploaded instead.
+                        GameObject newPrefab = EditorUtility.CreatePrefabCopyForTemporaryModification(avatarConfig.prefab);
+
+                        avatarConfig.prefab = newPrefab.GetComponent<SpatialAvatar>();
+                        UnityEditor.EditorUtility.SetDirty(avatarConfig);
+
+                        AvatarPackageTests.EnforceValidBoneOrientations(avatarConfig.prefab);
+                    }
+
                     // Auto-assign necessary bundle names
                     // This get's done on the build machines too, but we also want to do it here just in case there's an issue
                     AssignBundleNamesToPackageAssets();
@@ -197,12 +229,12 @@ namespace SpatialSys.UnitySDK.Editor
                     // Worlds are a way to manage an ecosystem of spaces that share currency, rewards, inventory, etc.
                     // Spaces by default need to be assigned to a world
                     IPromise createWorldPromise = Promise.Resolved();
-                    if (ProjectConfig.activePackage.packageType == PackageType.Space)
+                    if (ProjectConfig.activePackageConfig.packageType == PackageType.Space)
                     {
                         createWorldPromise = WorldUtility.AssignDefaultWorldToProjectIfNecessary()
                             .Then(() => {
                                 // Make sure that the space package has a worldID assigned
-                                SpaceConfig spaceConfig = ProjectConfig.activePackage as SpaceConfig;
+                                SpaceConfig spaceConfig = ProjectConfig.activePackageConfig as SpaceConfig;
                                 spaceConfig.worldID = ProjectConfig.defaultWorldID;
                                 UnityEditor.EditorUtility.SetDirty(spaceConfig);
                                 AssetDatabase.SaveAssetIfDirty(spaceConfig);
@@ -214,9 +246,10 @@ namespace SpatialSys.UnitySDK.Editor
                     UpdatePackageUploadProgressBar(0, 0, 0f);
                     return createWorldPromise;
                 }).Then(() => {
-                    return SpatialAPI.CreateOrUpdatePackage(config.sku, config.packageType);
+                    return SpatialAPI.CreateOrUpdatePackage(ProjectConfig.activePackageConfig.sku, ProjectConfig.activePackageConfig.packageType);
                 })
                 .Then(resp => {
+                    PackageConfig config = ProjectConfig.activePackageConfig;
                     if (config.sku != resp.sku)
                     {
                         config.sku = resp.sku;
@@ -275,13 +308,19 @@ namespace SpatialSys.UnitySDK.Editor
                     {
                         onCloseDialog?.Invoke();
                     }
+                })
+                .Finally(() => {
+                    AssetDatabase.DeleteAsset(EditorUtility.TEMP_DIRECTORY);
+
+                    // Restore config file to previous values if necessary.
+                    EditorUtility.RestoreAssetFromBackup(ProjectConfig.activePackageConfig);
                 });
         }
 
         public static void PackageProject(string outputPath)
         {
             // TODO: we can also exclude dependencies from packages that are included in the builder project by default
-            HashSet<string> dependencies = AssetDatabase.GetDependencies(AssetDatabase.GetAssetPath(ProjectConfig.activePackage)).ToHashSet();
+            HashSet<string> dependencies = AssetDatabase.GetDependencies(AssetDatabase.GetAssetPath(ProjectConfig.activePackageConfig)).ToHashSet();
 
             // GetDependencies doesn't include all "import time" dependencies, so we need to manually add them
             // See: https://forum.unity.com/threads/discrepancy-between-assetdatabase-getdependencies-and-results-of-exportpackage.1295025/
@@ -372,7 +411,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static void AssignBundleNamesToPackageAssets()
         {
-            PackageConfig config = ProjectConfig.activePackage;
+            PackageConfig config = ProjectConfig.activePackageConfig;
 
             // Clear all asset bundle assets in the project
             foreach (string name in AssetDatabase.GetAllAssetBundleNames())
@@ -430,7 +469,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static void ProcessPackageAssets()
         {
-            PackageConfig config = ProjectConfig.activePackage;
+            PackageConfig config = ProjectConfig.activePackageConfig;
 
             foreach (UnityEngine.Object asset in config.assets)
             {

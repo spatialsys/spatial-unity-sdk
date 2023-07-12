@@ -20,6 +20,7 @@ SpatialSys.UnitySDK.SpatialSyncedObject,Y,Y,N,N,N,Y,N,N,N,N
 SpatialSys.UnitySDK.SpatialSyncedVariables,Y,Y,N,N,N,Y,N,N,N,N
 SpatialSys.UnitySDK.SpatialThumbnailCamera,Y,Y,N,N,N,N,N,N,N,N
 SpatialSys.UnitySDK.SpatialTriggerEvent,Y,Y,N,N,N,Y,N,N,N,N
+SpatialSys.UnitySDK.SpatialVirtualCamera,Y,Y,N,N,N,N,N,N,N,N
 Unity.VisualScripting.SceneVariables,Y,Y,N,Y,N,Y,N,N,N,N
 Unity.VisualScripting.ScriptMachine,Y,Y,N,Y,N,Y,N,Y,N,Y
 Unity.VisualScripting.Variables,Y,Y,N,Y,N,Y,N,Y,N,Y

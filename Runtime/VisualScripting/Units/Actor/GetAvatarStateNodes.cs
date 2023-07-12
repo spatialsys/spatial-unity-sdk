@@ -24,6 +24,9 @@ namespace SpatialSys.UnitySDK.VisualScripting
         [DoNotSerialize]
         [PortLabel("Rotation")]
         public ValueOutput avatarRotation { get; private set; }
+        [DoNotSerialize]
+        [PortLabel("Velocity")]
+        public ValueOutput avatarVelocity { get; private set; }
 
         protected override void Definition()
         {
@@ -32,6 +35,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             avatarExists = ValueOutput<bool>(nameof(avatarExists), (f) => ClientBridge.GetAvatarExists.Invoke(f.GetValue<int>(actor)));
             avatarPosition = ValueOutput<Vector3>(nameof(avatarPosition), (f) => ClientBridge.GetAvatarPositionWithActor.Invoke(f.GetValue<int>(actor)));
             avatarRotation = ValueOutput<Quaternion>(nameof(avatarRotation), (f) => ClientBridge.GetAvatarRotationWithActor.Invoke(f.GetValue<int>(actor)));
+            avatarVelocity = ValueOutput<Vector3>(nameof(avatarVelocity), (f) => ClientBridge.GetAvatarVelocityWithActor.Invoke(f.GetValue<int>(actor)));
         }
     }
 
@@ -48,11 +52,31 @@ namespace SpatialSys.UnitySDK.VisualScripting
         [DoNotSerialize]
         [PortLabel("Rotation")]
         public ValueOutput avatarRotation { get; private set; }
+        [DoNotSerialize]
+        [PortLabel("Velocity")]
+        public ValueOutput avatarVelocity { get; private set; }
 
         protected override void Definition()
         {
             avatarPosition = ValueOutput<Vector3>(nameof(avatarPosition), (f) => ClientBridge.GetLocalAvatarPosition.Invoke());
             avatarRotation = ValueOutput<Quaternion>(nameof(avatarRotation), (f) => ClientBridge.GetLocalAvatarRotation.Invoke());
+            avatarVelocity = ValueOutput<Vector3>(nameof(avatarVelocity), (f) => ClientBridge.GetLocalAvatarVelocity.Invoke());
+        }
+    }
+
+    [UnitTitle("Local Actor: Is Grounded")]
+    [UnitSurtitle("Local Actor")]
+    [UnitShortTitle("Is Grounded")]
+    [UnitCategory("Spatial\\Actor")]
+    [TypeIcon(typeof(SpatialComponentBase))]
+    public class GetLocalActorGroundedNode : Unit
+    {
+        [DoNotSerialize]
+        public ValueOutput isGrounded { get; private set; }
+
+        protected override void Definition()
+        {
+            isGrounded = ValueOutput<bool>(nameof(isGrounded), (f) => ClientBridge.GetLocalAvatarGrounded.Invoke());
         }
     }
 
@@ -66,7 +90,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         [DoNotSerialize]
         [NullMeansSelf]
         public ValueInput actor { get; private set; }
-       
+
         [DoNotSerialize]
         [PortLabel("Name")]
         public ValueOutput actorName { get; private set; }

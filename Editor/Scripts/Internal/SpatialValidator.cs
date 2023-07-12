@@ -37,7 +37,7 @@ namespace SpatialSys.UnitySDK.Editor
         /// </summary>
         public static IPromise<SpatialValidationSummary> RunTestsOnPackage(ValidationContext context)
         {
-            PackageConfig config = ProjectConfig.activePackage;
+            PackageConfig config = ProjectConfig.activePackageConfig;
             if (config == null)
             {
                 Debug.LogError("No config found.");
@@ -61,7 +61,7 @@ namespace SpatialSys.UnitySDK.Editor
                     return Promise.Resolved();
                 })
                 .Catch(HandleInternalTestException)
-                .Then(() => Promise<SpatialValidationSummary>.Resolved(CreateValidationSummary()));
+                .Then(() => Promise<SpatialValidationSummary>.Resolved(CreateValidationSummary(config)));
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace SpatialSys.UnitySDK.Editor
         /// </summary>
         public static IPromise<SpatialValidationSummary> RunTestsOnActiveScene(ValidationContext context)
         {
-            PackageConfig config = ProjectConfig.activePackage;
+            PackageConfig config = ProjectConfig.activePackageConfig;
             if (config == null)
             {
                 Debug.LogError("No config found.");
@@ -83,7 +83,7 @@ namespace SpatialSys.UnitySDK.Editor
             return RunPackageTests(config)
                 .Then(() => RunSceneTests(SceneManager.GetActiveScene()))
                 .Catch(HandleInternalTestException)
-                .Then(() => Promise<SpatialValidationSummary>.Resolved(CreateValidationSummary()));
+                .Then(() => Promise<SpatialValidationSummary>.Resolved(CreateValidationSummary(config)));
         }
 
         public static void AddResponse(SpatialTestResponse response)
@@ -165,11 +165,8 @@ namespace SpatialSys.UnitySDK.Editor
                 {
                     return RunComponentTests(component);
                 }
-            }).Then(() =>
-                BuildParallelPromise(GetTransformChildrenAsList(g.transform), (Transform child) =>
-                    RunComponentTestsOnObjectRecursively(child.gameObject)
-                )
-            );
+            })
+            .Then(() => BuildParallelPromise(GetTransformChildrenAsList(g.transform), (Transform child) => RunComponentTestsOnObjectRecursively(child.gameObject)));
         }
 
         private static List<Transform> GetTransformChildrenAsList(Transform transform)
@@ -242,11 +239,7 @@ namespace SpatialSys.UnitySDK.Editor
                     }
                     return Promise.Resolved();
                 })
-                .Then(() => {
-                    BuildParallelPromise(config.gameObjectAssets, (GameObject go) =>
-                        RunComponentTestsOnObjectRecursively(go)
-                    );
-                });
+                .Then(() => BuildParallelPromise(config.gameObjectAssets, (GameObject go) => RunComponentTestsOnObjectRecursively(go)));
         }
 
         private static IPromise RunSceneTests(Scene scene)
@@ -254,14 +247,8 @@ namespace SpatialSys.UnitySDK.Editor
             _currentTestScene = scene;
             object[] sceneParam = new object[] { scene };
             return BuildParallelPromise(_sceneTests, (MethodInfo method) => Invoke(method, sceneParam))
-                .Then(() =>
-                    BuildParallelPromise(scene.GetRootGameObjects(), (GameObject g) =>
-                        RunComponentTestsOnObjectRecursively(g)
-                    )
-                )
-                .Then(() => {
-                    _currentTestScene = null;
-                });
+                .Then(() => BuildParallelPromise(scene.GetRootGameObjects(), (GameObject go) => RunComponentTestsOnObjectRecursively(go)))
+                .Finally(() => _currentTestScene = null);
         }
 
         private static void HandleInternalTestException(Exception exception)
@@ -343,7 +330,7 @@ namespace SpatialSys.UnitySDK.Editor
             _initialized = true;
         }
 
-        private static SpatialValidationSummary CreateValidationSummary()
+        private static SpatialValidationSummary CreateValidationSummary(PackageConfig targetPackage)
         {
             SpatialTestResponse[] warnings = allResponses
                 .Where(resp => resp.responseType == TestResponseType.Warning)
@@ -353,6 +340,7 @@ namespace SpatialSys.UnitySDK.Editor
                 .ToArray();
 
             return new SpatialValidationSummary() {
+                targetPackage = targetPackage,
                 warnings = warnings,
                 errors = errors
             };

@@ -10,20 +10,34 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [UnitSubtitle("Event")]
     [UnitCategory("Events\\Spatial\\Actor")]
     [TypeIcon(typeof(SpatialComponentBase))]
-    public class OnLocalAvatarJumpNode : EventUnit<EmptyEventArgs>
+    public class OnLocalAvatarJumpNode : EventUnit<bool>
     {
         public static string eventName = "OnLocalAvatarJump";
 
         protected override bool register => true;
+
+        [DoNotSerialize]
+        public ValueOutput isGrounded { get; private set; }
 
         public override EventHook GetHook(GraphReference reference)
         {
             return new EventHook(eventName);
         }
 
-        protected override bool ShouldTrigger(Flow flow, EmptyEventArgs args)
+        protected override void Definition()
+        {
+            base.Definition();
+            isGrounded = ValueOutput<bool>(nameof(isGrounded));
+        }
+
+        protected override bool ShouldTrigger(Flow flow, bool isGrounded)
         {
             return true;
+        }
+
+        protected override void AssignArguments(Flow flow, bool isGrounded)
+        {
+            flow.SetValue(this.isGrounded, isGrounded);
         }
     }
 
@@ -128,6 +142,43 @@ namespace SpatialSys.UnitySDK.VisualScripting
             flow.SetValue(normal, hit.normal);
             flow.SetValue(point, hit.point);
             flow.SetValue(avatarVelocity, args.Item2);
+        }
+    }
+
+    [UnitTitle("Spatial Local Avatar: On Is Grounded Changed")]
+    [UnitSurtitle("Spatial Local Avatar")]
+    [UnitShortTitle("On Is Grounded Changed")]
+    [UnitSubtitle("Event")]
+    [UnitCategory("Events\\Spatial\\Actor")]
+    [TypeIcon(typeof(SpatialComponentBase))]
+    public class OnLocalAvatarIsGroundedChangedNode : EventUnit<bool>
+    {
+        public static string eventName = "OnLocalAvatarGroundedChanged";
+
+        protected override bool register => true;
+
+        [DoNotSerialize]
+        public ValueOutput isGrounded { get; private set; }
+
+        public override EventHook GetHook(GraphReference reference)
+        {
+            return new EventHook(eventName);
+        }
+
+        protected override void Definition()
+        {
+            base.Definition();
+            isGrounded = ValueOutput<bool>(nameof(isGrounded));
+        }
+
+        protected override bool ShouldTrigger(Flow flow, bool isGrounded)
+        {
+            return true;
+        }
+
+        protected override void AssignArguments(Flow flow, bool isGrounded)
+        {
+            flow.SetValue(this.isGrounded, isGrounded);
         }
     }
 }

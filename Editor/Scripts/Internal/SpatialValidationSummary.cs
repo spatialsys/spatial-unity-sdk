@@ -9,6 +9,7 @@ namespace SpatialSys.UnitySDK.Editor
             PassedWithNoWarnings
         }
 
+        public PackageConfig targetPackage;
         public SpatialTestResponse[] warnings;
         public SpatialTestResponse[] errors;
 

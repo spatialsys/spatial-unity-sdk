@@ -305,11 +305,8 @@ namespace SpatialSys.UnitySDK.Editor
             // !! NOTE: If you change the enforcement here, you must also re-evaluate the "package-builder" project thumbnail
             // upload logic to ensure that it is compatible with the enforcement here.
             var importer = AssetImporter.GetAtPath(path) as TextureImporter;
-            importer.SetupForThumbnailEncoding(config.allowTransparentThumbnails);
-            TextureImporterPlatformSettings defaultSettings = importer.GetDefaultPlatformTextureSettings();
-            defaultSettings.maxTextureSize = Mathf.Max(targetDimensions.x, targetDimensions.y);
-            importer.SetPlatformTextureSettings(defaultSettings);
-            importer.SaveAndReimport();
+            int maxTextureSize = Mathf.Max(targetDimensions.x, targetDimensions.y);
+            importer.ApplySettingsForThumbnailEncoding(config.allowTransparentThumbnails, maxTextureSize);
 
             var responseType = SpatialValidator.validationContext == ValidationContext.UploadingToSandbox ? TestResponseType.Warning : TestResponseType.Fail;
 

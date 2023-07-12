@@ -17,7 +17,7 @@ namespace SpatialSys.UnitySDK.Editor
         private static int _selectedTarget = 0;
         private static string[] _targetOptions = new string[]
         {
-            "WebGL", "OSX", "Windows", 
+            "WebGL", "OSX", "Windows",
         };
 
         static void OnToolbarGUI()
@@ -30,11 +30,11 @@ namespace SpatialSys.UnitySDK.Editor
             string cannotTestReason = GetTestButtonErrorString();
             using (new EditorGUI.DisabledScope(disabled: !string.IsNullOrEmpty(cannotTestReason)))
             {
-                PackageConfig activeConfig = ProjectConfig.activePackage;
+                PackageConfig activeConfig = ProjectConfig.activePackageConfig;
                 string buttonText, buttonTooltipText;
 
 #if SPATIAL_UNITYSDK_STAGING
-                _selectedTarget = EditorGUILayout.Popup(_selectedTarget, _targetOptions, GUILayout.Width(80)); 
+                _selectedTarget = EditorGUILayout.Popup(_selectedTarget, _targetOptions, GUILayout.Width(80));
 #endif
                 if (activeConfig == null || activeConfig.isSpaceBasedPackage)
                 {
@@ -56,9 +56,14 @@ namespace SpatialSys.UnitySDK.Editor
                     UpgradeUtility.PerformUpgradeIfNecessaryForTestOrPublish()
                         .Then(() => {
                             BuildTarget target = BuildTarget.WebGL;
-                            switch (_selectedTarget) {
-                                case 1: target = BuildTarget.StandaloneOSX; break;
-                                case 2: target = BuildTarget.StandaloneWindows; break;
+                            switch (_selectedTarget)
+                            {
+                                case 1:
+                                    target = BuildTarget.StandaloneOSX;
+                                    break;
+                                case 2:
+                                    target = BuildTarget.StandaloneWindows;
+                                    break;
                             }
                             return BuildUtility.BuildAndUploadForSandbox(target);
                         })
@@ -74,12 +79,12 @@ namespace SpatialSys.UnitySDK.Editor
 
             if (GUILayout.Button("Publishing"))
             {
-                SpatialSDKConfigWindow.OpenWindow("config");
+                SpatialSDKConfigWindow.OpenWindow(SpatialSDKConfigWindow.CONFIG_TAB_NAME);
             }
 
             if (GUILayout.Button(EditorGUIUtility.IconContent("d_SettingsIcon")))
             {
-                SpatialSDKConfigWindow.OpenWindow("config");
+                SpatialSDKConfigWindow.OpenWindow(SpatialSDKConfigWindow.CONFIG_TAB_NAME);
             }
 
             GUI.color = Color.white;
@@ -92,7 +97,7 @@ namespace SpatialSys.UnitySDK.Editor
                 return $"Unity version must be between {EditorUtility.MIN_UNITY_VERSION_STR} and {EditorUtility.MAX_UNITY_VERSION_STR} to test in Spatial (currently using {Application.unityVersion})";
             if (EditorApplication.isPlayingOrWillChangePlaymode)
                 return "Feature disabled while in play mode";
-            if (ProjectConfig.activePackage == null)
+            if (ProjectConfig.activePackageConfig == null)
                 return "There is no active package selected. You can create and select a package through the configuration window.";
 
             return null;

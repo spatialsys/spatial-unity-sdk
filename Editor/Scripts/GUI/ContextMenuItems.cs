@@ -51,6 +51,12 @@ namespace SpatialSys.UnitySDK.Editor
             CreateGameObject(menuCommand, "Thumbnail Camera").AddComponent<SpatialThumbnailCamera>();
         }
 
+        [MenuItem("GameObject/Spatial/Virtual Camera", false, 1)]
+        static void CreateVirtualCamera(MenuCommand menuCommand)
+        {
+            CreateGameObject(menuCommand, "Virtual Camera").AddComponent<SpatialVirtualCamera>();
+        }
+
         // Interactivity
         [MenuItem("GameObject/Spatial/Seat Hotspot", false, 20)]
         static void CreateSeatHotspot(MenuCommand menuCommand)

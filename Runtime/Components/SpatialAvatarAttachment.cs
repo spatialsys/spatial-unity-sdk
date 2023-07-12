@@ -14,6 +14,14 @@ namespace SpatialSys.UnitySDK
             LeftHand = 2,
             RightHand = 3,
             Feet = 4,
+            Head = 5,
+            Torso = 6,
+            [Tooltip("For items that are worn on the avatar's back, separated from the torso, such as a backpack or jetpack")]
+            Back = 7,
+            [Tooltip("A special slot to set an active pet that follows the avatar")]
+            Pet = 8,
+            [Tooltip("Additional miscellaneous slot that doesn't fit anywhere else. This can be for belts, slings, rings, necklaces, etc.")]
+            Accessory = 9,
             // Note: if you add more slots, you'll need to update the SlotMask enum below
         }
 
@@ -25,10 +33,16 @@ namespace SpatialSys.UnitySDK
             LeftHand = 1 << 1,
             RightHand = 1 << 2,
             Feet = 1 << 3,
+            Head = 1 << 4,
+            Torso = 1 << 5,
+            Back = 1 << 6,
+            Pet = 1 << 7,
+            Accessory = 1 << 8,
         }
 
         public enum Category
         {
+            [Tooltip("The primary slot type will be used as the category when applicable")]
             Unspecified = 0,
             [Tooltip("Auras are typically used for effects that surround the avatar, such as a halo")]
             Aura = 1,

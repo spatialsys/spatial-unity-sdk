@@ -149,6 +149,7 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(SpatialCameraRotationMode),
             typeof(NetworkEventTargets),
             typeof(SpatialSFX),
+            typeof(SpatialVirtualCamera),
 
             //Additional types
             typeof(ParticleSystem),

@@ -22,26 +22,38 @@ namespace SpatialSys.UnitySDK.Editor
         }
 
         /// <summary>
-        /// Modifies importer settings to ensure thumbnail is ready to be encoded and uploaded.
-        /// Call importer.SaveAndReimport() afterwards to apply the changes.
+        /// Modifies importer settings to ensure thumbnail is ready to be encoded and uploaded, then applies the changes.
         /// </summary>
-        public static void SetupForThumbnailEncoding(this TextureImporter importer, bool allowTransparency)
+        public static void ApplySettingsForThumbnailEncoding(this TextureImporter importer, bool useTransparency, int maxTextureSize = -1)
         {
             // Required for encoding.
             importer.isReadable = true;
-
-            // Ensure all platforms use the same default texture settings below.
-            importer.ClearPlatformTextureSettings("WebGL");
-            importer.ClearPlatformTextureSettings("Standalone");
-            importer.ClearPlatformTextureSettings("iPhone");
-            importer.ClearPlatformTextureSettings("Android");
-
             TextureImporterPlatformSettings defaultSettings = importer.GetDefaultPlatformTextureSettings();
-            // Allow for encoding to both PNG/JPG.
-            defaultSettings.format = allowTransparency ? TextureImporterFormat.RGBA32 : TextureImporterFormat.RGB24;
-            // Compressed textures cannot be encoded.
-            defaultSettings.textureCompression = TextureImporterCompression.Uncompressed;
-            importer.SetPlatformTextureSettings(defaultSettings);
+
+            if (maxTextureSize < 0)
+                maxTextureSize = defaultSettings.maxTextureSize;
+
+            // Ensure all supported platforms use the same texture settings
+            SetThumbnailTextureImporterPlatformSettings(importer, maxTextureSize, useTransparency, platform: defaultSettings.name);
+            SetThumbnailTextureImporterPlatformSettings(importer, maxTextureSize, useTransparency, platform: "WebGL");
+            SetThumbnailTextureImporterPlatformSettings(importer, maxTextureSize, useTransparency, platform: "Standalone");
+            SetThumbnailTextureImporterPlatformSettings(importer, maxTextureSize, useTransparency, platform: "iPhone");
+            SetThumbnailTextureImporterPlatformSettings(importer, maxTextureSize, useTransparency, platform: "Android");
+
+            importer.SaveAndReimport();
+        }
+
+        private static void SetThumbnailTextureImporterPlatformSettings(TextureImporter importer, int maxTextureSize, bool useTransparency, string platform)
+        {
+            importer.SetPlatformTextureSettings(new TextureImporterPlatformSettings() {
+                name = platform,
+                overridden = true,
+                maxTextureSize = maxTextureSize,
+                // Allow for encoding to both PNG/JPG.
+                format = useTransparency ? TextureImporterFormat.RGBA32 : TextureImporterFormat.RGB24,
+                // Compressed textures cannot be encoded.
+                textureCompression = TextureImporterCompression.Uncompressed
+            });
         }
 
         /// <summary>
