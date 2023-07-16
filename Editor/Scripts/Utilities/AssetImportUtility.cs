@@ -180,7 +180,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
             if (isSingleChannel)
             {
-                textureFormat = TextureImporterFormat.BC4; // Use RCompressedBC4 for SingleChannel
+                textureFormat = needAlpha ? TextureImporterFormat.Alpha8 : TextureImporterFormat.BC4; // Use RCompressedBC4 or Alpha8
             }
             // Use ASTC12x12 for shadow mask. It's not very noticeable
             TextureImporterFormat textureFormatMobile = isShadowMask ? TextureImporterFormat.ASTC_12x12 : TextureImporterFormat.ASTC_8x8;

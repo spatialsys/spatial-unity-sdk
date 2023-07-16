@@ -207,22 +207,8 @@ namespace SpatialSys.UnitySDK.Editor
 
                     ProcessPackageAssets();
 
-                    // Create a new backup to the package config asset in case we modify it, so it's easy to revert any changes made to it.
-                    EditorUtility.CreateAssetBackup(ProjectConfig.activePackageConfig);
-
-                    if (ProjectConfig.activePackageConfig is AvatarConfig avatarConfig)
-                    {
-                        // Create a temporary prefab copy so that when validation and fixes are enforced, it won't make destructive changes to the original prefab. The temporary prefab copy will be uploaded instead.
-                        GameObject newPrefab = EditorUtility.CreatePrefabCopyForTemporaryModification(avatarConfig.prefab);
-
-                        avatarConfig.prefab = newPrefab.GetComponent<SpatialAvatar>();
-                        UnityEditor.EditorUtility.SetDirty(avatarConfig);
-
-                        AvatarPackageTests.EnforceValidBoneOrientations(avatarConfig.prefab);
-                    }
-
                     // Auto-assign necessary bundle names
-                    // This get's done on the build machines too, but we also want to do it here just in case there's an issue
+                    // This gets done on the build machines too, but we also want to do it here just in case there's an issue
                     AssignBundleNamesToPackageAssets();
 
                     // For "Space" packages, we need to make sure we have a worldID assigned to the project
@@ -255,6 +241,20 @@ namespace SpatialSys.UnitySDK.Editor
                         config.sku = resp.sku;
                         UnityEditor.EditorUtility.SetDirty(config);
                         AssetDatabase.SaveAssetIfDirty(config);
+                    }
+
+                    // Create a new backup to the package config asset in case we modify it, so it's easy to revert any changes made to it.
+                    EditorUtility.CreateAssetBackup(ProjectConfig.activePackageConfig);
+
+                    if (ProjectConfig.activePackageConfig is AvatarConfig avatarConfig)
+                    {
+                        // Create a temporary prefab copy so that when validation and fixes are enforced, it won't make destructive changes to the original prefab. The temporary prefab copy will be uploaded instead.
+                        GameObject newPrefab = EditorUtility.CreatePrefabCopyForTemporaryModification(avatarConfig.prefab);
+
+                        avatarConfig.prefab = newPrefab.GetComponent<SpatialAvatar>();
+                        UnityEditor.EditorUtility.SetDirty(avatarConfig);
+
+                        AvatarPackageTests.EnforceValidBoneOrientations(avatarConfig.prefab);
                     }
 
                     // Package it after SKU is assigned or else the config inside the package will not have the SKU
