@@ -257,6 +257,9 @@ namespace SpatialSys.UnitySDK.Editor
                         AvatarPackageTests.EnforceValidBoneOrientations(avatarConfig.prefab);
                     }
 
+                    // Before we package up the project, we need to save all assets so that the package has the latest changes
+                    AssetDatabase.SaveAssets();
+
                     // Package it after SKU is assigned or else the config inside the package will not have the SKU
                     // Export all scenes and dependencies as a package
                     if (!Directory.Exists(BUILD_DIR))
