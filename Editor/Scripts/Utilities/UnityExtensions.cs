@@ -137,5 +137,18 @@ namespace SpatialSys.UnitySDK.Editor
 
             return Mathf.Clamp01(transparentPixels / (float)pixelCount);
         }
+
+        public static bool IsIdentity(this Transform transform)
+        {
+            return transform.localPosition == Vector3.zero && transform.localRotation == Quaternion.identity && transform.localScale == Vector3.one;
+        }
+
+        public static string GetHierarchyPath(this Transform transform, string separator = "/")
+        {
+            if (transform.parent == null)
+                return transform.name;
+
+            return GetHierarchyPath(transform.parent, separator) + separator + transform.name;
+        }
     }
 }

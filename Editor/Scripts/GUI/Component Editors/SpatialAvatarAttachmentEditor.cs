@@ -1,7 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
-using System;
-using System.Linq;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -101,7 +102,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             // Bone attachment
             GUILayout.Space(SECTION_SPACING);
-            EditorGUILayout.LabelField("Bone Attachment (Coming Soon)", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Bone Attachment", EditorStyles.boldLabel);
             GUI.enabled = attachment.attachToBoneFeatureAvailable;
             if (!attachment.attachToBoneFeatureAvailable)
             {
@@ -114,9 +115,19 @@ namespace SpatialSys.UnitySDK.Editor
                 if (_attachToBoneProp.boolValue && attachment.attachToBoneFeatureAvailable)
                 {
                     ValidatedProp(AvatarAttachmentComponentTests.ValidateAttachBoneTarget, () => {
-                        HumanBodyBones[] validBoneOptions = AvatarAttachmentComponentTests.VALID_ATTACH_BONE_TARGETS_BY_SLOT[attachment.primarySlot].ToArray();
-                        GUIContent[] validOptionNames = validBoneOptions.Select(bone => new GUIContent(bone.ToString())).ToArray();
-                        int[] validOptionValues = validBoneOptions.Select(bone => (int)bone).ToArray();
+                        GUIContent[] validOptionNames;
+                        int[] validOptionValues;
+
+                        if (AvatarAttachmentComponentTests.validAttachToBoneTargetsBySlotType.TryGetValue(attachment.primarySlot, out HashSet<HumanBodyBones> validBones) && validBones != null)
+                        {
+                            validOptionNames = validBones.Select(bone => new GUIContent(bone.ToString())).ToArray();
+                            validOptionValues = validBones.Select(bone => (int)bone).ToArray();
+                        }
+                        else
+                        {
+                            validOptionNames = new GUIContent[0];
+                            validOptionValues = new int[0];
+                        }
 
                         EditorGUI.BeginChangeCheck();
                         _attachBoneTargetProp.enumValueIndex = EditorGUILayout.IntPopup(

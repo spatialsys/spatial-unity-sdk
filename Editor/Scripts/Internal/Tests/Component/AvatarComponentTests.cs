@@ -8,27 +8,47 @@ namespace SpatialSys.UnitySDK.Editor
     public static class AvatarComponentTests
     {
         /// <summary>
-        /// Checks that there's an animator component on the prefab, and the animator has a valid humanoid rig.
+        /// Checks that the avatar has identity transform and the scale of each child gameobject is normalized.
         /// </summary>
         [ComponentTest(typeof(SpatialAvatar))]
-        public static void EnsureTransformIsIdentity(SpatialAvatar avatarPrefab)
+        public static void EnsureTransformsMeetGuidelines(SpatialAvatar avatarPrefab)
         {
             Transform transform = avatarPrefab.transform;
-            if (transform.localPosition != Vector3.zero || transform.localRotation != Quaternion.identity || transform.localScale != Vector3.one)
+            if (!transform.IsIdentity())
             {
                 var resp = new SpatialTestResponse(
                     avatarPrefab,
                     TestResponseType.Fail,
                     "The avatar must have an identity transform",
-                    "Make sure the avatar's transform position is set to 0,0,0, rotation is set to 0,0,0, and scale is set to 1,1,1."
+                    "Make sure the avatar's transform position is set to (0,0,0), rotation is set to (0,0,0), and scale is set to (1,1,1)."
                 );
-                resp.SetAutoFix(true, "Reset Transform", (component) => {
-                    GameObject prefab = ((SpatialAvatar)component).gameObject;
-                    prefab.transform.localPosition = Vector3.zero;
-                    prefab.transform.localRotation = Quaternion.identity;
-                    prefab.transform.localScale = Vector3.one;
+                resp.SetAutoFix(true, "Reset transform", (component) => {
+                    Transform prefabTransform = ((SpatialAvatar)component).transform;
+                    prefabTransform.localPosition = Vector3.zero;
+                    prefabTransform.localRotation = Quaternion.identity;
+                    prefabTransform.localScale = Vector3.one;
                 });
                 SpatialValidator.AddResponse(resp);
+            }
+
+            foreach (Transform child in transform.GetComponentsInChildren<Transform>())
+            {
+                if (child.localScale != Vector3.one)
+                {
+                    string childTransformPath = child.GetHierarchyPath(separator: " -> ");
+                    var resp = new SpatialTestResponse(
+                        child,
+                        TestResponseType.Fail,
+                        $"The scale of all child GameObjects of {avatarPrefab.name} avatar must be normalized: {child.name}",
+                        $"Make sure the transform scale of ({childTransformPath}) of the avatar is set to (1,1,1)."
+                    );
+                    // Resetting the scale can mess up the rig, mark as unsafe.
+                    resp.SetAutoFix(isSafe: false, "Reset transform scale", (child) => {
+                        var childTransform = (Transform)child;
+                        childTransform.localScale = Vector3.one;
+                    });
+                    SpatialValidator.AddResponse(resp);
+                }
             }
         }
 

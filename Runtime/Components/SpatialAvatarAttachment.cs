@@ -112,7 +112,7 @@ namespace SpatialSys.UnitySDK
 
         public SlotMask occupiedSlots => primarySlot.ToSlotMask() | additionalSlots;
         public bool skinningFeatureAvailable => false; //true; // TODO: when skinning feature is implemented uncomment this
-        public bool attachToBoneFeatureAvailable => false; //!isSkinnedToHumanoidSkeleton; // TODO: when bone feature is implemented uncomment this
+        public bool attachToBoneFeatureAvailable => !isSkinnedToHumanoidSkeleton;
         public bool ikFeatureAvailable => false; //primarySlot != Slot.Aura && !isSkinnedToHumanoidSkeleton; // TODO: when IK feature is implemented uncomment this
         public bool customActionsFeatureAvailable => false; //primarySlot != Slot.Aura; // TODO: when custom actions feature is implemented uncomment this
         public bool ikFeatureActive
@@ -134,6 +134,13 @@ namespace SpatialSys.UnitySDK
         protected override void OnValidate()
         {
             base.OnValidate();
+
+#if UNITY_EDITOR
+            // Root level transform should always be identity
+            transform.localPosition = Vector3.zero;
+            transform.localRotation = Quaternion.identity;
+            transform.localScale = Vector3.one;
+#endif
 
             UpgradeDataIfNecessary();
 

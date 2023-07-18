@@ -30,5 +30,14 @@ namespace SpatialSys.UnitySDK.Editor
                 );
             }
         }
+
+        [PackageTest(PackageType.AvatarAttachment)]
+        public static void EnsureAvatarAttachmentMeshesMeetGuidelines(AvatarAttachmentConfig config)
+        {
+            if (config.prefab == null)
+                return;
+
+            ValidationUtility.EnsureObjectMeshesMeetGuidelines(config.prefab, 50000, 22500, 4, 2.5f);
+        }
     }
 }

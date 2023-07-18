@@ -8,14 +8,70 @@ namespace SpatialSys.UnitySDK.Editor
 {
     public static class AvatarAttachmentComponentTests
     {
+        public static readonly Dictionary<SpatialAvatarAttachment.Slot, HashSet<HumanBodyBones>> validAttachToBoneTargetsBySlotType;
+        static AvatarAttachmentComponentTests()
+        {
+            var headBonesSet = new HashSet<HumanBodyBones>() {
+                HumanBodyBones.Head,
+                HumanBodyBones.Neck
+            };
+            var middleBonesSet = new HashSet<HumanBodyBones>() {
+                HumanBodyBones.Spine,
+                HumanBodyBones.UpperChest,
+                HumanBodyBones.Chest,
+                HumanBodyBones.Hips
+            };
+
+            // Exclude fingers, toes, and other extra bones, since not all avatars will have detailed bone structures.
+            var leftArmAndHandBonesSet = new HashSet<HumanBodyBones>() {
+                HumanBodyBones.LeftShoulder,
+                HumanBodyBones.LeftUpperArm,
+                HumanBodyBones.LeftLowerArm,
+                HumanBodyBones.LeftHand
+            };
+            var rightArmAndHandBonesSet = new HashSet<HumanBodyBones>() {
+                HumanBodyBones.RightShoulder,
+                HumanBodyBones.RightUpperArm,
+                HumanBodyBones.RightLowerArm,
+                HumanBodyBones.RightHand
+            };
+            var legsAndFeetBonesSet = new HashSet<HumanBodyBones>() {
+                HumanBodyBones.LeftUpperLeg,
+                HumanBodyBones.LeftLowerLeg,
+                HumanBodyBones.LeftFoot,
+                HumanBodyBones.RightUpperLeg,
+                HumanBodyBones.RightLowerLeg,
+                HumanBodyBones.RightFoot
+            };
+
+            // Utility set for every bone defined above.
+            var allSupportedBonesSet = new HashSet<HumanBodyBones>(headBonesSet);
+            allSupportedBonesSet.UnionWith(middleBonesSet);
+            allSupportedBonesSet.UnionWith(leftArmAndHandBonesSet);
+            allSupportedBonesSet.UnionWith(rightArmAndHandBonesSet);
+            allSupportedBonesSet.UnionWith(legsAndFeetBonesSet);
+
+            validAttachToBoneTargetsBySlotType = new Dictionary<SpatialAvatarAttachment.Slot, HashSet<HumanBodyBones>>()
+            {
+                { SpatialAvatarAttachment.Slot.LeftHand, leftArmAndHandBonesSet },
+                { SpatialAvatarAttachment.Slot.RightHand, rightArmAndHandBonesSet },
+                { SpatialAvatarAttachment.Slot.Feet, legsAndFeetBonesSet },
+                { SpatialAvatarAttachment.Slot.Head, headBonesSet },
+                { SpatialAvatarAttachment.Slot.Torso, middleBonesSet },
+                { SpatialAvatarAttachment.Slot.Back, middleBonesSet },
+                // These slot types below are generic enough to not have restrictions.
+                { SpatialAvatarAttachment.Slot.Aura, allSupportedBonesSet },
+                { SpatialAvatarAttachment.Slot.Accessory, allSupportedBonesSet },
+                { SpatialAvatarAttachment.Slot.Pet, allSupportedBonesSet },
+            };
+        }
+
         // Before running validation for publishing or testing we enforce valid setup on all attachments
         // This removes references to assets not used by the attachment (like clips that are referenced but not used)
         public static void EnforceValidSetup(SpatialAvatarAttachment attachment)
         {
             if (attachment == null)
                 return;
-
-            UnityEditor.EditorUtility.SetDirty(attachment);
 
             // AdditionalSlots should not include the primary slot
             attachment.additionalSlots = attachment.additionalSlots & ~attachment.primarySlot.ToSlotMask();
@@ -90,7 +146,32 @@ namespace SpatialSys.UnitySDK.Editor
                 Array.Resize(ref attachment.attachmentAnimClips.customActions, attachment.customActionsCount);
             }
 
-            AssetDatabase.SaveAssets();
+            UnityEditor.EditorUtility.SetDirty(attachment);
+            AssetDatabase.SaveAssetIfDirty(attachment);
+        }
+
+        /// <summary>
+        /// Checks that the avatar attachment has identity transform
+        /// </summary>
+        [ComponentTest(typeof(SpatialAvatarAttachment))]
+        public static void EnsureTransformIsIdentity(SpatialAvatarAttachment attachment)
+        {
+            if (!attachment.transform.IsIdentity())
+            {
+                var resp = new SpatialTestResponse(
+                    attachment,
+                    TestResponseType.Fail,
+                    "The avatar attachment must have an identity transform",
+                    "Make sure the attachment's transform position is set to (0,0,0), rotation is set to (0,0,0), and scale is set to (1,1,1)."
+                );
+                resp.SetAutoFix(true, "Reset Transform", (component) => {
+                    Transform prefabTransform = ((SpatialAvatarAttachment)component).transform;
+                    prefabTransform.localPosition = Vector3.zero;
+                    prefabTransform.localRotation = Quaternion.identity;
+                    prefabTransform.localScale = Vector3.one;
+                });
+                SpatialValidator.AddResponse(resp);
+            }
         }
 
         //--------------------------------------------------------------------------------------------------------------
@@ -153,49 +234,6 @@ namespace SpatialSys.UnitySDK.Editor
             return true;
         }
 
-        public static Dictionary<SpatialAvatarAttachment.Slot, HashSet<HumanBodyBones>> VALID_ATTACH_BONE_TARGETS_BY_SLOT = new Dictionary<SpatialAvatarAttachment.Slot, HashSet<HumanBodyBones>> {
-            {
-                SpatialAvatarAttachment.Slot.None,
-                new HashSet<HumanBodyBones> {}
-            },
-            {
-                SpatialAvatarAttachment.Slot.Aura,
-                new HashSet<HumanBodyBones> {
-                    HumanBodyBones.Hips
-                }
-            },
-            {
-                SpatialAvatarAttachment.Slot.LeftHand,
-                new HashSet<HumanBodyBones> {
-                    HumanBodyBones.LeftShoulder,
-                    HumanBodyBones.LeftUpperArm,
-                    HumanBodyBones.LeftLowerArm,
-                    HumanBodyBones.LeftHand
-                }
-            },
-            {
-                SpatialAvatarAttachment.Slot.RightHand,
-                new HashSet<HumanBodyBones> {
-                    HumanBodyBones.RightShoulder,
-                    HumanBodyBones.RightUpperArm,
-                    HumanBodyBones.RightLowerArm,
-                    HumanBodyBones.RightHand
-                }
-            },
-            {
-                SpatialAvatarAttachment.Slot.Feet,
-                new HashSet<HumanBodyBones> {
-                    HumanBodyBones.Hips,
-                    HumanBodyBones.LeftUpperLeg,
-                    HumanBodyBones.RightUpperLeg,
-                    HumanBodyBones.LeftLowerLeg,
-                    HumanBodyBones.RightLowerLeg,
-                    HumanBodyBones.LeftFoot,
-                    HumanBodyBones.RightFoot
-                }
-            }
-        };
-
         public static bool ValidateAttachBoneFeatureAvailability(SpatialAvatarAttachment attachment, out string note)
         {
             if (attachment.isSkinnedToHumanoidSkeleton)
@@ -216,20 +254,19 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static bool ValidateAttachBoneTarget(SpatialAvatarAttachment attachment, out string message)
         {
-            if (attachment.primarySlot != SpatialAvatarAttachment.Slot.None)
+            message = null;
+
+            if (!attachment.attachToBone)
+                return true; // This attachment is not applicable. Skip.
+
+            // If the slot type is not defined or if the list is null/empty, treat it as "no bone targets are valid".
+            bool hasValidBoneTargetsList = validAttachToBoneTargetsBySlotType.TryGetValue(attachment.primarySlot, out HashSet<HumanBodyBones> validAttachBoneTargets);
+            if (!hasValidBoneTargetsList || validAttachBoneTargets == null || !validAttachBoneTargets.Contains(attachment.attachBoneTarget))
             {
-                if (attachment.attachToBone)
-                {
-                    HashSet<HumanBodyBones> validAttachBoneTargets = VALID_ATTACH_BONE_TARGETS_BY_SLOT[attachment.primarySlot];
-                    if (!validAttachBoneTargets.Contains(attachment.attachBoneTarget))
-                    {
-                        message = $"The attach bone target is not valid for the primary slot {attachment.primarySlot}";
-                        return false;
-                    }
-                }
+                message = $"The attach bone target is not valid for the primary slot {attachment.primarySlot}";
+                return false;
             }
 
-            message = null;
             return true;
         }
 
