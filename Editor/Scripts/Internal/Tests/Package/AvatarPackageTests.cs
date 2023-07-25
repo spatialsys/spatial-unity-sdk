@@ -86,11 +86,12 @@ namespace SpatialSys.UnitySDK.Editor
             if (config.prefab == null)
                 return;
 
-            ValidationUtility.EnsureObjectMeshesMeetGuidelines(config.prefab, 
-                (config.usageContext == AvatarConfig.Scope.Universal) ? 50000 : 200000,
-                (config.usageContext == AvatarConfig.Scope.Universal) ? 22500 : 200000,
-                (config.usageContext == AvatarConfig.Scope.Universal) ? 4 : 100,
-                (config.usageContext == AvatarConfig.Scope.Universal) ? 2.5f : 25f
+            ValidationUtility.EnsureObjectMeshesMeetGuidelines(config.prefab,
+                vertexCountLimit: (config.usageContext == AvatarConfig.Scope.Universal) ? 50000 : 200000,
+                triangleCountLimit: (config.usageContext == AvatarConfig.Scope.Universal) ? 22500 : 200000,
+                subMeshCountLimit: (config.usageContext == AvatarConfig.Scope.Universal) ? 4 : 100,
+                boundsSizeMinLimit: 0.1f,
+                boundsSizeMaxLimit: (config.usageContext == AvatarConfig.Scope.Universal) ? 2.5f : 25f
             );
         }
 

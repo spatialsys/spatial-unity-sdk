@@ -37,7 +37,14 @@ namespace SpatialSys.UnitySDK.Editor
             if (config.prefab == null)
                 return;
 
-            ValidationUtility.EnsureObjectMeshesMeetGuidelines(config.prefab, 50000, 22500, 4, 2.5f);
+            ValidationUtility.EnsureObjectMeshesMeetGuidelines(config.prefab,
+                vertexCountLimit: (config.usageContext == AvatarConfig.Scope.Universal) ? 2500 : 25000,
+                triangleCountLimit: (config.usageContext == AvatarConfig.Scope.Universal) ? 1000 : 15000,
+                subMeshCountLimit: (config.usageContext == AvatarConfig.Scope.Universal) ? 1 : 5,
+                // Bounds for particle systems aren't properly measured, so we don't enforce a bounds size limit for aura attachments
+                boundsSizeMinLimit: (config.prefab.primarySlot == SpatialAvatarAttachment.Slot.Aura) ? null : 0.01f,
+                boundsSizeMaxLimit: 1f
+            );
         }
     }
 }

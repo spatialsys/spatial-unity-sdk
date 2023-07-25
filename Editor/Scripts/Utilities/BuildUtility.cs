@@ -62,7 +62,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             return CheckValidationPromise(validationPromise)
                 .Then(() => {
-                    ProcessPackageAssets();
+                    ProcessAndSavePackageAssets();
 
                     // Create a new backup to the package config asset in case we modify it, so it's easy to revert any changes made to it.
                     EditorUtility.CreateAssetBackup(ProjectConfig.activePackageConfig);
@@ -202,10 +202,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             return CheckValidationPromise(SpatialValidator.RunTestsOnPackage(ValidationContext.PublishingPackage))
                 .Then(() => {
-                    // Always save all assets before publishing so that the uploaded package has the latest changes
-                    AssetDatabase.SaveAssets();
-
-                    ProcessPackageAssets();
+                    ProcessAndSavePackageAssets();
 
                     // Auto-assign necessary bundle names
                     // This gets done on the build machines too, but we also want to do it here just in case there's an issue
@@ -470,7 +467,7 @@ namespace SpatialSys.UnitySDK.Editor
             return safeStr;
         }
 
-        public static void ProcessPackageAssets()
+        public static void ProcessAndSavePackageAssets()
         {
             PackageConfig config = ProjectConfig.activePackageConfig;
 
@@ -481,7 +478,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
 
             AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+            AssetDatabase.Refresh();
         }
 
         public static SavedProjectSettings SaveProjectSettingsToAsset()
@@ -493,7 +490,6 @@ namespace SpatialSys.UnitySDK.Editor
             projSettings.name = "SavedProjectSettings";
 
             AssetDatabase.CreateAsset(projSettings, SAVED_PROJECT_SETTINGS_ASSET_PATH);
-            AssetDatabase.ImportAsset(SAVED_PROJECT_SETTINGS_ASSET_PATH, ImportAssetOptions.ForceUpdate);
 
             return projSettings;
         }

@@ -17,7 +17,7 @@ namespace SpatialSys.UnitySDK.Editor
         private static int _selectedTarget = 0;
         private static string[] _targetOptions = new string[]
         {
-            "WebGL", "OSX", "Windows",
+            "WebGL", "iOS", "Android", "Windows",
         };
 
         static void OnToolbarGUI()
@@ -59,9 +59,12 @@ namespace SpatialSys.UnitySDK.Editor
                             switch (_selectedTarget)
                             {
                                 case 1:
-                                    target = BuildTarget.StandaloneOSX;
+                                    target = BuildTarget.iOS; // iOS bundle can be run on OSX
                                     break;
                                 case 2:
+                                    target = BuildTarget.Android;
+                                    break;
+                                case 3:
                                     target = BuildTarget.StandaloneWindows;
                                     break;
                             }

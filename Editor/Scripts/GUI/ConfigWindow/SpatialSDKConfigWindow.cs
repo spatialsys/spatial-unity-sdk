@@ -205,7 +205,7 @@ namespace SpatialSys.UnitySDK.Editor
 
                 if (UnityEditor.EditorUtility.DisplayDialog(
                     "Publishing Package",
-                    "You're about to upload this package to Spatial for publishing.\n\nIt's strongly encouraged that you test this package in the Spatial sandbox, if you haven't done so already.",
+                    $"You're about to upload '{ProjectConfig.activePackageConfig.packageName}' to Spatial for publishing.\n\nIt's strongly encouraged that you test this package in the Spatial sandbox, if you haven't done so already.",
                     "Continue",
                     "Cancel"))
                 {

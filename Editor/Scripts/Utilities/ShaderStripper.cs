@@ -25,20 +25,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
 
 namespace SpatialSys.UnitySDK.Editor
 {
     public class ShaderStripper : IPreprocessShaders
     {
-        private static bool SKIP_TIER_3_ON_MOBILE_AND_WEB = true;
-
-        // To skip lower LOD
-        private HashSet<string> _urpShaders = new HashSet<string>();
-
         // https://docs.unity3d.com/ScriptReference/Rendering.PassType.html
         private static readonly PassType[] SKIPPED_SHADER_PASS_TYPE = new PassType[]
         {
@@ -68,21 +65,19 @@ namespace SpatialSys.UnitySDK.Editor
             new ShaderKeyword("UNITY_UNIFIED_SHADER_PRECISION_MODEL"), // not using unified shader precision model
         };
 
-        // Lit, SimpleLit and Unlit
-        private static readonly ShaderKeyword[] SKIPPED_VARIANTS_URP_SHADERS = new ShaderKeyword[]
+        private static readonly ShaderKeyword[] SKIPPED_VARIANTS_SPATIAL_DISABLED = new ShaderKeyword[]
         {
+            new ShaderKeyword("_MAIN_LIGHT_SHADOWS_CASCADE"), // not using cascade shadows
+            new ShaderKeyword("_MAIN_LIGHT_SHADOWS_SCREEN"), // not using Screen Space Shadows
+            new ShaderKeyword("_ADDITIONAL_LIGHT_SHADOWS"), // not using additional light shadows
+
+            new ShaderKeyword("_SCREEN_SPACE_OCCLUSION"), // strip this keyword until we support SSAO
+
             new ShaderKeyword("DOTS_INSTANCING_ON"),
             new ShaderKeyword("_DBUFFER_MRT1"),
             new ShaderKeyword("_DBUFFER_MRT2"),
             new ShaderKeyword("_DBUFFER_MRT3"),
             new ShaderKeyword("DEBUG_DISPLAY"), // Debug shaders should be stripped by editor settings, but make sure
-        };
-
-        private static readonly ShaderKeyword[] SKIPPED_VARIANTS_LIT = new ShaderKeyword[]
-        {
-            new ShaderKeyword("_MAIN_LIGHT_SHADOWS_CASCADE"), // not using cascade shadows
-            new ShaderKeyword("_MAIN_LIGHT_SHADOWS_SCREEN"), // not using Screen Space Shadows
-            new ShaderKeyword("_ADDITIONAL_LIGHT_SHADOWS"), // not using additional light shadows
         };
 
         public static bool ContainsKeyword(ShaderKeywordSet keywordSet, ShaderKeyword[] keywords)
@@ -97,10 +92,30 @@ namespace SpatialSys.UnitySDK.Editor
             return false;
         }
 
+        private static SceneAsset _currentScene;
+        private static bool _useReflectionProbeBoxProjection = false;
+        private static bool _useReflectionProbeBlend = false;
+
         public int callbackOrder { get { return 0; } }
 
         public void OnProcessShader(Shader shader, ShaderSnippetData snippet, IList<ShaderCompilerData> data)
         {
+            // Strip Creator Toolkit package shaders only.
+            if (ProjectConfig.activePackageConfig == null)
+                return;
+
+            // Strip ReflectionProbe related keywords
+            SceneAsset activeSceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(SceneManager.GetActiveScene().path);
+            if (_currentScene != activeSceneAsset)
+            {
+                _currentScene = activeSceneAsset;
+                ReflectionProbe[] reflectionProbes = GameObject.FindObjectsOfType<ReflectionProbe>();
+
+                // Assume the scene is using reflection probe blending if there are more than one reflection probes.
+                _useReflectionProbeBlend = reflectionProbes.Length > 1;
+                _useReflectionProbeBoxProjection = reflectionProbes.Any(p => p.boxProjection);
+            }
+
             // Don't strip essential shaders
             string shaderName = shader.name;
             if (shaderName.StartsWith("Hidden/") || shaderName.StartsWith("Unlit/"))
@@ -112,40 +127,26 @@ namespace SpatialSys.UnitySDK.Editor
                 data.Clear();
             }
 
-            bool isLitShader = shaderName.Contains("Universal Render Pipeline/Lit");
-            bool isSimpleLitShader = shaderName.Contains("Universal Render Pipeline/Simple Lit");
-            bool isUnlitShader = shaderName.Contains("Universal Render Pipeline/Unlit");
-            bool isUrpShader = isLitShader || isSimpleLitShader || isUnlitShader;
-            if (isUrpShader)
-            {
-                string fullShaderName = shaderName + snippet.passName + snippet.passType + snippet.shaderType;
-                if (_urpShaders.Contains(fullShaderName))
-                {
-                    // Only include the shader the first time we see it.
-                    // If we see the same shader name/pass/passtype/shadertype, then assume it's the same but a different LOD.
-                    // Unfortunately, shader.maximumLOD always seems to be -1 so we have to use this hack.
-                    data.Clear();
-                }
-                else
-                {
-                    _urpShaders.Add(fullShaderName);
-                }
-            }
-
             // Skip variants
             for (int i = data.Count - 1; i >= 0; --i)
             {
                 bool skip = ContainsKeyword(data[i].shaderKeywordSet, SKIPPED_VARIANTS_COMMON);
-                skip |= SKIP_TIER_3_ON_MOBILE_AND_WEB && data[i].graphicsTier == GraphicsTier.Tier3;
+                skip |= data[i].graphicsTier == GraphicsTier.Tier3;
 
-                if (isUrpShader)
-                {
-                    skip |= ContainsKeyword(data[i].shaderKeywordSet, SKIPPED_VARIANTS_URP_SHADERS);
-                }
+                skip |= ContainsKeyword(data[i].shaderKeywordSet, SKIPPED_VARIANTS_SPATIAL_DISABLED);
 
-                if (isLitShader)
+                // Strip reflection related variants if it's a space-based package.
+                if (ProjectConfig.activePackageConfig.isSpaceBasedPackage)
                 {
-                    skip |= ContainsKeyword(data[i].shaderKeywordSet, SKIPPED_VARIANTS_LIT);
+                    if (!_useReflectionProbeBoxProjection)
+                    {
+                        skip |= data[i].shaderKeywordSet.IsEnabled(new ShaderKeyword("_REFLECTION_PROBE_BOX_PROJECTION"));
+                    }
+
+                    if (!_useReflectionProbeBlend)
+                    {
+                        skip |= data[i].shaderKeywordSet.IsEnabled(new ShaderKeyword("_REFLECTION_PROBE_BLENDING"));
+                    }
                 }
 
                 if (skip)

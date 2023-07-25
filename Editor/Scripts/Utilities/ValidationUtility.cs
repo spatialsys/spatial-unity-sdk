@@ -7,7 +7,7 @@ namespace SpatialSys.UnitySDK.Editor
         /// <summary>
         /// Totals up vertices, triangles, and sub-meshes for all meshes from the object, and make sure none of them exceed the limit.
         /// </summary>
-        public static void EnsureObjectMeshesMeetGuidelines(SpatialPackageAsset prefab, int vertexCountLimit, int triangleCountLimit, int subMeshCountLimit, float boundsSizeLimit)
+        public static void EnsureObjectMeshesMeetGuidelines(SpatialPackageAsset prefab, int vertexCountLimit, int triangleCountLimit, int subMeshCountLimit, float? boundsSizeMinLimit, float? boundsSizeMaxLimit)
         {
             int totalVertexCount = 0;
             int totalTriangleCount = 0;
@@ -64,7 +64,7 @@ namespace SpatialSys.UnitySDK.Editor
             ValidateObjectVertexCount(prefab, vertexCountLimit, totalVertexCount);
             ValidateObjectTriangleCount(prefab, triangleCountLimit, totalTriangleCount);
             ValidateObjectSubMeshCount(prefab, subMeshCountLimit, totalSubMeshCount);
-            ValidateObjectBoundsSize(prefab, boundsSizeLimit, totalBounds.size);
+            ValidateObjectBoundsSize(prefab, boundsSizeMinLimit, boundsSizeMaxLimit, totalBounds.size);
         }
 
         private static void ValidateObjectVertexCount(SpatialPackageAsset prefab, int vertexCountLimit, int vertexCount)
@@ -112,15 +112,26 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
-        private static void ValidateObjectBoundsSize(SpatialPackageAsset prefab, float boundsSizeLimit, Vector3 boundsSize)
+        private static void ValidateObjectBoundsSize(SpatialPackageAsset prefab, float? boundsSizeMinLimit, float? boundsSizeMaxLimit, Vector3 boundsSize)
         {
-            if (boundsSize.x > boundsSizeLimit || boundsSize.y > boundsSizeLimit || boundsSize.z > boundsSizeLimit)
+            if (boundsSizeMinLimit.HasValue && (boundsSize.x < boundsSizeMinLimit || boundsSize.y < boundsSizeMinLimit || boundsSize.z < boundsSizeMinLimit))
             {
                 SpatialValidator.AddResponse(
                     new SpatialTestResponse(
                         prefab,
                         TestResponseType.Fail,
-                        $"The object occupies too much physical space ({FormatDimensions(boundsSize)}). It must not exceed {boundsSizeLimit}m in any dimension.",
+                        $"The object occupies too little physical space ({FormatDimensions(boundsSize)}). It must not be less than {boundsSizeMinLimit}m in any dimension.",
+                        "This helps standardize objects so that they are more consistent with other objects in the community. Increase the scale of the object to comply with this guideline."
+                    )
+                );
+            }
+            else if (boundsSizeMaxLimit.HasValue && (boundsSize.x > boundsSizeMaxLimit || boundsSize.y > boundsSizeMaxLimit || boundsSize.z > boundsSizeMaxLimit))
+            {
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(
+                        prefab,
+                        TestResponseType.Fail,
+                        $"The object occupies too much physical space ({FormatDimensions(boundsSize)}). It must not exceed {boundsSizeMaxLimit}m in any dimension.",
                         "This helps standardize objects so that they are more consistent with other objects in the community. Reduce the scale of the object to comply with this guideline."
                     )
                 );

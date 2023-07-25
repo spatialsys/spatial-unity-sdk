@@ -435,5 +435,53 @@ namespace SpatialSys.UnitySDK
 
         public delegate Action InitializeVirtualCameraDelegate(SpatialVirtualCamera virtualCamera);
         public static InitializeVirtualCameraDelegate InitializeSpatialVirtualCamera;
+
+        // Data Stores
+        public enum DataStoreScope
+        {
+            UserWorldData = 0,
+        }
+
+        public struct DataStoreOperationResult
+        {
+            public bool succeeded;
+            public int responseCode;
+            public object value; // only used for GetDataStoreVariableValue
+
+            public DataStoreOperationResult(bool succeeded, int responseCode)
+            {
+                this.succeeded = succeeded;
+                this.responseCode = responseCode;
+                this.value = null;
+            }
+
+            public DataStoreOperationResult(bool succeeded, int responseCode, object value)
+            {
+                this.succeeded = succeeded;
+                this.responseCode = responseCode;
+                this.value = value;
+            }
+        }
+
+        public delegate void GetDataStoreVariableValueDelegate(DataStoreScope scope, string key, object defaultValue, Action<DataStoreOperationResult> callback);
+        public static GetDataStoreVariableValueDelegate GetDataStoreVariableValue;
+
+        public delegate void SetDataStoreVariableValueDelegate(DataStoreScope scope, string key, object value, Action<DataStoreOperationResult> callback);
+        public static SetDataStoreVariableValueDelegate SetDataStoreVariableValue;
+
+        public delegate void DeleteDataStoreVariableDelegate(DataStoreScope scope, string key, Action<DataStoreOperationResult> callback);
+        public static DeleteDataStoreVariableDelegate DeleteDataStoreVariable;
+
+        public delegate void ClearDataStoreDelegate(DataStoreScope scope, Action<DataStoreOperationResult> callback);
+        public static ClearDataStoreDelegate ClearDataStore;
+
+        public delegate void HasDataStoreVariableDelegate(DataStoreScope scope, string key, Action<DataStoreOperationResult> callback);
+        public static HasDataStoreVariableDelegate HasDataStoreVariable;
+
+        public delegate void DataStoreHasAnyVariableDelegate(DataStoreScope scope, Action<DataStoreOperationResult> callback);
+        public static DataStoreHasAnyVariableDelegate DataStoreHasAnyVariable;
+
+        public delegate void DumpDataStoreVariablesDelegate(DataStoreScope scope, Action<DataStoreOperationResult> callback);
+        public static DumpDataStoreVariablesDelegate DumpDataStoreVariables;
     }
 }
