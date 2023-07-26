@@ -135,17 +135,18 @@ namespace SpatialSys.UnitySDK.Editor
 
                 skip |= ContainsKeyword(data[i].shaderKeywordSet, SKIPPED_VARIANTS_SPATIAL_DISABLED);
 
+                // TODO: Render settings in Spatial should match this.
                 // Strip reflection related variants if it's a space-based package.
                 if (ProjectConfig.activePackageConfig.isSpaceBasedPackage)
                 {
                     if (!_useReflectionProbeBoxProjection)
                     {
-                        skip |= data[i].shaderKeywordSet.IsEnabled(new ShaderKeyword("_REFLECTION_PROBE_BOX_PROJECTION"));
+                        // skip |= data[i].shaderKeywordSet.IsEnabled(new ShaderKeyword("_REFLECTION_PROBE_BOX_PROJECTION"));
                     }
 
                     if (!_useReflectionProbeBlend)
                     {
-                        skip |= data[i].shaderKeywordSet.IsEnabled(new ShaderKeyword("_REFLECTION_PROBE_BLENDING"));
+                        // skip |= data[i].shaderKeywordSet.IsEnabled(new ShaderKeyword("_REFLECTION_PROBE_BLENDING"));
                     }
                 }
 
