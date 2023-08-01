@@ -95,7 +95,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             // Skinning; This is one of the first things you select because it affects which features are available
             GUILayout.Space(SECTION_SPACING);
-            EditorGUILayout.LabelField("Skinning (Coming Soon)", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Skinning", EditorStyles.boldLabel);
             GUI.enabled = attachment.skinningFeatureAvailable;
             EditorGUILayout.PropertyField(_isSkinnedToHumanoidSkeletonProp);
             GUI.enabled = true;

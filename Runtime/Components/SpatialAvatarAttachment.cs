@@ -111,7 +111,7 @@ namespace SpatialSys.UnitySDK
         public AttachmentAnimationClips attachmentAnimClips;
 
         public SlotMask occupiedSlots => primarySlot.ToSlotMask() | additionalSlots;
-        public bool skinningFeatureAvailable => false; //true; // TODO: when skinning feature is implemented uncomment this
+        public bool skinningFeatureAvailable => true;
         public bool attachToBoneFeatureAvailable => !isSkinnedToHumanoidSkeleton;
         public bool ikFeatureAvailable => false; //primarySlot != Slot.Aura && !isSkinnedToHumanoidSkeleton; // TODO: when IK feature is implemented uncomment this
         public bool customActionsFeatureAvailable => false; //primarySlot != Slot.Aura; // TODO: when custom actions feature is implemented uncomment this

@@ -81,7 +81,8 @@ namespace SpatialSys.UnitySDK.Editor
                 attachment.category = SpatialAvatarAttachment.Category.Aura;
 
             // Skinning ------------------------------------------------------------------------------------------------
-            attachment.isSkinnedToHumanoidSkeleton = false; // Feature not yet supported
+            if (!attachment.skinningFeatureAvailable)
+                attachment.isSkinnedToHumanoidSkeleton = false;
 
             // Attach to bone ------------------------------------------------------------------------------------------
             if (!attachment.attachToBoneFeatureAvailable)
@@ -416,28 +417,75 @@ namespace SpatialSys.UnitySDK.Editor
         {
             var animator = attachment.GetComponent<Animator>();
 
-            if (!attachment.animatorFeatureAvailable && animator != null)
+            if (attachment.isSkinnedToHumanoidSkeleton)
             {
-                message = "Animator component should not exist when the animator feature is turned off";
-                return false;
+                if (animator == null)
+                {
+                    message = "There should be an animator component on this object if attachment is skinned to humanoid skeleton";
+                    return false;
+                }
+            }
+            else
+            {
+                if (!attachment.animatorFeatureAvailable && animator != null)
+                {
+                    message = "Animator component should not exist when the animator feature is turned off";
+                    return false;
+                }
+
+                if (attachment.attachmentAnimatorType == SpatialAvatarAttachment.AttachmentAnimatorType.None && animator != null)
+                {
+                    message = "Animator component should not exist when attachment animator type is set to None";
+                    return false;
+                }
+
+                if (attachment.attachmentAnimatorType == SpatialAvatarAttachment.AttachmentAnimatorType.Standard && animator != null)
+                {
+                    message = "For standard animator, the animator component will be created at runtime with the correct setup. Remove the animator component";
+                    return false;
+                }
+
+                if (attachment.attachmentAnimatorType == SpatialAvatarAttachment.AttachmentAnimatorType.Custom && animator == null)
+                {
+                    message = "There should be an animator component on this object if animator type is set to Custom";
+                    return false;
+                }
             }
 
-            if (attachment.attachmentAnimatorType == SpatialAvatarAttachment.AttachmentAnimatorType.None && animator != null)
+            message = null;
+            return true;
+        }
+
+        public static bool ValidateSkinnedAttachmentTransformsMeetGuidelines(SpatialAvatarAttachment attachment, out string message)
+        {
+            foreach (Transform child in attachment.GetComponentsInChildren<Transform>())
             {
-                message = "Animator component should not exist when attachment animator type is set to None";
-                return false;
+                if (child.localScale != Vector3.one)
+                {
+                    message = "The transform scale of all child GameObjects of the skinned attachment must be normalized. Make sure the scale of each child GameObject of the attachment is set to 1,1,1.";
+                    return false;
+                }
             }
 
-            if (attachment.attachmentAnimatorType == SpatialAvatarAttachment.AttachmentAnimatorType.Standard && animator != null)
-            {
-                message = "For standard animator, the animator component will be created at runtime with the correct setup. Remove the animator component";
-                return false;
-            }
+            message = null;
+            return true;
+        }
 
-            if (attachment.attachmentAnimatorType == SpatialAvatarAttachment.AttachmentAnimatorType.Custom && animator == null)
+        public static bool ValidateSkinnedAttachmentRigMeetGuidelines(SpatialAvatarAttachment attachment, out string message)
+        {
+            if (attachment.TryGetComponent<Animator>(out Animator animator))
             {
-                message = "There should be an animator component on this object if animator type is set to Custom";
-                return false;
+                if (animator.avatar == null || !animator.avatar.isHuman)
+                {
+                    message = "Attachments skinned to humanoid skeleton must have a valid humanoid avatar rig. Non-humanoid rigs are not supported.";
+                    return false;
+                }
+
+                if (!animator.hasTransformHierarchy)
+                {
+                    message = "The avatar must have transform hierarchy enabled. This can be enabled in the Animator component.";
+                    return false;
+                }
             }
 
             message = null;
@@ -471,6 +519,12 @@ namespace SpatialSys.UnitySDK.Editor
             }
 
             ValidateForValidationSystem(attachment, ValidateAttachmentAnimatorShouldExist);
+
+            if (attachment.isSkinnedToHumanoidSkeleton)
+            {
+                ValidateForValidationSystem(attachment, ValidateSkinnedAttachmentTransformsMeetGuidelines);
+                ValidateForValidationSystem(attachment, ValidateSkinnedAttachmentRigMeetGuidelines);
+            }
         }
 
         private static void ValidateForValidationSystem(SpatialAvatarAttachment attachment, ComponentValidatationDelegate validatationDelegate)

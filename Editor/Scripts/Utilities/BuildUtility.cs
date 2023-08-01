@@ -75,7 +75,17 @@ namespace SpatialSys.UnitySDK.Editor
                         avatarConfig.prefab = newPrefab.GetComponent<SpatialAvatar>();
                         UnityEditor.EditorUtility.SetDirty(avatarConfig);
 
-                        AvatarPackageTests.EnforceValidBoneOrientations(avatarConfig.prefab);
+                        ValidationUtility.EnforceValidBoneOrientations(avatarConfig.prefab);
+                    }
+                    else if (ProjectConfig.activePackageConfig is AvatarAttachmentConfig attachmentConfig && attachmentConfig.prefab.isSkinnedToHumanoidSkeleton)
+                    {
+                        // Create a temporary prefab copy so that when validation and fixes are enforced, it won't make destructive changes to the original prefab. The temporary prefab copy will be uploaded instead.
+                        GameObject newPrefab = EditorUtility.CreatePrefabCopyForTemporaryModification(attachmentConfig.prefab);
+
+                        attachmentConfig.prefab = newPrefab.GetComponent<SpatialAvatarAttachment>();
+                        UnityEditor.EditorUtility.SetDirty(attachmentConfig);
+
+                        ValidationUtility.EnforceValidBoneOrientations(attachmentConfig.prefab);
                     }
 
                     // Auto-assign necessary bundle names
@@ -126,6 +136,12 @@ namespace SpatialSys.UnitySDK.Editor
 
         private static IPromise UploadAssetBundleToSandbox(PackageConfig packageConfig, string bundleName, string bundleDir, bool openBrowser)
         {
+#if SPATIAL_UNITYSDK_STAGING
+            // Skip uploading if we're not going to open the sandbox in browser
+            if (!openBrowser)
+                return Promise.Resolved();
+#endif
+
             if (string.IsNullOrEmpty(bundleName))
                 return Promise.Rejected(new System.Exception("Unable to retrieve the asset bundle name from the prefab. Make sure an asset is assigned in the package configuration."));
 
@@ -251,7 +267,17 @@ namespace SpatialSys.UnitySDK.Editor
                         avatarConfig.prefab = newPrefab.GetComponent<SpatialAvatar>();
                         UnityEditor.EditorUtility.SetDirty(avatarConfig);
 
-                        AvatarPackageTests.EnforceValidBoneOrientations(avatarConfig.prefab);
+                        ValidationUtility.EnforceValidBoneOrientations(avatarConfig.prefab);
+                    }
+                    else if (ProjectConfig.activePackageConfig is AvatarAttachmentConfig attachmentConfig && attachmentConfig.prefab.isSkinnedToHumanoidSkeleton)
+                    {
+                        // Create a temporary prefab copy so that when validation and fixes are enforced, it won't make destructive changes to the original prefab. The temporary prefab copy will be uploaded instead.
+                        GameObject newPrefab = EditorUtility.CreatePrefabCopyForTemporaryModification(attachmentConfig.prefab);
+
+                        attachmentConfig.prefab = newPrefab.GetComponent<SpatialAvatarAttachment>();
+                        UnityEditor.EditorUtility.SetDirty(attachmentConfig);
+
+                        ValidationUtility.EnforceValidBoneOrientations(attachmentConfig.prefab);
                     }
 
                     // Before we package up the project, we need to save all assets so that the package has the latest changes
