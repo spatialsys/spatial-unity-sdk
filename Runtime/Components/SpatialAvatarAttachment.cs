@@ -219,6 +219,13 @@ namespace SpatialSys.UnitySDK
         [Tooltip("The custom reactions and emote animations that the avatar can play")]
         public AttachmentAvatarAnimConfig emote;
 
+        [Tooltip("The climb animation when the avatar is not moving")]
+        public AttachmentAvatarAnimConfig climbIdle;
+        [Tooltip("The climb animation when the avatar is moving up")]
+        public AttachmentAvatarAnimConfig climbUp;
+        [Tooltip("The end of the climb animation when the avatar climbs to the top")]
+        public AttachmentAvatarAnimConfig climbEndTop;
+
         [Tooltip("Some attachments may give the user additional abilities, such as a Sword attachment has an 'Attack' action. This is where you can specify the animation that the avatar should play for that action.")]
         public AttachmentAvatarAnimConfig[] customActions;
 
@@ -243,6 +250,9 @@ namespace SpatialSys.UnitySDK
             yield return (nameof(fall), fall);
             yield return (nameof(sit), sit);
             yield return (nameof(emote), emote);
+            yield return (nameof(climbIdle), climbIdle);
+            yield return (nameof(climbUp), climbUp);
+            yield return (nameof(climbEndTop), climbEndTop);
         }
     }
 

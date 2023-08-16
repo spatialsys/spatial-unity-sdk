@@ -307,6 +307,9 @@ namespace SpatialSys.UnitySDK
         public delegate bool GetIsSceneInitializedDelegate();
         public static GetIsSceneInitializedDelegate GetIsSceneInitialized;
 
+        public delegate bool GetIsConnectedToSessionDelegate();
+        public static GetIsConnectedToSessionDelegate GetIsConnectedToSession;
+
         public delegate Transform GetCameraTargetOverrideDelegate();
         public static GetCameraTargetOverrideDelegate GetCameraTargetOverride;
 

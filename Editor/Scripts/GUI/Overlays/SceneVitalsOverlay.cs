@@ -28,6 +28,7 @@ namespace SpatialSys.UnitySDK.Editor
         private VisualElement _meshIcon;
         private VisualElement _textureIcon;
         private VisualElement _materialIcon;
+        private VisualElement _audioIcon;
 
         private VisualElement _sharedTexturesBlock;
         private VisualElement _sharedTexturesSubBlock;
@@ -35,13 +36,20 @@ namespace SpatialSys.UnitySDK.Editor
         private Label _sharedTexturesMax;
 
         private Label _materialTexturesCount;
+        private VisualElement _lightmapTexturesBlock;
         private Label _lightmapTexturesCount;
+        private VisualElement _graphicTexturesBlock;
+        private Label _graphicTexturesCount;
         private VisualElement _reflectionProbeBlock;
         private Label _reflectionProbeCount;
 
         private VisualElement _materialsBlock;
         private Label _materialsCount;
         private Label _materialsMax;
+
+        private VisualElement _audioBlock;
+        private Label _audioCount;
+        private Label _audioMax;
 
         private VisualElement _noLightmapsWarning;
         private VisualElement _noLightprobesWarning;
@@ -87,6 +95,7 @@ namespace SpatialSys.UnitySDK.Editor
             _meshIcon = root.Q("MeshIcon");
             _textureIcon = root.Q("TextureIcon");
             _materialIcon = root.Q("MaterialIcon");
+            _audioIcon = root.Q("AudioIcon");
 
             _verticesBlock = root.Q("Vertices");
             _verticesCount = root.Query<Label>("VerticesCount").First();
@@ -97,9 +106,16 @@ namespace SpatialSys.UnitySDK.Editor
             _sharedTexturesCount = root.Query<Label>("SharedTexturesCount").First();
             _sharedTexturesMax = root.Query<Label>("SharedTexturesMax").First();
             _materialTexturesCount = root.Query<Label>("MaterialTexturesCount").First();
+            _lightmapTexturesBlock = root.Q("Lightmap");
             _lightmapTexturesCount = root.Query<Label>("LightmapTexturesCount").First();
+            _graphicTexturesBlock = root.Q("GraphicTextures");
+            _graphicTexturesCount = root.Query<Label>("GraphicTexturesCount").First();
             _reflectionProbeBlock = root.Q("ReflectionProbes");
             _reflectionProbeCount = root.Query<Label>("ReflectionProbesCount").First();
+
+            _audioBlock = root.Q("Audio");
+            _audioCount = root.Query<Label>("AudioCount").First();
+            _audioMax = root.Query<Label>("AudioMax").First();
 
             _materialsBlock = root.Q("Materials");
             _materialsCount = root.Query<Label>("MaterialsCount").First();
@@ -132,7 +148,10 @@ namespace SpatialSys.UnitySDK.Editor
             _sharedTexturesCount.text = EditorUtility.AbbreviateNumber(resp.sharedTextureMB) + "mb";
             _sharedTexturesMax.text = "/ " + EditorUtility.AbbreviateNumber(PerformanceResponse.MAX_SUGGESTED_SHARED_TEXTURE_MB) + "mb";
             _materialTexturesCount.text = EditorUtility.AbbreviateNumber(resp.materialTextureMB) + "mb";
+            _lightmapTexturesBlock.style.display = resp.hasLightmaps ? DisplayStyle.Flex : DisplayStyle.None;
             _lightmapTexturesCount.text = EditorUtility.AbbreviateNumber(resp.lightmapTextureMB) + "mb";
+            _graphicTexturesBlock.style.display = resp.graphicTextureMB > 0 ? DisplayStyle.Flex : DisplayStyle.None;
+            _graphicTexturesCount.text = EditorUtility.AbbreviateNumber(resp.graphicTextureMB) + "mb";
             _reflectionProbeBlock.style.display = resp.reflectionProbeMB > 0 ? DisplayStyle.Flex : DisplayStyle.None;
             _reflectionProbeCount.text = EditorUtility.AbbreviateNumber(resp.reflectionProbeMB) + "mb";
             _textureIcon.ClearClassList();
@@ -144,6 +163,14 @@ namespace SpatialSys.UnitySDK.Editor
             _materialsMax.text = "/ " + EditorUtility.AbbreviateNumber(PerformanceResponse.MAX_SUGGESTED_UNIQUE_MATERIALS);
             _materialIcon.ClearClassList();
             SetBlockClassFromRatio(_materialIcon, resp.uniqueMaterialsPercent);
+
+            SetBaseClass(_audioBlock);
+            SetBlockClassFromRatio(_audioBlock, resp.audioPercent);
+            _audioBlock.style.display = resp.audioMB > 0 ? DisplayStyle.Flex : DisplayStyle.None;
+            _audioCount.text = EditorUtility.AbbreviateNumber(resp.audioMB) + "mb";
+            _audioMax.text = "/ " + EditorUtility.AbbreviateNumber(PerformanceResponse.MAX_SUGGESTED_AUDIO_MB) + "mb";
+            _audioIcon.ClearClassList();
+            SetBlockClassFromRatio(_audioIcon, resp.audioPercent);
 
             _noLightmapsWarning.style.display = resp.hasLightmaps ? DisplayStyle.None : DisplayStyle.Flex;
             //show if we have lightmaps but no light probes

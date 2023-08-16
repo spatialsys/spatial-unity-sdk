@@ -10,8 +10,7 @@ namespace SpatialSys.UnitySDK.Editor
 {
     public static class AvatarPackageTests
     {
-        private static readonly Dictionary<HumanBodyBones, Quaternion> _targetTPoseBoneRotations = new Dictionary<HumanBodyBones, Quaternion>()
-        {
+        private static readonly Dictionary<HumanBodyBones, Quaternion> _targetTPoseBoneRotations = new Dictionary<HumanBodyBones, Quaternion>() {
             { HumanBodyBones.Hips, new Quaternion(0f, 0f, 0f, 1f) },
             { HumanBodyBones.LeftUpperLeg, new Quaternion(0f, -0.0064f, 1f, 0.003f) },
             { HumanBodyBones.RightUpperLeg, new Quaternion(0f, -0.0063f, 1f, -0.003f) },
@@ -91,7 +90,8 @@ namespace SpatialSys.UnitySDK.Editor
                 triangleCountLimit: (config.usageContext == AvatarConfig.Scope.Universal) ? 22500 : 200000,
                 subMeshCountLimit: (config.usageContext == AvatarConfig.Scope.Universal) ? 4 : 100,
                 boundsSizeMinLimit: 0.1f,
-                boundsSizeMaxLimit: (config.usageContext == AvatarConfig.Scope.Universal) ? 2.5f : 25f
+                boundsSizeMaxLimit: (config.usageContext == AvatarConfig.Scope.Universal) ? 2.5f : 25f,
+                textureMemoryLimit: (config.usageContext == AvatarConfig.Scope.Universal) ? 5 * 1024 * 1024 : 40 * 1024 * 1024
             );
         }
 

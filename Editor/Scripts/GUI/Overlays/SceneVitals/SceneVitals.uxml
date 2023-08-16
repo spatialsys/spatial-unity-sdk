@@ -27,6 +27,11 @@
                     <ui:VisualElement name="filler" style="flex-grow: 1;" />
                     <ui:Label text="15mb" name="LightmapTexturesCount" />
                 </ui:VisualElement>
+                <ui:VisualElement name="GraphicTextures" style="flex-direction: row; background-color: rgba(0, 255, 0, 0); padding-top: 2px; padding-bottom: 2px;">
+                    <ui:Label text="Sprites/UI" style="-unity-font-style: normal;" />
+                    <ui:VisualElement name="filler" style="flex-grow: 1;" />
+                    <ui:Label text="35mb" name="GraphicTexturesCount" />
+                </ui:VisualElement>
                 <ui:VisualElement name="ReflectionProbes" style="flex-direction: row; background-color: rgba(0, 255, 0, 0); padding-top: 2px; padding-bottom: 2px;">
                     <ui:Label text="Reflection Probes" style="-unity-font-style: normal;" />
                     <ui:VisualElement name="filler" style="flex-grow: 1;" />
@@ -41,19 +46,24 @@
             <ui:Label text="23" name="MaterialsCount" />
             <ui:Label text="/ 100" name="MaterialsMax" class="BlockOutOfTitle" />
         </ui:VisualElement>
+        <ui:VisualElement name="Audio" class="InfoBlock InfoBlock_green" style="flex-direction: row; align-items: center;">
+            <ui:VisualElement name="AudioIcon" class="InfoBlock_green" style="width: 12px; height: 12px; background-image: url(&apos;project://database/Packages/io.spatial.unitysdk/Editor/Textures/Icons/icon_audio.png?fileID=2800000&amp;guid=ce19931a203ed4a9090c11e21f064696&amp;type=3#icon_audio&apos;); margin-right: 2px;" />
+            <ui:Label text="Audio Memory" style="-unity-font-style: bold;" />
+            <ui:VisualElement name="filler" style="flex-grow: 1;" />
+            <ui:Label text="23" name="AudioCount" />
+            <ui:Label text="/ 100" name="AudioMax" class="BlockOutOfTitle" />
+        </ui:VisualElement>
         <ui:VisualElement name="NoLightmapsWarning" class="InfoBlock InfoBlock_yellow" style="flex-direction: column; flex-grow: 1; opacity: 1;">
             <ui:VisualElement style="flex-direction: row;">
                 <ui:VisualElement name="WarningIcon" style="background-image: url(&apos;project://database/Packages/io.spatial.unitysdk/Editor/Textures/GUI/icon_warning.png?fileID=2800000&amp;guid=2e0a7f878080d4d199ef2c8a61847af1&amp;type=3#icon_warning&apos;); width: 14px; height: 14px; -unity-background-image-tint-color: rgb(255, 234, 128); margin-right: 4px;" />
                 <ui:Label text="No Lightmaps Found" style="-unity-font-style: bold;" />
             </ui:VisualElement>
-            <ui:Label text="Lightmapping is recommended for maximum fidelity and performance" name="TrianglesCount" style="flex-grow: 1; white-space: normal;" />
         </ui:VisualElement>
         <ui:VisualElement name="NoLightprobesWarning" class="InfoBlock InfoBlock_yellow" style="flex-direction: column; flex-grow: 1; flex-wrap: wrap;">
             <ui:VisualElement style="flex-direction: row;">
                 <ui:VisualElement name="WarningIcon" style="background-image: url(&apos;project://database/Packages/io.spatial.unitysdk/Editor/Textures/GUI/icon_warning.png?fileID=2800000&amp;guid=2e0a7f878080d4d199ef2c8a61847af1&amp;type=3#icon_warning&apos;); width: 14px; height: 14px; -unity-background-image-tint-color: rgb(255, 234, 128); margin-right: 4px;" />
                 <ui:Label text="No Lightprobes Found" style="-unity-font-style: bold;" />
             </ui:VisualElement>
-            <ui:Label text="Lightprobes are required for avatars to interact with lights." name="TrianglesCount" style="flex-grow: 1; white-space: normal;" />
         </ui:VisualElement>
         <ui:VisualElement name="HighCollisionMeshWarning" class="InfoBlock InfoBlock_yellow" style="flex-direction: column; flex-grow: 1; flex-wrap: wrap;">
             <ui:VisualElement style="flex-direction: row;">

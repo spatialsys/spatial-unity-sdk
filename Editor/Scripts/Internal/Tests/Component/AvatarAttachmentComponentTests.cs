@@ -460,7 +460,7 @@ namespace SpatialSys.UnitySDK.Editor
         {
             foreach (Transform child in attachment.GetComponentsInChildren<Transform>())
             {
-                if (child.localScale != Vector3.one)
+                if (!child.localScale.WithinThreshold(Vector3.one, distanceThreshold: 0.0001f)) // <= 0.01% scale difference is negligible.
                 {
                     message = "The transform scale of all child GameObjects of the skinned attachment must be normalized. Make sure the scale of each child GameObject of the attachment is set to 1,1,1.";
                     return false;

@@ -140,7 +140,11 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static bool IsIdentity(this Transform transform)
         {
-            return transform.localPosition == Vector3.zero && transform.localRotation == Quaternion.identity && transform.localScale == Vector3.one;
+            const float VECTOR_THRESHOLD = 0.00001f;
+            const float ROTATION_THRESHOLD = 0.0001f; // in degrees
+            return transform.localPosition.WithinThreshold(Vector3.zero, VECTOR_THRESHOLD) &&
+                transform.localRotation.WithinThreshold(Quaternion.identity, ROTATION_THRESHOLD) &&
+                transform.localScale.WithinThreshold(Vector3.one, VECTOR_THRESHOLD);
         }
 
         public static string GetHierarchyPath(this Transform transform, string separator = "/")
@@ -149,6 +153,17 @@ namespace SpatialSys.UnitySDK.Editor
                 return transform.name;
 
             return GetHierarchyPath(transform.parent, separator) + separator + transform.name;
+        }
+
+        public static bool WithinThreshold(this Vector3 vector, Vector3 target, float distanceThreshold)
+        {
+            // Don't use square magnitude since the number can be very small and floats potentially won't have enough precision to hold the value.
+            return (target - vector).magnitude <= distanceThreshold;
+        }
+
+        public static bool WithinThreshold(this Quaternion quaternion, Quaternion target, float thresholdAngleInDegrees)
+        {
+            return Quaternion.Angle(quaternion, target) <= thresholdAngleInDegrees;
         }
     }
 }

@@ -62,5 +62,12 @@ namespace SpatialSys.UnitySDK
         public AnimationClip fall;
 
         public AnimationClip sit;
+
+        [Tooltip("The climb animation when the avatar is not moving")]
+        public AnimationClip climbIdle;
+        [Tooltip("The climb animation when the avatar is moving up")]
+        public AnimationClip climbUp;
+        [Tooltip("The end of the climb animation when the avatar climbs to the top")]
+        public AnimationClip climbEndTop;
     }
 }

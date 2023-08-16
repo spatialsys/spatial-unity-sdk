@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEditor.SceneManagement;
 using UnityEditor;
@@ -25,8 +26,9 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static readonly int MAX_SUGGESTED_VERTS = 500 * k;
         public static readonly int MAX_SUGGESTED_UNIQUE_MATERIALS = 75;
-        public static readonly int MAX_SUGGESTED_SHARED_TEXTURE_MB = 200;
+        public static readonly int MAX_SUGGESTED_SHARED_TEXTURE_MB = 256;
         public static readonly int MAX_SUGGESTED_COLLIDER_VERTS = 75 * k;
+        public static readonly int MAX_SUGGESTED_AUDIO_MB = 16;
 
         public string sceneName;
         public string scenePath;
@@ -43,13 +45,15 @@ namespace SpatialSys.UnitySDK.Editor
         public int meshColliderVerts;
         public int realtimeLights;
         public int reflectionProbeMB;//textures
+        public int graphicTextureMB;
+        public int audioMB;
 
         // Per asset data about their size
         public IReadOnlyList<Tuple<string, int>> meshVertCounts;
         public IReadOnlyList<Tuple<string, int>> meshColliderVertCounts;
         public IReadOnlyList<Tuple<string, float>> textureMemorySizesMB;
 
-        public int sharedTextureMB => materialTextureMB + lightmapTextureMB + reflectionProbeMB;
+        public int sharedTextureMB => materialTextureMB + lightmapTextureMB + graphicTextureMB + reflectionProbeMB;
 
         //how long it took to analyze the scene.
         //used in sceneVitals to auto adjust the refresh rate.
@@ -59,6 +63,7 @@ namespace SpatialSys.UnitySDK.Editor
         public float uniqueMaterialsPercent => (float)uniqueMaterials / MAX_SUGGESTED_UNIQUE_MATERIALS;
         public float sharedTexturePercent => (float)sharedTextureMB / MAX_SUGGESTED_SHARED_TEXTURE_MB;
         public float meshColliderVertPercent => (float)meshColliderVerts / MAX_SUGGESTED_COLLIDER_VERTS;
+        public float audioPercent => (float)audioMB / MAX_SUGGESTED_AUDIO_MB;
     }
 
     public class SpatialPerformance
@@ -132,7 +137,8 @@ namespace SpatialSys.UnitySDK.Editor
             response.lightmapTextureMB = (int)bytes / 1024 / 1024;
 
             // Count scene object sizes
-            List<Texture> foundTextures = new List<Texture>();
+            List<Texture> foundMaterialTextures = new List<Texture>();
+            List<Texture> foundGraphicTextures = GameObject.FindObjectsOfType<Graphic>(true).Select(g => g.mainTexture).ToList();
             List<Material> materials = new List<Material>();
             List<Mesh> foundMeshes = new List<Mesh>();
             Renderer[] renderers = GameObject.FindObjectsOfType<Renderer>(true);
@@ -152,10 +158,21 @@ namespace SpatialSys.UnitySDK.Editor
                         var tex = material.GetTexture(texName);
                         if (tex != null)
                         {
-                            foundTextures.Add(tex);
+                            foundMaterialTextures.Add(tex);
                         }
                     }
                 }
+
+                // look for sprite textures
+                if (renderer is SpriteRenderer)
+                {
+                    SpriteRenderer spriteRenderer = renderer as SpriteRenderer;
+                    if (spriteRenderer.sprite != null && spriteRenderer.sprite.texture != null)
+                    {
+                        foundGraphicTextures.Add(spriteRenderer.sprite.texture);
+                    }
+                }
+
                 // look for mesh
                 if (renderer is MeshRenderer)
                 {
@@ -185,15 +202,48 @@ namespace SpatialSys.UnitySDK.Editor
             response.uniqueVerts = uniqueMeshes.Distinct().Sum(m => m.vertexCount);
             response.uniqueMaterials = materials.FindAll(m => m != null).Select(m => m.name).Distinct().Count();
 
-            // Count texture sizes
+            // Count skybox material
+            Material skyboxMaterial = RenderSettings.skybox;
+            if (skyboxMaterial != null)
+            {
+                foreach (var texName in skyboxMaterial.GetTexturePropertyNames())
+                {
+                    var tex = skyboxMaterial.GetTexture(texName);
+                    if (tex != null)
+                    {
+                        foundMaterialTextures.Add(tex);
+                    }
+                }
+            }
+
+            // Count material texture sizes
             bytes = 0;
-            foreach (Texture texture in foundTextures.Distinct())
+            foreach (Texture texture in foundMaterialTextures.Distinct())
             {
                 long sizeInBytes = Profiler.GetRuntimeMemorySizeLong(texture);
                 bytes += sizeInBytes;
                 textureSizesMB.Add(new Tuple<string, float>(AssetDatabase.GetAssetPath(texture), sizeInBytes / 1024f / 1024f));
             }
-            response.materialTextureMB = (int)(bytes / 1024 / 1024);
+            response.materialTextureMB = (int)(bytes / 1024f / 1024f);
+
+            // Count graphic texture sizes
+            bytes = 0;
+            foreach (Texture texture in foundGraphicTextures.Distinct())
+            {
+                if (texture == null)
+                {
+                    continue;
+                }
+                long sizeInBytes = Profiler.GetRuntimeMemorySizeLong(texture);
+                bytes += sizeInBytes;
+
+                string texturePath = AssetDatabase.GetAssetPath(texture);
+                if (!string.IsNullOrEmpty(texturePath))
+                {
+                    textureSizesMB.Add(new Tuple<string, float>(texturePath, sizeInBytes / 1024f / 1024f));
+                }
+            }
+            response.graphicTextureMB = (int)(bytes / 1024f / 1024f);
 
             // Count mesh collider vertices
             MeshCollider[] meshColliders = GameObject.FindObjectsOfType<MeshCollider>(true);
@@ -240,6 +290,27 @@ namespace SpatialSys.UnitySDK.Editor
                 }
             }
             response.reflectionProbeMB = (int)(bytes / 1024 / 1024);
+
+            // Look for audio
+            bytes = 0;
+            List<AudioClip> audioClips = new();
+            foreach(string path in AssetDatabase.GetDependencies(scene.path, true))
+            {
+                UnityEngine.Object obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+                if (obj is AudioClip)
+                {
+                    AudioClip audioClip = obj as AudioClip;
+                    audioClips.Add(audioClip);
+                }
+            }
+
+            foreach (AudioClip audioClip in audioClips.Distinct())
+            {
+                long sizeInBytes = Profiler.GetRuntimeMemorySizeLong(audioClip);
+                bytes += sizeInBytes;
+            }
+
+            response.audioMB = (int)(bytes / 1024 / 1024);
 
             // Sort by size descending
             meshVertCounts.Sort((a, b) => b.Item2.CompareTo(a.Item2));
@@ -288,28 +359,6 @@ namespace SpatialSys.UnitySDK.Editor
                 ));
             }
 
-            if (!response.hasLightmaps)
-            {
-                SpatialValidator.AddResponse(new SpatialTestResponse(
-                    null,
-                    TestResponseType.Warning,
-                    $"Scene {scene.name} does not have lightmaps.",
-                    "It is highly recommended that you bake lightmaps in each scene. This will greatly improve the fidelity of your space."
-
-                ));
-            }
-
-            if (!response.hasLightprobes)
-            {
-                SpatialValidator.AddResponse(new SpatialTestResponse(
-                    null,
-                    TestResponseType.Warning,
-                    $"Scene {scene.name} does not have light probes.",
-                    "It is highly recommended that you bake light probes in each scene. This will allow avatars to interact with the baked lights in your space properly."
-
-                ));
-            }
-
             //skipping reflection probe warning. Not everyone will benefit much from them.
 
             if (response.vertPercent > 1f)
@@ -345,6 +394,17 @@ namespace SpatialSys.UnitySDK.Editor
                     + "High memory usage can cause application crashes on lower end devices. It is highly recommended that you stay within the suggested limits. "
                     + "Compressing your textures will help reduce their size.\n"
                     + "Here's a list of all textures used by the scene:\n - " + string.Join("\n - ", response.textureMemorySizesMB.Take(40).Select(m => $"{m.Item2:0.00}MB - {m.Item1}"))
+                ));
+            }
+
+            if (response.audioPercent > 1f)
+            {
+                SpatialValidator.AddResponse(new SpatialTestResponse(
+                    null,
+                    TestResponseType.Warning,
+                    $"The audio clips in scene {scene.name} are using too much memory. ",
+                    $"It is recommended that you limit your scene to {PerformanceResponse.MAX_SUGGESTED_AUDIO_MB} MB of audio memory. "
+                    + "Converting audio files to .ogg and mono can help reduce its size."
                 ));
             }
         }

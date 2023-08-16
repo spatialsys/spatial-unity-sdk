@@ -43,7 +43,8 @@ namespace SpatialSys.UnitySDK.Editor
                 subMeshCountLimit: (config.usageContext == AvatarConfig.Scope.Universal) ? 1 : 5,
                 // Bounds for particle systems aren't properly measured, so we don't enforce a bounds size limit for aura attachments
                 boundsSizeMinLimit: (config.prefab.primarySlot == SpatialAvatarAttachment.Slot.Aura) ? null : 0.01f,
-                boundsSizeMaxLimit: 1f
+                boundsSizeMaxLimit: (config.usageContext == AvatarConfig.Scope.Universal) ? 3f : 25f,
+                textureMemoryLimit: (config.usageContext == AvatarConfig.Scope.Universal) ? 2 * 1024 * 1024 : 10 * 1024 * 1024
             );
         }
     }

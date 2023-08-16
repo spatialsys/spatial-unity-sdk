@@ -1,7 +1,9 @@
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Profiling;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 
@@ -241,7 +243,7 @@ namespace SpatialSys.UnitySDK.Editor
         /// <summary>
         /// Totals up vertices, triangles, and sub-meshes for all meshes from the object, and make sure none of them exceed the limit.
         /// </summary>
-        public static void EnsureObjectMeshesMeetGuidelines(SpatialPackageAsset prefab, int vertexCountLimit, int triangleCountLimit, int subMeshCountLimit, float? boundsSizeMinLimit, float? boundsSizeMaxLimit)
+        public static void EnsureObjectMeshesMeetGuidelines(SpatialPackageAsset prefab, int vertexCountLimit, int triangleCountLimit, int subMeshCountLimit, float? boundsSizeMinLimit, float? boundsSizeMaxLimit, long textureMemoryLimit)
         {
             int totalVertexCount = 0;
             int totalTriangleCount = 0;
@@ -256,7 +258,7 @@ namespace SpatialSys.UnitySDK.Editor
                 // Ignore disabled renderer components too.
                 if (!renderer.enabled)
                     continue;
-                
+
                 Mesh mesh;
 
                 MeshFilter meshFilter = renderer.GetComponent<MeshFilter>();
@@ -295,10 +297,29 @@ namespace SpatialSys.UnitySDK.Editor
                 }
             }
 
+            // Get texture memory usage
+            string[] allDependencies = AssetDatabase.GetDependencies(AssetDatabase.GetAssetPath(prefab));
+            List<(string, long)> textureMemoryUsage = new List<(string, long)>();
+            long totalTextureMemory = 0;
+            foreach (string assetPath in allDependencies)
+            {
+                var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
+
+                // Don't include sdk assets in texture count
+                string sdkPath = Path.Combine("Packages", "io.spatial.unitysdk") + Path.DirectorySeparatorChar;
+                if (asset is Texture && !assetPath.StartsWith(sdkPath))
+                {
+                    long textureMemory = Profiler.GetRuntimeMemorySizeLong(asset);
+                    totalTextureMemory += textureMemory;
+                    textureMemoryUsage.Add((assetPath, textureMemory));
+                }
+            }
+
             ValidateObjectVertexCount(prefab, vertexCountLimit, totalVertexCount);
             ValidateObjectTriangleCount(prefab, triangleCountLimit, totalTriangleCount);
             ValidateObjectSubMeshCount(prefab, subMeshCountLimit, totalSubMeshCount);
             ValidateObjectBoundsSize(prefab, boundsSizeMinLimit, boundsSizeMaxLimit, totalBounds.size);
+            ValidateObjectTextureMemory(prefab, textureMemoryLimit, totalTextureMemory, textureMemoryUsage);
         }
 
         private static void ValidateObjectVertexCount(SpatialPackageAsset prefab, int vertexCountLimit, int vertexCount)
@@ -367,6 +388,28 @@ namespace SpatialSys.UnitySDK.Editor
                         TestResponseType.Fail,
                         $"The object occupies too much physical space ({FormatDimensions(boundsSize)}). It must not exceed {boundsSizeMaxLimit}m in any dimension.",
                         "This helps standardize objects so that they are more consistent with other objects in the community. Reduce the scale of the object to comply with this guideline."
+                    )
+                );
+            }
+        }
+
+        private static void ValidateObjectTextureMemory(SpatialPackageAsset prefab, long textureMemoryLimit, long totalTextureMemory, List<(string, long)> usedTextures)
+        {
+            if (totalTextureMemory > textureMemoryLimit)
+            {
+                double totalTextureMemoryMB = totalTextureMemory / 1024.0 / 1024.0;
+
+                // Sort textures by size (descending)
+                usedTextures.Sort((a, b) => b.Item2.CompareTo(a.Item2));
+
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(
+                        prefab,
+                        TestResponseType.Fail,
+                        $"The object uses too much texture memory ({totalTextureMemoryMB.ToString("0.00")}MB)",
+                        $"This object uses a total of {totalTextureMemory} bytes of texture memory but it must not exceed {textureMemoryLimit} bytes.\n"
+                        + "High memory usage can cause application crashes on lower end devices. Reduce the number of textures, reduce the resolution or modify the comporession of textures to comply with this limit.\n\n"
+                        + "Here's a list of all the textures used by the avatar attachment:\n - " + string.Join("\n - ", usedTextures.Take(20).Select(m => $"{(m.Item2 / 1024.0 / 1024.0):0.00}MB - {m.Item1}"))
                     )
                 );
             }

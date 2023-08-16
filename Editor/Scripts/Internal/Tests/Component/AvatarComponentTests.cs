@@ -33,7 +33,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             foreach (Transform child in transform.GetComponentsInChildren<Transform>())
             {
-                if (child.localScale != Vector3.one)
+                if (!child.localScale.WithinThreshold(Vector3.one, distanceThreshold: 0.0001f)) // <= 0.01% scale difference is negligible.
                 {
                     string childTransformPath = child.GetHierarchyPath(separator: " -> ");
                     var resp = new SpatialTestResponse(
@@ -42,11 +42,6 @@ namespace SpatialSys.UnitySDK.Editor
                         $"The scale of all child GameObjects of {avatarPrefab.name} avatar must be normalized: {child.name}",
                         $"Make sure the transform scale of ({childTransformPath}) of the avatar is set to (1,1,1)."
                     );
-                    // Resetting the scale can mess up the rig, mark as unsafe.
-                    resp.SetAutoFix(isSafe: false, "Reset transform scale", (child) => {
-                        var childTransform = (Transform)child;
-                        childTransform.localScale = Vector3.one;
-                    });
                     SpatialValidator.AddResponse(resp);
                 }
             }
@@ -82,38 +77,22 @@ namespace SpatialSys.UnitySDK.Editor
         public static void EnsureAnimatorRigHasTransformHierarchy(SpatialAvatar avatarPrefab)
         {
             Animator animator;
-            if (avatarPrefab.TryGetComponent<Animator>(out animator))
+
+            // Cannot automatically fix this, since prefab will still have no transform heirarchy generated. The avatar prefab needs to be recreated.
+            if (avatarPrefab.TryGetComponent<Animator>(out animator) && !animator.hasTransformHierarchy)
             {
-                if (!animator.hasTransformHierarchy)
-                {
-                    if (!Application.isBatchMode)
-                    {
-                        var resp = new SpatialTestResponse(
-                            avatarPrefab.gameObject,
-                            TestResponseType.Fail,
-                            "The avatar must have transform hierarchy enabled. This can be enabled in the Animator component."
-                        );
-                        resp.SetAutoFix(true, "Disable Optimize GameObjects Setting", AutoFixAnimatorOptimizeGameObjects);
-                        SpatialValidator.AddResponse(resp);
-                    }
-                    else
-                    {
-                        AutoFixAnimatorOptimizeGameObjects(avatarPrefab.gameObject);
-                    }
-                }
+                SpatialValidator.AddResponse(new SpatialTestResponse(
+                    avatarPrefab.gameObject,
+                    TestResponseType.Fail,
+                    "The avatar must have a transform hierarchy",
+                    "This can be enabled in the Animator component by disabling the 'Optimize Game Objects' setting under the Rig tab of the model importer. " +
+                        "Afterwards, you will need to recreate the avatar prefab from the model and ensure that there is a transform hierarchy inside the prefab representing the bone structure."
+                ));
             }
         }
 
-        private static void AutoFixAnimatorOptimizeGameObjects(Object gameObject)
-        {
-            Object sourcePrefab = PrefabUtility.GetCorrespondingObjectFromSource(gameObject);
-            var importer = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(sourcePrefab)) as ModelImporter;
-            importer.optimizeGameObjects = false;
-            importer.SaveAndReimport();
-        }
-
         [ComponentTest(typeof(SpatialAvatar))]
-        public static void EnsureAnimOverrridesLoop(SpatialAvatar avatarPrefab)
+        public static void EnsureAnimOverridesLoop(SpatialAvatar avatarPrefab)
         {
             // All these animations need to loop to work properly
             var animsThatShouldLoop = new AnimationClip[] {
@@ -124,6 +103,8 @@ namespace SpatialSys.UnitySDK.Editor
                 avatarPrefab.animOverrides.jumpInAir,
                 avatarPrefab.animOverrides.fall,
                 avatarPrefab.animOverrides.sit,
+                avatarPrefab.animOverrides.climbIdle,
+                avatarPrefab.animOverrides.climbUp,
             };
 
             AnimationClip[] animsThatFailedTest = animsThatShouldLoop.Where(anim => anim != null && !anim.isLooping).ToArray();

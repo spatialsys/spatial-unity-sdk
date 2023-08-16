@@ -136,8 +136,8 @@ namespace SpatialSys.UnitySDK.Editor
 
         private static IPromise UploadAssetBundleToSandbox(PackageConfig packageConfig, string bundleName, string bundleDir, bool openBrowser)
         {
-#if SPATIAL_UNITYSDK_STAGING
-            // Skip uploading if we're not going to open the sandbox in browser
+#if SPATIAL_UNITYSDK_STAGING && SPATIAL_UNITYSDK_STAGING_LOCAL_TESTING
+            // Skip uploading if it's a local testing build
             if (!openBrowser)
                 return Promise.Resolved();
 #endif
@@ -240,9 +240,6 @@ namespace SpatialSys.UnitySDK.Editor
                             });
                     }
 
-                    // Upload package
-                    _lastUploadProgress = -1f;
-                    UpdatePackageUploadProgressBar(0, 0, 0f);
                     return createWorldPromise;
                 }).Then(() => {
                     return SpatialAPI.CreateOrUpdatePackage(ProjectConfig.activePackageConfig.sku, ProjectConfig.activePackageConfig.packageType);
@@ -288,6 +285,9 @@ namespace SpatialSys.UnitySDK.Editor
                     if (!Directory.Exists(BUILD_DIR))
                         Directory.CreateDirectory(BUILD_DIR);
                     PackageProject(PACKAGE_EXPORT_PATH);
+
+                    _lastUploadProgress = -1f;
+                    UpdatePackageUploadProgressBar(0, 0, 0f);
 
                     _uploadStartTime = Time.realtimeSinceStartup;
                     byte[] packageBytes = File.ReadAllBytes(PACKAGE_EXPORT_PATH);
@@ -336,6 +336,7 @@ namespace SpatialSys.UnitySDK.Editor
                     }
                 })
                 .Finally(() => {
+                    UnityEditor.EditorUtility.ClearProgressBar();
                     AssetDatabase.DeleteAsset(EditorUtility.TEMP_DIRECTORY);
 
                     // Restore config file to previous values if necessary.
