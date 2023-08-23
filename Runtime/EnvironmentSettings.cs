@@ -5,6 +5,8 @@ namespace SpatialSys.UnitySDK
     [System.Serializable]
     public class EnvironmentSettings
     {
+        public const float DEFAULT_RESPAWN_LEVEL_Y = -100f;
+
         public enum AvatarControlSettings
         {
             Default,
@@ -16,6 +18,9 @@ namespace SpatialSys.UnitySDK
 
         [Space(5), Tooltip("Web Only")]
         public SpatialCameraRotationMode cameraRotationMode = SpatialCameraRotationMode.AutoRotate;
+
+        [Space(5), Tooltip("The Y position in world units at which physics objects such as avatars should respawn or be deleted. This can be visualized by the translucent red plane in the scene view.")]
+        public float respawnLevelY = DEFAULT_RESPAWN_LEVEL_Y;
 
         public AvatarControlSettings avatarControlSettings = AvatarControlSettings.Default;
 
