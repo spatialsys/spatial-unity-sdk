@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace CsvLib
 {
@@ -114,12 +115,21 @@ namespace CsvLib
                         _rows.Add(targetRow);
                     }
 
+                    // Use regex matching to work properly with quoted values (such as needed when values contain commas).
+                    Regex regexParser = new Regex(",(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))");
+                    Match match = regexParser.Match(line, 0);
+
                     // Parse comma-separated values in row without use of string.Split.
                     // If there are more columns than what the header row defines, ignore the extra columns.
                     int valueStart = 0, valueEnd = 0;
                     while (valueEnd < line.Length && (isHeaderRow || targetRow.length < columnCount))
                     {
-                        int nextComma = line.IndexOf(',', valueStart);
+                        int nextComma = -1;
+                        if (match.Success)
+                        {
+                            nextComma = match.Index;
+                            match = match.NextMatch();
+                        }
                         valueEnd = (nextComma > -1) ? nextComma : line.Length;
                         string value = line.Substring(valueStart, valueEnd - valueStart);
                         targetRow.Add(value);

@@ -288,11 +288,17 @@ namespace SpatialSys.UnitySDK
         public delegate void SetSyncedAnimatorTriggerDelegate(SpatialSyncedAnimator syncedAnimator, string triggerName);
         public static SetSyncedAnimatorTriggerDelegate SetSyncedAnimatorTrigger;
 
-        public delegate void SetInputOverridesDelegate(bool movementOverride, bool jumpOverride, bool sprintOverride, bool actionButtonOverride, UnityEngine.Object rootObject = null);
+        public delegate void SetInputOverridesDelegate(bool movementOverride, bool jumpOverride, bool sprintOverride, bool actionButtonOverride, GameObject target);
         public static SetInputOverridesDelegate SetInputOverrides;
 
-        public delegate void OnInputGraphRootObjectDestroyedDelegate(UnityEngine.Object rootObject);
+        public delegate void OnInputGraphRootObjectDestroyedDelegate(GameObject target);
         public static OnInputGraphRootObjectDestroyedDelegate OnInputGraphRootObjectDestroyed;
+
+        public delegate void StartVehicleInputCaptureDelegate(VehicleInputFlags flags, Sprite primaryButtonSprite, Sprite secondaryButtonSprite, GameObject target);
+        public static StartVehicleInputCaptureDelegate StartVehicleInputCapture;
+
+        public delegate void ReleaseInputCaptureDelegate(GameObject target);
+        public static ReleaseInputCaptureDelegate ReleaseInputCapture;
 
         //Component Initialization
         public delegate void InitializeSpatialInteractableDelegate(SpatialInteractable spatialInteractable);

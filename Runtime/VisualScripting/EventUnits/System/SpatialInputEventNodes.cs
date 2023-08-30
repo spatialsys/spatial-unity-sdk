@@ -1,12 +1,13 @@
+using System;
 using UnityEngine;
 using Unity.VisualScripting;
 using SpatialSys.UnitySDK;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
-    [UnitTitle("Spatial Input: On Overridden Move")]
+    [UnitTitle("Spatial Input: On Overridden Avatar Move")]
     [UnitSurtitle("Spatial Input")]
-    [UnitShortTitle("On Overridden Move")]
+    [UnitShortTitle("On Overridden Avatar Move")]
     [UnitCategory("Events\\Spatial\\System")]
     [TypeIcon(typeof(InputIcon))]
     public class SpatialOnOverriddenMoveInput : EventUnit<(InputPhase, Vector2)>
@@ -42,15 +43,14 @@ namespace SpatialSys.UnitySDK.VisualScripting
         }
     }
 
-    [UnitTitle("Spatial Input: On Overridden Jump")]
+    [UnitTitle("Spatial Input: On Overridden Avatar Jump")]
     [UnitSurtitle("Spatial Input")]
-    [UnitShortTitle("On Overridden Jump")]
+    [UnitShortTitle("On Overridden Avatar Jump")]
     [UnitCategory("Events\\Spatial\\System")]
     [TypeIcon(typeof(InputIcon))]
     public class SpatialOnOverriddenJumpInput : EventUnit<InputPhase>
     {
         public static string eventName = "SpatialOnOverriddenJumpInput";
-
         protected override bool register => true;
 
         [Serialize, Inspectable, UnitHeaderInspectable]
@@ -67,15 +67,14 @@ namespace SpatialSys.UnitySDK.VisualScripting
         }
     }
 
-    [UnitTitle("Spatial Input: On Overridden Sprint")]
+    [UnitTitle("Spatial Input: On Overridden Avatar Sprint")]
     [UnitSurtitle("Spatial Input")]
-    [UnitShortTitle("On Overridden Sprint")]
+    [UnitShortTitle("On Overridden Avatar Sprint")]
     [UnitCategory("Events\\Spatial\\System")]
     [TypeIcon(typeof(InputIcon))]
     public class SpatialOnOverriddenSprintInput : EventUnit<InputPhase>
     {
         public static string eventName = "SpatialOnOverriddenSprintInput";
-
         protected override bool register => true;
 
         [Serialize, Inspectable, UnitHeaderInspectable]
@@ -92,7 +91,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         }
     }
 
-    [UnitTitle("Spatial Input: On Overridden Action Button")]
+    [UnitTitle("Spatial Input: On Overridden Avatar Action Button")]
     [UnitSurtitle("Spatial Input")]
     [UnitShortTitle("On Overridden Action Button")]
     [UnitCategory("Events\\Spatial\\System")]
@@ -100,7 +99,6 @@ namespace SpatialSys.UnitySDK.VisualScripting
     public class SpatialOnOverriddenActionButtonInput : EventUnit<InputPhase>
     {
         public static string eventName = "SpatialOnOverriddenActionButtonInput";
-
         protected override bool register => true;
 
         [Serialize, Inspectable, UnitHeaderInspectable]
@@ -125,13 +123,29 @@ namespace SpatialSys.UnitySDK.VisualScripting
     public class SpatialOnAutoSprintToggledOn : EventUnit<EmptyEventArgs>
     {
         public static string eventName = "SpatialOnAutoSprintToggledOn";
-
         protected override bool register => true;
 
         public override EventHook GetHook(GraphReference reference)
         {
             return new EventHook(eventName);
         }
+
+        protected override bool ShouldTrigger(Flow flow, EmptyEventArgs args)
+        {
+            return true;
+        }
+    }
+
+    [UnitTitle("Spatial Input: On Input Capture Stopped")]
+    [UnitSurtitle("Spatial Input")]
+    [UnitShortTitle("On Input Capture Stopped")]
+    [UnitCategory("Events\\Spatial\\System")]
+    [TypeIcon(typeof(InputIcon))]
+    public class SpatialOnInputCaptureStopped : GameObjectEventUnit<EmptyEventArgs>
+    {
+        public static string eventName = "SpatialOnInputCaptureStopped";
+        protected override string hookName => eventName;
+        public override Type MessageListenerType => null;
 
         protected override bool ShouldTrigger(Flow flow, EmptyEventArgs args)
         {

@@ -5,9 +5,9 @@ using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
-    [UnitTitle("Spatial Input: Set Overrides")]
+    [UnitTitle("Spatial Input: Set Overriden Avatar Input Capture")]
     [UnitSurtitle("Spatial Input")]
-    [UnitShortTitle("Set Overrides")]
+    [UnitShortTitle("Set Overriden Avatar Input Capture")]
     [UnitCategory("Spatial\\System")]
     [TypeIcon(typeof(InputIcon))]
     public class SetInputOverrides : Unit
@@ -54,7 +54,89 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public override void Uninstantiate(GraphReference instance)
         {
             base.Uninstantiate(instance);
-            ClientBridge.OnInputGraphRootObjectDestroyed.Invoke(instance.gameObject);
+            if (instance?.gameObject != null)
+                ClientBridge.OnInputGraphRootObjectDestroyed?.Invoke(instance.gameObject);
+        }
+    }
+
+    [UnitTitle("Spatial Input: Start Vehicle Input Capture")]
+    [UnitSurtitle("Spatial Input")]
+    [UnitShortTitle("Start Vehicle Input Capture")]
+    [UnitCategory("Spatial\\System")]
+    [TypeIcon(typeof(InputIcon))]
+    public class StartVehicleInputCapture : Unit
+    {
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlInput inputTrigger { get; private set; }
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlOutput outputTrigger { get; private set; }
+
+        [DoNotSerialize]
+        public ValueInput flags { get; private set; }
+
+        [DoNotSerialize]
+        public ValueInput primaryButtonSprite { get; private set; }
+
+        [DoNotSerialize]
+        public ValueInput secondaryButtonSprite { get; private set; }
+
+        protected override void Definition()
+        {
+            flags = ValueInput<VehicleInputFlags>(nameof(flags), VehicleInputFlags.Steer1D | VehicleInputFlags.Throttle | VehicleInputFlags.Reverse | VehicleInputFlags.Exit);
+            primaryButtonSprite = ValueInput<Sprite>(nameof(primaryButtonSprite), null);
+            secondaryButtonSprite = ValueInput<Sprite>(nameof(secondaryButtonSprite), null);
+
+            inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
+                ClientBridge.StartVehicleInputCapture.Invoke(
+                    f.GetValue<VehicleInputFlags>(flags),
+                    f.GetValue<Sprite>(primaryButtonSprite),
+                    f.GetValue<Sprite>(secondaryButtonSprite),
+                    f.stack.self
+                );
+                return outputTrigger;
+            });
+
+            outputTrigger = ControlOutput(nameof(outputTrigger));
+
+            Succession(inputTrigger, outputTrigger);
+        }
+
+        public override void Uninstantiate(GraphReference instance)
+        {
+            base.Uninstantiate(instance);
+            if (instance?.gameObject != null)
+                ClientBridge.OnInputGraphRootObjectDestroyed?.Invoke(instance.gameObject);
+        }
+    }
+
+    [UnitTitle("Spatial Input: Release Input Capture")]
+    [UnitSurtitle("Spatial Input")]
+    [UnitShortTitle("Release Input Capture")]
+    [UnitCategory("Spatial\\System")]
+    [TypeIcon(typeof(InputIcon))]
+    public class ReleaseInputCapture : Unit
+    {
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlInput inputTrigger { get; private set; }
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlOutput outputTrigger { get; private set; }
+
+        protected override void Definition()
+        {
+            inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
+                ClientBridge.ReleaseInputCapture.Invoke(
+                    f.stack.self
+                );
+                return outputTrigger;
+            });
+
+            outputTrigger = ControlOutput(nameof(outputTrigger));
+
+            Succession(inputTrigger, outputTrigger);
         }
     }
 }

@@ -45,7 +45,7 @@ UnityEngine.Cloth,Y,Y,N,Y,N,Y,N,N,N,N
 UnityEngine.Collider,Y,Y,Y,Y,N,Y,N,N,N,N
 UnityEngine.ConstantForce,Y,Y,N,Y,N,Y,Y,Y,Y,Y
 UnityEngine.Joint,Y,Y,Y,Y,N,Y,N,N,N,N
-UnityEngine.Light,Y,Y,N,Y,N,Y,Y,Y,Y,Y
+UnityEngine.Light,Y,Y,N,Y,N,Y,N,Y,N,Y
 UnityEngine.LightProbeGroup,Y,Y,N,N,N,Y,N,N,N,N
 UnityEngine.LightProbeProxyVolume,Y,Y,N,N,N,Y,N,N,N,N
 UnityEngine.LODGroup,Y,Y,Y,Y,N,Y,Y,Y,Y,Y
@@ -57,8 +57,8 @@ UnityEngine.ParticleSystemForceField,Y,Y,N,Y,N,Y,Y,Y,Y,Y
 UnityEngine.Projector,Y,Y,N,Y,N,Y,N,N,N,N
 UnityEngine.ReflectionProbe,Y,Y,N,N,N,Y,N,N,N,N
 UnityEngine.Renderer,Y,Y,Y,Y,N,Y,Y,Y,Y,Y
-UnityEngine.Rendering.Universal.UniversalAdditionalCameraData,Y,Y,N,N,N,Y,N,N,N,N
-UnityEngine.Rendering.Universal.UniversalAdditionalLightData,Y,Y,N,N,N,Y,N,N,N,N
+UnityEngine.Rendering.Universal.UniversalAdditionalCameraData,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
+UnityEngine.Rendering.Universal.UniversalAdditionalLightData,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y
 UnityEngine.Rendering.Volume,Y,Y,N,N,N,Y,N,N,N,N
 UnityEngine.Rigidbody,Y,Y,Y,Y,N,Y,N,N,N,N
 UnityEngine.Terrain,Y,Y,N,N,N,Y,N,N,N,N

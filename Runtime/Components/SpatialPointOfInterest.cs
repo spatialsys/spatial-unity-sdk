@@ -9,10 +9,13 @@ namespace SpatialSys.UnitySDK
         public override string prettyName => "Point Of Interest";
         public override string tooltip => "A location marker that will display additional information when approaching it";
         public override string documentationURL => "https://docs.spatial.io/components/point-of-interest";
-        public override bool isExperimental => true;
+        [TextArea(1, 10)]
         public string title = "Point of interest";
-        [Tooltip("Optional description of this point of interest.")]
+        [TextArea(4, 10)]
         public string description;
+
+        public Color backgroundColor = new Color(0.0f, 0.0f, 0.0f, 0.4f);
+        public Color foregroundColor = new Color(1.0f, 1.0f, 1.0f, 1.0f);
 
         public Sprite sprite = null;
         [Range(0, 1), Tooltip("Sprite width size in ratio (1: full, 0.5: half)")]
@@ -23,10 +26,8 @@ namespace SpatialSys.UnitySDK
 
         [Tooltip("Distance from the user where this point of interest will show the title and description")]
         public float textDisplayRadius = 3.0f;
-        [Tooltip("Distance from the user where this point of interest will start showing an marker icon")]
+        [Tooltip("Distance from the user where this point of interest will show a marker")]
         public float markerDisplayRadius = 6.0f;
-        [Tooltip("The marker will be visible on top of other objects")]
-        public bool alwaysOnTop = false;
         public SpatialEvent onTextDisplayedEvent;
 
         private void Start()
