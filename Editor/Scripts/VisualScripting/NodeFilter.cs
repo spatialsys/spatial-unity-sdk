@@ -11,6 +11,7 @@ using SpatialSys.UnitySDK.VisualScripting;
 using UnityEngine.AI;
 using UnityEngine.Audio;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering;
 using Random = UnityEngine.Random;
 
 namespace SpatialSys.UnitySDK.Editor
@@ -34,6 +35,7 @@ namespace SpatialSys.UnitySDK.Editor
         public static readonly HashSet<string> namespaceAllowList = new HashSet<string>() {
             "UnityEngine",
             "UnityEngine.UI",
+            "UnityEngine.Rendering",
             "Unity.VisualScripting",
             "System",
             "System.Collections",
@@ -63,6 +65,8 @@ namespace SpatialSys.UnitySDK.Editor
 
             //Note! This assembly is actually forcebly included in the VS assembly list.
             "Unity.VisualScripting.Core",//AotList & AotDictionary
+
+            "Unity.RenderPipelines.Core.Runtime",//PP volumes 
 
             "mscorlib",
             "netstandard",//collections
@@ -140,6 +144,7 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(IOrderedDictionary),
             typeof(OrderedDictionary),
             typeof(CombineInstance),
+            typeof(Volume),
 
             //Spatial Types
             typeof(SpatialPlatform),
@@ -172,6 +177,9 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(Vector3).GetMember(nameof(Vector3.OrthoNormalize)),
             typeof(UnityEngine.Mathf).GetMember(nameof(UnityEngine.Mathf.SmoothDamp)),
             typeof(UnityEngine.Physics).GetMember(nameof(UnityEngine.Physics.Raycast)),
+            typeof(UnityEngine.Physics).GetMember(nameof(UnityEngine.Physics.BoxCast)),
+            typeof(UnityEngine.Physics).GetMember(nameof(UnityEngine.Physics.CapsuleCast)),
+            typeof(UnityEngine.Physics).GetMember(nameof(UnityEngine.Physics.SphereCast)),
 
             // Allow only basic overload of Parse/TryParse methods.
             new MemberInfo[] {
@@ -353,6 +361,9 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(Camera).GetMember(nameof(Camera.allCameras)),
             typeof(Camera).GetMember(nameof(Camera.current)),
             typeof(Camera).GetMember(nameof(Camera.scene)),//no scene access allowed
+
+            //Rendering
+            typeof(GraphicsSettings).GetMember(nameof(GraphicsSettings.videoShadersIncludeMode)),
         };
 
         private static List<Type> supportedTypes = new List<Type>();
