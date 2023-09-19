@@ -5,7 +5,7 @@
             <ui:VisualElement name="MeshIcon" class="InfoBlock_green" style="width: 12px; height: 12px; background-image: url(&apos;project://database/Packages/io.spatial.unitysdk/Editor/Textures/Icons/icon_mesh.png?fileID=2800000&amp;guid=dc2c4d6ab31b740f3ad6ea9062cc97b4&amp;type=3#icon_mesh&apos;); margin-right: 2px;" />
             <ui:Label text="Mesh Vertices" style="-unity-font-style: bold;" />
             <ui:VisualElement name="filler" style="flex-grow: 1;" />
-            <ui:Label text="120k" name="VerticesCount" />
+            <ui:Label text="-" name="VerticesCount" />
             <ui:Label text="/ 2m " name="VerticesMax" class="BlockOutOfTitle" />
         </ui:VisualElement>
         <ui:VisualElement name="TexturesRoot" class="InfoBlock" style="padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; background-color: rgba(0, 255, 0, 0);">
@@ -13,29 +13,29 @@
                 <ui:VisualElement name="TextureIcon" class="InfoBlock_green" style="width: 12px; height: 12px; background-image: url(&apos;project://database/Packages/io.spatial.unitysdk/Editor/Textures/Icons/icon_texture.png?fileID=2800000&amp;guid=0938c2e23d9884c269c2f1274feeffa0&amp;type=3#icon_texture&apos;); margin-right: 2px;" />
                 <ui:Label text="Texture Memory" style="-unity-font-style: bold;" />
                 <ui:VisualElement name="filler" style="flex-grow: 1;" />
-                <ui:Label text="75" name="SharedTexturesCount" />
+                <ui:Label text="-" name="SharedTexturesCount" />
                 <ui:Label text="/ 100mb" name="SharedTexturesMax" class="BlockOutOfTitle" />
             </ui:VisualElement>
             <ui:VisualElement name="SharedTexturesSubBlock" class="SubBlock InfoBlock_green" style="display: flex;">
                 <ui:VisualElement name="Textures" style="flex-direction: row; background-color: rgba(0, 255, 0, 0); padding-top: 2px; padding-bottom: 2px;">
                     <ui:Label text="Materials" style="-unity-font-style: normal;" />
                     <ui:VisualElement name="filler" style="flex-grow: 1;" />
-                    <ui:Label text="35mb" name="MaterialTexturesCount" />
+                    <ui:Label text="0mb" name="MaterialTexturesCount" />
                 </ui:VisualElement>
                 <ui:VisualElement name="Lightmap" style="flex-direction: row; background-color: rgba(0, 255, 0, 0); padding-top: 2px; padding-bottom: 2px;">
                     <ui:Label text="Lightmaps" style="-unity-font-style: normal;" />
                     <ui:VisualElement name="filler" style="flex-grow: 1;" />
-                    <ui:Label text="15mb" name="LightmapTexturesCount" />
+                    <ui:Label text="0mb" name="LightmapTexturesCount" />
                 </ui:VisualElement>
                 <ui:VisualElement name="GraphicTextures" style="flex-direction: row; background-color: rgba(0, 255, 0, 0); padding-top: 2px; padding-bottom: 2px;">
                     <ui:Label text="Sprites/UI" style="-unity-font-style: normal;" />
                     <ui:VisualElement name="filler" style="flex-grow: 1;" />
-                    <ui:Label text="35mb" name="GraphicTexturesCount" />
+                    <ui:Label text="0mb" name="GraphicTexturesCount" />
                 </ui:VisualElement>
                 <ui:VisualElement name="ReflectionProbes" style="flex-direction: row; background-color: rgba(0, 255, 0, 0); padding-top: 2px; padding-bottom: 2px;">
                     <ui:Label text="Reflection Probes" style="-unity-font-style: normal;" />
                     <ui:VisualElement name="filler" style="flex-grow: 1;" />
-                    <ui:Label text="15mb" name="ReflectionProbesCount" />
+                    <ui:Label text="0mb" name="ReflectionProbesCount" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
@@ -43,14 +43,14 @@
             <ui:VisualElement name="MaterialIcon" class="InfoBlock_green" style="width: 12px; height: 12px; background-image: url(&apos;project://database/Packages/io.spatial.unitysdk/Editor/Textures/Icons/icon_material.png?fileID=2800000&amp;guid=de534481d1e3b4e36b733ad47ce31052&amp;type=3#icon_material&apos;); margin-right: 2px;" />
             <ui:Label text="Unique Materials" style="-unity-font-style: bold;" />
             <ui:VisualElement name="filler" style="flex-grow: 1;" />
-            <ui:Label text="23" name="MaterialsCount" />
+            <ui:Label text="-" name="MaterialsCount" />
             <ui:Label text="/ 100" name="MaterialsMax" class="BlockOutOfTitle" />
         </ui:VisualElement>
         <ui:VisualElement name="Audio" class="InfoBlock InfoBlock_green" style="flex-direction: row; align-items: center;">
             <ui:VisualElement name="AudioIcon" class="InfoBlock_green" style="width: 12px; height: 12px; background-image: url(&apos;project://database/Packages/io.spatial.unitysdk/Editor/Textures/Icons/icon_audio.png?fileID=2800000&amp;guid=ce19931a203ed4a9090c11e21f064696&amp;type=3#icon_audio&apos;); margin-right: 2px;" />
             <ui:Label text="Audio Memory" style="-unity-font-style: bold;" />
             <ui:VisualElement name="filler" style="flex-grow: 1;" />
-            <ui:Label text="23" name="AudioCount" />
+            <ui:Label text="-" name="AudioCount" />
             <ui:Label text="/ 100" name="AudioMax" class="BlockOutOfTitle" />
         </ui:VisualElement>
         <ui:VisualElement name="NoLightmapsWarning" class="InfoBlock InfoBlock_yellow" style="flex-direction: column; flex-grow: 1; opacity: 1;">

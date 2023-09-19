@@ -17,7 +17,7 @@ namespace SpatialSys.UnitySDK.Editor
         private const string RED_BLOCK_CLASS = "InfoBlock_red";
 
         // Controls whether the panel or the docked button is visible.
-        bool ITransientOverlay.visible => ProjectConfig.activePackageConfig != null && ProjectConfig.activePackageConfig.isSpaceBasedPackage;
+        public bool visible => ProjectConfig.activePackageConfig != null && ProjectConfig.activePackageConfig.isSpaceBasedPackage;
 
         private VisualElement _verticesBlock;
         private Label _verticesCount;
@@ -55,15 +55,16 @@ namespace SpatialSys.UnitySDK.Editor
         private VisualElement _noLightprobesWarning;
         private VisualElement _highCollisionMeshWarning;
 
-        private double _lastRefreshTime = -1.0;
+        private double _lastUpdateTime = -1.0;
         private float _autoRefreshEvery = 30f;
         private bool _addedRefreshEvents = false;
+        private bool _updateOnNextAutoRefresh = false;
 
         public override VisualElement CreatePanelContent()
         {
             var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/io.spatial.unitysdk/Editor/Scripts/GUI/Overlays/SceneVitals/SceneVitals.uxml");
             VisualElement element = visualTree.Instantiate();
-            var root = new VisualElement() { name = "My Toolbar Root" };
+            var root = new VisualElement() { name = "Scene Vitals" };
             root.Add(element);
             InitializeElements(root);
             UpdatePerformanceStats();
@@ -71,21 +72,27 @@ namespace SpatialSys.UnitySDK.Editor
             // This function can get called multiple times (e.g. closing and opening a docked panel). We only need to subscribe once.
             if (!_addedRefreshEvents)
             {
-                // We refresh any time a scene is opened/saved, and periodically.
-                // I didnt want to do onDirty because I thought it would be too spammy.
-                EditorApplication.update += AutoRefreshTimer;
-                EditorSceneManager.sceneOpened += (scene, mode) => UpdatePerformanceStats();
-                EditorSceneManager.sceneSaved += (scene) => UpdatePerformanceStats();
                 _addedRefreshEvents = true;
+
+                EditorApplication.update += PerformAutoRefresh;
+                // Adding, deleting, toggling objects should trigger a refresh.
+                EditorApplication.hierarchyChanged += () => _updateOnNextAutoRefresh = true;
+                EditorSceneManager.activeSceneChanged += (prevActive, currActive) => UpdatePerformanceStats();
+                EditorSceneManager.activeSceneChangedInEditMode += (prevActive, currActive) => UpdatePerformanceStats();
+                EditorSceneManager.sceneSaved += (scene) => {
+                    if (scene == EditorSceneManager.GetActiveScene())
+                        UpdatePerformanceStats();
+                };
             }
 
             return root;
         }
 
-        private void AutoRefreshTimer()
+        private void PerformAutoRefresh()
         {
-            if (EditorApplication.timeSinceStartup - _lastRefreshTime > _autoRefreshEvery)
+            if (_updateOnNextAutoRefresh && EditorApplication.timeSinceStartup - _lastUpdateTime > _autoRefreshEvery)
             {
+                _updateOnNextAutoRefresh = false;
                 UpdatePerformanceStats();
             }
         }
@@ -128,11 +135,19 @@ namespace SpatialSys.UnitySDK.Editor
 
         private void UpdatePerformanceStats()
         {
-            _lastRefreshTime = EditorApplication.timeSinceStartup;
+            if (!visible)
+            {
+                // Update the UI immediately when the panel becomes visible.
+                _lastUpdateTime = -1.0;
+                _updateOnNextAutoRefresh = true;
+                return;
+            }
+
+            _lastUpdateTime = EditorApplication.timeSinceStartup;
             PerformanceResponse resp = SpatialPerformance.GetActiveScenePerformanceResponse();
 
             // Change the refresh frequency based on how long the request takes, since it can affect performance of large scenes and slow computers.
-            _autoRefreshEvery = Mathf.Clamp(resp.responseMiliseconds * 5f, 5f, 100f);
+            _autoRefreshEvery = Mathf.Clamp(resp.responseMilliseconds * 5f, 5f, 60f);
 
             SetBaseClass(_verticesBlock);
             SetBlockClassFromRatio(_verticesBlock, resp.vertPercent);

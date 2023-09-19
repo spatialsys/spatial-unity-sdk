@@ -15,6 +15,7 @@ namespace SpatialSys.UnitySDK
 
         public bool disableTeleport = false;
         public bool useSeatsAsSpawnPoints = false;
+        public bool enableAvatarToAvatarCollisions = false;
 
         [Space(5), Tooltip("Web Only")]
         public SpatialCameraRotationMode cameraRotationMode = SpatialCameraRotationMode.AutoRotate;
@@ -45,5 +46,9 @@ namespace SpatialSys.UnitySDK
 
         [HideInInspector, Tooltip("Maximum jump count that can be performed")]
         public int localAvatarMaxJumpCount = 2;
+
+        [HideInInspector, Tooltip("Contribution of how much ground friction to apply to the character. This should be a value from 0 to 1.")]
+        [Range(0, 1)]
+        public float localAvatarGroundFriction = 1;
     }
 }

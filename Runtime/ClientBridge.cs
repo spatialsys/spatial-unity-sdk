@@ -122,6 +122,12 @@ namespace SpatialSys.UnitySDK
         public delegate int GetLocalAvatarMaxJumpCountDelegate();
         public static GetLocalAvatarMaxJumpCountDelegate GetLocalAvatarMaxJumpCount;
 
+        public delegate void SetLocalAvatarGroundFrictionDelegate(float friction);
+        public static SetLocalAvatarGroundFrictionDelegate SetLocalAvatarGroundFriction;
+
+        public delegate float GetLocalAvatarGroundFrictionDelegate();
+        public static GetLocalAvatarGroundFrictionDelegate GetLocalAvatarGroundFriction;
+
         public delegate void TriggerJumpLocalAvatarDelegate();
         public static TriggerJumpLocalAvatarDelegate TriggerJumpLocalAvatar;
 
@@ -158,11 +164,16 @@ namespace SpatialSys.UnitySDK
         public delegate void SendToastDelegate(string message, float duration);
         public static SendToastDelegate SendToast;
 
-        public delegate void PlayLocalAvatarEmoteAnimationDelegate(string sku, bool immediately = false);
+        public delegate void PlayLocalAvatarEmoteAnimationDelegate(string sku, bool immediately = false, bool loop = false);
         public static PlayLocalAvatarEmoteAnimationDelegate PlayLocalAvatarEmoteAnimation;
+        public delegate void StopLocalAvatarEmoteAnimationDelegate();
+        public static StopLocalAvatarEmoteAnimationDelegate StopLocalAvatarEmoteAnimation;
 
         public delegate void SpawnPrefabObjectDelegate(string sku, Vector3 position, Quaternion rotation);
         public static SpawnPrefabObjectDelegate SpawnPrefabObject;
+
+        public delegate void EnableAvatarToAvatarCollisionsDelegate(bool enabled);
+        public static EnableAvatarToAvatarCollisionsDelegate EnableAvatarToAvatarCollisions;
 
         // Avatar Attachments
         public delegate void EquipAvatarAttachmentPackageDelegate(string sku, bool equip, Action<bool> callback);

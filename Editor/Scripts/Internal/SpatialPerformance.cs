@@ -57,7 +57,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         //how long it took to analyze the scene.
         //used in sceneVitals to auto adjust the refresh rate.
-        public float responseMiliseconds;
+        public long responseMilliseconds;
 
         public float vertPercent => (float)verts / MAX_SUGGESTED_VERTS;
         public float uniqueMaterialsPercent => (float)uniqueMaterials / MAX_SUGGESTED_UNIQUE_MATERIALS;
@@ -294,7 +294,7 @@ namespace SpatialSys.UnitySDK.Editor
             // Look for audio
             bytes = 0;
             List<AudioClip> audioClips = new();
-            foreach(string path in AssetDatabase.GetDependencies(scene.path, true))
+            foreach (string path in AssetDatabase.GetDependencies(scene.path, true))
             {
                 UnityEngine.Object obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
                 if (obj is AudioClip)
@@ -318,7 +318,7 @@ namespace SpatialSys.UnitySDK.Editor
             textureSizesMB.Sort((a, b) => b.Item2.CompareTo(a.Item2));
 
             timer.Stop();
-            response.responseMiliseconds = timer.ElapsedMilliseconds;
+            response.responseMilliseconds = timer.ElapsedMilliseconds;
 
             return response;
         }

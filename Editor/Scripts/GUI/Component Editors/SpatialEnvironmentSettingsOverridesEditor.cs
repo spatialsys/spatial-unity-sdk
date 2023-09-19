@@ -14,6 +14,7 @@ namespace SpatialSys.UnitySDK.Editor
         private SerializedProperty _localAvatarFallingGravityMultiplier;
         private SerializedProperty _localAvatarUseVariableHeightJump;
         private SerializedProperty _localAvatarMaxJumpCount;
+        private SerializedProperty _localAvatarGroundFriction;
 
         void OnEnable()
         {
@@ -25,6 +26,7 @@ namespace SpatialSys.UnitySDK.Editor
             _localAvatarFallingGravityMultiplier = _environmentSettings.FindPropertyRelative("localAvatarFallingGravityMultiplier");
             _localAvatarUseVariableHeightJump = _environmentSettings.FindPropertyRelative("localAvatarUseVariableHeightJump");
             _localAvatarMaxJumpCount = _environmentSettings.FindPropertyRelative("localAvatarMaxJumpCount");
+            _localAvatarGroundFriction = _environmentSettings.FindPropertyRelative("localAvatarGroundFriction");
         }
 
         public override void DrawFields()
@@ -43,6 +45,7 @@ namespace SpatialSys.UnitySDK.Editor
                 EditorGUILayout.PropertyField(_localAvatarFallingGravityMultiplier, new GUIContent("Falling Gravity Multiplier"));
                 EditorGUILayout.PropertyField(_localAvatarUseVariableHeightJump, new GUIContent("Use Variable Height Jump"));
                 EditorGUILayout.PropertyField(_localAvatarMaxJumpCount, new GUIContent("Maximum Jump Count"));
+                EditorGUILayout.PropertyField(_localAvatarGroundFriction, new GUIContent("Ground Friction"));
                 EditorGUI.indentLevel -= 2;
             }
         }
