@@ -155,7 +155,7 @@ namespace SpatialSys.UnitySDK.Editor
             _lastUploadProgress = -1f;
             _uploadStartTime = Time.realtimeSinceStartup;
             UpdateSandboxUploadProgressBar(0, 0, 0f);
-            return SpatialAPI.UploadSandboxBundle(packageConfig.sku, packageConfig.packageType)
+            return SpatialAPI.UploadSandboxBundle(packageConfig)
                 .Then(resp => {
                     byte[] bundleBytes = File.ReadAllBytes(bundlePath);
                     SpatialAPI.UploadFile(useSpatialHeaders: false, resp.url, bundleBytes, UpdateSandboxUploadProgressBar)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace SpatialSys.UnitySDK
@@ -503,5 +504,49 @@ namespace SpatialSys.UnitySDK
 
         public delegate void DumpDataStoreVariablesDelegate(DataStoreScope scope, Action<DataStoreOperationResult> callback);
         public static DumpDataStoreVariablesDelegate DumpDataStoreVariables;
+
+        // Server Instancing
+
+        public delegate int GetSpaceParticipantCountDelegate();
+        public static GetSpaceParticipantCountDelegate GetSpaceParticipantCount;
+
+        public delegate int GetServerParticipantCountDelegate();
+        public static GetServerParticipantCountDelegate GetServerParticipantCount;
+
+        public delegate int GetTotalServersCountDelegate();
+        public static GetTotalServersCountDelegate GetTotalServersCount;
+
+        public delegate bool GetServerOpenDelegate();
+        public static GetServerOpenDelegate GetServerOpen;
+
+        public delegate void SetServerOpenDelegate(bool isOpen);
+        public static SetServerOpenDelegate SetServerOpen;
+
+        public delegate bool GetServerVisibleDelegate();
+        public static GetServerVisibleDelegate GetServerVisible;
+
+        public delegate void SetServerVisibleDelegate(bool isVisible);
+        public static SetServerVisibleDelegate SetServerVisible;
+
+        public delegate int GetServerMaxParticipantsDelegate();
+        public static GetServerMaxParticipantsDelegate GetServerMaxParticipants;
+
+        public delegate void SetServerMaxParticipantsDelegate(int maxParticipants);
+        public static SetServerMaxParticipantsDelegate SetServerMaxParticipants;
+
+        public delegate AotDictionary GetServerPropertiesDelegate();
+        public static GetServerPropertiesDelegate GetServerProperties;
+
+        public delegate void SetServerPropertiesDelegate(AotDictionary serverProperties);
+        public static SetServerPropertiesDelegate SetServerProperties;
+
+        public delegate void TeleportToNewServerDelegate(int maxParticipants, bool isOpen, bool isVisible, AotDictionary serverProperties, AotList matchProperties);
+        public static TeleportToNewServerDelegate TeleportToNewServer;
+
+        public delegate void TeleportActorsToNewServerDelegate(AotList actorNumbers, int maxParticipants, bool isVisible, AotDictionary serverProperties, AotList matchProperties);
+        public static TeleportActorsToNewServerDelegate TeleportActorsToNewServer;
+
+        public delegate void TeleportToBestMatchServerDelegate(int maxParticipants, AotDictionary serverProperties, AotList serverPropertiesToMatch);
+        public static TeleportToBestMatchServerDelegate TeleportToBestMatchServer;
     }
 }

@@ -8,12 +8,18 @@ namespace SpatialSys.UnitySDK.Editor
     {
         private void OnPreprocessTexture()
         {
+            if (EditorPrefs.HasKey("DisableAssetProcessing") && EditorPrefs.GetBool("DisableAssetProcessing"))
+                return;
+
             AssetImportUtility.TextureImportProcess((TextureImporter)assetImporter, assetPath);
         }
 
         // Use OnPostprocessAudio instead of OnPreprocessAudio, because we can't know the length of the audio file in OnPreprocessAudio
         private void OnPostprocessAudio(AudioClip audio)
         {
+            if (EditorPrefs.HasKey("DisableAssetProcessing") && EditorPrefs.GetBool("DisableAssetProcessing"))
+                return;
+
             if (assetImporter.importSettingsMissing) // Skip if it's already imported and has settings
             {
                 AssetImportUtility.AudioImportProcess((AudioImporter)assetImporter, audio);
@@ -22,6 +28,9 @@ namespace SpatialSys.UnitySDK.Editor
 
         private void OnPreprocessModel()
         {
+            if (EditorPrefs.HasKey("DisableAssetProcessing") && EditorPrefs.GetBool("DisableAssetProcessing"))
+                return;
+
             if (assetImporter.importSettingsMissing) // Skip if it's already imported and has settings
             {
                 AssetImportUtility.ModelImportProcess((ModelImporter)assetImporter);

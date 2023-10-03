@@ -11,7 +11,7 @@
             <ui:Button text="Account" display-tooltip-when-elided="true" name="accountButton" class="tabButton tabButtonSelected" style="margin-left: 0;" />
             <ui:Button text="Config" display-tooltip-when-elided="true" name="configButton" class="tabButton" />
             <ui:Button text="Issues" display-tooltip-when-elided="true" name="issuesButton" class="tabButton" />
-            <ui:Button text="Utilities" display-tooltip-when-elided="true" name="utilitiesButton" class="tabButton" />
+            <ui:Button text="Utilities" display-tooltip-when-elided="true" name="utilitiesButton" class="tabButton" style="display: flex;" />
             <ui:Button text="Help" display-tooltip-when-elided="true" name="helpButton" class="tabButton" />
         </ui:VisualElement>
         <ui:ScrollView>
@@ -115,6 +115,12 @@
                     <ui:VisualElement name="spaceConfig" style="margin-top: 10px;">
                         <uie:PropertyField binding-path="scene" label="Scene" name="scene" />
                         <uie:PropertyField binding-path="thumbnail" label="Thumbnail" name="thumbnail" />
+                        <ui:Label text="Settings" display-tooltip-when-elided="true" name="settingsLabel" style="-unity-font-style: bold; margin-top: 15px; margin-bottom: 4px" />
+                        <ui:VisualElement name="settingsContainer" style="padding-left: 5px;">
+                            <uie:PropertyField binding-path="settings.serverInstancingEnabled" name="serverInstancingEnabled" />
+                            <uie:PropertyField binding-path="settings.serverCapacitySetting" name="serverCapacitySetting" style="flex-direction: column;" />
+                            <uie:PropertyField binding-path="settings.serverInstanceCapacity" name="serverInstanceCapacity" />
+                        </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="spaceTemplateConfig" style="margin-top: 10px;">
                         <uie:PropertyField binding-path="variants" label="Template Variants" name="variants" />
@@ -194,11 +200,12 @@
                 <ui:VisualElement name="OptimizationBlock" class="block_white block_base">
                     <ui:Label text="Optimization" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
                     <ui:Label text="By optimizing the compression settings of textures, models and audio assets, you can effectively decrease the loading time of rooms and minimize the risk of app crashes." display-tooltip-when-elided="true" name="Text" class="blockText" />
-                    <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: flex;">
+                    <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: flex; margin-bottom: 10px;">
                         <ui:Button text="Optimize Assets" display-tooltip-when-elided="true" name="optimizeAssets" class="blockButton" style="margin-right: 12px;" />
                         <ui:Button text="Optimize Assets (Folder)" display-tooltip-when-elided="true" name="optimizeAssetsFolder" class="blockButton" />
                         <ui:VisualElement name="Filler" style="flex-grow: 1;" />
                     </ui:VisualElement>
+                    <ui:Toggle label="Disable Asset Processing (Not Recommended)" value="false" tooltip="Spatial Creator Toolkit optimizes assets by applying import settings that you may not want. Enabling this checkbox will turn off the automatic processing." name="disableAssetProcessing" style="display: flex;" />
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="help" style="align-items: center; display: none;">

@@ -263,6 +263,10 @@ namespace SpatialSys.UnitySDK.Editor
             root.Query<Button>("optimizeAssetsFolder").First().clicked += () => {
                 AssetImportUtility.OptimizeAssetsInFolder();
             };
+            root.Query<Toggle>("disableAssetProcessing").First().value = EditorPrefs.GetBool("DisableAssetProcessing", false);
+            root.Query<Toggle>("disableAssetProcessing").First().RegisterValueChangedCallback(evt => {
+                EditorPrefs.SetBool("DisableAssetProcessing", evt.newValue);
+            });
 
             // Help
             root.Query<Button>("gotoDocumentation").First().clicked += () => Application.OpenURL(PackageManagerUtility.documentationUrl);
