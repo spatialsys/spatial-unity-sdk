@@ -399,6 +399,12 @@ namespace SpatialSys.UnitySDK
         public delegate void CreateFloatingTextDelegate(string text, FloatingTextAnimStyle style, Vector3 position, Vector3 force, Color color, bool gravity, AnimationCurve scaleCurve, AnimationCurve alphaCurve, float lifetime);
         public static CreateFloatingTextDelegate CreateFloatingText;
 
+        public delegate void MinimizeSystemUIDelegate();
+        public static MinimizeSystemUIDelegate MinimizeSystemUI;
+
+        public delegate void SetSystemGUIEnabledDelegate(SpatialSystemGUIType guiFlags, bool enabled);
+        public static SetSystemGUIEnabledDelegate SetSystemGUIEnabled;
+
         //Player Camera
         public delegate void SetPlayerCameraThirdPersonOffsetDelegate(Vector3 offset);
         public static SetPlayerCameraThirdPersonOffsetDelegate SetPlayerCameraThirdPersonOffset;
