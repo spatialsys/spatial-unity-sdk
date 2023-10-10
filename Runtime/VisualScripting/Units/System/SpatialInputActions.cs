@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -111,7 +112,45 @@ namespace SpatialSys.UnitySDK.VisualScripting
         }
     }
 
-    [UnitTitle("Spatial Input: Release Input Capture")]
+    [UnitTitle("Spatial Input: Start Custom Player Input Capture")]
+    [UnitSubtitle("Disables default Spatial player input\nIncluding camera control and mobile on-screen controls")]
+    [UnitSurtitle("Spatial Input")]
+    [UnitShortTitle("Start Custom Player Input Capture")]
+    [UnitCategory("Spatial\\System")]
+    [TypeIcon(typeof(InputIcon))]
+    public class StartCustomInputCapture : Unit
+    {
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlInput inputTrigger { get; private set; }
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlOutput outputTrigger { get; private set; }
+
+        protected override void Definition()
+        {
+            inputTrigger = ControlInput(nameof(inputTrigger), (f) =>
+            {
+                ClientBridge.StartCompleteCustomInputCapture.Invoke(
+                    f.stack.self
+                );
+                return outputTrigger;
+            });
+
+            outputTrigger = ControlOutput(nameof(outputTrigger));
+
+            Succession(inputTrigger, outputTrigger);
+        }
+
+        public override void Uninstantiate(GraphReference instance)
+        {
+            base.Uninstantiate(instance);
+            if (instance?.gameObject != null)
+                ClientBridge.OnInputGraphRootObjectDestroyed?.Invoke(instance.gameObject);
+        }
+    }
+
+    [UnitTitle("Spatial Input: Release Input Capturer")]
     [UnitSurtitle("Spatial Input")]
     [UnitShortTitle("Release Input Capture")]
     [UnitCategory("Spatial\\System")]

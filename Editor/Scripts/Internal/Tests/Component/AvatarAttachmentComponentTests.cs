@@ -113,7 +113,7 @@ namespace SpatialSys.UnitySDK.Editor
             // Avatar animation overrides ------------------------------------------------------------------------------
             // If override is on, but no animation is actually set, turn off the override
             if (attachment.overrideAvatarAnimations
-                && attachment.avatarAnimSettings.AllSettings().All(s => s.Item2.overrideClip == null && s.Item2.overrideClipMale == null))
+                && attachment.avatarAnimSettings.AllSettings().All(s => s.Item3.overrideClip == null && s.Item3.overrideClipMale == null))
             {
                 attachment.overrideAvatarAnimations = false;
             }
@@ -124,8 +124,17 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 foreach (var setting in attachment.avatarAnimSettings.AllSettings())
                 {
-                    setting.Item2.overrideClip = null;
-                    setting.Item2.overrideClipMale = null;
+                    setting.Item3.overrideClip = null;
+                    setting.Item3.overrideClipMale = null;
+                }
+            }
+            else
+            {
+                // If the attachment is hidden for a specific animation, also ensure IK is disabled for that animation
+                foreach (var setting in attachment.avatarAnimSettings.AllSettings())
+                {
+                    if (!setting.Item3.attachmentVisible && !setting.Item3.disableIK)
+                        setting.Item3.disableIK = true;
                 }
             }
 
@@ -312,8 +321,23 @@ namespace SpatialSys.UnitySDK.Editor
 
                 if (numIKTargetsSet == 0)
                 {
-                    message = "At least on IK target must be set when IK targets are enabled";
+                    message = "At least one IK target must be set when IK targets are enabled";
                     return false;
+                }
+
+                // If the attachment is a child of a bone and that bone targets the attachment through IK, this will create a cyclic dependency and cause unintended behaviour
+                if (attachment.attachToBone)
+                {
+                    HumanBodyBones boneTarget = attachment.attachBoneTarget;
+                    if ((attachment.ikLeftHandTarget != null && attachment.primarySlot == SpatialAvatarAttachment.Slot.LeftHand) ||
+                        (attachment.ikRightHandTarget != null && attachment.primarySlot == SpatialAvatarAttachment.Slot.RightHand) ||
+                        (attachment.ikLeftFootTarget != null && (boneTarget == HumanBodyBones.LeftFoot || boneTarget == HumanBodyBones.LeftLowerLeg || boneTarget == HumanBodyBones.LeftUpperLeg)) ||
+                        (attachment.ikRightFootTarget != null && (boneTarget == HumanBodyBones.RightFoot || boneTarget == HumanBodyBones.RightLowerLeg || boneTarget == HumanBodyBones.RightUpperLeg))
+                    )
+                    {
+                        message = "When attach to bone is enabled, IK targets for that limb cannot be set";
+                        return false;
+                    }
                 }
             }
 
@@ -359,7 +383,7 @@ namespace SpatialSys.UnitySDK.Editor
             if (attachment.overrideAvatarAnimations)
             {
                 // At least one clip should be set
-                if (attachment.avatarAnimSettings.AllSettings().All(s => s.Item2.overrideClip == null))
+                if (attachment.avatarAnimSettings.AllSettings().All(s => s.Item3.overrideClip == null))
                 {
                     message = "There are no avatar animation override clips set yet";
                     return false;

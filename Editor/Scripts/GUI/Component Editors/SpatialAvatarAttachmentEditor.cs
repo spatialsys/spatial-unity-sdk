@@ -146,7 +146,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             // IK Settings
             GUILayout.Space(SECTION_SPACING);
-            EditorGUILayout.LabelField(new GUIContent("IK Settings (Coming Soon)", "Optionally set IK targets"), EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(new GUIContent("IK Settings", "Optionally set IK targets"), EditorStyles.boldLabel);
             GUI.enabled = attachment.ikFeatureAvailable;
             if (!attachment.ikFeatureAvailable)
             {
@@ -204,7 +204,7 @@ namespace SpatialSys.UnitySDK.Editor
             EditorGUI.indentLevel++;
             {
                 foreach (var setting in attachment.avatarAnimSettings.AllSettings())
-                    DrawAvatarAnimConfiguration(attachment, setting.Item2, _avatarAnimSettingsProp.FindPropertyRelative(setting.Item1));
+                    DrawAvatarAnimConfiguration(attachment, setting.Item3, _avatarAnimSettingsProp.FindPropertyRelative(setting.Item1));
             }
             EditorGUI.indentLevel--;
             if (attachment.customActionsEnabled && attachment.customActionsFeatureAvailable && attachment.customActionsCount > 0)
@@ -312,7 +312,7 @@ namespace SpatialSys.UnitySDK.Editor
 
                 EditorGUILayout.PropertyField(configProp.FindPropertyRelative(nameof(AttachmentAvatarAnimConfig.attachmentVisible)));
 
-                if (attachment.ikFeatureAvailable)
+                if (attachment.ikTargetsEnabled)
                     EditorGUILayout.PropertyField(configProp.FindPropertyRelative(nameof(AttachmentAvatarAnimConfig.disableIK)));
 
                 EditorGUI.indentLevel--;

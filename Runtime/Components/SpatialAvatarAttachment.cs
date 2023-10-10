@@ -65,7 +65,7 @@ namespace SpatialSys.UnitySDK
         public override string tooltip => "This component is used to define an object that can be attached or equipped by an avatar";
         public override string documentationURL => "https://docs.spatial.io/avatar-attachment";
 
-        private const int LATEST_VERSION = 1;
+        private const int LATEST_VERSION = 2;
         [HideInInspector]
         public int version = 0;
 
@@ -113,7 +113,7 @@ namespace SpatialSys.UnitySDK
         public SlotMask occupiedSlots => primarySlot.ToSlotMask() | additionalSlots;
         public bool skinningFeatureAvailable => true;
         public bool attachToBoneFeatureAvailable => !isSkinnedToHumanoidSkeleton;
-        public bool ikFeatureAvailable => false; //primarySlot != Slot.Aura && !isSkinnedToHumanoidSkeleton; // TODO: when IK feature is implemented uncomment this
+        public bool ikFeatureAvailable => primarySlot != Slot.Aura && !isSkinnedToHumanoidSkeleton;
         public bool customActionsFeatureAvailable => false; //primarySlot != Slot.Aura; // TODO: when custom actions feature is implemented uncomment this
         public bool ikFeatureActive
         {
@@ -170,6 +170,22 @@ namespace SpatialSys.UnitySDK
                 avatarAnimSettings.emote.disableIK = true;
 
                 version = 1;
+            }
+
+            if (version == 1)
+            {
+                // Default animation configs for climbing animations
+                avatarAnimSettings.climbIdle = new AttachmentAvatarAnimConfig();
+                avatarAnimSettings.climbIdle.attachmentVisible = false;
+                avatarAnimSettings.climbIdle.disableIK = true;
+                avatarAnimSettings.climbUp = new AttachmentAvatarAnimConfig();
+                avatarAnimSettings.climbUp.attachmentVisible = false;
+                avatarAnimSettings.climbUp.disableIK = true;
+                avatarAnimSettings.climbEndTop = new AttachmentAvatarAnimConfig();
+                avatarAnimSettings.climbEndTop.attachmentVisible = false;
+                avatarAnimSettings.climbEndTop.disableIK = true;
+
+                version = 2;
             }
 
             // Add future upgrade paths here
@@ -229,36 +245,54 @@ namespace SpatialSys.UnitySDK
         [Tooltip("Some attachments may give the user additional abilities, such as a Sword attachment has an 'Attack' action. This is where you can specify the animation that the avatar should play for that action.")]
         public AttachmentAvatarAnimConfig[] customActions;
 
+        private Dictionary<AvatarAnimationClipType, AttachmentAvatarAnimConfig> _lookup;
+        public IReadOnlyDictionary<AvatarAnimationClipType, AttachmentAvatarAnimConfig> lookup => _lookup;
+
+        public void Init()
+        {
+            _lookup = new Dictionary<AvatarAnimationClipType, AttachmentAvatarAnimConfig>();
+            foreach (var (propName, type, clipConfig) in AllSettings())
+            {
+                if (clipConfig == null) // backwards compatibility in case new settings are added
+                    continue;
+
+                _lookup[type] = clipConfig;
+                clipConfig.clipType = type;
+            }
+        }
+
         /// <summary>
         /// Enumerate over all settings excluding custom actions
         /// </summary>
         /// <returns>IEnumerable<(serializedPropertyName, config)></returns>
-        public IEnumerable<(string, AttachmentAvatarAnimConfig)> AllSettings()
+        public IEnumerable<(string, AvatarAnimationClipType, AttachmentAvatarAnimConfig)> AllSettings()
         {
-            yield return (nameof(idle), idle);
-            yield return (nameof(walk), walk);
-            yield return (nameof(jog), jog);
-            yield return (nameof(run), run);
-            yield return (nameof(jumpStartIdle), jumpStartIdle);
-            yield return (nameof(jumpStartMoving), jumpStartMoving);
-            yield return (nameof(jumpInAir), jumpInAir);
-            yield return (nameof(jumpLandStanding), jumpLandStanding);
-            yield return (nameof(jumpLandWalking), jumpLandWalking);
-            yield return (nameof(jumpLandRunning), jumpLandRunning);
-            yield return (nameof(jumpLandHigh), jumpLandHigh);
-            yield return (nameof(jumpMultiple), jumpMultiple);
-            yield return (nameof(fall), fall);
-            yield return (nameof(sit), sit);
-            yield return (nameof(emote), emote);
-            yield return (nameof(climbIdle), climbIdle);
-            yield return (nameof(climbUp), climbUp);
-            yield return (nameof(climbEndTop), climbEndTop);
+            yield return (nameof(idle), AvatarAnimationClipType.Idle, idle);
+            yield return (nameof(walk), AvatarAnimationClipType.Walk, walk);
+            yield return (nameof(jog), AvatarAnimationClipType.Jog, jog);
+            yield return (nameof(run), AvatarAnimationClipType.Run, run);
+            yield return (nameof(jumpStartIdle), AvatarAnimationClipType.JumpStartIdle, jumpStartIdle);
+            yield return (nameof(jumpStartMoving), AvatarAnimationClipType.JumpStartMoving, jumpStartMoving);
+            yield return (nameof(jumpInAir), AvatarAnimationClipType.JumpInAir, jumpInAir);
+            yield return (nameof(jumpLandStanding), AvatarAnimationClipType.JumpLandStanding, jumpLandStanding);
+            yield return (nameof(jumpLandWalking), AvatarAnimationClipType.JumpLandWalking, jumpLandWalking);
+            yield return (nameof(jumpLandRunning), AvatarAnimationClipType.JumpLandRunning, jumpLandRunning);
+            yield return (nameof(jumpLandHigh), AvatarAnimationClipType.JumpLandHigh, jumpLandHigh);
+            yield return (nameof(jumpMultiple), AvatarAnimationClipType.JumpMultiple, jumpMultiple);
+            yield return (nameof(fall), AvatarAnimationClipType.Fall, fall);
+            yield return (nameof(sit), AvatarAnimationClipType.Sit, sit);
+            yield return (nameof(emote), AvatarAnimationClipType.Emote, emote);
+            yield return (nameof(climbIdle), AvatarAnimationClipType.ClimbIdle, climbIdle);
+            yield return (nameof(climbUp), AvatarAnimationClipType.ClimbUp, climbUp);
+            yield return (nameof(climbEndTop), AvatarAnimationClipType.ClimbEndTop, climbEndTop);
         }
     }
 
     [System.Serializable]
     public class AttachmentAvatarAnimConfig
     {
+        public AvatarAnimationClipType clipType { get; set; }
+
         [Tooltip("Optional animation clip to override the avatar's animation with. For example, running with a gun equipped should look different.")]
         public AnimationClip overrideClip;
         [Tooltip("Optional animation clip override specifically for male avatars.")]

@@ -309,6 +309,9 @@ namespace SpatialSys.UnitySDK
         public delegate void StartVehicleInputCaptureDelegate(VehicleInputFlags flags, Sprite primaryButtonSprite, Sprite secondaryButtonSprite, GameObject target);
         public static StartVehicleInputCaptureDelegate StartVehicleInputCapture;
 
+        public delegate void StartCompleteCustomInputCaptureDelegate(GameObject target);
+        public static StartCompleteCustomInputCaptureDelegate StartCompleteCustomInputCapture;
+
         public delegate void ReleaseInputCaptureDelegate(GameObject target);
         public static ReleaseInputCaptureDelegate ReleaseInputCapture;
 

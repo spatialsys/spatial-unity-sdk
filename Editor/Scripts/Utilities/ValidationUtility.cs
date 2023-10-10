@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Profiling;
 using UnityEditor;
 using UnityEditor.SceneManagement;
+using System.Reflection;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -70,7 +71,7 @@ namespace SpatialSys.UnitySDK.Editor
         /// <summary>
         /// Standardize bone orientations.
         /// </summary>
-        public static void EnforceValidBoneOrientations(SpatialPackageAsset packagePrefab)
+        public static void ProcessPackagePrefab(SpatialPackageAsset packagePrefab)
         {
             // Create folder next to the prefab to store newly generated package resources
             string prefabPath = AssetDatabase.GetAssetPath(packagePrefab);
@@ -82,9 +83,25 @@ namespace SpatialSys.UnitySDK.Editor
             // Create new preview scene to use animations without affecting any other open scenes
             Scene previewScene = EditorSceneManager.NewPreviewScene();
             SpatialPackageAsset packageInstance = (SpatialPackageAsset)PrefabUtility.InstantiatePrefab(packagePrefab, previewScene);
-            GameObject packageObj = packageInstance.gameObject;
-            SkinnedMeshRenderer[] renderers = packageObj.GetComponentsInChildren<SkinnedMeshRenderer>();
-            Animator animator = packageObj.GetComponent<Animator>();
+
+            // Makes a copy of the animation clip and saves it to the generated assets folder
+            UniquefyAllAvatarAnimationClips(generatedAssetsDirPath, packageInstance.gameObject);
+
+            // Enforce valid bone orientations
+            if (packagePrefab is SpatialAvatar || (packagePrefab is SpatialAvatarAttachment attachment && attachment.isSkinnedToHumanoidSkeleton))
+                EnforceValidBoneOrientations(generatedAssetsDirPath, packageInstance.gameObject);
+
+            // Save processed prefab
+            UnityEditor.EditorUtility.SetDirty(packageInstance);
+            PrefabUtility.ApplyPrefabInstance(packageInstance.gameObject, InteractionMode.AutomatedAction);
+            EditorSceneManager.ClosePreviewScene(previewScene);
+        }
+
+        private static void EnforceValidBoneOrientations(string generatedAssetsDirPath, GameObject packagePrefabObj)
+        {
+            // Only continue if avatar or skinned attachment
+            SkinnedMeshRenderer[] renderers = packagePrefabObj.GetComponentsInChildren<SkinnedMeshRenderer>();
+            Animator animator = packagePrefabObj.GetComponent<Animator>();
 
             // Force into T-pose through animation
             // Since avatars can be in different default poses, we need to force it into a generic T-pose to correctly 
@@ -169,8 +186,8 @@ namespace SpatialSys.UnitySDK.Editor
 
             // Create avatar with new skeleton
             HumanDescription description = animator.avatar.humanDescription;
-            description.skeleton = CreateSkeleton(packageObj);
-            Avatar avatar = AvatarBuilder.BuildHumanAvatar(packageObj, description);
+            description.skeleton = CreateSkeleton(packagePrefabObj);
+            Avatar avatar = AvatarBuilder.BuildHumanAvatar(packagePrefabObj, description);
             avatar.name = animator.avatar.name;
 
             if (!avatar.isValid || !avatar.isHuman)
@@ -189,10 +206,62 @@ namespace SpatialSys.UnitySDK.Editor
                 if (renderer.rootBone != null)
                     renderer.localBounds = InverseTransformBounds(renderer.rootBone, bounds);
             }
+        }
 
-            // Save processed prefab
-            PrefabUtility.ApplyPrefabInstance(packageObj, InteractionMode.AutomatedAction);
-            EditorSceneManager.ClosePreviewScene(previewScene);
+        /// <summary>
+        /// All avatar animations need to be unique. Due to unity editor animator limitations, we need to identify
+        /// "Animation Clip Type" by the animation clip, and if both "run" and "walk" animations are the same, we cannot
+        /// differentiate them in the animator.
+        /// </summary>
+        private static void UniquefyAllAvatarAnimationClips(string generatedAssetsDirPath, GameObject packagePrefabObj)
+        {
+            AnimationClip CreateAnimClipCopy(AvatarAnimationClipType clipType, AnimationClip original)
+            {
+                AnimationClip duplicatedClip = new AnimationClip();
+                UnityEditor.EditorUtility.CopySerialized(original, duplicatedClip);
+                duplicatedClip.name = $"{original.name}_copy_{clipType}";
+
+                string path = Path.Combine(generatedAssetsDirPath, duplicatedClip.name + ".anim");
+                AssetDatabase.CreateAsset(duplicatedClip, path);
+                return AssetDatabase.LoadAssetAtPath<AnimationClip>(path);
+            }
+
+            HashSet<AnimationClip> uniqueClips = new();
+            if (packagePrefabObj.TryGetComponent(out SpatialAvatar avatarComponent))
+            {
+                FieldInfo[] animClipFields = typeof(SpatialAvatar).GetFields(BindingFlags.Public | BindingFlags.Instance).Where(f => f.FieldType == typeof(AnimationClip)).ToArray();
+                foreach (FieldInfo field in animClipFields)
+                {
+                    AnimationClip clip = (AnimationClip)field.GetValue(avatarComponent);
+                    if (clip != null && !uniqueClips.Add(clip))
+                    {
+                        AnimationClip duplicatedClip = CreateAnimClipCopy((AvatarAnimationClipType)field.GetValue(avatarComponent), clip);
+                        field.SetValue(avatarComponent, duplicatedClip);
+                    }
+                }
+            }
+            else if (packagePrefabObj.TryGetComponent(out SpatialAvatarAttachment avatarAttachment))
+            {
+                avatarAttachment.avatarAnimSettings.Init();
+
+                FieldInfo[] animConfigs = typeof(SpatialAttachmentAvatarAnimSettings).GetFields(BindingFlags.Public | BindingFlags.Instance).Where(f => f.FieldType == typeof(AttachmentAvatarAnimConfig)).ToArray();
+                foreach (FieldInfo animConfigField in animConfigs)
+                {
+                    AttachmentAvatarAnimConfig animConfig = (AttachmentAvatarAnimConfig)animConfigField.GetValue(avatarAttachment.avatarAnimSettings);
+                    AnimationClip clip = animConfig.overrideClip;
+                    if (clip != null && !uniqueClips.Add(clip))
+                    {
+                        AnimationClip duplicatedClip = CreateAnimClipCopy(animConfig.clipType, clip);
+                        animConfig.overrideClip = duplicatedClip;
+                    }
+                    clip = animConfig.overrideClipMale;
+                    if (clip != null && !uniqueClips.Add(clip))
+                    {
+                        AnimationClip duplicatedClip = CreateAnimClipCopy(animConfig.clipType, clip);
+                        animConfig.overrideClipMale = duplicatedClip;
+                    }
+                }
+            }
         }
 
         private static SkeletonBone[] CreateSkeleton(GameObject avatarRoot)
