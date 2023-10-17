@@ -129,6 +129,12 @@ namespace SpatialSys.UnitySDK
         public delegate float GetLocalAvatarGroundFrictionDelegate();
         public static GetLocalAvatarGroundFrictionDelegate GetLocalAvatarGroundFriction;
 
+        public delegate void SetLocalAvatarAirControlDelegate(float airControl);
+        public static SetLocalAvatarAirControlDelegate SetLocalAvatarAirControl;
+
+        public delegate float GetLocalAvatarAirControlDelegate();
+        public static GetLocalAvatarAirControlDelegate GetLocalAvatarAirControl;
+
         public delegate void TriggerJumpLocalAvatarDelegate();
         public static TriggerJumpLocalAvatarDelegate TriggerJumpLocalAvatar;
 

@@ -15,6 +15,7 @@ namespace SpatialSys.UnitySDK.Editor
         private SerializedProperty _localAvatarUseVariableHeightJump;
         private SerializedProperty _localAvatarMaxJumpCount;
         private SerializedProperty _localAvatarGroundFriction;
+        private SerializedProperty _localAvatarAirControl;
 
         void OnEnable()
         {
@@ -27,6 +28,7 @@ namespace SpatialSys.UnitySDK.Editor
             _localAvatarUseVariableHeightJump = _environmentSettings.FindPropertyRelative("localAvatarUseVariableHeightJump");
             _localAvatarMaxJumpCount = _environmentSettings.FindPropertyRelative("localAvatarMaxJumpCount");
             _localAvatarGroundFriction = _environmentSettings.FindPropertyRelative("localAvatarGroundFriction");
+            _localAvatarAirControl = _environmentSettings.FindPropertyRelative("localAvatarAirControl");
         }
 
         public override void DrawFields()
@@ -46,6 +48,7 @@ namespace SpatialSys.UnitySDK.Editor
                 EditorGUILayout.PropertyField(_localAvatarUseVariableHeightJump, new GUIContent("Use Variable Height Jump"));
                 EditorGUILayout.PropertyField(_localAvatarMaxJumpCount, new GUIContent("Maximum Jump Count"));
                 EditorGUILayout.PropertyField(_localAvatarGroundFriction, new GUIContent("Ground Friction"));
+                EditorGUILayout.PropertyField(_localAvatarAirControl, new GUIContent("Air Control"));
                 EditorGUI.indentLevel -= 2;
             }
         }

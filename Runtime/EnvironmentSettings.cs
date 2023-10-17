@@ -47,8 +47,11 @@ namespace SpatialSys.UnitySDK
         [HideInInspector, Tooltip("Maximum jump count that can be performed")]
         public int localAvatarMaxJumpCount = 2;
 
-        [HideInInspector, Tooltip("Contribution of how much ground friction to apply to the character. This should be a value from 0 to 1.")]
+        [HideInInspector, Tooltip("Contribution of how much ground friction to apply to the character. A higher value will give the avatar more GRIP resulting in higher acceleration. This does not affect max speed.")]
         [Range(0, 1)]
         public float localAvatarGroundFriction = 1;
+        [HideInInspector, Tooltip("How much control the player has over the character while in the air.")]
+        [Range(0, 1)]
+        public float localAvatarAirControl = 1f;
     }
 }
