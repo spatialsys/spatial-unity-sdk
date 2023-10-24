@@ -10,7 +10,8 @@ namespace SpatialSys.UnitySDK.Editor
         public void OnSceneGUI()
         {
             var t = target as SpatialInteractable;
-            SpatialHandles.RadiusHandle(t.transform.position, ref t.radius);
+            SpatialHandles.RadiusHandle(t.transform.position, ref t.interactiveRadius);
+            SpatialHandles.RadiusHandle(t.transform.position, ref t.visibilityRadius);
         }
     }
 }

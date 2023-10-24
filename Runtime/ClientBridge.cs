@@ -14,6 +14,12 @@ namespace SpatialSys.UnitySDK
         public delegate List<int> GetActorsDelegate();
         public static GetActorsDelegate GetActors;
 
+        public delegate string GetLocalActorUserIDDelegate();
+        public static GetLocalActorUserIDDelegate GetLocalActorUserID;
+
+        public delegate string GetActorUserIDDelegate(int actorNumber);
+        public static GetActorUserIDDelegate GetActorUserID;
+
         public delegate bool GetAvatarExistsDelegate(int actorNumber);
         public static GetAvatarExistsDelegate GetAvatarExists;
 

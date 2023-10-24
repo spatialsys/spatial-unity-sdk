@@ -44,14 +44,14 @@ namespace SpatialSys.UnitySDK.Editor
         private Button _publishPackageButton;
 
         // Issue Tab Elements
-        private const string _issuesContainerTemplatePath = "Packages/io.spatial.unitysdk/Editor/Scripts/GUI/ConfigWindow/IssueElement/SpatialValidatorIssueElement.uxml";
+        private const string _issuesContainerTemplatePath = "Editor/Scripts/GUI/ConfigWindow/IssueElement/SpatialValidatorIssueElement.uxml";
         private VisualTreeAsset issueContainerTemplate
         {
             get
             {
                 if (_issueContainerTemplate == null)
                 {
-                    _issueContainerTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(_issuesContainerTemplatePath);
+                    _issueContainerTemplate = EditorUtility.LoadAssetFromPackagePath<VisualTreeAsset>(_issuesContainerTemplatePath);
                     if (_issueContainerTemplate == null)
                     {
                         Debug.LogError("Issue Template could not be found. Your Spatial SDK installation may be corrupted.");
@@ -143,12 +143,12 @@ namespace SpatialSys.UnitySDK.Editor
             VisualElement root = rootVisualElement;
 
             // Import UXML
-            var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/io.spatial.unitysdk/Editor/Scripts/GUI/ConfigWindow/SpatialSDKConfigWindow.uxml");
-            _issueContainerTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(_issuesContainerTemplatePath);
+            var visualTree = EditorUtility.LoadAssetFromPackagePath<VisualTreeAsset>("Editor/Scripts/GUI/ConfigWindow/SpatialSDKConfigWindow.uxml");
+            _issueContainerTemplate = EditorUtility.LoadAssetFromPackagePath<VisualTreeAsset>(_issuesContainerTemplatePath);
             VisualElement element = visualTree.Instantiate();
             if (!EditorGUIUtility.isProSkin)
             {
-                element.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>("Packages/io.spatial.unitysdk/Editor/Scripts/GUI/ConfigWindow/SpatialSDKConfigWindowStyles_LightModeOverride.uss"));
+                element.styleSheets.Add(EditorUtility.LoadAssetFromPackagePath<StyleSheet>("Editor/Scripts/GUI/ConfigWindow/SpatialSDKConfigWindowStyles_LightModeOverride.uss"));
             }
             root.Add(element);
 
@@ -493,7 +493,7 @@ namespace SpatialSys.UnitySDK.Editor
                 VisualElement element = issueContainerTemplate.Instantiate();
                 if (!EditorGUIUtility.isProSkin)
                 {
-                    element.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>("Packages/io.spatial.unitysdk/Editor/Scripts/GUI/ConfigWindow/SpatialValidatorWindow_LightModeOverride.uss"));
+                    element.styleSheets.Add(EditorUtility.LoadAssetFromPackagePath<StyleSheet>("Editor/Scripts/GUI/ConfigWindow/SpatialValidatorWindow_LightModeOverride.uss"));
                 }
                 // It's important to note that when this tree is instantiated it has an extra "root" element that we can't really see inside the UI-builder.
                 // So below, "issueContainer" != element, it's a child of this extra root element... 

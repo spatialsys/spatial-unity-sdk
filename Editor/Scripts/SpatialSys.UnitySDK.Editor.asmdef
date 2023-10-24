@@ -15,6 +15,7 @@
         "Unity.VisualScripting.Flow.Editor",
         "Unity.VisualScripting.Core.Editor",
         "Unity.VisualScripting.Core",
+        "Unity.EditorCoroutines.Editor",
         "Unity.TextMeshPro",
         "SpatialSys.UnitySDK.VisualScripting"
     ],

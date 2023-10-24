@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace SpatialSys.UnitySDK
 {
@@ -30,7 +31,9 @@ namespace SpatialSys.UnitySDK
         public IconType iconType;
         [HideInInspector]
         public Sprite icon;
-        public float radius = 5f;
+        [FormerlySerializedAs("radius")]
+        public float interactiveRadius = 5f;
+        public float visibilityRadius = 10f;
 
         public SpatialEvent onInteractEvent;
         public SpatialEvent onEnterEvent;
@@ -40,5 +43,14 @@ namespace SpatialSys.UnitySDK
         {
             ClientBridge.InitializeSpatialInteractable?.Invoke(this);
         }
+#if UNITY_EDITOR
+        protected override void OnValidate()
+        {
+            base.OnValidate();
+
+            if (visibilityRadius < interactiveRadius)
+                visibilityRadius = interactiveRadius;
+        }
+#endif
     }
 }

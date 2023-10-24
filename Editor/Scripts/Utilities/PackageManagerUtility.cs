@@ -10,9 +10,10 @@ namespace SpatialSys.UnitySDK.Editor
     [InitializeOnLoad]
     public static class PackageManagerUtility
     {
-        private const string UNITY_SDK_PACKAGE_NAME = "io.spatial.unitysdk";
+        public const string PACKAGE_NAME = "io.spatial.unitysdk";
+        public const string PACKAGE_DIRECTORY_PATH = "Packages/" + PACKAGE_NAME;
 
-        public static PackageInfo localPackageInfo => PackageInfo.FindForAssetPath($"Packages/{UNITY_SDK_PACKAGE_NAME}");
+        public static PackageInfo localPackageInfo => PackageInfo.FindForAssetPath(PACKAGE_DIRECTORY_PATH);
         public static bool isOfficialVersion => localPackageInfo.source == PackageSource.Registry;
         public static string currentVersion => localPackageInfo?.version;
         public static string latestVersion => localPackageInfo?.versions.latest;
@@ -36,7 +37,7 @@ namespace SpatialSys.UnitySDK.Editor
                 return _updateCheckPromise;
 
             _updateCheckPromise = new Promise<bool>();
-            _searchRequest = Client.Search(UNITY_SDK_PACKAGE_NAME);
+            _searchRequest = Client.Search(PACKAGE_NAME);
             EditorApplication.update += HandleSearchRequestCompletion;
             return _updateCheckPromise;
         }
@@ -58,7 +59,7 @@ namespace SpatialSys.UnitySDK.Editor
                     }
                     else
                     {
-                        _updateCheckPromise.Reject(new System.Exception($"{nameof(PackageManagerUtility)}: {UNITY_SDK_PACKAGE_NAME} not found"));
+                        _updateCheckPromise.Reject(new System.Exception($"{nameof(PackageManagerUtility)}: {PACKAGE_NAME} not found"));
                     }
                 }
                 else
@@ -90,7 +91,7 @@ namespace SpatialSys.UnitySDK.Editor
                     if (updateAvailable)
                     {
                         // Upgrade to latest version
-                        _updateRequest = Client.Add($"{UNITY_SDK_PACKAGE_NAME}@{_fetchedPackageInfo.versions.latest}");
+                        _updateRequest = Client.Add($"{PACKAGE_NAME}@{_fetchedPackageInfo.versions.latest}");
                         EditorApplication.update += HandleUpdateRequestCompletion;
                     }
                     else

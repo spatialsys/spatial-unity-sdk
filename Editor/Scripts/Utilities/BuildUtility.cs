@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,14 +10,15 @@ using UnityEditor.Build.Pipeline;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Build.Pipeline;
+using Unity.EditorCoroutines.Editor;
 
 namespace SpatialSys.UnitySDK.Editor
 {
     public static class BuildUtility
     {
         private const string SAVED_PROJECT_SETTINGS_ASSET_PATH = "Assets/Spatial/SavedProjectSettings.asset";
-        public static string BUILD_DIR = "Exports";
-        public static string PACKAGE_EXPORT_PATH = Path.Combine(BUILD_DIR, "spaces.unitypackage");
+        public const string BUILD_DIR = "Exports";
+        public static readonly string PACKAGE_EXPORT_PATH = Path.Combine(BUILD_DIR, "spaces.unitypackage");
         public static readonly string[] INVALID_BUNDLE_NAME_CHARS = new string[] { " ", "_", ".", ",", "(", ")", "[", "]", "{", "}", "!", "@", "#", "$", "%", "^", "&", "*", "+", "=", "|", "\\", "/", "?", "<", ">", "`", "~", "'", "\"", ":", ";", "\n", "\t" };
         public static int MAX_SANDBOX_BUNDLE_SIZE = 1000 * 1024 * 1024; // 1 GB; It's higher than the package size limit because we want to allow people to mess around more in the sandbox
         public static int MAX_PACKAGE_SIZE = 500 * 1024 * 1024; // 500 MB
@@ -109,22 +111,23 @@ namespace SpatialSys.UnitySDK.Editor
                     if (bundleManifest == null)
                         return Promise.Rejected(new System.Exception("Asset bundle build failed"));
 
-                    bool openBrowser = target == BuildTarget.WebGL;
-
-                    if (ProjectConfig.activePackageConfig is SpaceTemplateConfig spaceTemplateConfig)
-                    {
-                        // Get the variant config for the current scene
-                        SceneAsset currentSceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
-                        SpaceTemplateConfig.Variant spaceTemplateVariant = spaceTemplateConfig.variants.FirstOrDefault(v => v.scene == currentSceneAsset);
-                        if (spaceTemplateVariant == null)
-                            return Promise.Rejected(new System.Exception("The current scene isn't one that is assigned to a variant in the package configuration"));
-
-                        return UploadAssetBundleToSandbox(ProjectConfig.activePackageConfig, spaceTemplateVariant.bundleName, bundleDir, openBrowser);
-                    }
-                    else
-                    {
-                        return UploadAssetBundleToSandbox(ProjectConfig.activePackageConfig, ProjectConfig.activePackageConfig.bundleName, bundleDir, openBrowser);
-                    }
+                    Promise uploadPromise = new();
+                    EditorCoroutineUtility.StartCoroutineOwnerless(UploadSandboxAssetBundlesCoroutine(uploadPromise, ProjectConfig.activePackageConfig, bundleDir));
+                    uploadPromise
+                        .Then(() => {
+                            bool openBrowser = target == BuildTarget.WebGL;
+                            if (openBrowser)
+                                EditorUtility.OpenSandboxInBrowser();
+                            Debug.Log("Sandbox content uploaded successfully");
+                        })
+                        .Catch(exc => {
+                            (string exceptionMessage, Action callback) = GetExceptionMessageAndCallback(exc);
+                            if (UnityEditor.EditorUtility.DisplayDialog("Sandbox upload failed", exceptionMessage, "OK"))
+                                callback?.Invoke();
+                            Debug.LogError($"Sandbox upload failed: {exc}");
+                        })
+                        .Finally(() => UnityEditor.EditorUtility.ClearProgressBar());
+                    return uploadPromise;
                 })
                 .Finally(() => {
                     AssetDatabase.DeleteAsset(EditorUtility.TEMP_DIRECTORY);
@@ -134,56 +137,107 @@ namespace SpatialSys.UnitySDK.Editor
                 });
         }
 
-        private static IPromise UploadAssetBundleToSandbox(PackageConfig packageConfig, string bundleName, string bundleDir, bool openBrowser)
+        private static IEnumerator UploadSandboxAssetBundlesCoroutine(Promise promise, PackageConfig packageConfig, string bundleDir)
         {
-#if SPATIAL_UNITYSDK_STAGING && SPATIAL_UNITYSDK_STAGING_LOCAL_TESTING
-            // Skip uploading if it's a local testing build
-            if (!openBrowser)
-                return Promise.Resolved();
-#endif
+            void Reject(Exception ex)
+            {
+                UnityEditor.EditorUtility.ClearProgressBar();
+                promise.Reject(ex);
+            }
 
-            if (string.IsNullOrEmpty(bundleName))
-                return Promise.Rejected(new System.Exception("Unable to retrieve the asset bundle name from the prefab. Make sure an asset is assigned in the package configuration."));
+            // Get main bundle name
+            string mainBundleName;
+            if (packageConfig is SpaceTemplateConfig spaceTemplateConfig)
+            {
+                // Get the variant config for the current scene
+                SceneAsset currentSceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
+                SpaceTemplateConfig.Variant spaceTemplateVariant = spaceTemplateConfig.variants.FirstOrDefault(v => v.scene == currentSceneAsset);
+                if (spaceTemplateVariant == null)
+                {
+                    Reject(new Exception("The current scene isn't one that is assigned to a variant in the package configuration"));
+                    yield break;
+                }
 
-            string bundlePath = Path.Combine(bundleDir, bundleName);
-            if (!File.Exists(bundlePath))
-                return Promise.Rejected(new System.Exception($"Built asset bundle `{bundlePath}` was not found on disk"));
-            long bundleSize = new FileInfo(bundlePath).Length;
-            if (bundleSize > MAX_SANDBOX_BUNDLE_SIZE)
-                return Promise.Rejected(new System.Exception($"Asset bundle is too large ({bundleSize / 1024 / 1024}MB). The maximum size is {MAX_SANDBOX_BUNDLE_SIZE / 1024 / 1024}MB"));
+                mainBundleName = spaceTemplateVariant.bundleName;
+            }
+            else
+            {
+                mainBundleName = packageConfig.bundleName;
+            }
+            if (string.IsNullOrEmpty(mainBundleName))
+            {
+                Reject(new Exception("Unable to retrieve the asset bundle name from the prefab. Make sure an asset is assigned in the package configuration."));
+                yield break;
+            }
 
+            // Gather additional bundles (placeholder for future use)
+            List<string> additionalBundles = new();
+
+            // Get upload URLS for each bundle
+            bool requestFinalized = false;
+            bool succeeded = false;
+            SpatialAPI.UploadSandboxBundleResponse sandboxUploadResponse = null;
+            SpatialAPI.UploadSandboxBundle(packageConfig, additionalBundles.ToArray())
+                .Then(resp => {
+                    sandboxUploadResponse = resp;
+                    succeeded = true;
+                })
+                .Catch(ex => Reject(ex))
+                .Finally(() => requestFinalized = true);
+
+            // Wait for completion
+            while (!requestFinalized)
+                yield return null;
+            if (!succeeded)
+                yield break;
+
+            // Build a list of all bundles to upload (name, upload url)
+            List<(string, string)> allBundleUploads = new() { (mainBundleName, sandboxUploadResponse.url) };
+            for (int i = 0; i < additionalBundles.Count; i++)
+            {
+                string fullBundleName = GetBundleNameForPackageAsset(packageConfig.packageName, additionalBundles[i]);
+                allBundleUploads.Add((fullBundleName, sandboxUploadResponse.additionalBundleUrls[i]));
+            }
+
+            // Upload each bundle file
             _lastUploadProgress = -1f;
             _uploadStartTime = Time.realtimeSinceStartup;
             UpdateSandboxUploadProgressBar(0, 0, 0f);
-            return SpatialAPI.UploadSandboxBundle(packageConfig)
-                .Then(resp => {
-                    byte[] bundleBytes = File.ReadAllBytes(bundlePath);
-                    SpatialAPI.UploadFile(useSpatialHeaders: false, resp.url, bundleBytes, UpdateSandboxUploadProgressBar)
-                        .Then(resp => {
-                            if (openBrowser)
-                            {
-                                EditorUtility.OpenSandboxInBrowser();
-                            }
-                            else
-                            {
-                                UnityEditor.EditorUtility.DisplayDialog("Upload complete", "Sandbox content uploaded.", "OK");
-                            }
-                        })
-                        .Catch(exc => {
-                            (string exceptionMessage, Action callback) = GetExceptionMessageAndCallback(exc);
-                            if (UnityEditor.EditorUtility.DisplayDialog("Asset bundle upload error", exceptionMessage, "OK"))
-                                callback?.Invoke();
-                            Debug.LogError(exc);
-                        })
-                        .Finally(() => UnityEditor.EditorUtility.ClearProgressBar());
-                })
-                .Catch(exc => {
-                    UnityEditor.EditorUtility.ClearProgressBar();
+            for (int i = 0; i < allBundleUploads.Count; i++)
+            {
+                string bundleName = allBundleUploads[i].Item1;
+                string bundleUploadURL = allBundleUploads[i].Item2;
+                string bundlePath = Path.Combine(bundleDir, bundleName);
+                if (!File.Exists(bundlePath))
+                {
+                    Reject(new Exception($"Built asset bundle `{bundlePath}` was not found on disk"));
+                    yield break;
+                }
 
-                    (string exceptionMessage, Action callback) = GetExceptionMessageAndCallback(exc);
-                    if (UnityEditor.EditorUtility.DisplayDialog("Upload failed", exceptionMessage, "OK"))
-                        callback?.Invoke();
-                });
+                long bundleSize = new FileInfo(bundlePath).Length;
+                if (bundleSize > MAX_SANDBOX_BUNDLE_SIZE)
+                {
+                    Reject(new Exception($"Asset bundle `{bundleName}` is too large ({bundleSize / 1024 / 1024}MB). The maximum size is {MAX_SANDBOX_BUNDLE_SIZE / 1024 / 1024}MB"));
+                    yield break;
+                }
+
+                requestFinalized = false;
+                succeeded = false;
+                byte[] bundleBytes = File.ReadAllBytes(bundlePath);
+                SpatialAPI.UploadFile(useSpatialHeaders: false, bundleUploadURL, bundleBytes, UpdateSandboxUploadProgressBar)
+                    .Then(resp => succeeded = true)
+                    .Catch(ex => Reject(ex))
+                    .Finally(() => requestFinalized = true);
+
+                // Wait for completion
+                while (!requestFinalized)
+                    yield return null;
+                if (!succeeded)
+                    yield break;
+            }
+
+            // Done!
+            promise.Resolve();
         }
 
         private static IPromise CheckValidationPromise(IPromise<SpatialValidationSummary> validatorPromise)
@@ -372,8 +426,8 @@ namespace SpatialSys.UnitySDK.Editor
                 .ToArray();
             dependencies.UnionWith(additionalMtlDependencies);
 
-            // Remove all unitysdk package references
-            dependencies.RemoveWhere(d => d.StartsWith("Packages/io.spatial.unitysdk")); // we already have these
+            // Remove all unitysdk package references since we already have them in the client
+            dependencies.RemoveWhere(d => d.StartsWith(PackageManagerUtility.PACKAGE_DIRECTORY_PATH));
 
             // Export all referenced assets from active package as a unity package
             // NOTE: Intentionally not including the ProjectConfig since that includes all packages in this project
@@ -450,13 +504,12 @@ namespace SpatialSys.UnitySDK.Editor
                 // Assign a unique asset bundle name to each scene
                 foreach (SpaceTemplateConfig.Variant variant in spaceTemplateConfig.variants)
                 {
-                    string variantBundleName = GetBundleNameForPackageAsset(config.packageName, variant.name, variant.id);
+                    string variantBundleName = GetBundleNameForPackageAsset(config.packageName, variant.id);
                     EditorUtility.SetAssetBundleName(variant.scene, variantBundleName);
                 }
             }
             else
             {
-                // Multiple variants/assets are not supported for package types that aren't SpaceTemplate.
                 string assetBundleName = GetBundleNameForPackageAsset(config.packageName);
                 UnityEngine.Object firstAsset = config.assets.FirstOrDefault();
                 EditorUtility.SetAssetBundleName(firstAsset, assetBundleName);
@@ -469,18 +522,18 @@ namespace SpatialSys.UnitySDK.Editor
 
         /// <summary>
         /// Creates a valid asset bundle name for a package
-        /// Variant params can be ignored if package does not have any variants
+        /// BundleID params can be ignored if package does not have any additional bundles
         /// </summary>
-        public static string GetBundleNameForPackageAsset(string packageName, string variantName = "default", string variantID = "0")
+        public static string GetBundleNameForPackageAsset(string packageName, string bundleID = "0")
         {
-            // WARNING: Do not edit this without also changing GetVariantIDFromBundleName
-            return $"{GetValidBundleNameString(packageName)}_{GetValidBundleNameString(variantName)}_{variantID}";
+            // WARNING: Do not edit this without also changing GetAssetBundleIDFromFullBundleName
+            return $"{GetValidBundleNameString(packageName)}_{bundleID}";
         }
 
-        public static string GetVariantIDFromBundleName(string bundleName)
+        public static string GetAssetBundleIDFromFullBundleName(string bundleName)
         {
             string[] parts = bundleName.Split('_');
-            return parts[parts.Length - 1]; // Last part is the variant ID; See GetBundleNameForPackageAsset
+            return parts[parts.Length - 1]; // Last part is the bundle ID; See GetBundleNameForPackageAsset
         }
 
         /// <summary>

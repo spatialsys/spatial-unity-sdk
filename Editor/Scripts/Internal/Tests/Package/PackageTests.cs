@@ -27,7 +27,7 @@ namespace SpatialSys.UnitySDK.Editor
         private static string[] GetPackageDependencies(PackageConfig config)
         {
             return AssetDatabase.GetDependencies(AssetDatabase.GetAssetPath(config))
-                .Where(d => !d.StartsWith("Packages/io.spatial.unitysdk"))
+                .Where(d => !d.StartsWith(PackageManagerUtility.PACKAGE_DIRECTORY_PATH))
                 .ToArray();
         }
 

@@ -104,16 +104,13 @@ namespace SpatialSys.UnitySDK.Editor
             Animator animator = packagePrefabObj.GetComponent<Animator>();
 
             // Force into T-pose through animation
-            // Since avatars can be in different default poses, we need to force it into a generic T-pose to correctly 
-            // Apply the bone rotations relative to a target T-pose.
-            RuntimeAnimatorController animatorController = (RuntimeAnimatorController)AssetDatabase.LoadAssetAtPath("Packages/io.spatial.unitysdk/Editor/Animator/processAvatar.controller", typeof(RuntimeAnimatorController));
-            if (animatorController == null)
-                throw new System.Exception("Internal error: Could not find processAvatar.controller");
+            // Since avatars can be in different default poses, we need to force it into a generic T-pose to correctly apply the bone rotations relative to a target T-pose.
+            var tPoseAnimClip = EditorUtility.LoadAssetFromPackagePath<AnimationClip>("Editor/Animator/T-Pose.anim");
+            if (tPoseAnimClip == null)
+                throw new System.Exception("Internal error: Could not find T-Pose.anim");
 
-            animator.runtimeAnimatorController = animatorController;
-            var prevCullingMode = animator.cullingMode;
-            animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
-            animator.Update(0f);
+            animator.runtimeAnimatorController = null;
+            tPoseAnimClip.SampleAnimation(packagePrefabObj, time: 0f);
 
             // Cache original bone rotations
             Dictionary<HumanBodyBones, Quaternion> origBoneRotation = new Dictionary<HumanBodyBones, Quaternion>();
@@ -197,8 +194,7 @@ namespace SpatialSys.UnitySDK.Editor
             AssetDatabase.CreateAsset(avatar, Path.Combine(generatedAssetsDirPath, avatar.name + ".asset"));
 
             // Force back into T-pose after updating the avatar
-            animator.Update(0f);
-            animator.cullingMode = prevCullingMode;
+            tPoseAnimClip.SampleAnimation(packagePrefabObj, time: 0f);
 
             // Correct renderer bounds based on original bounds in world space
             foreach ((SkinnedMeshRenderer renderer, Bounds bounds) in origRendererBounds)

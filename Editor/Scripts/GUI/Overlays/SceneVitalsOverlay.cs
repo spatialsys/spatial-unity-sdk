@@ -62,7 +62,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         public override VisualElement CreatePanelContent()
         {
-            var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/io.spatial.unitysdk/Editor/Scripts/GUI/Overlays/SceneVitals/SceneVitals.uxml");
+            var visualTree = EditorUtility.LoadAssetFromPackagePath<VisualTreeAsset>("Editor/Scripts/GUI/Overlays/SceneVitals/SceneVitals.uxml");
             VisualElement element = visualTree.Instantiate();
             var root = new VisualElement() { name = "Scene Vitals" };
             root.Add(element);

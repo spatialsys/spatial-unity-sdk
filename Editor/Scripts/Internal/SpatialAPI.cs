@@ -43,14 +43,15 @@ namespace SpatialSys.UnitySDK.Editor
         // UPLOAD TO SANDBOX
         //------------------------------------------------
 
-        public static IPromise<UploadSandboxBundleResponse> UploadSandboxBundle(PackageConfig packageConfig)
+        public static IPromise<UploadSandboxBundleResponse> UploadSandboxBundle(PackageConfig packageConfig, string[] additionalBundles = null)
         {
             RequestHelper request = CreateRequest();
             request.Uri = $"{API_ORIGIN}/sdk/v1/sandbox/bundle";
 
             UploadSandboxBundleRequest body = new() {
                 type = PackageTypeToSAPIPackageType(packageConfig.packageType),
-                sku = packageConfig.sku
+                sku = packageConfig.sku,
+                additionalBundles = additionalBundles
             };
             if (packageConfig is SpaceConfig spaceConfig)
             {
@@ -69,6 +70,7 @@ namespace SpatialSys.UnitySDK.Editor
         {
             public string type;
             public string sku;
+            public string[] additionalBundles;
 
             // Space package type only
             public bool spaceInstancingEnabled;
@@ -76,12 +78,14 @@ namespace SpatialSys.UnitySDK.Editor
         }
 
         [Serializable]
-        public struct UploadSandboxBundleResponse
+        public class UploadSandboxBundleResponse
         {
             public string url; // PUT bundle URL
             public string type;
             public int version;
             public ulong expiresAt;
+
+            public string[] additionalBundleUrls; // upload URLs for additional bundles
         }
 
         //------------------------------------------------

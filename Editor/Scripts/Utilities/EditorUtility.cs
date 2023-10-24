@@ -95,6 +95,11 @@ namespace SpatialSys.UnitySDK.Editor
             return false;
         }
 
+        public static T LoadAssetFromPackagePath<T>(string relativePath) where T : UnityEngine.Object
+        {
+            return AssetDatabase.LoadAssetAtPath<T>($"{PackageManagerUtility.PACKAGE_DIRECTORY_PATH}/{relativePath}");
+        }
+
         public static void OpenDocumentationPage()
         {
             Help.BrowseURL(PackageManagerUtility.documentationUrl);
