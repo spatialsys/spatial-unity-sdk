@@ -67,34 +67,26 @@ namespace SpatialSys.UnitySDK.Editor
                     ProcessAndSavePackageAssets();
 
                     // Create a new backup to the package config asset in case we modify it, so it's easy to revert any changes made to it.
+                    EditorUtility.CreateAssetBackup(ProjectConfig.instance);
                     EditorUtility.CreateAssetBackup(ProjectConfig.activePackageConfig);
 
-                    if (ProjectConfig.activePackageConfig is AvatarConfig avatarConfig)
+                    // For avatar-based packages, we need to do some bone orientation standardization
+                    ProcessAvatarPackageAssets(ProjectConfig.activePackageConfig);
+
+                    // Switch to target platform
+                    if (!EditorUtility.IsPlatformModuleInstalled(target))
+                        return Promise.Rejected(new System.Exception($"Platform module for {target} is not installed, which is required for testing in sandbox"));
+                    EditorUserBuildSettings.SwitchActiveBuildTarget(BuildPipeline.GetBuildTargetGroup(target), target);
+
+                    // Compile custom c# dlls
+                    if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig && spaceConfig.cSharpAssembly != null)
                     {
-                        // Create a temporary prefab copy so that when validation and fixes are enforced, it won't make destructive changes to the original prefab. The temporary prefab copy will be uploaded instead.
-                        GameObject newPrefab = EditorUtility.CreatePrefabCopyForTemporaryModification(avatarConfig.prefab);
-
-                        avatarConfig.prefab = newPrefab.GetComponent<SpatialAvatar>();
-                        UnityEditor.EditorUtility.SetDirty(avatarConfig);
-
-                        ValidationUtility.ProcessPackagePrefab(avatarConfig.prefab);
-                    }
-                    else if (ProjectConfig.activePackageConfig is AvatarAttachmentConfig attachmentConfig)
-                    {
-                        // Create a temporary prefab copy so that when validation and fixes are enforced, it won't make destructive changes to the original prefab. The temporary prefab copy will be uploaded instead.
-                        GameObject newPrefab = EditorUtility.CreatePrefabCopyForTemporaryModification(attachmentConfig.prefab);
-
-                        attachmentConfig.prefab = newPrefab.GetComponent<SpatialAvatarAttachment>();
-                        UnityEditor.EditorUtility.SetDirty(attachmentConfig);
-
-                        ValidationUtility.ProcessPackagePrefab(attachmentConfig.prefab);
+                        if (!CSScriptingEditorUtility.CompileAssembly(spaceConfig.cSharpAssembly))
+                            return Promise.Rejected(new System.Exception("Failed to compile custom c# scripts"));
                     }
 
                     // Auto-assign necessary bundle names
                     AssignBundleNamesToPackageAssets();
-
-                    if (!EditorUtility.IsPlatformModuleInstalled(target))
-                        return Promise.Rejected(new System.Exception($"Platform module for {target} is not installed, which is required for testing in sandbox"));
 
                     string bundleDir = Path.Combine(BUILD_DIR, target.ToString());
                     if (Directory.Exists(bundleDir))
@@ -130,10 +122,9 @@ namespace SpatialSys.UnitySDK.Editor
                     return uploadPromise;
                 })
                 .Finally(() => {
-                    AssetDatabase.DeleteAsset(EditorUtility.TEMP_DIRECTORY);
-
                     // Restore config file to previous values, if any has changed.
                     EditorUtility.RestoreAssetFromBackup(ProjectConfig.activePackageConfig);
+                    EditorUtility.RestoreAssetFromBackup(ProjectConfig.instance);
                 });
         }
 
@@ -172,6 +163,8 @@ namespace SpatialSys.UnitySDK.Editor
 
             // Gather additional bundles (placeholder for future use)
             List<string> additionalBundles = new();
+            if (packageConfig is SpaceConfig spaceConfig && File.Exists(CSScriptingEditorUtility.OUTPUT_ASSET_PATH))
+                additionalBundles.Add(CSScriptingUtility.CSHARP_ASSEMBLY_BUNDLE_ID);
 
             // Get upload URLS for each bundle
             bool requestFinalized = false;
@@ -308,28 +301,11 @@ namespace SpatialSys.UnitySDK.Editor
                     }
 
                     // Create a new backup to the package config asset in case we modify it, so it's easy to revert any changes made to it.
+                    EditorUtility.CreateAssetBackup(ProjectConfig.instance);
                     EditorUtility.CreateAssetBackup(ProjectConfig.activePackageConfig);
 
-                    if (ProjectConfig.activePackageConfig is AvatarConfig avatarConfig)
-                    {
-                        // Create a temporary prefab copy so that when validation and fixes are enforced, it won't make destructive changes to the original prefab. The temporary prefab copy will be uploaded instead.
-                        GameObject newPrefab = EditorUtility.CreatePrefabCopyForTemporaryModification(avatarConfig.prefab);
-
-                        avatarConfig.prefab = newPrefab.GetComponent<SpatialAvatar>();
-                        UnityEditor.EditorUtility.SetDirty(avatarConfig);
-
-                        ValidationUtility.ProcessPackagePrefab(avatarConfig.prefab);
-                    }
-                    else if (ProjectConfig.activePackageConfig is AvatarAttachmentConfig attachmentConfig)
-                    {
-                        // Create a temporary prefab copy so that when validation and fixes are enforced, it won't make destructive changes to the original prefab. The temporary prefab copy will be uploaded instead.
-                        GameObject newPrefab = EditorUtility.CreatePrefabCopyForTemporaryModification(attachmentConfig.prefab);
-
-                        attachmentConfig.prefab = newPrefab.GetComponent<SpatialAvatarAttachment>();
-                        UnityEditor.EditorUtility.SetDirty(attachmentConfig);
-
-                        ValidationUtility.ProcessPackagePrefab(attachmentConfig.prefab);
-                    }
+                    // For avatar-based packages, we need to do some bone orientation standardization
+                    ProcessAvatarPackageAssets(ProjectConfig.activePackageConfig);
 
                     // Before we package up the project, we need to save all assets so that the package has the latest changes
                     AssetDatabase.SaveAssets();
@@ -391,10 +367,10 @@ namespace SpatialSys.UnitySDK.Editor
                 })
                 .Finally(() => {
                     UnityEditor.EditorUtility.ClearProgressBar();
-                    AssetDatabase.DeleteAsset(EditorUtility.TEMP_DIRECTORY);
 
                     // Restore config file to previous values if necessary.
                     EditorUtility.RestoreAssetFromBackup(ProjectConfig.activePackageConfig);
+                    EditorUtility.RestoreAssetFromBackup(ProjectConfig.instance);
                 });
         }
 
@@ -428,6 +404,14 @@ namespace SpatialSys.UnitySDK.Editor
 
             // Remove all unitysdk package references since we already have them in the client
             dependencies.RemoveWhere(d => d.StartsWith(PackageManagerUtility.PACKAGE_DIRECTORY_PATH));
+
+            // Include all .cs scripts included in the custom C# assembly
+            if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig && spaceConfig.cSharpAssembly != null)
+            {
+                string assemblyRootDirectory = Path.GetDirectoryName(AssetDatabase.GetAssetPath(spaceConfig.cSharpAssembly));
+                string[] csharpScriptPaths = Directory.GetFiles(assemblyRootDirectory, "*.cs", SearchOption.AllDirectories);
+                dependencies.UnionWith(csharpScriptPaths);
+            }
 
             // Export all referenced assets from active package as a unity package
             // NOTE: Intentionally not including the ProjectConfig since that includes all packages in this project
@@ -515,6 +499,16 @@ namespace SpatialSys.UnitySDK.Editor
                 EditorUtility.SetAssetBundleName(firstAsset, assetBundleName);
             }
 
+            if (config is SpaceConfig spaceConfig && spaceConfig.cSharpAssembly != null)
+            {
+                if (!File.Exists(CSScriptingEditorUtility.OUTPUT_ASSET_PATH))
+                    throw new Exception($"Unable to find {CSScriptingEditorUtility.OUTPUT_ASSET_PATH}");
+
+                string assetBundleName = GetBundleNameForPackageAsset(config.packageName, CSScriptingUtility.CSHARP_ASSEMBLY_BUNDLE_ID);
+                TextAsset compiledDllAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(CSScriptingEditorUtility.OUTPUT_ASSET_PATH);
+                EditorUtility.SetAssetBundleName(compiledDllAsset, assetBundleName);
+            }
+
             UnityEditor.EditorUtility.SetDirty(config);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -559,6 +553,107 @@ namespace SpatialSys.UnitySDK.Editor
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
+        }
+
+        /// <summary>
+        /// Create a temporary prefab copy so that when validation and fixes are enforced.
+        /// it won't make destructive changes to the original prefab. The temporary prefab copy will be uploaded instead.
+        /// </summary>
+        public static void ProcessAvatarPackageAssets(PackageConfig packageConfig)
+        {
+            const string PROCESSED_PACKAGE_PREFABS_DIRECTORY = EditorUtility.STORAGE_DIRECTORY + "/TempProcessedPackagePrefabs";
+
+            // For every source asset, we only want to have one processed prefab copy
+            // GUID->Path lookup
+            const string PROCESSED_PACKAGE_PREFABS_CACHE_INFO_PATH = PROCESSED_PACKAGE_PREFABS_DIRECTORY + "/cache.txt";
+            static Dictionary<string, string> GetCache()
+            {
+                Dictionary<string, string> prefabCache = new Dictionary<string, string>();
+                if (File.Exists(PROCESSED_PACKAGE_PREFABS_CACHE_INFO_PATH))
+                    prefabCache = File.ReadAllLines(PROCESSED_PACKAGE_PREFABS_CACHE_INFO_PATH).Select(line => line.Split('|')).ToDictionary(line => line[0], line => line[1]);
+                return prefabCache;
+            }
+            static void SaveCache(Dictionary<string, string> prefabCache)
+            {
+                Directory.CreateDirectory(PROCESSED_PACKAGE_PREFABS_DIRECTORY);
+                File.WriteAllLines(PROCESSED_PACKAGE_PREFABS_CACHE_INFO_PATH, prefabCache.Select(kvp => $"{kvp.Key}|{kvp.Value}"));
+            }
+            Dictionary<string, string> cache = GetCache();
+
+            static T ProcessPackagePrefab<T>(Dictionary<string, string> cache, UnityEngine.Object prefabAsset) where T : SpatialPackageAsset
+            {
+                if (prefabAsset == null)
+                    return null;
+
+                string sourcePrefabPath = AssetDatabase.GetAssetPath(prefabAsset);
+                Hash128 dependencyHash = AssetDatabase.GetAssetDependencyHash(sourcePrefabPath);
+                string processedPrefabPath = Path.Combine(PROCESSED_PACKAGE_PREFABS_DIRECTORY, $"{prefabAsset.name}_{dependencyHash}.prefab");
+
+                // Cache hit, no need to re-process
+                if (File.Exists(processedPrefabPath))
+                    return AssetDatabase.LoadAssetAtPath<T>(processedPrefabPath);
+
+                // Delete the old prefab if it exists
+                string sourcePrefabGUID = AssetDatabase.AssetPathToGUID(sourcePrefabPath);
+                if (cache.TryGetValue(sourcePrefabGUID, out string oldPrefabPath) && File.Exists(oldPrefabPath))
+                    AssetDatabase.DeleteAsset(oldPrefabPath);
+
+                // Cache miss, process and save
+                Directory.CreateDirectory(PROCESSED_PACKAGE_PREFABS_DIRECTORY);
+                if (!AssetDatabase.CopyAsset(sourcePrefabPath, processedPrefabPath))
+                    return null;
+
+                cache[sourcePrefabGUID] = processedPrefabPath;
+                T prefabToProcess = AssetDatabase.LoadAssetAtPath<T>(processedPrefabPath);
+                ValidationUtility.ProcessPackagePrefab(prefabToProcess);
+                return prefabToProcess;
+            }
+
+            if (packageConfig is AvatarConfig avatarConfig)
+            {
+                avatarConfig.prefab = ProcessPackagePrefab<SpatialAvatar>(cache, avatarConfig.prefab);
+                UnityEditor.EditorUtility.SetDirty(avatarConfig);
+            }
+            else if (packageConfig is AvatarAttachmentConfig attachmentConfig)
+            {
+                attachmentConfig.prefab = ProcessPackagePrefab<SpatialAvatarAttachment>(cache, attachmentConfig.prefab);
+                UnityEditor.EditorUtility.SetDirty(attachmentConfig);
+            }
+            else if (packageConfig is SpaceConfig spaceConfig && spaceConfig.embeddedPackageAssets != null && spaceConfig.embeddedPackageAssets.Length > 0)
+            {
+                try
+                {
+                    const string PROGRESS_BAR_TITLE = "Processing embedded package assets";
+                    UnityEditor.EditorUtility.DisplayProgressBar(PROGRESS_BAR_TITLE, $"0/{spaceConfig.embeddedPackageAssets.Length}", 0f);
+
+                    // Process avatar-based embedded packages
+                    for (int i = 0; i < spaceConfig.embeddedPackageAssets.Length; i++)
+                    {
+                        UnityEditor.EditorUtility.DisplayProgressBar(PROGRESS_BAR_TITLE, $"{i + 1}/{spaceConfig.embeddedPackageAssets.Length}", (float)(i + 1) / spaceConfig.embeddedPackageAssets.Length);
+
+                        EmbeddedPackageAsset em = spaceConfig.embeddedPackageAssets[i];
+                        SpatialPackageAsset spatialPackageAsset = em.asset;
+                        if (em.asset == null)
+                            continue;
+
+                        if (spatialPackageAsset is SpatialAvatarAttachment)
+                        {
+                            em.asset = ProcessPackagePrefab<SpatialAvatarAttachment>(cache, spatialPackageAsset);
+                        }
+                        else if (spatialPackageAsset is SpatialAvatar)
+                        {
+                            em.asset = ProcessPackagePrefab<SpatialAvatar>(cache, spatialPackageAsset);
+                        }
+                    }
+                    UnityEditor.EditorUtility.SetDirty(spaceConfig);
+                }
+                finally
+                {
+                    UnityEditor.EditorUtility.ClearProgressBar();
+                }
+            }
+
+            SaveCache(cache);
         }
 
         public static SavedProjectSettings SaveProjectSettingsToAsset()

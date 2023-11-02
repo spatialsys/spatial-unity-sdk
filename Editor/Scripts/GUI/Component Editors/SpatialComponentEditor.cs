@@ -5,6 +5,8 @@ using UnityEditor;
 
 namespace SpatialSys.UnitySDK.Editor
 {
+    [CustomEditor(typeof(SpatialScriptableObjectBase), true), CanEditMultipleObjects]
+    public class SpatialScriptableObjectDefaultEditor : SpatialComponentEditorBase { }
     [CustomEditor(typeof(SpatialComponentBase), true), CanEditMultipleObjects]
     public class SpatialComponentDefaultEditor : SpatialComponentEditorBase { }
     public abstract class SpatialComponentEditorBase : UnityEditor.Editor
@@ -13,22 +15,54 @@ namespace SpatialSys.UnitySDK.Editor
         //used to hide the script field
         private static readonly string[] _excludedProperties = new string[] { "m_Script" };
         private Texture2D _backgroundTexture;
+        private Texture2D _subBackgroundTexture;
         private Texture2D _buttonTexture;
         private Texture2D _iconTexture;
-        private Texture2D _docsLinkTexture;
+        private Texture2D _caretUpTexture;
+        private Texture2D _caretDownTexture;
 
         protected GUIStyle _warningStyle;
         private GUIStyle _areaStyle;
+        private GUIStyle _subAreaStyle;
         private GUIStyle _logoStyle;
         private GUIStyle _titleStyle;
         private GUIStyle _subTitleStyle;
         private GUIStyle _helpButtonStyle;
+        private GUIStyle _caretStyle;
+        private GUIStyle _hiddenToggleButtonStyle;
 
-        private void InitializeIfNecessary(SpatialComponentBase target)
+        private string _prettyName;
+        private string _tooltip;
+        private string _documentationURL;
+        private bool _isExperimental;
+
+        private void InitializeIfNecessary(UnityEngine.Object target)
         {
             if (_initialized)
             {
                 return;
+            }
+
+            if (target is SpatialComponentBase component)
+            {
+                _prettyName = component.prettyName;
+                _tooltip = component.tooltip;
+                _documentationURL = component.documentationURL;
+                _isExperimental = component.isExperimental;
+            }
+            else if (target is SpatialScriptableObjectBase scriptableObject)
+            {
+                _prettyName = scriptableObject.prettyName;
+                _tooltip = scriptableObject.tooltip;
+                _documentationURL = scriptableObject.documentationURL;
+                _isExperimental = scriptableObject.isExperimental;
+            }
+            else
+            {
+                _prettyName = target.GetType().Name;
+                _tooltip = "";
+                _documentationURL = "";
+                _isExperimental = false;
             }
 
             GUIContent c = EditorGUIUtility.ObjectContent(target, target.GetType());
@@ -42,8 +76,10 @@ namespace SpatialSys.UnitySDK.Editor
             }
 
             _backgroundTexture = SpatialGUIUtility.LoadGUITexture("GUI/TooltipBackground.png");
+            _subBackgroundTexture = SpatialGUIUtility.LoadGUITexture("GUI/TooltipSubBackground.png");
             _buttonTexture = SpatialGUIUtility.LoadGUITexture("GUI/ButtonBackground.png");
-            _docsLinkTexture = SpatialGUIUtility.LoadGUITexture("Icons/icon_docsLink.png");
+            _caretUpTexture = SpatialGUIUtility.LoadGUITexture("GUI/CaretUp.png");
+            _caretDownTexture = SpatialGUIUtility.LoadGUITexture("GUI/CaretDown.png");
 
             _warningStyle = new GUIStyle() {
                 padding = new RectOffset(0, 0, 5, 0),
@@ -57,23 +93,35 @@ namespace SpatialSys.UnitySDK.Editor
             _areaStyle = new GUIStyle() {
                 border = new RectOffset(8, 8, 8, 8),
                 padding = new RectOffset(8, 8, 8, 8),
+                alignment = TextAnchor.MiddleLeft,
             };
             _areaStyle.normal.background = _backgroundTexture;
             _areaStyle.normal.textColor = Color.white;
 
+            _subAreaStyle = new GUIStyle() {
+                border = new RectOffset(8, 8, 8, 8),
+                padding = new RectOffset(16, 8, 8, 8),
+                alignment = TextAnchor.MiddleLeft,
+            };
+            _subAreaStyle.normal.background = _subBackgroundTexture;
+            _subAreaStyle.normal.textColor = Color.white;
+
             _logoStyle = new GUIStyle() {
-                fixedHeight = 48,
-                fixedWidth = 48,
+                fixedHeight = 28,
+                fixedWidth = 28,
                 padding = new RectOffset(0, 0, 0, 0),
                 border = new RectOffset(0, 0, 0, 0),
-                contentOffset = new Vector2(0, -3),
+            };
+
+            _caretStyle = new GUIStyle() {
+                contentOffset = new Vector2(0, 4),
             };
 
             _titleStyle = new GUIStyle() {
                 fontStyle = FontStyle.Bold,
-                fontSize = 28,
+                fontSize = 20,
                 wordWrap = true,
-                contentOffset = new Vector2(0, 3),
+                alignment = TextAnchor.MiddleLeft,
             };
             _titleStyle.normal.textColor = Color.white;
 
@@ -94,42 +142,96 @@ namespace SpatialSys.UnitySDK.Editor
             };
             _helpButtonStyle.active.background = _buttonTexture;
             _helpButtonStyle.normal.background = _buttonTexture;
+
+            // an invisible button style
+            _hiddenToggleButtonStyle = new GUIStyle() {
+            };
         }
 
         public override void OnInspectorGUI()
         {
-            var editorTarget = target as SpatialComponentBase;
+            var editorTarget = target as UnityEngine.Object;
             InitializeIfNecessary(editorTarget);
             serializedObject.Update();
 
-            GUILayout.Space(4);
+            bool showSubMenu = EditorPrefs.GetBool("_InspExpand_" + target.GetType().Name, true);
+
+            GUILayout.Space(-4);// Top margin hack
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(-18);// Left margin hack
+
+            //! START
+            GUILayout.BeginVertical();
             GUILayout.BeginVertical(_areaStyle);
             {
                 GUILayout.BeginHorizontal();
                 {
                     GUILayout.Box(_iconTexture, _logoStyle);
                     GUILayout.Space(4);
-                    GUILayout.Label(editorTarget.prettyName, _titleStyle);
-                    if (!string.IsNullOrEmpty(editorTarget.documentationURL))
-                    {
-                        GUILayout.Space(4);
-                        if (GUILayout.Button(_docsLinkTexture, _helpButtonStyle))
-                        {
-                            Application.OpenURL(editorTarget.documentationURL);
-                        }
-                    }
+
+                    // Align to the center of the icon
+                    GUILayout.BeginVertical();
+                    GUILayout.FlexibleSpace();
+                    GUILayout.Label(_prettyName, _titleStyle);
+                    GUILayout.FlexibleSpace();
+                    GUILayout.EndVertical();
+
+                    GUILayout.FlexibleSpace();
+
+                    GUILayout.Box(showSubMenu ? _caretUpTexture : _caretDownTexture, _caretStyle);
+                    GUILayout.BeginVertical();
+                    GUILayout.FlexibleSpace();
+                    GUILayout.Label(showSubMenu ? "Less" : "More");
+                    GUILayout.FlexibleSpace();
+                    GUILayout.EndVertical();
                 }
                 GUILayout.EndHorizontal();
 
-                GUILayout.Label(editorTarget.tooltip, _subTitleStyle);
-                if (editorTarget.isExperimental)
-                {
-                    GUILayout.Label("Experimental Feature", _warningStyle);
-                }
             }
             GUILayout.EndVertical();
 
-            GUILayout.Space(4);
+            GUILayout.Space(-44);
+            if (GUILayout.Button("", _hiddenToggleButtonStyle, GUILayout.Height(44)))
+            {
+                EditorPrefs.SetBool("_InspExpand_" + target.GetType().Name, !showSubMenu);
+            }
+
+            if (showSubMenu)
+            {
+                GUILayout.Space(-5);// account for texture corners
+                // * Subtitle
+                GUILayout.BeginVertical(_subAreaStyle);
+                if (_isExperimental)
+                {
+                    GUILayout.Label("Experimental Feature", _warningStyle);
+                }
+                else
+                {
+                    GUILayout.Space(4);
+                }
+                GUILayout.Label(_tooltip, _subTitleStyle);
+                if (!string.IsNullOrEmpty(_documentationURL))
+                {
+                    GUILayout.Space(2);
+                    GUILayout.BeginHorizontal();// Create a new area to delete the extra area LinkButton creates...
+                    GUILayout.Space(-2);
+                    if (EditorGUILayout.LinkButton("Documentation"))
+                    {
+                        GUILayout.Space(2);
+                        Application.OpenURL(_documentationURL);
+                    }
+                    GUILayout.EndHorizontal();
+                    GUILayout.Space(6);
+                }
+                GUILayout.EndVertical();
+            }
+            //! END
+            GUILayout.EndVertical();
+
+            GUILayout.Space(-4);// Right Margin hack
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(6);// Margin between tooltip and inspector
 
             DrawFields();
 

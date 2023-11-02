@@ -100,6 +100,13 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 ProcessGameObject(g);
             }
+
+            // Embedded package assets
+            if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig2 && spaceConfig2.embeddedPackageAssets != null && spaceConfig2.embeddedPackageAssets.Length > 0)
+            {
+                data.embeddedPackageAssets = new EmbeddedPackageAsset[spaceConfig2.embeddedPackageAssets.Length];
+                Array.Copy(spaceConfig2.embeddedPackageAssets, data.embeddedPackageAssets, spaceConfig2.embeddedPackageAssets.Length);
+            }
         }
 
         private static void AddSpatialEvent(List<SpatialEvent> list, SpatialEvent ev)

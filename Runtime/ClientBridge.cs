@@ -68,6 +68,12 @@ namespace SpatialSys.UnitySDK
         public delegate Transform GetAvatarBoneTransformDelegate(int actorNumber, HumanBodyBones humanBoneId);
         public static GetAvatarBoneTransformDelegate GetAvatarBoneTransform;
 
+        public delegate Material[] GetLocalAvatarMaterialsDelegate();
+        public static GetLocalAvatarMaterialsDelegate GetLocalAvatarMaterials;
+
+        public delegate Material[] GetAvatarMaterialsDelegate(int actorNumber);
+        public static GetAvatarMaterialsDelegate GetAvatarMaterials;
+
         public delegate int GetLocalActorPlatformDelegate();
         public static GetLocalActorPlatformDelegate GetLocalActorPlatform;
 
@@ -144,8 +150,11 @@ namespace SpatialSys.UnitySDK
         public delegate void TriggerJumpLocalAvatarDelegate();
         public static TriggerJumpLocalAvatarDelegate TriggerJumpLocalAvatar;
 
-        public delegate void SetLocalAvatarDelegate(string sku);
-        public static SetLocalAvatarDelegate SetLocalAvatar;
+        public delegate void SetLocalAvatarFromPackageDelegate(string packageSKU);
+        public static SetLocalAvatarFromPackageDelegate SetLocalAvatarFromPackage;
+
+        public delegate void SetLocalAvatarFromEmbeddedDelegate(string assetID);
+        public static SetLocalAvatarFromEmbeddedDelegate SetLocalAvatarFromEmbedded;
 
         public delegate void ResetLocalAvatarDelegate();
         public static ResetLocalAvatarDelegate ResetLocalAvatar;
@@ -177,26 +186,43 @@ namespace SpatialSys.UnitySDK
         public delegate void SendToastDelegate(string message, float duration);
         public static SendToastDelegate SendToast;
 
-        public delegate void PlayLocalAvatarEmoteAnimationDelegate(string sku, bool immediately = false, bool loop = false);
-        public static PlayLocalAvatarEmoteAnimationDelegate PlayLocalAvatarEmoteAnimation;
+        public delegate void PlayLocalAvatarPackageEmoteDelegate(string sku, bool immediately = false, bool loop = false);
+        public static PlayLocalAvatarPackageEmoteDelegate PlayLocalAvatarPackageEmote;
+        public delegate void PlayLocalAvatarEmbeddedEmoteDelegate(string assetID, bool immediately = false, bool loop = false);
+        public static PlayLocalAvatarEmbeddedEmoteDelegate PlayLocalAvatarEmbeddedEmote;
         public delegate void StopLocalAvatarEmoteAnimationDelegate();
         public static StopLocalAvatarEmoteAnimationDelegate StopLocalAvatarEmoteAnimation;
 
-        public delegate void SpawnPrefabObjectDelegate(string sku, Vector3 position, Quaternion rotation);
-        public static SpawnPrefabObjectDelegate SpawnPrefabObject;
+        public delegate void SpawnPrefabObjectFromPackageDelegate(string sku, Vector3 position, Quaternion rotation);
+        public static SpawnPrefabObjectFromPackageDelegate SpawnPrefabObjectFromPackage;
+
+        public delegate void SpawnPrefabObjectFromEmbeddedDelegate(string assetID, Vector3 position, Quaternion rotation);
+        public static SpawnPrefabObjectFromEmbeddedDelegate SpawnPrefabObjectFromEmbedded;
 
         public delegate void EnableAvatarToAvatarCollisionsDelegate(bool enabled);
         public static EnableAvatarToAvatarCollisionsDelegate EnableAvatarToAvatarCollisions;
 
         // Avatar Attachments
-        public delegate void EquipAvatarAttachmentPackageDelegate(string sku, bool equip, Action<bool> callback);
+        public delegate void EquipAvatarAttachmentPackageDelegate(string sku, bool equip, bool clearOccupiedPrimarySlot, string optionalTag, Action<bool> callback);
         public static EquipAvatarAttachmentPackageDelegate EquipAvatarAttachmentPackage;
 
         public delegate void EquipAvatarAttachmentItemDelegate(string itemID, bool equip, Action<bool> callback);
         public static EquipAvatarAttachmentItemDelegate EquipAvatarAttachmentItem;
 
-        public delegate bool IsAvatarAttachmentEquippedDelegate(string itemOrPackageID);
+        public delegate bool EquipAvatarAttachmentEmbeddedPackageAssetDelegate(string assetID, bool equip, bool clearOccupiedPrimarySlot, string optionalTag);
+        public static EquipAvatarAttachmentEmbeddedPackageAssetDelegate EquipAvatarAttachmentEmbedded;
+
+        public delegate bool IsAvatarAttachmentEquippedDelegate(string assetID);
         public static IsAvatarAttachmentEquippedDelegate IsAvatarAttachmentEquipped;
+
+        public delegate void ClearAllAvatarAttachmentsDelegate();
+        public static ClearAllAvatarAttachmentsDelegate ClearAllAvatarAttachments;
+
+        public delegate void ClearAvatarAttachmentSlotDelegate(SpatialAvatarAttachment.Slot slot);
+        public static ClearAvatarAttachmentSlotDelegate ClearAvatarAttachmentSlot;
+
+        public delegate void ClearAvatarAttachmentsByTagDelegate(string tag);
+        public static ClearAvatarAttachmentsByTagDelegate ClearAvatarAttachmentsByTag;
 
         // Quests
         public delegate void QuestDelegate(SpatialQuest quest);
@@ -569,5 +595,15 @@ namespace SpatialSys.UnitySDK
 
         public delegate void TeleportToBestMatchServerDelegate(int maxParticipants, AotDictionary serverProperties, AotList serverPropertiesToMatch);
         public static TeleportToBestMatchServerDelegate TeleportToBestMatchServer;
+
+        // Actor data
+        public delegate object GetLocalActorCustomVariableDelegate(string name);
+        public static GetLocalActorCustomVariableDelegate GetLocalActorCustomVariable;
+
+        public delegate void SetLocalActorCustomVariableDelegate(string name, object value);
+        public static SetLocalActorCustomVariableDelegate SetLocalActorCustomVariable;
+
+        public delegate object GetActorCustomVariableDelegate(int actorID, string name);
+        public static GetActorCustomVariableDelegate GetActorCustomVariable;
     }
 }

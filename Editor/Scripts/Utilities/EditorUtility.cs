@@ -11,7 +11,6 @@ namespace SpatialSys.UnitySDK.Editor
     public static class EditorUtility
     {
         public const string STORAGE_DIRECTORY = "Assets/Spatial";
-        public const string TEMP_DIRECTORY = STORAGE_DIRECTORY + "/Temp";
 
         public const string MIN_UNITY_VERSION_STR = "2021.3.8f1";
         public const string MAX_UNITY_VERSION_STR = "2021.3.21f1";
@@ -310,20 +309,6 @@ namespace SpatialSys.UnitySDK.Editor
             return false;
         }
 
-        public static GameObject CreatePrefabCopyForTemporaryModification(UnityEngine.Object prefabAsset)
-        {
-            if (prefabAsset == null)
-                return null;
-
-            Directory.CreateDirectory(TEMP_DIRECTORY);
-            string sourcePrefabPath = AssetDatabase.GetAssetPath(prefabAsset);
-            string tempPrefabPath = Path.Combine(TEMP_DIRECTORY, $"{prefabAsset.name}.prefab");
-            if (!AssetDatabase.CopyAsset(sourcePrefabPath, tempPrefabPath))
-                return null;
-
-            return AssetDatabase.LoadAssetAtPath<GameObject>(tempPrefabPath);
-        }
-
         /// <summary>
         /// Creates a backup file of the specified asset, which will allow for completely reverting all changes easily.
         /// Use RestoreAssetFromBackup to revert the asset to the backed up state.
@@ -331,8 +316,8 @@ namespace SpatialSys.UnitySDK.Editor
         public static void CreateAssetBackup(UnityEngine.Object asset)
         {
             string origPath = AssetDatabase.GetAssetPath(asset);
-            string backupPath = origPath + ".backup~"; // ~ hides the asset and avoids unnecessary import.
-            File.Copy(origPath, backupPath, overwrite: true);
+            File.Copy(origPath, $"{origPath}.backup~", overwrite: true);
+            File.Copy($"{origPath}.meta", $"{origPath}.meta.backup~", overwrite: true);
         }
 
         /// <summary>
@@ -342,8 +327,11 @@ namespace SpatialSys.UnitySDK.Editor
         {
             string origPath = AssetDatabase.GetAssetPath(asset);
             string backupPath = origPath + ".backup~";
+            string backupMetaPath = $"{origPath}.meta.backup~";
             if (File.Exists(backupPath))
                 File.Delete(backupPath);
+            if (File.Exists(backupMetaPath))
+                File.Delete(backupMetaPath);
         }
 
         /// <summary>
@@ -352,12 +340,21 @@ namespace SpatialSys.UnitySDK.Editor
         public static void RestoreAssetFromBackup(UnityEngine.Object asset)
         {
             string origPath = AssetDatabase.GetAssetPath(asset);
+
             string backupPath = origPath + ".backup~";
             if (!File.Exists(backupPath))
                 return;
+
+            // Deleting the current asset seems to be the only way we can effectively get unity editor to re-import the asset.
+            // SetDirty doesn't do it
+            AssetDatabase.DeleteAsset(origPath);
+
+            // Restore
             File.Copy(backupPath, origPath, overwrite: true);
-            File.Delete(backupPath);
+            File.Copy($"{origPath}.meta.backup~", $"{origPath}.meta", overwrite: true);
             AssetDatabase.ImportAsset(origPath, ImportAssetOptions.ForceSynchronousImport);
+
+            DeleteAssetBackup(asset);
         }
     }
 }

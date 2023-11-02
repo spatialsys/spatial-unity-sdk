@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace SpatialSys.UnitySDK.Editor
@@ -14,6 +15,8 @@ namespace SpatialSys.UnitySDK.Editor
 
         // "Space Name" would be derived from PackageConfig.packageName
         public SceneAsset scene = null;
+        public AssemblyDefinitionAsset cSharpAssembly = null;
+        public EmbeddedPackageAsset[] embeddedPackageAssets = new EmbeddedPackageAsset[0];
 
         [Space(10)]
         public SpaceSettings settings;

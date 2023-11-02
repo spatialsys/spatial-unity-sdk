@@ -9,6 +9,7 @@ namespace SpatialSys.UnitySDK.Editor
     public static class AvatarAttachmentComponentTests
     {
         public static readonly Dictionary<SpatialAvatarAttachment.Slot, HashSet<HumanBodyBones>> validAttachToBoneTargetsBySlotType;
+
         static AvatarAttachmentComponentTests()
         {
             var headBonesSet = new HashSet<HumanBodyBones>() {
@@ -35,10 +36,12 @@ namespace SpatialSys.UnitySDK.Editor
                 HumanBodyBones.RightLowerArm,
                 HumanBodyBones.RightHand
             };
-            var legsAndFeetBonesSet = new HashSet<HumanBodyBones>() {
+            var leftLegAndFootBonesSet = new HashSet<HumanBodyBones>() {
                 HumanBodyBones.LeftUpperLeg,
                 HumanBodyBones.LeftLowerLeg,
                 HumanBodyBones.LeftFoot,
+            };
+            var rightLegAndFootBonesSet = new HashSet<HumanBodyBones>() {
                 HumanBodyBones.RightUpperLeg,
                 HumanBodyBones.RightLowerLeg,
                 HumanBodyBones.RightFoot
@@ -49,19 +52,26 @@ namespace SpatialSys.UnitySDK.Editor
             allSupportedBonesSet.UnionWith(middleBonesSet);
             allSupportedBonesSet.UnionWith(leftArmAndHandBonesSet);
             allSupportedBonesSet.UnionWith(rightArmAndHandBonesSet);
-            allSupportedBonesSet.UnionWith(legsAndFeetBonesSet);
+            allSupportedBonesSet.UnionWith(leftLegAndFootBonesSet);
+            allSupportedBonesSet.UnionWith(rightLegAndFootBonesSet);
 
-            validAttachToBoneTargetsBySlotType = new Dictionary<SpatialAvatarAttachment.Slot, HashSet<HumanBodyBones>>()
-            {
+            validAttachToBoneTargetsBySlotType = new Dictionary<SpatialAvatarAttachment.Slot, HashSet<HumanBodyBones>>() {
                 { SpatialAvatarAttachment.Slot.LeftHand, leftArmAndHandBonesSet },
+                { SpatialAvatarAttachment.Slot.LeftShoulder, new HashSet<HumanBodyBones> { HumanBodyBones.LeftShoulder } },
                 { SpatialAvatarAttachment.Slot.RightHand, rightArmAndHandBonesSet },
-                { SpatialAvatarAttachment.Slot.Feet, legsAndFeetBonesSet },
-                { SpatialAvatarAttachment.Slot.Head, headBonesSet },
-                { SpatialAvatarAttachment.Slot.Torso, middleBonesSet },
-                { SpatialAvatarAttachment.Slot.Back, middleBonesSet },
+                { SpatialAvatarAttachment.Slot.RightShoulder, new HashSet<HumanBodyBones> { HumanBodyBones.RightShoulder } },
+                { SpatialAvatarAttachment.Slot.LeftFoot, leftLegAndFootBonesSet },
+                { SpatialAvatarAttachment.Slot.RightFoot, rightLegAndFootBonesSet },
+                { SpatialAvatarAttachment.Slot.Neck, headBonesSet },
+                { SpatialAvatarAttachment.Slot.Hat, headBonesSet },
+                { SpatialAvatarAttachment.Slot.FaceFront, headBonesSet },
+                { SpatialAvatarAttachment.Slot.BodyFront, middleBonesSet },
+                { SpatialAvatarAttachment.Slot.BodyBack, middleBonesSet },
+                { SpatialAvatarAttachment.Slot.WaistFront, new HashSet<HumanBodyBones> { HumanBodyBones.Hips } },
+                { SpatialAvatarAttachment.Slot.WaistCenter, new HashSet<HumanBodyBones> { HumanBodyBones.Hips } },
+                { SpatialAvatarAttachment.Slot.WaistBack, new HashSet<HumanBodyBones> { HumanBodyBones.Hips } },
                 // These slot types below are generic enough to not have restrictions.
                 { SpatialAvatarAttachment.Slot.Aura, allSupportedBonesSet },
-                { SpatialAvatarAttachment.Slot.Accessory, allSupportedBonesSet },
                 { SpatialAvatarAttachment.Slot.Pet, allSupportedBonesSet },
             };
         }
@@ -98,11 +108,10 @@ namespace SpatialSys.UnitySDK.Editor
                 attachment.ikLeftHandTarget = null;
             if (!attachment.ikTargetsEnabled || !occupiedSlots.HasFlag(SpatialAvatarAttachment.SlotMask.RightHand))
                 attachment.ikRightHandTarget = null;
-            if (!attachment.ikTargetsEnabled || !occupiedSlots.HasFlag(SpatialAvatarAttachment.SlotMask.Feet))
-            {
+            if (!attachment.ikTargetsEnabled || !occupiedSlots.HasFlag(SpatialAvatarAttachment.SlotMask.LeftFoot))
                 attachment.ikLeftFootTarget = null;
+            if (!attachment.ikTargetsEnabled || !occupiedSlots.HasFlag(SpatialAvatarAttachment.SlotMask.RightFoot))
                 attachment.ikRightFootTarget = null;
-            }
 
             // Custom Actions ------------------------------------------------------------------------------------------
             if (!attachment.customActionsFeatureAvailable)
@@ -226,17 +235,26 @@ namespace SpatialSys.UnitySDK.Editor
             return true;
         }
 
+        private static Dictionary<SpatialAvatarAttachment.Slot, SpatialAvatarAttachment.Category> _slotAndCategoryPairs = new() {
+            {SpatialAvatarAttachment.Slot.Aura, SpatialAvatarAttachment.Category.Aura},
+            {SpatialAvatarAttachment.Slot.Pet, SpatialAvatarAttachment.Category.Pet},
+        };
+        private static Dictionary<SpatialAvatarAttachment.Category, SpatialAvatarAttachment.Slot> _slotAndCategoryPairsReverse;
+
         public static bool ValidateCategoryField(SpatialAvatarAttachment attachment, out string message)
         {
-            if (attachment.primarySlot == SpatialAvatarAttachment.Slot.Aura && attachment.category != SpatialAvatarAttachment.Category.Aura)
+            if (_slotAndCategoryPairsReverse == null)
+                _slotAndCategoryPairsReverse = _slotAndCategoryPairs.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
+
+            if (_slotAndCategoryPairs.TryGetValue(attachment.primarySlot, out SpatialAvatarAttachment.Category category) && attachment.category != category)
             {
-                message = "For aura attachments, the category must be set to Aura";
+                message = $"For {attachment.primarySlot} attachments, the category must be set to {category}";
                 return false;
             }
 
-            if (attachment.primarySlot != SpatialAvatarAttachment.Slot.Aura && attachment.category == SpatialAvatarAttachment.Category.Aura)
+            if (_slotAndCategoryPairsReverse.TryGetValue(attachment.category, out SpatialAvatarAttachment.Slot slot) && attachment.primarySlot != slot)
             {
-                message = "The aura category can only be used for aura attachments";
+                message = $"The {attachment.category} category can only be used for {slot} attachments";
                 return false;
             }
 

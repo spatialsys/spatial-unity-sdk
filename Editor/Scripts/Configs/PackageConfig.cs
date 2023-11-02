@@ -21,7 +21,6 @@ namespace SpatialSys.UnitySDK.Editor
         public int version; // version of this config model; Used for making backwards-compatible changes
 #pragma warning restore 414
 
-        [HideInInspector]
         public string sku = "";
         [Tooltip("Display name of the asset as it would show up in Spatial")]
         public string packageName;

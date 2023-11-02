@@ -53,6 +53,10 @@ namespace SpatialSys.UnitySDK.Editor
 
             InitializeIfNecessary();
 
+            // Check if type is part of the custom c# assembly
+            if (packageConfig is SpaceConfig && componentType.Assembly.GetName().Name == CSScriptingUtility.CSHARP_ASSEMBLY_NAME)
+                return true;
+
             // Prioritize subclasses over their base classes.
             Type currentTargetType = null;
             ComponentStatus currentTargetStatus = ComponentStatus.Allowed;

@@ -167,6 +167,7 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(UnityEngine.SceneManagement.Scene),//Scene.GetRootGameobjets is dangerous
             typeof(UnityEngine.SceneManagement.SceneManager),//Load/Unload scene is dangerous
             typeof(TMPro.TMP_PackageResourceImporterWindow),//compile errors. (editor only)
+            typeof(VideoShadersIncludeMode),
         };
 
         // Allow these specific members (nodes)

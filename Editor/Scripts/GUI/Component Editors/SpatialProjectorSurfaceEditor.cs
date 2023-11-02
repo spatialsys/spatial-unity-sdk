@@ -11,9 +11,11 @@ namespace SpatialSys.UnitySDK.Editor
         public void OnSceneGUI()
         {
             var t = target as SpatialProjectorSurface;
-            Vector2 scale = t.size * new Vector2(2f, 1f);
+            Vector2 scale = t.size2D;
             SpatialHandles.EvenlyScaleableRectangleHandle(t.transform.position, ref scale, t.transform.localToWorldMatrix);
-            t.size = scale.y;
+            scale.x = Mathf.Abs(scale.x);
+            scale.y = Mathf.Abs(scale.y);
+            t.size2D = scale;
 
             Vector3 ne = t.transform.position + (t.transform.right * (scale.x * .5f)) + (t.transform.up * (scale.y * .5f));
             Vector3 se = t.transform.position + (t.transform.right * (scale.x * .5f)) + (-t.transform.up * (scale.y * .5f));

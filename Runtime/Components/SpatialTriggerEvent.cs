@@ -11,9 +11,17 @@ namespace SpatialSys.UnitySDK
         public const int LATEST_VERSION = 1;
 
         public override string prettyName => "Trigger Event";
-        public override string tooltip => "Invokes the UnityEvent when an object enters the trigger.";
+        public override string tooltip =>
+        @"Invokes the Spatial Event when an object enters the trigger. The SpatialEvent contains Syncable UnityEvents, AnimatorEvents, and QuestEvents.
+        
+    • <b>UnityEvents</b> can be used to invoke single function on components like gameObject.SetActive(false) to disable a target gameObject.
+        
+    • <b>AnimatorEvents</b> can be used to set parameters on an Animator component. If you want the Animator parameters to be synced across clients, you must use a SyncedAnimator component.
+        
+    • <b>QuestEvents</b> can be used to update the state of a quest. Quests are created by adding the Quest component to any gameObject in the scene. Quest events are not synced.";
+
         public override string documentationURL => "https://docs.spatial.io/components/trigger-event";
-        public override bool isExperimental => true;
+        public override bool isExperimental => false;
 
         public enum ListenFor
         {

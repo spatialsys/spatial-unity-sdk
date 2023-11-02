@@ -5,10 +5,10 @@ using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
-    [UnitCategory("Spatial\\Actor")]
-    [UnitTitle("Spatial Sync: Get Nametag State")]
-    [UnitSurtitle("Spatial Sync")]
+    [UnitTitle("Actor: Get Nametag State")]
+    [UnitSurtitle("Actor")]
     [UnitShortTitle("Get Nametag State")]
+    [UnitCategory("Spatial\\Actor")]
     [TypeIcon(typeof(SpatialComponentBase))]
     public class GetActorNametagSubtext : Unit
     {

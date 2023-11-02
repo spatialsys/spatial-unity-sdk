@@ -13,7 +13,9 @@ namespace SpatialSys.UnitySDK.VisualScripting
         MetaQuest = 3,
     }
 
-    [UnitTitle("Get Actor Platform")]
+    [UnitTitle("Actor: Get Platform")]
+    [UnitSurtitle("Actor")]
+    [UnitShortTitle("Get Platform")]
     [UnitCategory("Spatial\\Actor")]
     [TypeIcon(typeof(SpatialComponentBase))]
     public class GetActorPlatformNode : Unit
@@ -52,7 +54,9 @@ namespace SpatialSys.UnitySDK.VisualScripting
         }
     }
 
-    [UnitTitle("Get Local Platform")]
+    [UnitTitle("Local Actor: Get Platform")]
+    [UnitSurtitle("Local Actor")]
+    [UnitShortTitle("Get Platform")]
     [UnitCategory("Spatial\\Actor")]
     [TypeIcon(typeof(SpatialComponentBase))]
     public class GetLocalActorPlatformNode : Unit

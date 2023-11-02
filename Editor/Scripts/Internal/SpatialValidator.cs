@@ -86,6 +86,18 @@ namespace SpatialSys.UnitySDK.Editor
                 .Then(() => Promise<SpatialValidationSummary>.Resolved(CreateValidationSummary(config)));
         }
 
+        public static IPromise<SpatialValidationSummary> RunTestsOnComponent(ValidationContext context, Component target, bool additiveResults = false)
+        {
+            validationContext = context;
+            LoadTestsIfNecessary();
+            if (!additiveResults)
+                allResponses.Clear();
+
+            return RunComponentTests(target)
+                .Catch(HandleInternalTestException)
+                .Then(() => Promise<SpatialValidationSummary>.Resolved(CreateValidationSummary(null)));
+        }
+
         public static void AddResponse(SpatialTestResponse response)
         {
             if (_currentTestScene.HasValue)

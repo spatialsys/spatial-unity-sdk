@@ -9,6 +9,7 @@ SpatialSys.UnitySDK.SpatialEmptyFrame,Y,Y,N,N,N,N,N,N,N,N
 SpatialSys.UnitySDK.SpatialEntrancePoint,Y,Y,N,N,N,N,N,N,N,N
 SpatialSys.UnitySDK.SpatialEnvironmentSettingsOverrides,Y,Y,N,N,N,N,N,N,N,N
 SpatialSys.UnitySDK.SpatialInteractable,Y,Y,N,N,N,Y,N,N,N,N
+SpatialSys.UnitySDK.SpatialMovementMaterialSurface,Y,Y,N,N,N,Y,N,N,N,N
 SpatialSys.UnitySDK.SpatialPackageAsset,Y,Y,N,N,N,N,N,N,N,N
 SpatialSys.UnitySDK.SpatialPointOfInterest,Y,Y,N,N,N,Y,N,N,N,N
 SpatialSys.UnitySDK.SpatialPrefabObject,Y,Y,N,N,N,Y,N,N,N,N

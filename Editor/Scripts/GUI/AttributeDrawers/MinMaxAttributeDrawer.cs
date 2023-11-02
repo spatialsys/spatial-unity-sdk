@@ -15,6 +15,13 @@ namespace SpatialSys.UnitySDK.Editor
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            //The following drawer doesnt work with multiple objects selected, so just do default vec2 drawer
+            if (property.serializedObject.isEditingMultipleObjects)
+            {
+                EditorGUI.PropertyField(position, property, label);
+                return;
+            }
+
             Rect sliderPosition = EditorGUI.PrefixLabel(position, label);
             SerializedProperty min = property.FindPropertyRelative("x");
             SerializedProperty max = property.FindPropertyRelative("y");
@@ -39,6 +46,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
             float minValue = min.floatValue;
             float maxValue = max.floatValue;
+
 #if UNITY_2017_1_OR_NEWER
             EditorGUI.MinMaxSlider(sliderPosition, GUIContent.none, ref minValue, ref maxValue, minMax.min, minMax.max);
 #else

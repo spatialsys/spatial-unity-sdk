@@ -164,11 +164,10 @@ namespace SpatialSys.UnitySDK.Editor
                             EditorGUILayout.PropertyField(_ikLeftHandTargetProp, new GUIContent("Left Hand Target"));
                         if (occupiedSlots.HasFlag(SpatialAvatarAttachment.SlotMask.RightHand))
                             EditorGUILayout.PropertyField(_ikRightHandTargetProp, new GUIContent("Right Hand Target"));
-                        if (occupiedSlots.HasFlag(SpatialAvatarAttachment.SlotMask.Feet))
-                        {
+                        if (occupiedSlots.HasFlag(SpatialAvatarAttachment.SlotMask.LeftFoot))
                             EditorGUILayout.PropertyField(_ikLeftFootTargetProp, new GUIContent("Left Foot Target"));
+                        if (occupiedSlots.HasFlag(SpatialAvatarAttachment.SlotMask.RightFoot))
                             EditorGUILayout.PropertyField(_ikRightFootTargetProp, new GUIContent("Right Foot Target"));
-                        }
                     });
                 }
             }

@@ -23,6 +23,9 @@ namespace SpatialSys.UnitySDK
         [Space(5), Tooltip("The Y position in world units at which physics objects such as avatars should respawn or be deleted. This can be visualized by the translucent red plane in the scene view.")]
         public float respawnLevelY = DEFAULT_RESPAWN_LEVEL_Y;
 
+        [Tooltip("When defined all colliders without a movement material surface will use this movement material.")]
+        public SpatialMovementMaterial defaultMovementMaterial = null;
+
         public AvatarControlSettings avatarControlSettings = AvatarControlSettings.Default;
 
         // Default values set below should be set to be backwards compatible: these values are loaded in packages using old SDK version that don't have these settings available.

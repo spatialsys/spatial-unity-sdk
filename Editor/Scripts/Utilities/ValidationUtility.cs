@@ -75,10 +75,9 @@ namespace SpatialSys.UnitySDK.Editor
         {
             // Create folder next to the prefab to store newly generated package resources
             string prefabPath = AssetDatabase.GetAssetPath(packagePrefab);
-            string generatedAssetsDirPath = Path.Combine(Path.GetDirectoryName(prefabPath), "SpatialPackageAssets");
-            if (AssetDatabase.IsValidFolder(generatedAssetsDirPath))
-                AssetDatabase.DeleteAsset(generatedAssetsDirPath);
-            Directory.CreateDirectory(generatedAssetsDirPath);
+            string generatedAssetsDirPath = Path.Combine(Path.GetDirectoryName(prefabPath), Path.GetFileNameWithoutExtension(prefabPath) + "_GeneratedAssets");
+            if (!AssetDatabase.IsValidFolder(generatedAssetsDirPath))
+                Directory.CreateDirectory(generatedAssetsDirPath);
 
             // Create new preview scene to use animations without affecting any other open scenes
             Scene previewScene = EditorSceneManager.NewPreviewScene();

@@ -9,35 +9,44 @@ namespace SpatialSys.UnitySDK
         public enum Slot
         {
             None = 0,
-            [Tooltip("Effects surrounding the avatar, such as a halo")]
-            Aura = 1,
+            Hat = 5,
+            FaceFront = 10,
+            Neck = 9,
+            LeftShoulder = 11,
             LeftHand = 2,
+            RightShoulder = 12,
             RightHand = 3,
-            Feet = 4,
-            Head = 5,
-            Torso = 6,
-            [Tooltip("For items that are worn on the avatar's back, separated from the torso, such as a backpack or jetpack")]
-            Back = 7,
-            [Tooltip("A special slot to set an active pet that follows the avatar")]
-            Pet = 8,
-            [Tooltip("Additional miscellaneous slot that doesn't fit anywhere else. This can be for belts, slings, rings, necklaces, etc.")]
-            Accessory = 9,
-            // Note: if you add more slots, you'll need to update the SlotMask enum below
+            BodyFront = 6,
+            BodyBack = 7,
+            WaistFront = 13,
+            WaistCenter = 14,
+            WaistBack = 15,
+            LeftFoot = 4,
+            RightFoot = 16,
+            Aura = 1,
+            Pet = 8
         }
 
         [Flags]
         public enum SlotMask
         {
             None = 0,
-            Aura = 1 << 0,
+            Hat = 1 << 4,
+            FaceFront = 1 << 9,
+            Neck = 1 << 8,
+            LeftShoulder = 1 << 10,
             LeftHand = 1 << 1,
+            RightShoulder = 1 << 11,
             RightHand = 1 << 2,
-            Feet = 1 << 3,
-            Head = 1 << 4,
-            Torso = 1 << 5,
-            Back = 1 << 6,
+            BodyFront = 1 << 5,
+            BodyBack = 1 << 6,
+            WaistFront = 1 << 12,
+            WaistCenter = 1 << 13,
+            WaistBack = 1 << 14,
+            LeftFoot = 1 << 3,
+            RightFoot = 1 << 15,
+            Aura = 1 << 0,
             Pet = 1 << 7,
-            Accessory = 1 << 8,
         }
 
         public enum Category
@@ -46,10 +55,14 @@ namespace SpatialSys.UnitySDK
             Unspecified = 0,
             [Tooltip("Auras are typically used for effects that surround the avatar, such as a halo")]
             Aura = 1,
-            [Tooltip("Things like swords, shields, etc")]
-            Weapon = 2,
+            [Tooltip("Things like swords, shields, wrench, candle that the avatar can hold in their hands")]
+            Tool = 2,
             [Tooltip("Things like skateboards, hoverboards, jetpacks, wheelchairs, rollerblades, magic carpets, etc")]
             Rideable = 3,
+            [Tooltip("Accessories are things like hats, glasses, etc")]
+            Accessory = 4,
+            [Tooltip("Pets are things like dogs, cats, dragons, etc")]
+            Pet = 5,
         }
 
         public enum AttachmentAnimatorType
@@ -69,10 +82,10 @@ namespace SpatialSys.UnitySDK
         [HideInInspector]
         public int version = 0;
 
-        [Tooltip("The main slot that the attachment will be equipped to")]
+        [Tooltip("The main slot that the attachment will be equipped to. By default, only one attachment can be equipped to each slot.")]
         public Slot primarySlot = Slot.None;
-        [Tooltip("Additional slots that the attachment needs; For example, a sword might need a 'right hand' slot and a 'left hand' slot")]
-        public SlotMask additionalSlots; // FIXME: for now, lets not allow any additional slots for Aura attachments
+        [Tooltip("Additional slots that the attachment needs; For example, a sword might need a 'right hand' slot and a 'left hand' slot. When this attachment is equipped, it may disable other attachments that are using the same slots.")]
+        public SlotMask additionalSlots;
 
         [Tooltip("The category is used to group attachments together in various menus")]
         public Category category = Category.Unspecified;
@@ -124,7 +137,8 @@ namespace SpatialSys.UnitySDK
                     (
                         occupied.HasFlag(Slot.LeftHand.ToSlotMask()) && ikLeftHandTarget != null ||
                         occupied.HasFlag(Slot.RightHand.ToSlotMask()) && ikRightHandTarget != null ||
-                        occupied.HasFlag(Slot.Feet.ToSlotMask()) && (ikLeftFootTarget != null || ikRightFootTarget != null)
+                        occupied.HasFlag(Slot.LeftFoot.ToSlotMask()) && ikLeftFootTarget != null ||
+                        occupied.HasFlag(Slot.RightFoot.ToSlotMask()) && ikRightFootTarget != null
                     );
             }
         }
@@ -163,10 +177,8 @@ namespace SpatialSys.UnitySDK
                 // Good defaults when the component is just added
                 avatarAnimSettings = new SpatialAttachmentAvatarAnimSettings();
                 avatarAnimSettings.sit = new AttachmentAvatarAnimConfig();
-                avatarAnimSettings.sit.attachmentVisible = false;
                 avatarAnimSettings.sit.disableIK = true;
                 avatarAnimSettings.emote = new AttachmentAvatarAnimConfig();
-                avatarAnimSettings.emote.attachmentVisible = false;
                 avatarAnimSettings.emote.disableIK = true;
 
                 version = 1;
@@ -176,13 +188,10 @@ namespace SpatialSys.UnitySDK
             {
                 // Default animation configs for climbing animations
                 avatarAnimSettings.climbIdle = new AttachmentAvatarAnimConfig();
-                avatarAnimSettings.climbIdle.attachmentVisible = false;
                 avatarAnimSettings.climbIdle.disableIK = true;
                 avatarAnimSettings.climbUp = new AttachmentAvatarAnimConfig();
-                avatarAnimSettings.climbUp.attachmentVisible = false;
                 avatarAnimSettings.climbUp.disableIK = true;
                 avatarAnimSettings.climbEndTop = new AttachmentAvatarAnimConfig();
-                avatarAnimSettings.climbEndTop.attachmentVisible = false;
                 avatarAnimSettings.climbEndTop.disableIK = true;
 
                 version = 2;

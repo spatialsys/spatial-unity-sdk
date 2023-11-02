@@ -42,7 +42,7 @@ namespace SpatialSys.UnitySDK.Editor
                 return;
             }
             _showLayerWarning = !EditorPrefs.GetBool(LAYER_WARNING_KEY);
-            _backgroundTexture = SpatialGUIUtility.LoadGUITexture("GUI/TooltipBackground.png");
+            _backgroundTexture = SpatialGUIUtility.LoadGUITexture("GUI/GameObjectHeaderBackground.png");
             _iconTexture = SpatialGUIUtility.LoadGUITexture("GUI/SpatialLogo.png");
             _areaStyle = new GUIStyle() {
                 margin = new RectOffset(0, 4, 0, 0),
