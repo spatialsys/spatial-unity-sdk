@@ -2,6 +2,7 @@ using CsvLib;
 using System;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace SpatialSys.UnitySDK.Editor
@@ -43,6 +44,7 @@ namespace SpatialSys.UnitySDK.Editor
         }
 
         private static bool _initialized = false;
+        private static Dictionary<AssemblyDefinitionAsset, string> _customAssemblyNameCache = new();
 
         public static readonly Dictionary<Type, PackageComponentStatusCollection> componentTypeStatuses = new();
 
@@ -54,8 +56,18 @@ namespace SpatialSys.UnitySDK.Editor
             InitializeIfNecessary();
 
             // Check if type is part of the custom c# assembly
-            if (packageConfig is SpaceConfig && componentType.Assembly.GetName().Name == CSScriptingUtility.CSHARP_ASSEMBLY_NAME)
-                return true;
+            if (packageConfig is SpaceConfig spaceConfig && spaceConfig.csharpAssembly != null)
+            {
+                // Cache to speed up lookup since we need to parse JSON to get the assembly name
+                if (!_customAssemblyNameCache.TryGetValue(spaceConfig.csharpAssembly, out string assemblyName))
+                {
+                    assemblyName = CSScriptingEditorUtility.GetAssemblyName(spaceConfig.csharpAssembly);
+                    _customAssemblyNameCache.Add(spaceConfig.csharpAssembly, assemblyName);
+                }
+
+                if (componentType.Assembly.GetName().Name == assemblyName)
+                    return true;
+            }
 
             // Prioritize subclasses over their base classes.
             Type currentTargetType = null;

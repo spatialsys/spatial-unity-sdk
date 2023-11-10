@@ -81,19 +81,28 @@ namespace SpatialSys.UnitySDK.Editor
 
             // Create new preview scene to use animations without affecting any other open scenes
             Scene previewScene = EditorSceneManager.NewPreviewScene();
-            SpatialPackageAsset packageInstance = (SpatialPackageAsset)PrefabUtility.InstantiatePrefab(packagePrefab, previewScene);
+            try
+            {
+                SpatialPackageAsset packageInstance = (SpatialPackageAsset)PrefabUtility.InstantiatePrefab(packagePrefab, previewScene);
 
-            // Makes a copy of the animation clip and saves it to the generated assets folder
-            UniquefyAllAvatarAnimationClips(generatedAssetsDirPath, packageInstance.gameObject);
+                // Makes a copy of the animation clip and saves it to the generated assets folder
+                UniquefyAllAvatarAnimationClips(generatedAssetsDirPath, packageInstance.gameObject);
 
-            // Enforce valid bone orientations
-            if (packagePrefab is SpatialAvatar || (packagePrefab is SpatialAvatarAttachment attachment && attachment.isSkinnedToHumanoidSkeleton))
-                EnforceValidBoneOrientations(generatedAssetsDirPath, packageInstance.gameObject);
+                if (packageInstance is SpatialAvatar avatarPrefabInstance)
+                    EnforceValidAvatarRagdollSetup(avatarPrefabInstance);
 
-            // Save processed prefab
-            UnityEditor.EditorUtility.SetDirty(packageInstance);
-            PrefabUtility.ApplyPrefabInstance(packageInstance.gameObject, InteractionMode.AutomatedAction);
-            EditorSceneManager.ClosePreviewScene(previewScene);
+                // Enforce valid bone orientations for avatar-based prefabs
+                if (packagePrefab is SpatialAvatar || (packagePrefab is SpatialAvatarAttachment attachment && attachment.isSkinnedToHumanoidSkeleton))
+                    EnforceValidBoneOrientations(generatedAssetsDirPath, packageInstance.gameObject);
+
+                // Save processed prefab
+                UnityEditor.EditorUtility.SetDirty(packageInstance);
+                PrefabUtility.ApplyPrefabInstance(packageInstance.gameObject, InteractionMode.AutomatedAction);
+            }
+            finally
+            {
+                EditorSceneManager.ClosePreviewScene(previewScene);
+            }
         }
 
         private static void EnforceValidBoneOrientations(string generatedAssetsDirPath, GameObject packagePrefabObj)
@@ -256,6 +265,52 @@ namespace SpatialSys.UnitySDK.Editor
                         animConfig.overrideClipMale = duplicatedClip;
                     }
                 }
+            }
+        }
+
+        private static void EnforceValidAvatarRagdollSetup(SpatialAvatar avatarInstance)
+        {
+            // The existence of at least one joint will denote an avatar ragdoll setup.
+            avatarInstance.ragdollJoints = avatarInstance.GetComponentsInChildren<CharacterJoint>(includeInactive: true);
+            if (avatarInstance.ragdollJoints == null || avatarInstance.ragdollJoints.Length == 0)
+                return;
+
+            // There should always be exactly 1 in the prefab if validation passed before entering this function.
+            // N+1 bodies connected by N joints.
+            int bodyCount = avatarInstance.ragdollJoints.Length + 1;
+            // Both arrays are paired together; each index corresponds to the same object.
+            avatarInstance.ragdollRigidbodies = new Rigidbody[bodyCount];
+            avatarInstance.ragdollColliders = new Collider[bodyCount];
+
+            for (int i = 0; i < avatarInstance.ragdollJoints.Length; i++)
+            {
+                CharacterJoint joint = avatarInstance.ragdollJoints[i];
+
+                if (!joint.enableProjection)
+                {
+                    // Projection generally gives favorable results on preventing "stretchy ragdolls".
+                    joint.enableProjection = true;
+                    joint.projectionDistance = 0.1f;
+                    joint.projectionAngle = 90f;
+                }
+
+                avatarInstance.ragdollRigidbodies[i + 1] = joint.GetComponent<Rigidbody>();
+                avatarInstance.ragdollColliders[i + 1] = joint.GetComponent<Collider>();
+
+                if (avatarInstance.ragdollRigidbodies[0] == null && joint.connectedBody.GetComponent<CharacterJoint>() == null)
+                {
+                    // If validation passed, then there should always be a connected body assigned to each joint.
+                    // The connected body has no character joint (aka the ragdoll base).
+                    avatarInstance.ragdollRigidbodies[0] = joint.connectedBody;
+                    avatarInstance.ragdollColliders[0] = joint.connectedBody.GetComponent<Collider>();
+                }
+            }
+
+            for (int i = 0; i < bodyCount; i++)
+            {
+                avatarInstance.ragdollColliders[i].isTrigger = false;
+                avatarInstance.ragdollColliders[i].enabled = false;
+                avatarInstance.ragdollRigidbodies[i].isKinematic = true;
             }
         }
 

@@ -271,13 +271,14 @@ namespace SpatialSys.UnitySDK.Editor
         // HELPER / PRIVATE INTERFACE
         //------------------------------------------------
 
-        private static RequestHelper CreateRequest()
+        private static RequestHelper CreateRequest(int? timeout = null)
         {
             RequestHelper request = new RequestHelper();
             request.Headers["Authorization"] = $"Bearer {AuthUtility.accessToken}";
             // Example: UNITYSDK 1.2.3 official GITSHA00
             // Currently the gitsha is not used, but is included for SAPI compatibility
             request.Headers["Spatial-User-Agent"] = $"UNITYSDK {PackageManagerUtility.currentVersion} {(PackageManagerUtility.isOfficialVersion ? "official" : "dev")} 00000000";
+            request.Timeout = timeout ?? 30;
 
 #if SPATIAL_UNITYSDK_STAGING
             request.EnableDebug = true;
@@ -292,6 +293,7 @@ namespace SpatialSys.UnitySDK.Editor
             request.Uri = url;
             request.BodyRaw = data;
             request.ContentType = "application/octet-stream";
+            request.Timeout = 60 * 60; // 1 hour timeout
             if (progressCallback != null)
             {
                 request.ProgressCallback += (float p) => {

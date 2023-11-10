@@ -202,6 +202,21 @@ namespace SpatialSys.UnitySDK
         public delegate void EnableAvatarToAvatarCollisionsDelegate(bool enabled);
         public static EnableAvatarToAvatarCollisionsDelegate EnableAvatarToAvatarCollisions;
 
+        public delegate bool GetLocalAvatarRagdollPhysicsActiveDelegate();
+        public static GetLocalAvatarRagdollPhysicsActiveDelegate GetLocalAvatarRagdollPhysicsActive;
+
+        public delegate void SetLocalAvatarRagdollPhysicsActiveDelegate(bool active, Vector3 initialVelocity);
+        public static SetLocalAvatarRagdollPhysicsActiveDelegate SetLocalAvatarRagdollPhysicsActive;
+
+        public delegate Vector3 GetLocalAvatarRagdollVelocityDelegate();
+        public static GetLocalAvatarRagdollVelocityDelegate GetLocalAvatarRagdollVelocity;
+
+        public delegate void SetLocalAvatarRagdollVelocityDelegate(Vector3 velocity);
+        public static SetLocalAvatarRagdollVelocityDelegate SetLocalAvatarRagdollVelocity;
+
+        public delegate void AddForceToLocalAvatarRagdollDelegate(Vector3 force, bool ignoreMass);
+        public static AddForceToLocalAvatarRagdollDelegate AddForceToLocalAvatarRagdoll;
+
         // Avatar Attachments
         public delegate void EquipAvatarAttachmentPackageDelegate(string sku, bool equip, bool clearOccupiedPrimarySlot, string optionalTag, Action<bool> callback);
         public static EquipAvatarAttachmentPackageDelegate EquipAvatarAttachmentPackage;

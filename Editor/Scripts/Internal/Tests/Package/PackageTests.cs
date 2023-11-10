@@ -62,11 +62,14 @@ namespace SpatialSys.UnitySDK.Editor
         public static void CheckPackageFileSizeLimit(PackageConfig config)
         {
             string[] dependencies = GetPackageDependencies(config);
+            int maxPackageSize = BuildUtility.MAX_PACKAGE_SIZE;
+            if (Application.isBatchMode)
+                maxPackageSize += 5 * 1024 * 1024; // Add 5MB to the limit in batch mode to account for file size differences between operating systems
 
             // Get size of each dependency
             Tuple<string, FileInfo>[] dependencyInfos = dependencies.Select(d => new Tuple<string, FileInfo>(d, new FileInfo(d))).ToArray();
             long totalSize = dependencyInfos.Sum(d => d.Item2.Length);
-            if (totalSize > BuildUtility.MAX_PACKAGE_SIZE)
+            if (totalSize > maxPackageSize)
             {
                 var orderedDependencies = dependencyInfos.OrderByDescending(d => d.Item2.Length).Select(d => $"{d.Item2.Length / 1024 / 1024f:0.0000}MB - {d.Item1}").Take(25);
                 SpatialValidator.AddResponse(
@@ -74,7 +77,7 @@ namespace SpatialSys.UnitySDK.Editor
                         null,
                         SpatialValidator.validationContext == ValidationContext.UploadingToSandbox ? TestResponseType.Warning : TestResponseType.Fail,
                         "Package is too large to publish to Spatial",
-                        $"The package is {totalSize / 1024f / 1024f}MB, but the maximum size is {BuildUtility.MAX_PACKAGE_SIZE / 1024 / 1024}MB. " +
+                        $"The package is {totalSize / 1024f / 1024f}MB, but the maximum size is {maxPackageSize}MB. " +
                         "The size of the package is equal to the raw file size of all your assets which get uploaded to Spatial. Import settings will not change this. " +
                         "Sometimes, texture and audio source assets can be very large on disk, and it can help to downscale them or re-export them in a different format." +
                         $"Here's a list of assets ordered by largest to smallest:\n - {string.Join("\n - ", orderedDependencies)}"
@@ -112,30 +115,6 @@ namespace SpatialSys.UnitySDK.Editor
                         "Package contains unsupported texture files",
                         $"This package contains file formats that are not supported (Unsupported: {string.Join(",", UNSUPPORTED_TEXTURE_FILE_FORMATS)}). " +
                         $"It is recommended to use the PNG, JPG, or TGA format instead. This is to ensure encoding works on all Spatial's target platforms.\n - {string.Join("\n - ", unsupportedTextureFiles)}"
-                    )
-                );
-            }
-        }
-
-        [PackageTest]
-        public static void CheckPackageForAssetsWithLongPaths(PackageConfig config)
-        {
-            // We need to account for the fact that the package will be processed on a windows machine where the 
-            // path to the project is something like: "C:\agent\_work\6\s\_b\Assets\..."
-            const int MAX_PATH_LENGTH = 200;
-            string[] dependencies = GetPackageDependencies(config);
-
-            List<string> longPathDependencies = dependencies.Where(d => d.Length > MAX_PATH_LENGTH).ToList();
-            if (longPathDependencies.Count > 0)
-            {
-                SpatialValidator.AddResponse(
-                    new SpatialTestResponse(
-                        null,
-                        TestResponseType.Fail,
-                        "Package contains files with paths that are too long",
-                        "This package contains files that have asset paths that are too long. " +
-                        $"To be able to process this package on a windows machine, path lengths cannot exceed {MAX_PATH_LENGTH}. " +
-                        $"Try to collapse folder hierarchies or give assets shorter file names.\n - {string.Join("\n - ", longPathDependencies)}"
                     )
                 );
             }

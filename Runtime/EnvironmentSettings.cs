@@ -16,6 +16,8 @@ namespace SpatialSys.UnitySDK
         public bool disableTeleport = false;
         public bool useSeatsAsSpawnPoints = false;
         public bool enableAvatarToAvatarCollisions = false;
+        [Tooltip("Allow avatars to be activated and deactivated through scripting.")]
+        public bool enableAvatarRagdolls = false;
 
         [Space(5), Tooltip("Web Only")]
         public SpatialCameraRotationMode cameraRotationMode = SpatialCameraRotationMode.AutoRotate;

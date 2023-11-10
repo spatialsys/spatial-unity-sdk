@@ -16,6 +16,14 @@ namespace SpatialSys.UnitySDK
         [Tooltip("Optionally override specific animations for this avatar")]
         public SpatialAvatarAnimOverrides animOverrides;
 
+        // Variables below are assigned automatically at publish.
+        // These arrays will be either null or empty if there is no ragdoll setup found.
+        [HideInInspector] public CharacterJoint[] ragdollJoints = null;
+        [HideInInspector] public Collider[] ragdollColliders = null;
+        [HideInInspector] public Rigidbody[] ragdollRigidbodies = null;
+
+        public bool hasRagdollSetup => ragdollJoints?.Length > 0;
+
 #if UNITY_EDITOR
         protected override void OnValidate()
         {

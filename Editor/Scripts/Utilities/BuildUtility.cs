@@ -62,6 +62,16 @@ namespace SpatialSys.UnitySDK.Editor
                 validationPromise = SpatialValidator.RunTestsOnPackage(ValidationContext.UploadingToSandbox);
             }
 
+            void RestoreAssetBackups()
+            {
+                // Restore config file to previous values, if any has changed.
+                EditorUtility.RestoreAssetFromBackup(ProjectConfig.activePackageConfig);
+                EditorUtility.RestoreAssetFromBackup(ProjectConfig.instance);
+
+                if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig && spaceConfig.csharpAssembly != null)
+                    EditorUtility.RestoreAssetFromBackup(spaceConfig.csharpAssembly);
+            }
+
             return CheckValidationPromise(validationPromise)
                 .Then(() => {
                     ProcessAndSavePackageAssets();
@@ -79,9 +89,13 @@ namespace SpatialSys.UnitySDK.Editor
                     EditorUserBuildSettings.SwitchActiveBuildTarget(BuildPipeline.GetBuildTargetGroup(target), target);
 
                     // Compile custom c# dlls
-                    if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig && spaceConfig.cSharpAssembly != null)
+                    if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig && spaceConfig.csharpAssembly != null)
                     {
-                        if (!CSScriptingEditorUtility.CompileAssembly(spaceConfig.cSharpAssembly))
+                        // Create backup because we're going to modify the assembly name
+                        EditorUtility.CreateAssetBackup(spaceConfig.csharpAssembly);
+                        CSScriptingEditorUtility.EnforceCustomAssemblyName(spaceConfig.csharpAssembly, null);
+
+                        if (!CSScriptingEditorUtility.CompileAssembly(spaceConfig.csharpAssembly, null))
                             return Promise.Rejected(new System.Exception("Failed to compile custom c# scripts"));
                     }
 
@@ -103,6 +117,12 @@ namespace SpatialSys.UnitySDK.Editor
                     if (bundleManifest == null)
                         return Promise.Rejected(new System.Exception("Asset bundle build failed"));
 
+                    // We've built the bundles, we don't need to wait for the upload to finish before we restore the backups.
+                    // Since we restore the C# assembly, that will trigger a recompile and VS node regeneration, which will hang the upload process.
+                    // Delay the recompilation until after the bundle is uploaded.
+                    EditorApplication.LockReloadAssemblies();
+                    RestoreAssetBackups();
+
                     Promise uploadPromise = new();
                     EditorCoroutineUtility.StartCoroutineOwnerless(UploadSandboxAssetBundlesCoroutine(uploadPromise, ProjectConfig.activePackageConfig, bundleDir));
                     uploadPromise
@@ -117,14 +137,14 @@ namespace SpatialSys.UnitySDK.Editor
                             if (UnityEditor.EditorUtility.DisplayDialog("Sandbox upload failed", exceptionMessage, "OK"))
                                 callback?.Invoke();
                             Debug.LogError($"Sandbox upload failed: {exc}");
-                        })
-                        .Finally(() => UnityEditor.EditorUtility.ClearProgressBar());
+                        });
+
                     return uploadPromise;
                 })
                 .Finally(() => {
-                    // Restore config file to previous values, if any has changed.
-                    EditorUtility.RestoreAssetFromBackup(ProjectConfig.activePackageConfig);
-                    EditorUtility.RestoreAssetFromBackup(ProjectConfig.instance);
+                    RestoreAssetBackups();
+                    UnityEditor.EditorUtility.ClearProgressBar();
+                    EditorApplication.UnlockReloadAssemblies();
                 });
         }
 
@@ -163,7 +183,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             // Gather additional bundles (placeholder for future use)
             List<string> additionalBundles = new();
-            if (packageConfig is SpaceConfig spaceConfig && File.Exists(CSScriptingEditorUtility.OUTPUT_ASSET_PATH))
+            if (packageConfig is SpaceConfig spaceConfig && spaceConfig.csharpAssembly != null && File.Exists(CSScriptingEditorUtility.OUTPUT_ASSET_PATH))
                 additionalBundles.Add(CSScriptingUtility.CSHARP_ASSEMBLY_BUNDLE_ID);
 
             // Get upload URLS for each bundle
@@ -263,6 +283,13 @@ namespace SpatialSys.UnitySDK.Editor
             if (ProjectConfig.activePackageConfig is AvatarAttachmentConfig avatarAttachmentConfig)
                 AvatarAttachmentComponentTests.EnforceValidSetup(avatarAttachmentConfig.prefab);
 
+            void RestoreAssetBackups()
+            {
+                // Restore config file to previous values if necessary.
+                EditorUtility.RestoreAssetFromBackup(ProjectConfig.activePackageConfig);
+                EditorUtility.RestoreAssetFromBackup(ProjectConfig.instance);
+            }
+
             return CheckValidationPromise(SpatialValidator.RunTestsOnPackage(ValidationContext.PublishingPackage))
                 .Then(() => {
                     ProcessAndSavePackageAssets();
@@ -316,6 +343,9 @@ namespace SpatialSys.UnitySDK.Editor
                         Directory.CreateDirectory(BUILD_DIR);
                     PackageProject(PACKAGE_EXPORT_PATH);
 
+                    // We've created the package, we don't need to wait for the upload to finish before we restore the backups
+                    RestoreAssetBackups();
+
                     _lastUploadProgress = -1f;
                     UpdatePackageUploadProgressBar(0, 0, 0f);
 
@@ -367,10 +397,7 @@ namespace SpatialSys.UnitySDK.Editor
                 })
                 .Finally(() => {
                     UnityEditor.EditorUtility.ClearProgressBar();
-
-                    // Restore config file to previous values if necessary.
-                    EditorUtility.RestoreAssetFromBackup(ProjectConfig.activePackageConfig);
-                    EditorUtility.RestoreAssetFromBackup(ProjectConfig.instance);
+                    RestoreAssetBackups();
                 });
         }
 
@@ -406,9 +433,9 @@ namespace SpatialSys.UnitySDK.Editor
             dependencies.RemoveWhere(d => d.StartsWith(PackageManagerUtility.PACKAGE_DIRECTORY_PATH));
 
             // Include all .cs scripts included in the custom C# assembly
-            if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig && spaceConfig.cSharpAssembly != null)
+            if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig && spaceConfig.csharpAssembly != null)
             {
-                string assemblyRootDirectory = Path.GetDirectoryName(AssetDatabase.GetAssetPath(spaceConfig.cSharpAssembly));
+                string assemblyRootDirectory = Path.GetDirectoryName(AssetDatabase.GetAssetPath(spaceConfig.csharpAssembly));
                 string[] csharpScriptPaths = Directory.GetFiles(assemblyRootDirectory, "*.cs", SearchOption.AllDirectories);
                 dependencies.UnionWith(csharpScriptPaths);
             }
@@ -499,7 +526,7 @@ namespace SpatialSys.UnitySDK.Editor
                 EditorUtility.SetAssetBundleName(firstAsset, assetBundleName);
             }
 
-            if (config is SpaceConfig spaceConfig && spaceConfig.cSharpAssembly != null)
+            if (config is SpaceConfig spaceConfig && spaceConfig.csharpAssembly != null)
             {
                 if (!File.Exists(CSScriptingEditorUtility.OUTPUT_ASSET_PATH))
                     throw new Exception($"Unable to find {CSScriptingEditorUtility.OUTPUT_ASSET_PATH}");
@@ -565,7 +592,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             // For every source asset, we only want to have one processed prefab copy
             // GUID->Path lookup
-            const string PROCESSED_PACKAGE_PREFABS_CACHE_INFO_PATH = PROCESSED_PACKAGE_PREFABS_DIRECTORY + "/cache.txt";
+            const string PROCESSED_PACKAGE_PREFABS_CACHE_INFO_PATH = PROCESSED_PACKAGE_PREFABS_DIRECTORY + "/cache~";
             static Dictionary<string, string> GetCache()
             {
                 Dictionary<string, string> prefabCache = new Dictionary<string, string>();
@@ -623,13 +650,9 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 try
                 {
-                    const string PROGRESS_BAR_TITLE = "Processing embedded package assets";
-                    UnityEditor.EditorUtility.DisplayProgressBar(PROGRESS_BAR_TITLE, $"0/{spaceConfig.embeddedPackageAssets.Length}", 0f);
-
-                    // Process avatar-based embedded packages
                     for (int i = 0; i < spaceConfig.embeddedPackageAssets.Length; i++)
                     {
-                        UnityEditor.EditorUtility.DisplayProgressBar(PROGRESS_BAR_TITLE, $"{i + 1}/{spaceConfig.embeddedPackageAssets.Length}", (float)(i + 1) / spaceConfig.embeddedPackageAssets.Length);
+                        UnityEditor.EditorUtility.DisplayProgressBar("Processing embedded package assets", $"{i} out of {spaceConfig.embeddedPackageAssets.Length} processed", (float)i / spaceConfig.embeddedPackageAssets.Length);
 
                         EmbeddedPackageAsset em = spaceConfig.embeddedPackageAssets[i];
                         SpatialPackageAsset spatialPackageAsset = em.asset;

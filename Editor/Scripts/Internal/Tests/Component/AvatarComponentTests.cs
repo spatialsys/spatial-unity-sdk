@@ -119,5 +119,96 @@ namespace SpatialSys.UnitySDK.Editor
                 ));
             }
         }
+
+        /// <summary>
+        /// If there is a ragdoll setup on the avatar, then ensure all required components are properly configured.
+        /// Any properties that can automatically corrected and set should be done under ValidationUtility.EnforceValidAvatarRagdollSetup(), which occurs during publish.
+        /// </summary>
+        [ComponentTest(typeof(SpatialAvatar))]
+        public static void EnsureAvatarRagdollSetupIsValid(SpatialAvatar avatarPrefab)
+        {
+            // The existence of at least one joint will denote that the avatar has a ragdoll setup.
+            CharacterJoint[] joints = avatarPrefab.GetComponentsInChildren<CharacterJoint>(includeInactive: true);
+            if (joints == null || joints.Length == 0)
+                return;
+
+            static void AddMisconfiguredPhysicsFailResponse(GameObject go)
+            {
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(
+                        go,
+                        TestResponseType.Fail,
+                        $"The object {go.name} in the avatar ragdoll setup is misconfigured",
+                        "There should be a rigidbody and collider attached to this object to properly simulate ragdoll physics."
+                    )
+                );
+            }
+
+            const string BASE_RIGIDBODY_DETAILS = "The 'base rigidbody' is the central point of the ragdoll that other limbs connect to. " +
+                "There should be exactly 1 rigidbody in the ragdoll that does not have a character joint, and at least 1 other joint which connects to that rigidbody. " +
+                "The base rigidbody is typically the Hips bone in a humanoid rig.";
+
+            // There should be exactly one rigidbody in the setup that has no character joint on the same object, which will serve as the base/root of the ragdoll (typically the hips).
+            Rigidbody baseRigidbody = null;
+            for (int i = 0; i < joints.Length; i++)
+            {
+                CharacterJoint joint = joints[i];
+
+                if (joint.GetComponent<Rigidbody>() == null && joint.GetComponent<Collider>() == null)
+                {
+                    AddMisconfiguredPhysicsFailResponse(joint.gameObject);
+                }
+
+                if (joint.connectedBody == null)
+                {
+                    SpatialValidator.AddResponse(
+                        new SpatialTestResponse(
+                            avatarPrefab,
+                            TestResponseType.Fail,
+                            $"The avatar ragdoll joint on '{joint.name}' is misconfigured",
+                            "The character joint must have a rigidbody assigned to the 'Connected Body' field"
+                        )
+                    );
+                    continue;
+                }
+
+                // Check for and assign base rigidbody in ragdoll setup
+                if (joint.connectedBody.GetComponent<CharacterJoint>() == null)
+                {
+                    if (baseRigidbody != null && baseRigidbody != joint.connectedBody)
+                    {
+                        SpatialValidator.AddResponse(
+                            new SpatialTestResponse(
+                                joint.connectedBody,
+                                TestResponseType.Fail,
+                                "Ragdoll setup has multiple base rigidbodies",
+                                BASE_RIGIDBODY_DETAILS + $"\n\nCurrent Base Rigidbody: {baseRigidbody.name}\nFound: {joint.connectedBody.name}"
+                            )
+                        );
+                    }
+                    else
+                    {
+                        baseRigidbody = joint.connectedBody;
+                    }
+                }
+            }
+
+            if (baseRigidbody == null)
+            {
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(
+                        avatarPrefab,
+                        TestResponseType.Fail,
+                        "Ragdoll setup has no base rigidbody",
+                        BASE_RIGIDBODY_DETAILS
+                    )
+                );
+            }
+            else
+            {
+                if (baseRigidbody.GetComponent<Collider>() == null)
+                    AddMisconfiguredPhysicsFailResponse(baseRigidbody.gameObject);
+            }
+        }
     }
 }
