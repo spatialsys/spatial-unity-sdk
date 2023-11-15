@@ -83,35 +83,22 @@ namespace SpatialSys.UnitySDK.Editor
                 );
             }
 
-            // Validate each component
+            // Check that each embedded asset type is supported.
             foreach (EmbeddedPackageAsset em in config.embeddedPackageAssets)
             {
-                SpatialPackageAsset spatialPackageAsset = em.asset;
                 if (em.asset == null)
                     continue;
 
-                if (spatialPackageAsset is SpatialAvatarAttachment avatarAttachment)
-                {
-                    AvatarAttachmentComponentTests.EnforceValidSetup(avatarAttachment);
-                    SpatialValidator.RunTestsOnComponent(SpatialValidator.validationContext, avatarAttachment, additiveResults: true);
-                }
-                else if (spatialPackageAsset is SpatialAvatar avatar)
-                {
-                    SpatialValidator.RunTestsOnComponent(SpatialValidator.validationContext, avatar, additiveResults: true);
-                }
-                else if (spatialPackageAsset is SpatialAvatarAnimation avatarAnimation)
-                {
-                    SpatialValidator.RunTestsOnComponent(SpatialValidator.validationContext, avatarAnimation, additiveResults: true);
-                }
-                else if (spatialPackageAsset is SpatialPrefabObject prefabObject)
-                {
-                    SpatialValidator.RunTestsOnComponent(SpatialValidator.validationContext, prefabObject, additiveResults: true);
-                }
-                else
+                bool isSupportedType = em.asset is SpatialAvatarAttachment avatarAttachment ||
+                    em.asset is SpatialAvatar avatar ||
+                    em.asset is SpatialAvatarAnimation avatarAnimation ||
+                    em.asset is SpatialPrefabObject prefabObject;
+
+                if (!isSupportedType)
                 {
                     SpatialValidator.AddResponse(new SpatialTestResponse(
                         config, TestResponseType.Fail,
-                        $"The embedded package with id `{em.id}` is not a valid package type",
+                        $"The embedded package '{em.asset.name}' (ID: {em.id}) is not a valid package type",
                         "Only embedded packages of type Avatar, AvatarAnimation, AvatarAttachment, and PrefabObject are currently supported"
                     ));
                 }

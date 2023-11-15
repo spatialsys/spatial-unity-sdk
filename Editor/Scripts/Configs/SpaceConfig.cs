@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -17,9 +16,8 @@ namespace SpatialSys.UnitySDK.Editor
         // "Space Name" would be derived from PackageConfig.packageName
         public SceneAsset scene = null;
         [Tooltip("The C# assembly that contains the code for this space. C# Scripting is currenly in preview, and only works if you have been granted access to the preview")]
-        [FormerlySerializedAsAttribute("csharpAssembly")]
         public AssemblyDefinitionAsset csharpAssembly = null;
-        [Tooltip("Embedded packages are packages that are packaged up into the space. This is useful if you want to have custom avatars, avatar animations, avatar attachments and prefabs that are specific to this space, but don't want to publish them as separate packages. Note that embedding packages will increase the download size of your space.")]
+        [Tooltip("Embedded packages are packages that are bundled together with this space. This is useful if you want to have custom avatars, avatar animations, avatar attachments and prefabs that are specific to this space, but don't want to publish them as separate packages. Note that embedding packages will increase the download size and load time of your space.")]
         public EmbeddedPackageAsset[] embeddedPackageAssets = new EmbeddedPackageAsset[0];
 
         [Space(10)]
@@ -29,6 +27,7 @@ namespace SpatialSys.UnitySDK.Editor
         public override Vector2Int thumbnailDimensions => new Vector2Int(1024, 512);
         public override string bundleName => EditorUtility.GetAssetBundleName(scene);
         public override string validatorID => GetValidatorID();
+        public override Scope validatorUsageContext => Scope.World;
 
         public override bool allowTransparentThumbnails => false;
 
@@ -38,6 +37,12 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 if (scene != null)
                     yield return scene;
+
+                foreach (EmbeddedPackageAsset embeddedAsset in embeddedPackageAssets)
+                {
+                    if (embeddedAsset?.asset != null)
+                        yield return embeddedAsset.asset;
+                }
             }
         }
 

@@ -42,11 +42,9 @@ namespace SpatialSys.UnitySDK.Editor
         {
             // We must save all scenes, otherwise the bundle build will fail without explanation.
             EditorSceneManager.SaveOpenScenes();
-
             ProjectConfig.activePackageConfig.savedProjectSettings = SaveProjectSettingsToAsset();
 
-            if (ProjectConfig.activePackageConfig is AvatarAttachmentConfig avatarAttachmentConfig)
-                AvatarAttachmentComponentTests.EnforceValidSetup(avatarAttachmentConfig.prefab);
+            OnBeforeBuild();
 
             IPromise<SpatialValidationSummary> validationPromise;
             if (ProjectConfig.activePackageConfig.isSpaceBasedPackage)
@@ -55,11 +53,11 @@ namespace SpatialSys.UnitySDK.Editor
                 SceneAsset currentScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
                 ProjectConfig.SetActivePackageBySourceAsset(currentScene);
 
-                validationPromise = SpatialValidator.RunTestsOnActiveScene(ValidationContext.UploadingToSandbox);
+                validationPromise = SpatialValidator.RunTestsOnActiveScene(ValidationRunContext.UploadingToSandbox);
             }
             else
             {
-                validationPromise = SpatialValidator.RunTestsOnPackage(ValidationContext.UploadingToSandbox);
+                validationPromise = SpatialValidator.RunTestsOnPackage(ValidationRunContext.UploadingToSandbox);
             }
 
             void RestoreAssetBackups()
@@ -280,8 +278,7 @@ namespace SpatialSys.UnitySDK.Editor
             EditorSceneManager.SaveOpenScenes();
             ProjectConfig.activePackageConfig.savedProjectSettings = SaveProjectSettingsToAsset();
 
-            if (ProjectConfig.activePackageConfig is AvatarAttachmentConfig avatarAttachmentConfig)
-                AvatarAttachmentComponentTests.EnforceValidSetup(avatarAttachmentConfig.prefab);
+            OnBeforeBuild();
 
             void RestoreAssetBackups()
             {
@@ -290,7 +287,7 @@ namespace SpatialSys.UnitySDK.Editor
                 EditorUtility.RestoreAssetFromBackup(ProjectConfig.instance);
             }
 
-            return CheckValidationPromise(SpatialValidator.RunTestsOnPackage(ValidationContext.PublishingPackage))
+            return CheckValidationPromise(SpatialValidator.RunTestsOnPackage(ValidationRunContext.PublishingPackage))
                 .Then(() => {
                     ProcessAndSavePackageAssets();
 
@@ -570,9 +567,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static void ProcessAndSavePackageAssets()
         {
-            PackageConfig config = ProjectConfig.activePackageConfig;
-
-            foreach (UnityEngine.Object asset in config.assets)
+            foreach (UnityEngine.Object asset in ProjectConfig.activePackageConfig.assets)
             {
                 if (asset is SpatialPackageAsset packageAsset)
                     SpatialPackageProcessor.ProcessPackageAsset(packageAsset);
@@ -580,6 +575,19 @@ namespace SpatialSys.UnitySDK.Editor
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
+        }
+
+        /// <summary>
+        /// Called before validation runs, at the very start of the build process.
+        /// </summary>
+        private static void OnBeforeBuild()
+        {
+            foreach (UnityEngine.Object asset in ProjectConfig.activePackageConfig.assets)
+            {
+                // There are settings that should be enforced and automatically corrected without user intervention.
+                if (asset is SpatialAvatarAttachment avatarAttachmentPrefab)
+                    AvatarAttachmentComponentTests.EnforceValidSetup(avatarAttachmentPrefab);
+            }
         }
 
         /// <summary>

@@ -12,8 +12,8 @@ namespace SpatialSys.UnitySDK.Editor
 
         public enum Scope
         {
-            Universal,
-            World
+            Universal = 0,
+            World = 1
         }
 
 #pragma warning disable 414 // suppress "never assigned" warnings until we use it
@@ -35,6 +35,12 @@ namespace SpatialSys.UnitySDK.Editor
         /// A unique string used to identify which validation rules to use (e.g. in ValidComponents)
         /// </summary>
         public abstract string validatorID { get; }
+        /// <summary>
+        /// Defines the usage context to use when running validation tests, which can affect behavior, limit values, different restrictions, etc.
+        /// This will apply to all dependencies and assets used by this config.
+        /// Example: A SpatialAvatar embedded asset is a dependency of a Space config, which is implicitly World context, so it will always be validated as a World SpatialAvatar.
+        /// </summary>
+        public abstract Scope validatorUsageContext { get; }
 
         /// <summary>
         /// Can the thumbnail have no transparent pixels?
@@ -56,7 +62,7 @@ namespace SpatialSys.UnitySDK.Editor
         public bool isSpaceBasedPackage => packageType == PackageType.Space || packageType == PackageType.SpaceTemplate;
 
         /// <summary>
-        /// A collection of all assets (excluding their dependencies) that this package uses.
+        /// A collection of all top level assets that are bundled within this package.
         /// </summary>
         public abstract IEnumerable<Object> assets { get; }
 
@@ -82,7 +88,7 @@ namespace SpatialSys.UnitySDK.Editor
         }
 
         /// <summary>
-        /// Is this asset used within this package
+        /// Is this asset used within this package?
         /// </summary>
         public bool ContainsAsset(Object target)
         {

@@ -47,6 +47,9 @@ namespace SpatialSys.UnitySDK
         public delegate Vector3 GetLocalAvatarVelocityDelegate();
         public static GetLocalAvatarVelocityDelegate GetLocalAvatarVelocity;
 
+        public delegate void SetLocalAvatarVelocityDelegate(Vector3 velocity);
+        public static SetLocalAvatarVelocityDelegate SetLocalAvatarVelocity;
+
         public delegate bool GetLocalAvatarGroundedDelegate();
         public static GetLocalAvatarGroundedDelegate GetLocalAvatarGrounded;
 
@@ -408,11 +411,14 @@ namespace SpatialSys.UnitySDK
         public delegate void InitializeSpatialTriggerEventDelegate(SpatialTriggerEvent spatialTriggerEvent);
         public static InitializeSpatialTriggerEventDelegate InitializeSpatialTriggerEvent;
 
+        public delegate void TriggerEventEnabledChangedDelegate(SpatialTriggerEvent spatialTriggerEvent, bool enabled);
+        public static TriggerEventEnabledChangedDelegate TriggerEventEnabledChanged;
+
         public delegate void InitializeSpatialClimbableDelegate(SpatialClimbable climbable);
         public static InitializeSpatialClimbableDelegate InitializeSpatialClimbable;
 
-        public delegate void TriggerEventEnabledChangedDelegate(SpatialTriggerEvent spatialTriggerEvent, bool enabled);
-        public static TriggerEventEnabledChangedDelegate TriggerEventEnabledChanged;
+        public delegate void InitializeSpatialCameraPassthroughDelegate(SpatialCameraPassthrough spatialCameraPassthrough);
+        public static InitializeSpatialCameraPassthroughDelegate InitializeSpatialCameraPassthrough;
 
         public delegate void SetLocalActorNametagSubtextDelegate(string subtext);
         public static SetLocalActorNametagSubtextDelegate SetLocalActorNametagSubtext;

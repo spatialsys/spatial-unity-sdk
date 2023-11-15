@@ -53,12 +53,12 @@ namespace SpatialSys.UnitySDK.Editor
             }
 
             EnvironmentData data = new GameObject("EnvironmentData").AddComponent<EnvironmentData>();
+            data.savedProjectSettings = ProjectConfig.activePackageConfig.savedProjectSettings;
 
             // Spatial components
             data.seats = GameObject.FindObjectsOfType<SpatialSeatHotspot>(true);
             data.entrancePoints = GameObject.FindObjectsOfType<SpatialEntrancePoint>(true);
             data.emptyFrames = GameObject.FindObjectsOfType<SpatialEmptyFrame>(true);
-            data.cameraPassthroughs = GameObject.FindObjectsOfType<SpatialCameraPassthrough>(true);
             data.thumbnailCamera = GameObject.FindObjectOfType<SpatialThumbnailCamera>(true);
             if (data.thumbnailCamera != null)
             {
@@ -74,16 +74,6 @@ namespace SpatialSys.UnitySDK.Editor
             // Environment Setting
             SpatialEnvironmentSettingsOverrides environmentSettingsOverrides = GameObject.FindObjectOfType<SpatialEnvironmentSettingsOverrides>(true);
             data.environmentSettings = environmentSettingsOverrides != null ? environmentSettingsOverrides.environmentSettings : new EnvironmentSettings();
-
-            // Project Settings
-            if (Application.isBatchMode)
-            {
-                data.savedProjectSettings = ProjectConfig.activePackageConfig.savedProjectSettings;
-            }
-            else
-            {
-                data.savedProjectSettings = BuildUtility.SaveProjectSettingsToAsset();
-            }
 
             // Animators
             (data.syncedAnimators, data.unsyncedAnimators) = ProcessAnimators(GameObject.FindObjectsOfType<Animator>(true));
@@ -297,14 +287,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static void ProcessPackageAsset(SpatialPackageAsset asset)
         {
-            if (Application.isBatchMode)
-            {
-                asset.savedProjectSettings = ProjectConfig.activePackageConfig.savedProjectSettings;
-            }
-            else
-            {
-                asset.savedProjectSettings = BuildUtility.SaveProjectSettingsToAsset();
-            }
+            asset.savedProjectSettings = ProjectConfig.activePackageConfig.savedProjectSettings;
 
             if (asset is SpatialPrefabObject prefabObject)
                 ProcessPrefabObject(prefabObject);

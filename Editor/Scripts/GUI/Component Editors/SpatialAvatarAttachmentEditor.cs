@@ -251,7 +251,7 @@ namespace SpatialSys.UnitySDK.Editor
             GUI.enabled = true;
         }
 
-        private void ValidatedProp(AvatarAttachmentComponentTests.ComponentValidatationDelegate validatationDelegate, Action renderFieldAction)
+        private void ValidatedProp(AvatarAttachmentComponentTests.ComponentValidationDelegate validatationDelegate, Action renderFieldAction)
         {
             var attachment = target as SpatialAvatarAttachment;
             bool isValid = validatationDelegate(attachment, out string error);

@@ -75,7 +75,7 @@ namespace SpatialSys.UnitySDK.Editor
                 SpatialValidator.AddResponse(
                     new SpatialTestResponse(
                         null,
-                        SpatialValidator.validationContext == ValidationContext.UploadingToSandbox ? TestResponseType.Warning : TestResponseType.Fail,
+                        SpatialValidator.runContext == ValidationRunContext.UploadingToSandbox ? TestResponseType.Warning : TestResponseType.Fail,
                         "Package is too large to publish to Spatial",
                         $"The package is {totalSize / 1024f / 1024f}MB, but the maximum size is {maxPackageSize}MB. " +
                         "The size of the package is equal to the raw file size of all your assets which get uploaded to Spatial. Import settings will not change this. " +
@@ -151,7 +151,7 @@ namespace SpatialSys.UnitySDK.Editor
             if (Application.isBatchMode)
                 return;
 
-            if (SpatialValidator.validationContext != ValidationContext.PublishingPackage)
+            if (SpatialValidator.runContext != ValidationRunContext.PublishingPackage)
                 return;
 
             // Don't ask if they already accepted the prompt within the last 7 days.
@@ -208,7 +208,7 @@ namespace SpatialSys.UnitySDK.Editor
             if (thumbnail == null)
             {
                 SpatialTestResponse testResponse;
-                var responseType = SpatialValidator.validationContext == ValidationContext.UploadingToSandbox ? TestResponseType.Warning : TestResponseType.Fail;
+                var responseType = SpatialValidator.runContext == ValidationRunContext.UploadingToSandbox ? TestResponseType.Warning : TestResponseType.Fail;
 
                 string thumbnailSizeString = $"{config.thumbnailDimensions.x}x{config.thumbnailDimensions.y}";
                 if (variantIndex.HasValue)
@@ -230,7 +230,7 @@ namespace SpatialSys.UnitySDK.Editor
                     );
                 }
 
-                if (SpatialValidator.validationContext == ValidationContext.UploadingToSandbox)
+                if (SpatialValidator.runContext == ValidationRunContext.UploadingToSandbox)
                     testResponse.description += " Thumbnails will be required when publishing.";
 
                 SpatialValidator.AddResponse(testResponse);
@@ -287,11 +287,11 @@ namespace SpatialSys.UnitySDK.Editor
             int maxTextureSize = Mathf.Max(targetDimensions.x, targetDimensions.y);
             importer.ApplySettingsForThumbnailEncoding(config.allowTransparentThumbnails, maxTextureSize);
 
-            var responseType = SpatialValidator.validationContext == ValidationContext.UploadingToSandbox ? TestResponseType.Warning : TestResponseType.Fail;
+            var responseType = SpatialValidator.runContext == ValidationRunContext.UploadingToSandbox ? TestResponseType.Warning : TestResponseType.Fail;
 
             string BuildTestResponseDescription(string message)
             {
-                if (SpatialValidator.validationContext == ValidationContext.UploadingToSandbox)
+                if (SpatialValidator.runContext == ValidationRunContext.UploadingToSandbox)
                     message += " This will need to be fixed before publishing.";
                 return message;
             }
@@ -306,7 +306,7 @@ namespace SpatialSys.UnitySDK.Editor
                     BuildTestResponseDescription($"Each variant must have a {wording} assigned of size {targetDimensions.x}x{targetDimensions.y}.")
                 );
 
-                if (SpatialValidator.validationContext == ValidationContext.UploadingToSandbox)
+                if (SpatialValidator.runContext == ValidationRunContext.UploadingToSandbox)
                     testResponse.description += " This will need to be fixed before publishing.";
 
                 SpatialValidator.AddResponse(testResponse);

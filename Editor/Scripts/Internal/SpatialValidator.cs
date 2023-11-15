@@ -13,7 +13,7 @@ namespace SpatialSys.UnitySDK.Editor
     /// <summary>
     /// From where was the currently running validation initiated?
     /// </summary>
-    public enum ValidationContext
+    public enum ValidationRunContext
     {
         UploadingToSandbox,
         PublishingPackage,
@@ -23,7 +23,7 @@ namespace SpatialSys.UnitySDK.Editor
     public static class SpatialValidator
     {
         public static List<SpatialTestResponse> allResponses { get; private set; } = new List<SpatialTestResponse>();
-        public static ValidationContext validationContext { get; private set; } = ValidationContext.ManualRun;
+        public static ValidationRunContext runContext { get; private set; } = ValidationRunContext.ManualRun;
 
         private static bool _initialized;
         private static Dictionary<Type, List<MethodInfo>> _componentTests;
@@ -35,7 +35,7 @@ namespace SpatialSys.UnitySDK.Editor
         /// <summary>
         /// Returns a summary of the run, otherwise null if tests failed to run.
         /// </summary>
-        public static IPromise<SpatialValidationSummary> RunTestsOnPackage(ValidationContext context)
+        public static IPromise<SpatialValidationSummary> RunTestsOnPackage(ValidationRunContext context)
         {
             PackageConfig config = ProjectConfig.activePackageConfig;
             if (config == null)
@@ -44,7 +44,7 @@ namespace SpatialSys.UnitySDK.Editor
                 return Promise<SpatialValidationSummary>.Resolved(null);
             }
 
-            validationContext = context;
+            runContext = context;
             LoadTestsIfNecessary();
             allResponses.Clear();
 
@@ -56,7 +56,7 @@ namespace SpatialSys.UnitySDK.Editor
                     }
                     else if (config is SpaceTemplateConfig spaceTemplateConfig)
                     {
-                        return RunTestsOnSpacePackageScenes(spaceTemplateConfig.variants.Select(v => v.scene).ToArray());
+                        return RunTestsOnSpacePackageScenes(spaceTemplateConfig.variants.Select(v => v.scene));
                     }
                     return Promise.Resolved();
                 })
@@ -67,7 +67,7 @@ namespace SpatialSys.UnitySDK.Editor
         /// <summary>
         /// Returns a summary of the run, otherwise null if tests failed to run.
         /// </summary>
-        public static IPromise<SpatialValidationSummary> RunTestsOnActiveScene(ValidationContext context)
+        public static IPromise<SpatialValidationSummary> RunTestsOnActiveScene(ValidationRunContext context)
         {
             PackageConfig config = ProjectConfig.activePackageConfig;
             if (config == null)
@@ -76,7 +76,7 @@ namespace SpatialSys.UnitySDK.Editor
                 return Promise<SpatialValidationSummary>.Resolved(null);
             }
 
-            validationContext = context;
+            runContext = context;
             LoadTestsIfNecessary();
             allResponses.Clear();
 
@@ -86,12 +86,11 @@ namespace SpatialSys.UnitySDK.Editor
                 .Then(() => Promise<SpatialValidationSummary>.Resolved(CreateValidationSummary(config)));
         }
 
-        public static IPromise<SpatialValidationSummary> RunTestsOnComponent(ValidationContext context, Component target, bool additiveResults = false)
+        public static IPromise<SpatialValidationSummary> RunTestsOnComponent(ValidationRunContext context, Component target)
         {
-            validationContext = context;
+            runContext = context;
             LoadTestsIfNecessary();
-            if (!additiveResults)
-                allResponses.Clear();
+            allResponses.Clear();
 
             return RunComponentTests(target)
                 .Catch(HandleInternalTestException)
@@ -115,7 +114,7 @@ namespace SpatialSys.UnitySDK.Editor
         // INTERNAL HELPERS IMPLEMENTATION
         // ======================================================
 
-        private static IPromise RunTestsOnSpacePackageScenes(SceneAsset[] sceneAssets)
+        private static IPromise RunTestsOnSpacePackageScenes(IEnumerable<SceneAsset> sceneAssets)
         {
             if (!Application.isBatchMode)
                 EditorSceneManager.SaveOpenScenes(); // We are going to swap scenes and will lose changes without this

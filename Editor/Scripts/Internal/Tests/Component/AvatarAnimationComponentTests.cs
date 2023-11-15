@@ -4,6 +4,23 @@ namespace SpatialSys.UnitySDK.Editor
 {
     public static class AvatarAnimationComponentTests
     {
+        [ComponentTest(typeof(SpatialAvatarAnimation))]
+        public static void WarnPrefabShouldHaveNoChildren(SpatialAvatarAnimation avatarPrefab)
+        {
+            if (avatarPrefab.transform.childCount <= 0)
+                return;
+
+            SpatialValidator.AddResponse(
+                new SpatialTestResponse(
+                    avatarPrefab,
+                    TestResponseType.Warning,
+                    "The prefab should not have any children attached",
+                    $"There are {avatarPrefab.transform.childCount} child object(s) parented to this prefab. " +
+                        "Remove all child objects from the prefab to fix this issue. This will help reduce the size of the asset and make it load faster."
+                )
+            );
+        }
+
         /// <summary>
         /// Checks that the prefab has a target animation clip assigned, and the clip has humanoid motion.
         /// </summary>

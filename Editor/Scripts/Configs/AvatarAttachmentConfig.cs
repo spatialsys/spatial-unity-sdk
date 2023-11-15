@@ -14,6 +14,8 @@ namespace SpatialSys.UnitySDK.Editor
         public override Vector2Int thumbnailDimensions => new Vector2Int(512, 512);
         public override string bundleName => EditorUtility.GetAssetBundleName(prefab);
         public override string validatorID => prefab != null ? GetValidatorID(usageContext, prefab.primarySlot) : null;
+        public override Scope validatorUsageContext => usageContext;
+
         public override IEnumerable<Object> assets
         {
             get

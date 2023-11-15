@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
@@ -7,6 +7,12 @@ namespace SpatialSys.UnitySDK.Editor
 {
     public static class AvatarComponentTests
     {
+        // Used for validating bounding box size (in any dimension), height and diameter of character controller.
+        public const float MIN_UNIVERSAL_AVATAR_SIZE = 0.1f;
+        public const float MAX_UNIVERSAL_AVATAR_SIZE = 2.5f;
+        public const float MIN_WORLD_AVATAR_SIZE = 0.01f;
+        public const float MAX_WORLD_AVATAR_SIZE = 25f;
+
         /// <summary>
         /// Checks that the avatar has identity transform and the scale of each child gameobject is normalized.
         /// </summary>
@@ -88,6 +94,79 @@ namespace SpatialSys.UnitySDK.Editor
                     "This can be enabled in the Animator component by disabling the 'Optimize Game Objects' setting under the Rig tab of the model importer. " +
                         "Afterwards, you will need to recreate the avatar prefab from the model and ensure that there is a transform hierarchy inside the prefab representing the bone structure."
                 ));
+            }
+        }
+
+        /// <summary>
+        /// Totals up vertices, triangles, and sub-meshes for all meshes from the avatar, and make sure none of them exceed the limit.
+        /// </summary>
+        [ComponentTest(typeof(SpatialAvatar))]
+        public static void EnsureAvatarMeshesMeetGuidelines(SpatialAvatar avatarPrefab)
+        {
+            PackageConfig.Scope validatorUsageContext = ProjectConfig.activePackageConfig.validatorUsageContext;
+
+            ValidationUtility.EnsureObjectMeshesMeetGuidelines(avatarPrefab,
+                vertexCountLimit: (validatorUsageContext == PackageConfig.Scope.Universal) ? 50000 : 200000,
+                triangleCountLimit: (validatorUsageContext == PackageConfig.Scope.Universal) ? 22500 : 200000,
+                subMeshCountLimit: (validatorUsageContext == PackageConfig.Scope.Universal) ? 4 : 100,
+                boundsSizeMinLimit: (validatorUsageContext == PackageConfig.Scope.Universal) ? MIN_UNIVERSAL_AVATAR_SIZE : MIN_WORLD_AVATAR_SIZE,
+                boundsSizeMaxLimit: (validatorUsageContext == PackageConfig.Scope.Universal) ? MAX_UNIVERSAL_AVATAR_SIZE : MAX_WORLD_AVATAR_SIZE,
+                textureMemoryLimit: (validatorUsageContext == PackageConfig.Scope.Universal) ? (5 * 1024 * 1024) : (40 * 1024 * 1024)
+            );
+        }
+
+        /// <summary>
+        /// Checks each texture dependency associated with the avatar prefab.
+        /// </summary>
+        [ComponentTest(typeof(SpatialAvatar))]
+        public static void EnsureAvatarTexturesMeetGuidelines(SpatialAvatar avatarPrefab)
+        {
+            PackageConfig.Scope validatorUsageContext = ProjectConfig.activePackageConfig.validatorUsageContext;
+
+            int textureSizeLimit = (validatorUsageContext == AvatarConfig.Scope.Universal) ? 1024 : 4096;
+            Object[] assetDeps = UnityEditor.EditorUtility.CollectDependencies(new Object[] { avatarPrefab });
+
+            foreach (Object asset in assetDeps)
+            {
+                if (asset is not Texture textureAsset)
+                    continue;
+
+                if (textureAsset.width > textureSizeLimit || textureAsset.height > textureSizeLimit)
+                {
+                    SpatialValidator.AddResponse(
+                        new SpatialTestResponse(
+                            textureAsset,
+                            TestResponseType.Fail,
+                            $"A texture on the avatar is too large ({textureAsset.width}x{textureAsset.height}). The dimensions must not exceed {textureSizeLimit}x{textureSizeLimit}.",
+                            "Reducing the texture size will reduce strain on memory and support more devices. Reduce the size of the texture through the import settings to comply with this guideline."
+                        )
+                    );
+                }
+            }
+        }
+
+        /// <summary>
+        /// If the avatar is intended for Universal usage context, ensure there are no scripting-related components attached.
+        /// </summary>
+        [ComponentTest(typeof(SpatialAvatar))]
+        public static void EnsureUniversalAvatarHasNoScriptingComponents(SpatialAvatar avatarPrefab)
+        {
+            if (ProjectConfig.activePackageConfig.validatorUsageContext != PackageConfig.Scope.Universal)
+                return;
+
+            LudiqBehaviour[] scriptingComponents = avatarPrefab.GetComponentsInChildren<LudiqBehaviour>();
+            if (scriptingComponents.Length > 0)
+            {
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(
+                        scriptingComponents[0],
+                        TestResponseType.Fail,
+                        "Visual Scripting is not allowed on avatars intended for a Universal usage context",
+                        "This restriction is to keep functionality consistent across all spaces. " +
+                            "You may learn more about these restrictions and avatar usage contexts by reading the Avatar packages documentation. " +
+                            $"Remove the following components to fix this issue:\n{EditorUtility.GetComponentNamesWithInstanceCountString(scriptingComponents)}"
+                    )
+                );
             }
         }
 
@@ -208,6 +287,37 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 if (baseRigidbody.GetComponent<Collider>() == null)
                     AddMisconfiguredPhysicsFailResponse(baseRigidbody.gameObject);
+            }
+        }
+
+        [ComponentTest(typeof(SpatialAvatar))]
+        public static void EnsureAvatarCharacterControllerSettingsAreValid(SpatialAvatar avatarPrefab)
+        {
+            PackageConfig.Scope validatorUsageContext = ProjectConfig.activePackageConfig.validatorUsageContext;
+
+            float minHeight = validatorUsageContext == PackageConfig.Scope.Universal ? MIN_UNIVERSAL_AVATAR_SIZE : MIN_WORLD_AVATAR_SIZE;
+            float maxHeight = validatorUsageContext == PackageConfig.Scope.Universal ? MAX_UNIVERSAL_AVATAR_SIZE : MAX_WORLD_AVATAR_SIZE;
+            float minRadius = minHeight * 0.5f;
+            float maxRadius = maxHeight * 0.5f;
+
+            if (avatarPrefab.characterControllerHeight < minHeight || avatarPrefab.characterControllerHeight > maxHeight)
+            {
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(avatarPrefab, TestResponseType.Fail, "Character controller height is not within the expected range",
+                        $"The character controller height set on '{avatarPrefab.name}' is not within the expected range ({minHeight} to {maxHeight})." +
+                            $"\nThe current value is set to {avatarPrefab.characterControllerHeight}."
+                    )
+                );
+            }
+
+            if (avatarPrefab.characterControllerRadius < minRadius || avatarPrefab.characterControllerRadius > maxRadius)
+            {
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(avatarPrefab, TestResponseType.Fail, "Character controller radius is not within the expected range",
+                        $"The character controller radius on '{avatarPrefab.name}' is not within the expected range ({minRadius} to {maxRadius})." +
+                            $"\nThe current value is set to {avatarPrefab.characterControllerRadius}."
+                    )
+                );
             }
         }
     }

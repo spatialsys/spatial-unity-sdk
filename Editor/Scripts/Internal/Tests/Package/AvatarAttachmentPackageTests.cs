@@ -18,7 +18,7 @@ namespace SpatialSys.UnitySDK.Editor
         [PackageTest(PackageType.AvatarAttachment)]
         public static void EnsureScopeIsWorldForPublishing(AvatarAttachmentConfig config)
         {
-            if (SpatialValidator.validationContext == ValidationContext.PublishingPackage && config.usageContext != PackageConfig.Scope.World)
+            if (SpatialValidator.runContext == ValidationRunContext.PublishingPackage && config.validatorUsageContext != PackageConfig.Scope.World)
             {
                 SpatialValidator.AddResponse(
                     new SpatialTestResponse(
@@ -38,13 +38,13 @@ namespace SpatialSys.UnitySDK.Editor
                 return;
 
             ValidationUtility.EnsureObjectMeshesMeetGuidelines(config.prefab,
-                vertexCountLimit: (config.usageContext == AvatarConfig.Scope.Universal) ? 2500 : 25000,
-                triangleCountLimit: (config.usageContext == AvatarConfig.Scope.Universal) ? 1000 : 15000,
-                subMeshCountLimit: (config.usageContext == AvatarConfig.Scope.Universal) ? 1 : 5,
+                vertexCountLimit: (config.validatorUsageContext == AvatarConfig.Scope.Universal) ? 2500 : 25000,
+                triangleCountLimit: (config.validatorUsageContext == AvatarConfig.Scope.Universal) ? 1000 : 15000,
+                subMeshCountLimit: (config.validatorUsageContext == AvatarConfig.Scope.Universal) ? 1 : 5,
                 // Bounds for particle systems aren't properly measured, so we don't enforce a bounds size limit for aura attachments
                 boundsSizeMinLimit: (config.prefab.primarySlot == SpatialAvatarAttachment.Slot.Aura) ? null : 0.01f,
-                boundsSizeMaxLimit: (config.usageContext == AvatarConfig.Scope.Universal) ? 3f : 25f,
-                textureMemoryLimit: (config.usageContext == AvatarConfig.Scope.Universal) ? 2 * 1024 * 1024 : 10 * 1024 * 1024
+                boundsSizeMaxLimit: (config.validatorUsageContext == AvatarConfig.Scope.Universal) ? 3f : 25f,
+                textureMemoryLimit: (config.validatorUsageContext == AvatarConfig.Scope.Universal) ? 2 * 1024 * 1024 : 10 * 1024 * 1024
             );
         }
     }

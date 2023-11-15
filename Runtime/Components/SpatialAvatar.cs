@@ -6,6 +6,9 @@ namespace SpatialSys.UnitySDK
     [RequireComponent(typeof(Animator))]
     public class SpatialAvatar : SpatialPackageAsset
     {
+        public const float DEFAULT_CHARACTER_CONTROLLER_HEIGHT = 1.8f;
+        public const float DEFAULT_CHARACTER_CONTROLLER_RADIUS = 0.28f;
+
         public override string prettyName => "Custom Avatar";
         public override string tooltip => "This component is used to define a custom avatar for Spatial";
         public override string documentationURL => "https://docs.spatial.io/components/custom-avatars";
@@ -15,6 +18,14 @@ namespace SpatialSys.UnitySDK
 
         [Tooltip("Optionally override specific animations for this avatar")]
         public SpatialAvatarAnimOverrides animOverrides;
+
+        [Tooltip("The height (in meters) that the character controller is set to at runtime. Visualized as a cyan capsule in the scene view.")]
+        [Clamp(0.01f, 25f)]
+        public float characterControllerHeight = DEFAULT_CHARACTER_CONTROLLER_HEIGHT;
+
+        [Tooltip("The radius (in meters) that the character controller is set to at runtime. It is recommended to encapsulate the main body without the limbs for better gameplay. Visualized as a cyan capsule in the scene view.")]
+        [Clamp(0.005f, 12.5f)]
+        public float characterControllerRadius = DEFAULT_CHARACTER_CONTROLLER_RADIUS;
 
         // Variables below are assigned automatically at publish.
         // These arrays will be either null or empty if there is no ragdoll setup found.
@@ -31,6 +42,64 @@ namespace SpatialSys.UnitySDK
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
             transform.localScale = Vector3.one;
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+            Gizmos.matrix = Matrix4x4.Translate(transform.position);
+
+            Color gizmoColor = Color.cyan;
+            if (Application.isPlaying)
+                gizmoColor.a *= 0.5f;
+            Gizmos.color = gizmoColor;
+
+            // Capsule cannot be squashed smaller than a sphere.
+            float minHeight = characterControllerRadius * 2f;
+            if (characterControllerHeight <= minHeight)
+            {
+                Gizmos.DrawWireSphere(Vector3.up * characterControllerRadius, characterControllerRadius);
+                return;
+            }
+
+            // There's no Gizmos.DrawWireCapsule, so do it manually with Handles API...
+            void DrawWireCapsule(Vector3 center, float height, float radius, Color color)
+            {
+                using (new UnityEditor.Handles.DrawingScope(color, Gizmos.matrix))
+                {
+                    float arcsCenterOffset = height * 0.5f - radius;
+                    Vector3 topCenter = center + (Vector3.up * arcsCenterOffset);
+                    Vector3 bottomCenter = center + (Vector3.down * arcsCenterOffset);
+
+                    // Top hemisphere
+                    UnityEditor.Handles.DrawWireArc(topCenter, normal: Vector3.forward, from: Vector3.right, angle: 180f, radius);
+                    UnityEditor.Handles.DrawWireArc(topCenter, normal: Vector3.left, from: Vector3.forward, angle: 180f, radius);
+                    UnityEditor.Handles.DrawWireDisc(topCenter, normal: Vector3.up, radius);
+
+                    // Vertical lines
+                    UnityEditor.Handles.DrawLine(topCenter + (Vector3.forward * radius), bottomCenter + (Vector3.forward * radius));
+                    UnityEditor.Handles.DrawLine(topCenter + (Vector3.left * radius), bottomCenter + (Vector3.left * radius));
+                    UnityEditor.Handles.DrawLine(topCenter + (Vector3.back * radius), bottomCenter + (Vector3.back * radius));
+                    UnityEditor.Handles.DrawLine(topCenter + (Vector3.right * radius), bottomCenter + (Vector3.right * radius));
+
+                    // Bottom hemisphere
+                    UnityEditor.Handles.DrawWireArc(bottomCenter, normal: Vector3.forward, from: Vector3.left, angle: 180f, radius);
+                    UnityEditor.Handles.DrawWireArc(bottomCenter, normal: Vector3.left, from: Vector3.back, angle: 180f, radius);
+                    UnityEditor.Handles.DrawWireDisc(bottomCenter, normal: Vector3.down, radius);
+                }
+            }
+
+            UnityEngine.Rendering.CompareFunction prevZTestMode = UnityEditor.Handles.zTest;
+
+            UnityEditor.Handles.zTest = UnityEngine.Rendering.CompareFunction.LessEqual;
+            DrawWireCapsule(Vector3.up * characterControllerHeight * 0.5f, characterControllerHeight, characterControllerRadius, Gizmos.color);
+
+            // Lower opacity when behind objects.
+            UnityEditor.Handles.zTest = UnityEngine.Rendering.CompareFunction.Greater;
+            Color zTestFailedColor = Gizmos.color;
+            zTestFailedColor.a *= 0.2f;
+            DrawWireCapsule(Vector3.up * characterControllerHeight * 0.5f, characterControllerHeight, characterControllerRadius, zTestFailedColor);
+
+            UnityEditor.Handles.zTest = prevZTestMode;
         }
 #endif
     }

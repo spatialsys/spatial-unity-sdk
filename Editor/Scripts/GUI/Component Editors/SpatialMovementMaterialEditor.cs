@@ -39,8 +39,6 @@ namespace SpatialSys.UnitySDK.Editor
         private bool _movementPhysicsFoldout = true;
         private bool _additionalSettingsFoldout = false;
 
-
-
         void OnEnable()
         {
             _splitWalkAndRun = serializedObject.FindProperty(nameof(SpatialMovementMaterial.splitRunAndWalk));
@@ -76,7 +74,12 @@ namespace SpatialSys.UnitySDK.Editor
             // VFX need a very particular implementation so we give a warning for first time users.
             if (!_acceptedWarning)
             {
-                SpatialGUIUtility.HelpBox("Important VFX Information!", "Particle systems used with a movement material are triggered with an Emit( ) call. The emmission components will be ingored. For more detail on what this means and how to work with it check out the documentation linked above.", SpatialGUIUtility.HelpSectionType.Warning);
+                SpatialGUIUtility.HelpBox(
+                    "Important VFX Information!",
+                    "Particle systems used with a movement material are triggered with an Emit() call. The emission settings will be ignored. For more details on what this means and how to work with it, check out the documentation above.",
+                    SpatialGUIUtility.HelpSectionType.Warning
+                );
+
                 if (GUILayout.Button("I Understand"))
                 {
                     EditorPrefs.SetBool("MovementMaterialVFXEmitWarning", true);
@@ -88,7 +91,7 @@ namespace SpatialSys.UnitySDK.Editor
             if (_audioVisualFoldout = EditorGUILayout.Foldout(_audioVisualFoldout, "Audio & Visuals", true, EditorStyles.foldoutHeader))
             {
                 EditorGUI.indentLevel++;
-                EditorGUILayout.LabelField(new GUIContent("Footsteps", "Triggered everytime the player takes a step while grounded."), EditorStyles.boldLabel);
+                EditorGUILayout.LabelField(new GUIContent("Footsteps", "Triggered every time the player takes a step while grounded."), EditorStyles.boldLabel);
                 EditorGUILayout.PropertyField(_splitWalkAndRun);
                 if (targetComponent.splitRunAndWalk)
                 {

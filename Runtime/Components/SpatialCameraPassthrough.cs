@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace SpatialSys.UnitySDK
@@ -12,5 +10,10 @@ namespace SpatialSys.UnitySDK
 
         [Tooltip("When checked, the camera will also pass through all children.")]
         public bool applyToChildren;
+
+        private void Start()
+        {
+            ClientBridge.InitializeSpatialCameraPassthrough?.Invoke(this);
+        }
     }
 }

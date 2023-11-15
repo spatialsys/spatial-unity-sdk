@@ -2,17 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.VisualScripting;
+using UnityEngine.Audio;
 
 namespace SpatialSys.UnitySDK
 {
-    public enum SpatialSFXType
-    {
-        SoundEffect,
-        Ambience,
-        Dialogue,
-        Music,
-    }
-
     [CreateAssetMenu(fileName = "newSFX", menuName = "Spatial/SFX", order = 1)]
     [TypeIcon(typeof(SFXIcon))]
     public class SpatialSFX : SpatialScriptableObjectBase
@@ -23,7 +16,7 @@ namespace SpatialSys.UnitySDK
         public override bool isExperimental => false;
 
         [SerializeField]
-        private SpatialSFXType _soundCategory = SpatialSFXType.SoundEffect;
+        private AudioMixerGroup _mixerGroup;
         [SerializeField]
         private AudioClip[] _clips;
         [Space(4)]
@@ -50,7 +43,7 @@ namespace SpatialSys.UnitySDK
         [SerializeField]
         private float _rollOffMax = 200f;
 
-        public SpatialSFXType soundCategory { get { return _soundCategory; } }
+        public AudioMixerGroup mixerGroup { get { return _mixerGroup; } }
         public AudioClip[] clips { get { return (AudioClip[])_clips.Clone(); } }
         public Vector2 volume { get { return _volume; } }
         public Vector2 pitch { get { return _pitch; } }

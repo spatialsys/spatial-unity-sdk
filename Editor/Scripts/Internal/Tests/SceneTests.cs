@@ -136,7 +136,7 @@ namespace SpatialSys.UnitySDK.Editor
         // [SceneTest] TEMPORARILY DISABLED because it is causing CI validation issues
         public static void UnityEventSecurityTest(Scene scene)
         {
-            if (SpatialValidator.validationContext != ValidationContext.PublishingPackage)
+            if (SpatialValidator.runContext != ValidationRunContext.PublishingPackage)
                 return;
 
             var sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(scene.path);

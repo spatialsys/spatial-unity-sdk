@@ -4,14 +4,19 @@ namespace SpatialSys.UnitySDK
 {
     public static class UnitySDKExtensions
     {
+        public static bool PublishedWithTargetVersionOrLater(this SavedProjectSettings settings, int major, int minor, int build = 0)
+        {
+            return PublishedWithTargetVersionOrLater(settings, new Version(major, minor, build));
+        }
+
         public static bool PublishedWithTargetVersionOrLater(this SavedProjectSettings settings, Version targetSDKVersion)
         {
-            // Requires the published SDK version (introduced in SDK 0.56.0) to be defined in order to properly compare.
-            // In this case, always assume that the current SDK version is always older.
-            if (settings == null || string.IsNullOrEmpty(settings.publishedSDKVersion))
+            if (settings == null)
                 return false;
 
-            return new Version(settings.publishedSDKVersion) >= targetSDKVersion;
+            // Published SDK version was introduced in SDK 0.56.0, so anything older cannot be parsed.
+            // By default, assume that the published version is always older.
+            return Version.TryParse(settings.publishedSDKVersion, out Version parsedVersion) && parsedVersion >= targetSDKVersion;
         }
     }
 }

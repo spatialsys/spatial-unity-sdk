@@ -469,7 +469,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         private void RefreshIssues()
         {
-            SpatialValidator.RunTestsOnPackage(ValidationContext.ManualRun)
+            SpatialValidator.RunTestsOnPackage(ValidationRunContext.ManualRun)
                 .Then(validationSummary => {
                     _issuesValidationSummary = validationSummary;
                     UpdateIssuesTabContents();
@@ -666,13 +666,13 @@ namespace SpatialSys.UnitySDK.Editor
             if (response.targetObject == null)
             {
                 response.targetObject = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(response.targetObjectGlobalID.Value);
-            }
-            if (response.targetObject == null)
-            {
-                return;
+
+                if (response.targetObject == null)
+                    return;
             }
 
             Selection.activeObject = response.targetObject;
+            EditorGUIUtility.PingObject(response.targetObject);
         }
     }
 }

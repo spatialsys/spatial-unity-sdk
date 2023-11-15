@@ -197,7 +197,7 @@ namespace SpatialSys.UnitySDK.Editor
         // Validation methods used by both the validation system and the component editor
         //--------------------------------------------------------------------------------------------------------------
 
-        public delegate bool ComponentValidatationDelegate(SpatialAvatarAttachment attachment, out string message);
+        public delegate bool ComponentValidationDelegate(SpatialAvatarAttachment attachment, out string message);
 
         public static bool ValidatePrimarySlotField(SpatialAvatarAttachment attachment, out string message)
         {
@@ -569,7 +569,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
-        private static void ValidateForValidationSystem(SpatialAvatarAttachment attachment, ComponentValidatationDelegate validatationDelegate)
+        private static void ValidateForValidationSystem(SpatialAvatarAttachment attachment, ComponentValidationDelegate validatationDelegate)
         {
             if (!validatationDelegate(attachment, out string message))
             {

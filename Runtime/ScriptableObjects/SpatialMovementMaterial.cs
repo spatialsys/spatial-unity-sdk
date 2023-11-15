@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
-    [CreateAssetMenu(fileName = "newMovementMaterial", menuName = "Spatial/MovementMaterial", order = 2)]
+    [CreateAssetMenu(fileName = "NewMovementMaterial", menuName = "Spatial/MovementMaterial", order = 2)]
     public class SpatialMovementMaterial : SpatialScriptableObjectBase
     {
         public override string prettyName => "Movement Material";

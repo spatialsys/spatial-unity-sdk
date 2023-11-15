@@ -28,6 +28,7 @@ namespace SpatialSys.UnitySDK.Editor
         public override Vector2Int thumbnailDimensions => new Vector2Int(256, 256);
         public override string bundleName => EditorUtility.GetAssetBundleName(prefab);
         public override string validatorID => GetValidatorID(usageContext);
+        public override Scope validatorUsageContext => usageContext;
 
         public override bool allowOpaqueThumbnails => false;
         public override float thumbnailMinTransparentBgRatio => 0.25f; // at least 25% of the thumbnail should be transparent

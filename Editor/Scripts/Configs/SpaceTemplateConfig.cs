@@ -15,6 +15,7 @@ namespace SpatialSys.UnitySDK.Editor
         public override Vector2Int thumbnailDimensions => new Vector2Int(1024, 512);
         public override string bundleName => throw new System.InvalidOperationException("Access the bundle names through the variants array");
         public override string validatorID => GetValidatorID();
+        public override Scope validatorUsageContext => Scope.Universal;
 
         public override bool allowTransparentThumbnails => false;
 

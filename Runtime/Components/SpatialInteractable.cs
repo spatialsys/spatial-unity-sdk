@@ -43,6 +43,7 @@ namespace SpatialSys.UnitySDK
         {
             ClientBridge.InitializeSpatialInteractable?.Invoke(this);
         }
+
 #if UNITY_EDITOR
         protected override void OnValidate()
         {
