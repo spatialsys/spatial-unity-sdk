@@ -79,27 +79,4 @@ namespace SpatialSys.UnitySDK.VisualScripting
             isGrounded = ValueOutput<bool>(nameof(isGrounded), (f) => ClientBridge.GetLocalAvatarGrounded.Invoke());
         }
     }
-
-    [UnitTitle("Actor: Get Name")]
-    [UnitSurtitle("Actor")]
-    [UnitShortTitle("Get Name")]
-    [UnitCategory("Spatial\\Actor")]
-    [TypeIcon(typeof(SpatialComponentBase))]
-    public class GetActorNameNode : Unit
-    {
-        [DoNotSerialize]
-        [NullMeansSelf]
-        public ValueInput actor { get; private set; }
-
-        [DoNotSerialize]
-        [PortLabel("Name")]
-        public ValueOutput actorName { get; private set; }
-
-        protected override void Definition()
-        {
-            actor = ValueInput<int>(nameof(actor), -1);
-
-            actorName = ValueOutput<string>(nameof(actorName), (f) => ClientBridge.GetActorName.Invoke(f.GetValue<int>(actor)));
-        }
-    }
 }

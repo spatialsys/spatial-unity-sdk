@@ -6,19 +6,37 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
-    public class ClientBridge
+    public static class ClientBridge
     {
+        public delegate int GetSpacePackageVersionDelegate();
+        public static GetSpacePackageVersionDelegate GetSpacePackageVersion;
+
+        public delegate bool IsInSandboxDelegate();
+        public static IsInSandboxDelegate IsInSandbox;
+
         public delegate int GetLocalActorDelegate();
         public static GetLocalActorDelegate GetLocalActor;
 
         public delegate List<int> GetActorsDelegate();
         public static GetActorsDelegate GetActors;
 
-        public delegate string GetLocalActorUserIDDelegate();
-        public static GetLocalActorUserIDDelegate GetLocalActorUserID;
+        public struct ActorUserData
+        {
+            public bool exists;
 
-        public delegate string GetActorUserIDDelegate(int actorNumber);
-        public static GetActorUserIDDelegate GetActorUserID;
+            public string userID;
+            public string displayName;
+            public string username;
+            public bool isSignedIn;
+            public bool isSpaceAdmin;
+            public int platform;
+            public bool isTalking;
+        }
+        public delegate ActorUserData GetLocalActorUserDataDelegate();
+        public static GetLocalActorUserDataDelegate GetLocalActorUserData;
+
+        public delegate ActorUserData GetActorUserDataDelegate(int actorNumber);
+        public static GetActorUserDataDelegate GetActorUserData;
 
         public delegate bool GetAvatarExistsDelegate(int actorNumber);
         public static GetAvatarExistsDelegate GetAvatarExists;
@@ -77,18 +95,8 @@ namespace SpatialSys.UnitySDK
         public delegate Material[] GetAvatarMaterialsDelegate(int actorNumber);
         public static GetAvatarMaterialsDelegate GetAvatarMaterials;
 
-        public delegate int GetLocalActorPlatformDelegate();
-        public static GetLocalActorPlatformDelegate GetLocalActorPlatform;
-
         public delegate void GetActorProfilePictureDelegate(int actorNumber, Action<Texture2D> callback);
         public static GetActorProfilePictureDelegate GetActorProfilePicture;
-
-        public delegate string GetActorNameDelegate(int actorNumber);
-        public static GetActorNameDelegate GetActorName;
-
-        // bool = actorNumber is valid
-        public delegate Tuple<bool, int> GetActorPlatformDelegate(int actorNumber);
-        public static GetActorPlatformDelegate GetActorPlatform;
 
         public delegate int GetRandomActorDelegate();
         public static GetRandomActorDelegate GetRandomActor;
@@ -182,9 +190,6 @@ namespace SpatialSys.UnitySDK
 
         public delegate Vector3 GetCameraForwardDelegate();
         public static GetCameraForwardDelegate GetCameraForward;
-
-        public delegate bool IsCameraRoomModeDelegate();
-        public static IsCameraRoomModeDelegate IsCameraRoomMode;
 
         public delegate void SendToastDelegate(string message, float duration);
         public static SendToastDelegate SendToast;
@@ -448,9 +453,9 @@ namespace SpatialSys.UnitySDK
         public delegate void SendSDKNetworkEventToActorByteDelegate(int targetActor, byte eventID, object[] args);
         public static SendSDKNetworkEventToActorByteDelegate SendSDKNetworkEventToActorByte;
 
-        //Internal
-        public delegate void SpatialInternalAnalyticsEventDelegate(string eventName, params Tuple<string, string>[] args);
-        public static SpatialInternalAnalyticsEventDelegate SpatialInternalAnalyticsEvent;
+        // Network
+        public delegate double GetNetworkTimeDelegate();
+        public static GetNetworkTimeDelegate GetNetworkTime;
 
         public delegate void PlaySpatialSFXPositionDelegate(SpatialSFX sfx, Vector3 position, float extraVolume, float extraPitch);
         public static PlaySpatialSFXPositionDelegate PlaySpatialSFXPosition;
@@ -580,6 +585,9 @@ namespace SpatialSys.UnitySDK
 
         public delegate int GetServerParticipantCountDelegate();
         public static GetServerParticipantCountDelegate GetServerParticipantCount;
+
+        public delegate int GetServerUniqueUsersCountDelegate();
+        public static GetServerUniqueUsersCountDelegate GetServerUniqueUsersCount;
 
         public delegate int GetTotalServersCountDelegate();
         public static GetTotalServersCountDelegate GetTotalServersCount;

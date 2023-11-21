@@ -357,5 +357,14 @@ namespace SpatialSys.UnitySDK.Editor
 
             DeleteAssetBackup(asset);
         }
+
+        /// <summary>
+        /// Saves the asset immediately, regardless if it was dirty or not.
+        /// </summary>
+        public static void SaveAssetImmediately(UnityEngine.Object asset)
+        {
+            UnityEditor.EditorUtility.SetDirty(asset);
+            AssetDatabase.SaveAssetIfDirty(asset);
+        }
     }
 }

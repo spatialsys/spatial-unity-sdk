@@ -36,6 +36,23 @@ namespace SpatialSys.UnitySDK.VisualScripting
         }
     }
 
+    [UnitTitle("Spatial: Get Server Unique Users Count")]
+    [UnitSurtitle("Spatial")]
+    [UnitShortTitle("Get Server Unique Users Count")]
+    [UnitCategory("Spatial\\Server")]
+    [TypeIcon(typeof(SpatialComponentBase))]
+    public class GetServerUniqueUsersCountNode : Unit
+    {
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ValueOutput uniqueUsersCount { get; private set; }
+
+        protected override void Definition()
+        {
+            uniqueUsersCount = ValueOutput<int>(nameof(uniqueUsersCount), (f) => ClientBridge.GetServerUniqueUsersCount?.Invoke() ?? 1);
+        }
+    }
+
     [UnitTitle("Spatial: Get Total Servers Count")]
     [UnitSurtitle("Spatial")]
     [UnitShortTitle("Get Total Servers Count")]

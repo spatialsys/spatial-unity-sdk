@@ -140,8 +140,7 @@ namespace SpatialSys.UnitySDK.Editor
                 config._packages.Add(AssetDatabase.LoadAssetAtPath<PackageConfig>(AssetDatabase.GUIDToAssetPath(existingConfigs[i])));
             }
 
-            UnityEditor.EditorUtility.SetDirty(config);
-            AssetDatabase.SaveAssetIfDirty(config);
+            EditorUtility.SaveAssetImmediately(config);
         }
 
         public static PackageConfig AddNewPackage(PackageType type, bool makeActive)
@@ -169,8 +168,7 @@ namespace SpatialSys.UnitySDK.Editor
             package.packageName = name;
             AssetDatabase.CreateAsset(package, assetPath);
             instance._packages.Add(package);
-            UnityEditor.EditorUtility.SetDirty(instance);
-            AssetDatabase.SaveAssetIfDirty(instance);
+            EditorUtility.SaveAssetImmediately(instance);
 
             if (makeActive)
                 activePackageIndex = instance._packages.Count - 1;

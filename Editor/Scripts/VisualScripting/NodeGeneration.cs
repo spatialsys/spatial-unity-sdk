@@ -20,17 +20,17 @@ namespace SpatialSys.UnitySDK.Editor
         {
             if (PlayerPrefs.GetString(GENERATED_VS_NODES_VERSION_PREFS_KEY) != PackageManagerUtility.currentVersion)
             {
-                EditorApplication.update += CheckForNodeRebuild;
+                EditorApplication.update += CheckForNodeRegen;
             }
         }
 
-        private static void CheckForNodeRebuild()
+        private static void CheckForNodeRegen()
         {
             //in order to do a proper unit rebuild, we need to wait until we know VS has been initialized.
             //waiting until a VS window is opened is the best way I have found to do this
             if (EditorWindow.HasOpenInstances<GraphWindow>())
             {
-                EditorApplication.update -= CheckForNodeRebuild;
+                EditorApplication.update -= CheckForNodeRegen;
                 UnityEditor.EditorUtility.DisplayDialog("Spatial Scripting Initialization", "Hold tight while we make sure your visual scripting settings are just right", "OK");
 
                 PlayerPrefs.SetString(GENERATED_VS_NODES_VERSION_PREFS_KEY, PackageManagerUtility.currentVersion);
@@ -46,21 +46,26 @@ namespace SpatialSys.UnitySDK.Editor
         /// </summary>
         public static void SetTypesAndAssemblies()
         {
+            // Initializes internal data structures and editor logic for Visual Scripting.
             VSUsageUtility.isVisualScriptingUsed = true;
 
-            if (BoltCore.instance == null || BoltCore.Configuration == null || !File.Exists(SETTINGS_ASSET_PATH))
+            if (!File.Exists(SETTINGS_ASSET_PATH))
             {
-                UnityEditor.EditorUtility.DisplayDialog("Visual Scripting Settings Not Found", "Visual Scripting is not initialized. Please navigate to the Visual Scripting settings in the Unity project settings to initialize", "OK");
-                return;
+                const string MESSAGE = "Visual Scripting is not initialized. Please navigate to the Visual Scripting settings in the Unity project settings to initialize";
+                if (!Application.isBatchMode)
+                    UnityEditor.EditorUtility.DisplayDialog("Visual Scripting Settings Not Found", MESSAGE, "OK");
+                throw new System.Exception(MESSAGE);
             }
 
             // There's an embedded JSON in this asset file. Manually replace the assembly and type arrays.
             string settingsAssetContents = File.ReadAllText(SETTINGS_ASSET_PATH);
+
+            // Replace assembly options array
             settingsAssetContents = settingsAssetContents.SetJSONArrayValueHelper("assemblyOptions", NodeFilter.assemblyAllowList);
 
-            List<Type> typesToGenerate = new List<Type>(NodeFilter.typeGeneration);
+            // Replace type options array
+            var typesToGenerate = new List<Type>(NodeFilter.typeGeneration);
             typesToGenerate.RemoveAll(t => NodeFilter.typeBlockList.Contains(t));
-
             settingsAssetContents = settingsAssetContents.SetJSONArrayValueHelper("typeOptions", typesToGenerate.Select(type => type.FullName));
 
             File.WriteAllText(SETTINGS_ASSET_PATH, settingsAssetContents);
@@ -68,7 +73,7 @@ namespace SpatialSys.UnitySDK.Editor
             PlayerPrefs.SetString(GENERATED_VS_NODES_VERSION_PREFS_KEY, PackageManagerUtility.currentVersion);
             PlayerPrefs.Save();
 
-            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+            AssetDatabase.Refresh();
             CompilationPipeline.RequestScriptCompilation();
         }
 

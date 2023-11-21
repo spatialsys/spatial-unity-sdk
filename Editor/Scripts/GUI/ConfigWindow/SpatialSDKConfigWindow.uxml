@@ -49,7 +49,7 @@
                 </ui:VisualElement>
                 <ui:VisualElement name="PasteTokenBlock" class="block_white block_base">
                     <ui:Label text="2nd" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
-                    <ui:Label text="Paste your access token into unity by pressing the button below." display-tooltip-when-elided="true" name="Text" class="blockText" />
+                    <ui:Label text="Paste your access token into Unity by pressing the button below." display-tooltip-when-elided="true" name="Text" class="blockText" />
                     <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px;">
                         <ui:Button text="Paste Login Token" display-tooltip-when-elided="true" name="pasteToken" class="blockButton" />
                         <ui:VisualElement name="Filler" style="flex-grow: 1;" />
@@ -117,7 +117,7 @@
                         <uie:PropertyField binding-path="thumbnail" label="Thumbnail" name="thumbnail" />
                         <uie:PropertyField binding-path="csharpAssembly" label="C# Assembly" name="csharpAssembly" />
                         <uie:PropertyField binding-path="embeddedPackageAssets" label="Embedded Packages" name="embeddedPackageAssets" />
-                        <ui:Label text="Settings" display-tooltip-when-elided="true" name="settingsLabel" style="-unity-font-style: bold; margin-top: 15px; margin-bottom: 4px" />
+                        <ui:Label text="Settings" display-tooltip-when-elided="true" name="settingsLabel" style="-unity-font-style: bold; margin-top: 15px; margin-bottom: 4px;" />
                         <ui:VisualElement name="settingsContainer" style="padding-left: 5px;">
                             <uie:PropertyField binding-path="settings.serverInstancingEnabled" name="serverInstancingEnabled" />
                             <uie:PropertyField binding-path="settings.serverCapacitySetting" name="serverCapacitySetting" style="flex-direction: column;" />

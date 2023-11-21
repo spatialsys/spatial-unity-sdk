@@ -71,13 +71,13 @@ namespace SpatialSys.UnitySDK.Editor
             long totalSize = dependencyInfos.Sum(d => d.Item2.Length);
             if (totalSize > maxPackageSize)
             {
-                var orderedDependencies = dependencyInfos.OrderByDescending(d => d.Item2.Length).Select(d => $"{d.Item2.Length / 1024 / 1024f:0.0000}MB - {d.Item1}").Take(25);
+                var orderedDependencies = dependencyInfos.OrderByDescending(d => d.Item2.Length).Select(d => $"{d.Item2.Length / 1024 / 1024f:0.000}MB - {d.Item1}").Take(25);
                 SpatialValidator.AddResponse(
                     new SpatialTestResponse(
                         null,
                         SpatialValidator.runContext == ValidationRunContext.UploadingToSandbox ? TestResponseType.Warning : TestResponseType.Fail,
                         "Package is too large to publish to Spatial",
-                        $"The package is {totalSize / 1024f / 1024f}MB, but the maximum size is {maxPackageSize}MB. " +
+                        $"The package is {totalSize / 1024f / 1024f:0.00}MB, but the maximum size is {maxPackageSize / 1024 / 1024}MB. " +
                         "The size of the package is equal to the raw file size of all your assets which get uploaded to Spatial. Import settings will not change this. " +
                         "Sometimes, texture and audio source assets can be very large on disk, and it can help to downscale them or re-export them in a different format." +
                         $"Here's a list of assets ordered by largest to smallest:\n - {string.Join("\n - ", orderedDependencies)}"

@@ -24,7 +24,7 @@ namespace SpatialSys.UnitySDK.Editor
                 SpatialValidator.AddResponse(
                     new SpatialTestResponse(
                         target,
-                        TestResponseType.Warning,
+                        SpatialValidator.runContext == ValidationRunContext.UploadingToSandbox ? TestResponseType.Warning : TestResponseType.Fail,
                         $"Audio Source on scene object \"{target.gameObject.name}\" is missing a mixer group.",
                         "All audio sources used must have a mixer group assigned."
                     )
@@ -89,7 +89,7 @@ namespace SpatialSys.UnitySDK.Editor
                     SpatialValidator.AddResponse(
                         new SpatialTestResponse(
                             mixer,
-                            TestResponseType.Warning,
+                            SpatialValidator.runContext == ValidationRunContext.UploadingToSandbox ? TestResponseType.Warning : TestResponseType.Fail,
                             $"Audio Mixer {mixer.name} is missing required exposed parameters.",
 $@"All audio mixers must have the following paramters:
 - {MASTER_VOLUME_PARAM}, {SOUND_EFFECTS_VOLUME_PARAM}, {MUSIC_VOLUME_PARAM}, {AMBIENCE_VOLUME_PARAM}, {INTERFACE_VOLUME_PARAM}, {DIALOGUE_VOLUME_PARAM}
@@ -109,7 +109,7 @@ This audio mixer is missing the following:
                     SpatialValidator.AddResponse(
                         new SpatialTestResponse(
                             sfxSource,
-                            TestResponseType.Warning,
+                            SpatialValidator.runContext == ValidationRunContext.UploadingToSandbox ? TestResponseType.Warning : TestResponseType.Fail,
                             $"Spatial SFX \"{sfxSource.name}\" is missing a mixer group.",
                             "All SFX assets used must have a mixer group assigned."
                         )
@@ -127,7 +127,7 @@ This audio mixer is missing the following:
                         SpatialValidator.AddResponse(
                             new SpatialTestResponse(
                                 source,
-                                TestResponseType.Warning,
+                                SpatialValidator.runContext == ValidationRunContext.UploadingToSandbox ? TestResponseType.Warning : TestResponseType.Fail,
                                 $"Audio Source on Prefab \"{prefab.name}\"  is missing a mixer group.",
                                 "All audio sources used must have a mixer group assigned."
                             )

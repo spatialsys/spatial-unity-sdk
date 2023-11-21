@@ -21,7 +21,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            sku = ValueInput<string>(nameof(sku));
+            sku = ValueInput<string>(nameof(sku), "");
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
                 ClientBridge.SetLocalAvatarFromPackage?.Invoke(f.GetValue<string>(sku));
@@ -51,7 +51,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            assetID = ValueInput<string>(nameof(assetID));
+            assetID = ValueInput<string>(nameof(assetID), "");
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
                 ClientBridge.SetLocalAvatarFromEmbedded?.Invoke(f.GetValue<string>(assetID));

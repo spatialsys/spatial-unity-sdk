@@ -78,7 +78,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         // Before running validation for publishing or testing we enforce valid setup on all attachments
         // This removes references to assets not used by the attachment (like clips that are referenced but not used)
-        public static void EnforceValidSetup(SpatialAvatarAttachment attachment)
+        public static void EnforceValidSetup(SpatialAvatarAttachment attachment, bool saveImmediately)
         {
             if (attachment == null)
                 return;
@@ -165,8 +165,14 @@ namespace SpatialSys.UnitySDK.Editor
                 Array.Resize(ref attachment.attachmentAnimClips.customActions, attachment.customActionsCount);
             }
 
-            UnityEditor.EditorUtility.SetDirty(attachment);
-            AssetDatabase.SaveAssetIfDirty(attachment);
+            if (saveImmediately)
+            {
+                EditorUtility.SaveAssetImmediately(attachment);
+            }
+            else
+            {
+                UnityEditor.EditorUtility.SetDirty(attachment);
+            }
         }
 
         /// <summary>

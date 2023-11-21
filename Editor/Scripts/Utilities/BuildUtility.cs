@@ -40,10 +40,6 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static IPromise BuildAndUploadForSandbox(BuildTarget target = BuildTarget.WebGL)
         {
-            // We must save all scenes, otherwise the bundle build will fail without explanation.
-            EditorSceneManager.SaveOpenScenes();
-            ProjectConfig.activePackageConfig.savedProjectSettings = SaveProjectSettingsToAsset();
-
             OnBeforeBuild();
 
             IPromise<SpatialValidationSummary> validationPromise;
@@ -274,10 +270,6 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static IPromise PackageForPublishing()
         {
-            // We must save all scenes, otherwise the bundle build will fail without explanation.
-            EditorSceneManager.SaveOpenScenes();
-            ProjectConfig.activePackageConfig.savedProjectSettings = SaveProjectSettingsToAsset();
-
             OnBeforeBuild();
 
             void RestoreAssetBackups()
@@ -306,13 +298,13 @@ namespace SpatialSys.UnitySDK.Editor
                                 // Make sure that the space package has a worldID assigned
                                 SpaceConfig spaceConfig = ProjectConfig.activePackageConfig as SpaceConfig;
                                 spaceConfig.worldID = ProjectConfig.defaultWorldID;
-                                UnityEditor.EditorUtility.SetDirty(spaceConfig);
-                                AssetDatabase.SaveAssetIfDirty(spaceConfig);
+                                EditorUtility.SaveAssetImmediately(spaceConfig);
                             });
                     }
 
                     return createWorldPromise;
-                }).Then(() => {
+                })
+                .Then(() => {
                     return SpatialAPI.CreateOrUpdatePackage(ProjectConfig.activePackageConfig.sku, ProjectConfig.activePackageConfig.packageType);
                 })
                 .Then(resp => {
@@ -320,8 +312,7 @@ namespace SpatialSys.UnitySDK.Editor
                     if (config.sku != resp.sku)
                     {
                         config.sku = resp.sku;
-                        UnityEditor.EditorUtility.SetDirty(config);
-                        AssetDatabase.SaveAssetIfDirty(config);
+                        EditorUtility.SaveAssetImmediately(config);
                     }
 
                     // Create a new backup to the package config asset in case we modify it, so it's easy to revert any changes made to it.
@@ -582,12 +573,21 @@ namespace SpatialSys.UnitySDK.Editor
         /// </summary>
         private static void OnBeforeBuild()
         {
+            // We must save all scenes, otherwise the bundle build will fail without explanation.
+            EditorSceneManager.SaveOpenScenes();
+
+            // Update project settings and assign to the package config so other places can reference it during build process.
+            ProjectConfig.activePackageConfig.savedProjectSettings = SaveProjectSettingsToAsset();
+            EditorUtility.SaveAssetImmediately(ProjectConfig.activePackageConfig);
+
             foreach (UnityEngine.Object asset in ProjectConfig.activePackageConfig.assets)
             {
                 // There are settings that should be enforced and automatically corrected without user intervention.
                 if (asset is SpatialAvatarAttachment avatarAttachmentPrefab)
-                    AvatarAttachmentComponentTests.EnforceValidSetup(avatarAttachmentPrefab);
+                    AvatarAttachmentComponentTests.EnforceValidSetup(avatarAttachmentPrefab, saveImmediately: false);
             }
+
+            AssetDatabase.SaveAssets();
         }
 
         /// <summary>
@@ -689,13 +689,29 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static SavedProjectSettings SaveProjectSettingsToAsset()
         {
-            SavedProjectSettings projSettings = ScriptableObject.CreateInstance<SavedProjectSettings>();
+            SavedProjectSettings projSettings = AssetDatabase.LoadAssetAtPath<SavedProjectSettings>(SAVED_PROJECT_SETTINGS_ASSET_PATH);
+            bool assetExisted = projSettings != null;
+
+            if (!assetExisted)
+            {
+                projSettings = ScriptableObject.CreateInstance<SavedProjectSettings>();
+                projSettings.name = nameof(SavedProjectSettings);
+            }
+
             projSettings.publishedSDKVersion = PackageManagerUtility.currentVersion;
             projSettings.customCollisionSettings = SpatialSDKPhysicsSettings.SavePhysicsSettings();
             projSettings.customCollision2DSettings = SpatialSDKPhysicsSettings.SavePhysicsSettings(get2D: true);
-            projSettings.name = "SavedProjectSettings";
 
-            AssetDatabase.CreateAsset(projSettings, SAVED_PROJECT_SETTINGS_ASSET_PATH);
+            if (assetExisted)
+            {
+                EditorUtility.SaveAssetImmediately(projSettings);
+            }
+            else
+            {
+                AssetDatabase.CreateAsset(projSettings, SAVED_PROJECT_SETTINGS_ASSET_PATH);
+                // Use the asset reference rather than the runtime ScriptableObject instance that was created above.
+                projSettings = AssetDatabase.LoadAssetAtPath<SavedProjectSettings>(SAVED_PROJECT_SETTINGS_ASSET_PATH);
+            }
 
             return projSettings;
         }
