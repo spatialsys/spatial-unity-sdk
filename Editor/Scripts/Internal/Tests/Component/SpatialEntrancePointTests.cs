@@ -1,3 +1,4 @@
+using SpatialSys.UnitySDK.Internal;
 using UnityEngine;
 
 namespace SpatialSys.UnitySDK.Editor

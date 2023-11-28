@@ -24,8 +24,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            avatarExists = ValueOutput<bool>(nameof(avatarExists), (f) => ClientBridge.GetLocalAvatarBodyExist?.Invoke() ?? false);
-            avatarMaterials = ValueOutput<Material[]>(nameof(avatarMaterials), (f) => ClientBridge.GetLocalAvatarMaterials?.Invoke() ?? null);
+            avatarExists = ValueOutput<bool>(nameof(avatarExists), (f) => SpatialBridge.GetLocalAvatarBodyExist?.Invoke() ?? false);
+            avatarMaterials = ValueOutput<Material[]>(nameof(avatarMaterials), (f) => SpatialBridge.GetLocalAvatarMaterials?.Invoke() ?? null);
         }
     }
 
@@ -53,8 +53,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
         protected override void Definition()
         {
             actor = ValueInput<int>(nameof(actor), -1);
-            avatarExists = ValueOutput<bool>(nameof(avatarExists), (f) => ClientBridge.GetAvatarExists?.Invoke(f.GetValue<int>(actor)) ?? false);
-            avatarMaterials = ValueOutput<Material[]>(nameof(avatarMaterials), (f) => ClientBridge.GetAvatarMaterials?.Invoke(f.GetValue<int>(actor)) ?? null);
+            avatarExists = ValueOutput<bool>(nameof(avatarExists), (f) => SpatialBridge.GetAvatarExists?.Invoke(f.GetValue<int>(actor)) ?? false);
+            avatarMaterials = ValueOutput<Material[]>(nameof(avatarMaterials), (f) => SpatialBridge.GetAvatarMaterials?.Invoke(f.GetValue<int>(actor)) ?? null);
         }
     }
 }

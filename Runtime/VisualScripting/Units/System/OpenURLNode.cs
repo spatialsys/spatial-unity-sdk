@@ -27,7 +27,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             url = ValueInput<string>(nameof(url), "https://");
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.OpenURL?.Invoke(f.GetValue<string>(url));
+                SpatialBridge.OpenURL?.Invoke(f.GetValue<string>(url));
                 return outputTrigger;
             });
 

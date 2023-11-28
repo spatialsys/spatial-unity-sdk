@@ -14,7 +14,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public ValueOutput isConnected { get; private set; }
         protected override void Definition()
         {
-            isConnected = ValueOutput<bool>(nameof(isConnected), (f) => ClientBridge.GetIsConnectedToSession?.Invoke() ?? true);
+            isConnected = ValueOutput<bool>(nameof(isConnected), (f) => SpatialBridge.GetIsConnectedToSession?.Invoke() ?? true);
         }
     }
 }

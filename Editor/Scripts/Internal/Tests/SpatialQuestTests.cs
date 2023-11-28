@@ -3,6 +3,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using RSG;
+using SpatialSys.UnitySDK.Internal;
 
 namespace SpatialSys.UnitySDK.Editor
 {

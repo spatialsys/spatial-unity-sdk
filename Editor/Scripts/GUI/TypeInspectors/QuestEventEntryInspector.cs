@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using SpatialSys.UnitySDK.Internal;
 
 namespace SpatialSys.UnitySDK.Editor
 {

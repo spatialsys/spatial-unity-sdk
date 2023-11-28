@@ -27,7 +27,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             friction = ValueInput<float>(nameof(friction), 1); // This default should be matched with AvatarController
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetLocalAvatarGroundFriction?.Invoke(f.GetValue<float>(friction));
+                SpatialBridge.SetLocalAvatarGroundFriction?.Invoke(f.GetValue<float>(friction));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -49,7 +49,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            friction = ValueOutput<float>(nameof(friction), (f) => ClientBridge.GetLocalAvatarGroundFriction?.Invoke() ?? 1);
+            friction = ValueOutput<float>(nameof(friction), (f) => SpatialBridge.GetLocalAvatarGroundFriction?.Invoke() ?? 1);
         }
     }
 }

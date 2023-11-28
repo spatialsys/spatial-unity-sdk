@@ -23,7 +23,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         protected override void Definition()
         {
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.MinimizeSystemUI?.Invoke();
+                SpatialBridge.MinimizeSystemUI?.Invoke();
                 return outputTrigger;
             });
 
@@ -60,7 +60,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
                 bool isEnabled = f.GetValue<bool>(enabled);
                 SpatialSystemGUIType guiFlags = f.GetValue<SpatialSystemGUIType>(guiType);
-                ClientBridge.SetSystemGUIEnabled?.Invoke(guiFlags, isEnabled);
+                SpatialBridge.SetSystemGUIEnabled?.Invoke(guiFlags, isEnabled);
                 return outputTrigger;
             });
 

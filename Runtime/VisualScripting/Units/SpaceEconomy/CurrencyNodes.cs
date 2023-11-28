@@ -26,7 +26,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             balance = ValueOutput<ulong>(nameof(balance));
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                f.SetValue(balance, ClientBridge.GetWorldCurrencyBalance.Invoke());
+                f.SetValue(balance, SpatialBridge.GetWorldCurrencyBalance.Invoke());
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -67,7 +67,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         private IEnumerator ExecuteAsync(Flow flow)
         {
             bool completed = false;
-            ClientBridge.AwardWorldCurrency.Invoke(flow.GetValue<ulong>(amount), success => {
+            SpatialBridge.AwardWorldCurrency.Invoke(flow.GetValue<ulong>(amount), success => {
                 completed = true;
                 flow.SetValue(succeeded, success);
             });

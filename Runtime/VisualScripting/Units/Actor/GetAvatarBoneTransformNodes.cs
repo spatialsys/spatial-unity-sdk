@@ -27,8 +27,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
         protected override void Definition()
         {
             humanBone = ValueInput<HumanBodyBones>(nameof(humanBone), HumanBodyBones.Hips);
-            avatarBoneTransform = ValueOutput<Transform>(nameof(avatarBoneTransform), (f) => ClientBridge.GetLocalAvatarBoneTransform?.Invoke(f.GetValue<HumanBodyBones>(humanBone)) ?? null);
-            avatarExists = ValueOutput<bool>(nameof(avatarExists), (f) => ClientBridge.GetLocalAvatarBodyExist?.Invoke() ?? false);
+            avatarBoneTransform = ValueOutput<Transform>(nameof(avatarBoneTransform), (f) => SpatialBridge.GetLocalAvatarBoneTransform?.Invoke(f.GetValue<HumanBodyBones>(humanBone)) ?? null);
+            avatarExists = ValueOutput<bool>(nameof(avatarExists), (f) => SpatialBridge.GetLocalAvatarBodyExist?.Invoke() ?? false);
         }
     }
 
@@ -58,10 +58,10 @@ namespace SpatialSys.UnitySDK.VisualScripting
         protected override void Definition()
         {
             actor = ValueInput<int>(nameof(actor), -1);
-            avatarExists = ValueOutput<bool>(nameof(avatarExists), (f) => ClientBridge.GetAvatarExists?.Invoke(f.GetValue<int>(actor)) ?? false);
+            avatarExists = ValueOutput<bool>(nameof(avatarExists), (f) => SpatialBridge.GetAvatarExists?.Invoke(f.GetValue<int>(actor)) ?? false);
 
             humanBone = ValueInput<HumanBodyBones>(nameof(humanBone), HumanBodyBones.Hips);
-            avatarBoneTransform = ValueOutput<Transform>(nameof(avatarBoneTransform), (f) => ClientBridge.GetAvatarBoneTransform?.Invoke(f.GetValue<int>(actor), f.GetValue<HumanBodyBones>(humanBone)) ?? null);
+            avatarBoneTransform = ValueOutput<Transform>(nameof(avatarBoneTransform), (f) => SpatialBridge.GetAvatarBoneTransform?.Invoke(f.GetValue<int>(actor), f.GetValue<HumanBodyBones>(humanBone)) ?? null);
         }
     }
 }

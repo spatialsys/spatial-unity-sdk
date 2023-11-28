@@ -29,7 +29,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
                 var id = f.GetValue<string>(badgeID);
                 if (!string.IsNullOrEmpty(id))
-                    ClientBridge.RewardBadge.Invoke(id);
+                    SpatialBridge.RewardBadge.Invoke(id);
                 return outputTrigger;
             });
 

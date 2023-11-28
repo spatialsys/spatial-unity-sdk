@@ -1,8 +1,6 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 using UnityEditor.SceneManagement;
 using UnityEditor;
 using UnityEngine.Profiling;
@@ -336,77 +334,6 @@ namespace SpatialSys.UnitySDK.Editor
                 GetGameObjectRecursive(t.parent, stringBuilder);
 
             stringBuilder.AppendFormat("/{0}", t.gameObject.name);
-        }
-
-        [SceneTest]
-        public static void TestScenePerformance(Scene scene)
-        {
-            if (SpatialValidator.runContext == ValidationRunContext.UploadingToSandbox)
-                return;
-
-            PerformanceResponse response = GetActiveScenePerformanceResponse();
-
-            if (response.meshColliderVertPercent > 1f)
-            {
-                SpatialValidator.AddResponse(new SpatialTestResponse(
-                    null,
-                    TestResponseType.Warning,
-                    $"Scene {scene.name} has a lot of high density mesh colliders ({response.meshColliderVerts}/{PerformanceResponse.MAX_SUGGESTED_COLLIDER_VERTS}).",
-                    "You should try to use primitives or low density meshes for colliders where possible. "
-                    + "High density collision geometry will impact the performance of your space.\n"
-
-                    + "Here's a list of all objects with high density mesh colliders:\n - " + string.Join("\n - ", response.meshColliderVertCounts.Take(30).Select(m => $"{m.Item2} - {m.Item1}"))
-                ));
-            }
-
-            //skipping reflection probe warning. Not everyone will benefit much from them.
-
-            if (response.vertPercent > 1f)
-            {
-                SpatialValidator.AddResponse(new SpatialTestResponse(
-                    null,
-                    TestResponseType.Warning,
-                    $"Scene {scene.name} has too many vertices.",
-                    "The scene has too many high detail models. It is recommended that you stay within the suggested limits or your asset may not perform well on all platforms.\n"
-                    + "Here's a list of all objects with high vertex counts:\n - " + string.Join("\n - ", response.meshVertCounts.Take(30).Select(m => $"{m.Item2} - {m.Item1}"))
-                ));
-            }
-
-            if (response.uniqueMaterialsPercent > 1f)
-            {
-                SpatialValidator.AddResponse(new SpatialTestResponse(
-                    null,
-                    TestResponseType.Warning,
-                    $"Scene {scene.name} has many unique materials.",
-                    $"It is encouraged for scenes to limit unique materials to around {PerformanceResponse.MAX_SUGGESTED_UNIQUE_MATERIALS}. "
-                    + "The more unique materials you have, the less likely it is that your asset will perform well on all platforms. "
-                    + "Look into texture atlasing techniques to share textures and materials across multiple separate objects."
-                ));
-            }
-
-            if (response.sharedTexturePercent > 1f)
-            {
-                SpatialValidator.AddResponse(new SpatialTestResponse(
-                    null,
-                    TestResponseType.Warning,
-                    $"Scene {scene.name} has too many shared textures.",
-                    $"Space Templates are limited to {PerformanceResponse.MAX_SUGGESTED_SHARED_TEXTURE_MB} MB of shared textures. "
-                    + "High memory usage can cause application crashes on lower end devices. It is highly recommended that you stay within the suggested limits. "
-                    + "Compressing your textures will help reduce their size.\n"
-                    + "Here's a list of all textures used by the scene:\n - " + string.Join("\n - ", response.textureMemorySizesMB.Take(40).Select(m => $"{m.Item2:0.00}MB - {m.Item1}"))
-                ));
-            }
-
-            if (response.audioPercent > 1f)
-            {
-                SpatialValidator.AddResponse(new SpatialTestResponse(
-                    null,
-                    TestResponseType.Warning,
-                    $"The audio clips in scene {scene.name} are using too much memory. ",
-                    $"It is recommended that you limit your scene to {PerformanceResponse.MAX_SUGGESTED_AUDIO_MB} MB of audio memory. "
-                    + "Converting audio files to .ogg and mono can help reduce its size."
-                ));
-            }
         }
     }
 }

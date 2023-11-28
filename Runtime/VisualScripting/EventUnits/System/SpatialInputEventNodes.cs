@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 using Unity.VisualScripting;
-using SpatialSys.UnitySDK;
+using SpatialSys.UnitySDK.Internal;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {

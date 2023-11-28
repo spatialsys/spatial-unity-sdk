@@ -25,9 +25,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             enabled = ValueInput<bool>(nameof(enabled), true);
 
-            inputTrigger = ControlInput(nameof(inputTrigger), (f) =>
-            {
-                ClientBridge.EnableAvatarToAvatarCollisions?.Invoke(f.GetValue<bool>(enabled));
+            inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
+                SpatialBridge.EnableAvatarToAvatarCollisions?.Invoke(f.GetValue<bool>(enabled));
                 return outputTrigger;
             });
 

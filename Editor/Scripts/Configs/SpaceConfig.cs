@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using SpatialSys.UnitySDK.Internal;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -93,13 +94,13 @@ namespace SpatialSys.UnitySDK.Editor
         public ServerCapacitySetting serverCapacitySetting = ServerCapacitySetting.Custom;
 
         [ToggleWithEnum("settings.serverCapacitySetting", (int)ServerCapacitySetting.Custom)]
-        [Range(2, SpaceConfig.PLATFORM_MAX_CAPACITY), Tooltip("How many participants can be in a single server of this space?")]
+        [Range(1, SpaceConfig.PLATFORM_MAX_CAPACITY), Tooltip("How many participants can be in a single server of this space?")]
         public int serverInstanceCapacity = 16; // Good default for most spaces
     }
 
     public enum ServerCapacitySetting
     {
-        Maximum, // This can change over time, so it's not a good idea to hardcode it
+        Maximum, // The maximum can change over time, so it's not a good idea to hardcode it
         Custom
     }
 }

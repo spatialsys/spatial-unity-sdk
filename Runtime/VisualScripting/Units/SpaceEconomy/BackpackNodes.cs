@@ -26,7 +26,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             open = ValueInput<bool>(nameof(open));
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetBackpackMenuOpen.Invoke(f.GetValue<bool>(open));
+                SpatialBridge.SetBackpackMenuOpen.Invoke(f.GetValue<bool>(open));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -75,7 +75,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         private IEnumerator ExecuteAsync(Flow flow)
         {
             bool completed = false;
-            ClientBridge.AddBackpackItem.Invoke(flow.GetValue<string>(itemID), flow.GetValue<ulong>(amount), flow.GetValue<bool>(showToastMessage), success => {
+            SpatialBridge.AddBackpackItem.Invoke(flow.GetValue<string>(itemID), flow.GetValue<ulong>(amount), flow.GetValue<bool>(showToastMessage), success => {
                 completed = true;
                 flow.SetValue(succeeded, success);
             });
@@ -117,7 +117,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         private IEnumerator ExecuteAsync(Flow flow)
         {
             bool completed = false;
-            ClientBridge.DeleteBackpackItem.Invoke(flow.GetValue<string>(itemID), success => {
+            SpatialBridge.DeleteBackpackItem.Invoke(flow.GetValue<string>(itemID), success => {
                 completed = true;
                 flow.SetValue(succeeded, success);
             });
@@ -163,7 +163,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         private IEnumerator ExecuteAsync(Flow flow)
         {
             bool completed = false;
-            ClientBridge.GetBackpackItem.Invoke(flow.GetValue<string>(itemID), resp => {
+            SpatialBridge.GetBackpackItem.Invoke(flow.GetValue<string>(itemID), resp => {
                 completed = true;
                 flow.SetValue(isOwned, resp.userOwnsItem);
                 flow.SetValue(amount, resp.amount);
@@ -206,7 +206,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         private IEnumerator ExecuteAsync(Flow flow)
         {
             bool completed = false;
-            ClientBridge.UseBackpackItem.Invoke(flow.GetValue<string>(itemID), success => {
+            SpatialBridge.UseBackpackItem.Invoke(flow.GetValue<string>(itemID), success => {
                 completed = true;
                 flow.SetValue(succeeded, success);
             });
@@ -245,7 +245,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             disabledMessage = ValueInput<string>(nameof(disabledMessage), null);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetBackpackItemEnabled.Invoke(f.GetValue<string>(itemID), f.GetValue<bool>(enabled), f.GetValue<string>(disabledMessage));
+                SpatialBridge.SetBackpackItemEnabled.Invoke(f.GetValue<string>(itemID), f.GetValue<bool>(enabled), f.GetValue<string>(disabledMessage));
                 return outputTrigger;
             });
 
@@ -285,7 +285,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             disabledMessage = ValueInput<string>(nameof(disabledMessage), null);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetBackpackItemTypeEnabled.Invoke(f.GetValue<ItemType>(itemType), f.GetValue<bool>(enabled), f.GetValue<string>(disabledMessage));
+                SpatialBridge.SetBackpackItemTypeEnabled.Invoke(f.GetValue<ItemType>(itemType), f.GetValue<bool>(enabled), f.GetValue<string>(disabledMessage));
                 return outputTrigger;
             });
 
@@ -341,7 +341,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         private IEnumerator ExecuteAsync(Flow flow)
         {
             bool completed = false;
-            ClientBridge.GetConsumableItemState.Invoke(flow.GetValue<string>(itemID), resp => {
+            SpatialBridge.GetConsumableItemState.Invoke(flow.GetValue<string>(itemID), resp => {
                 completed = true;
                 flow.SetValue(isActive, resp.isActive);
                 flow.SetValue(durationRemaining, resp.durationRemaining);

@@ -27,7 +27,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             force = ValueInput<Vector3>(nameof(force), Vector3.zero);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.AddForceToLocalAvatar.Invoke(f.GetValue<Vector3>(force));
+                SpatialBridge.AddForceToLocalAvatar.Invoke(f.GetValue<Vector3>(force));
                 return outputTrigger;
             });
 
@@ -59,7 +59,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             velocity = ValueInput<Vector3>(nameof(velocity), Vector3.zero);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetLocalAvatarVelocity.Invoke(f.GetValue<Vector3>(velocity));
+                SpatialBridge.SetLocalAvatarVelocity.Invoke(f.GetValue<Vector3>(velocity));
                 return outputTrigger;
             });
 

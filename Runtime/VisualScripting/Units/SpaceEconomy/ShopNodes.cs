@@ -1,4 +1,5 @@
 using System.Collections;
+using SpatialSys.UnitySDK.Services;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -26,7 +27,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             open = ValueInput<bool>(nameof(open));
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetShopMenuOpen.Invoke(f.GetValue<bool>(open));
+                SpatialBridge.SetShopMenuOpen.Invoke(f.GetValue<bool>(open));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -56,7 +57,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             itemID = ValueInput<string>(nameof(itemID));
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SelectShopMenuItem.Invoke(f.GetValue<string>(itemID));
+                SpatialBridge.SelectShopMenuItem.Invoke(f.GetValue<string>(itemID));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -94,7 +95,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             disabledMessage = ValueInput<string>(nameof(disabledMessage), null);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetShopItemEnabled.Invoke(f.GetValue<string>(itemID), f.GetValue<bool>(enabled), f.GetValue<string>(disabledMessage));
+                SpatialBridge.SetShopItemEnabled.Invoke(f.GetValue<string>(itemID), f.GetValue<bool>(enabled), f.GetValue<string>(disabledMessage));
                 return outputTrigger;
             });
 
@@ -130,7 +131,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             visible = ValueInput<bool>(nameof(visible), true);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetShopItemVisibility.Invoke(f.GetValue<string>(itemID), f.GetValue<bool>(visible));
+                SpatialBridge.SetShopItemVisibility.Invoke(f.GetValue<string>(itemID), f.GetValue<bool>(visible));
                 return outputTrigger;
             });
 
@@ -180,12 +181,11 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            bool completed = false;
-            ClientBridge.PurchaseShopItem.Invoke(flow.GetValue<string>(itemID), flow.GetValue<ulong>(amount), flow.GetValue<bool>(showToastMessage), success => {
-                completed = true;
-                flow.SetValue(succeeded, success);
-            });
-            yield return new WaitUntil(() => completed);
+            bool silent = !flow.GetValue<bool>(showToastMessage);
+            PurchaseItemRequest request = SpatialBridge.marketplaceService.PurchaseItem(flow.GetValue<string>(itemID), flow.GetValue<ulong>(amount), silent);
+            yield return request;
+            flow.SetValue(succeeded, request.succeeded);
+
             yield return outputTrigger;
         }
     }

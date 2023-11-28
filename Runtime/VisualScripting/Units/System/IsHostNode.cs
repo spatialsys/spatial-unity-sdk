@@ -15,7 +15,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            isHost = ValueOutput<bool>(nameof(isHost), (f) => ClientBridge.IsLocalHost.Invoke());
+            isHost = ValueOutput<bool>(nameof(isHost), (f) => SpatialBridge.IsLocalHost.Invoke());
         }
     }
 }

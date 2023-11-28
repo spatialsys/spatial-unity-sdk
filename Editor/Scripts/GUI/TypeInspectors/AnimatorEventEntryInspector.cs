@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using SpatialSys.UnitySDK.Internal;
 
 namespace SpatialSys.UnitySDK.Editor
 {

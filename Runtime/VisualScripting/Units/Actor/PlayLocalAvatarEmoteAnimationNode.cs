@@ -33,7 +33,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             loop = ValueInput<bool>(nameof(loop), false);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.PlayLocalAvatarPackageEmote?.Invoke(f.GetValue<string>(sku), f.GetValue<bool>(immediately), f.GetValue<bool>(loop));
+                SpatialBridge.PlayLocalAvatarPackageEmote?.Invoke(f.GetValue<string>(sku), f.GetValue<bool>(immediately), f.GetValue<bool>(loop));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -71,7 +71,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             loop = ValueInput<bool>(nameof(loop), false);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.PlayLocalAvatarEmbeddedEmote?.Invoke(f.GetValue<string>(assetID), f.GetValue<bool>(immediately), f.GetValue<bool>(loop));
+                SpatialBridge.PlayLocalAvatarEmbeddedEmote?.Invoke(f.GetValue<string>(assetID), f.GetValue<bool>(immediately), f.GetValue<bool>(loop));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -96,7 +96,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         protected override void Definition()
         {
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.StopLocalAvatarEmoteAnimation?.Invoke();
+                SpatialBridge.StopLocalAvatarEmoteAnimation?.Invoke();
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));

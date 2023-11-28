@@ -595,7 +595,7 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 _selectedIssueBlock.AddToClassList(response.responseType == TestResponseType.Fail ? "block_red" : "block_yellow");
                 _selectedIssueTextTitle.text = response.title;
-                _selectedIssueTextDescription.text = response.description;
+                _selectedIssueTextDescription.text = EditorUtility.TruncateTextForUI(response.description);
 
                 _openSceneBlock.style.display = !string.IsNullOrEmpty(response.scenePath) ? DisplayStyle.Flex : DisplayStyle.None;
                 _targetSceneName.text = response.scenePath;

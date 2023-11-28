@@ -15,7 +15,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            actor = ValueOutput<int>(nameof(actor), (f) => ClientBridge.GetRandomActor.Invoke());
+            actor = ValueOutput<int>(nameof(actor), (f) => SpatialBridge.GetRandomActor.Invoke());
         }
     }
 }

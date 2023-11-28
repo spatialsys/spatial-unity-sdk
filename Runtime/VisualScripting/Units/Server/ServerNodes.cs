@@ -15,7 +15,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            participantCount = ValueOutput<int>(nameof(participantCount), (f) => ClientBridge.GetSpaceParticipantCount?.Invoke() ?? 1);
+            participantCount = ValueOutput<int>(nameof(participantCount), (f) => SpatialBridge.GetSpaceParticipantCount?.Invoke() ?? 1);
         }
     }
 
@@ -32,7 +32,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            participantCount = ValueOutput<int>(nameof(participantCount), (f) => ClientBridge.GetServerParticipantCount?.Invoke() ?? 1);
+            participantCount = ValueOutput<int>(nameof(participantCount), (f) => SpatialBridge.GetServerParticipantCount?.Invoke() ?? 1);
         }
     }
 
@@ -49,7 +49,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            uniqueUsersCount = ValueOutput<int>(nameof(uniqueUsersCount), (f) => ClientBridge.GetServerUniqueUsersCount?.Invoke() ?? 1);
+            uniqueUsersCount = ValueOutput<int>(nameof(uniqueUsersCount), (f) => SpatialBridge.GetServerUniqueUsersCount?.Invoke() ?? 1);
         }
     }
 
@@ -66,7 +66,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            totalServersCount = ValueOutput<int>(nameof(totalServersCount), (f) => ClientBridge.GetTotalServersCount?.Invoke() ?? 1);
+            totalServersCount = ValueOutput<int>(nameof(totalServersCount), (f) => SpatialBridge.GetTotalServersCount?.Invoke() ?? 1);
         }
     }
 
@@ -83,7 +83,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            isOpen = ValueOutput<bool>(nameof(isOpen), (f) => ClientBridge.GetServerOpen?.Invoke() ?? true);
+            isOpen = ValueOutput<bool>(nameof(isOpen), (f) => SpatialBridge.GetServerOpen?.Invoke() ?? true);
         }
     }
 
@@ -109,7 +109,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             isOpen = ValueInput<bool>(nameof(isOpen), true);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetServerOpen?.Invoke(f.GetValue<bool>(isOpen));
+                SpatialBridge.SetServerOpen?.Invoke(f.GetValue<bool>(isOpen));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -130,7 +130,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            isVisible = ValueOutput<bool>(nameof(isVisible), (f) => ClientBridge.GetServerVisible?.Invoke() ?? true);
+            isVisible = ValueOutput<bool>(nameof(isVisible), (f) => SpatialBridge.GetServerVisible?.Invoke() ?? true);
         }
     }
 
@@ -156,7 +156,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             isVisible = ValueInput<bool>(nameof(isVisible), true);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetServerVisible?.Invoke(f.GetValue<bool>(isVisible));
+                SpatialBridge.SetServerVisible?.Invoke(f.GetValue<bool>(isVisible));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -177,7 +177,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            maxParticipants = ValueOutput<int>(nameof(maxParticipants), (f) => ClientBridge.GetServerMaxParticipants?.Invoke() ?? 50);
+            maxParticipants = ValueOutput<int>(nameof(maxParticipants), (f) => SpatialBridge.GetServerMaxParticipants?.Invoke() ?? 50);
         }
     }
 
@@ -203,7 +203,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             maxParticipants = ValueInput<int>(nameof(maxParticipants));
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetServerMaxParticipants?.Invoke(f.GetValue<int>(maxParticipants));
+                SpatialBridge.SetServerMaxParticipants?.Invoke(f.GetValue<int>(maxParticipants));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -224,7 +224,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            properties = ValueOutput<AotDictionary>(nameof(properties), (f) => ClientBridge.GetServerProperties?.Invoke() ?? null);
+            properties = ValueOutput<AotDictionary>(nameof(properties), (f) => SpatialBridge.GetServerProperties?.Invoke() ?? null);
         }
     }
 
@@ -250,7 +250,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             properties = ValueInput<AotDictionary>(nameof(properties));
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetServerProperties?.Invoke(f.GetValue<AotDictionary>(properties));
+                SpatialBridge.SetServerProperties?.Invoke(f.GetValue<AotDictionary>(properties));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -294,7 +294,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             matchProperties = ValueInput<AotList>(nameof(matchProperties), null);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.TeleportToNewServer?.Invoke(f.GetValue<int>(maxParticipants), f.GetValue<bool>(isOpen), f.GetValue<bool>(isVisible), f.GetValue<AotDictionary>(serverProperties), f.GetValue<AotList>(matchProperties));
+                SpatialBridge.TeleportToNewServer?.Invoke(f.GetValue<int>(maxParticipants), f.GetValue<bool>(isOpen), f.GetValue<bool>(isVisible), f.GetValue<AotDictionary>(serverProperties), f.GetValue<AotList>(matchProperties));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -338,7 +338,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             matchProperties = ValueInput<AotList>(nameof(matchProperties), null);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.TeleportActorsToNewServer?.Invoke(f.GetValue<AotList>(actors), f.GetValue<int>(maxParticipants), f.GetValue<bool>(isVisible), f.GetValue<AotDictionary>(serverProperties), f.GetValue<AotList>(matchProperties));
+                SpatialBridge.TeleportActorsToNewServer?.Invoke(f.GetValue<AotList>(actors), f.GetValue<int>(maxParticipants), f.GetValue<bool>(isVisible), f.GetValue<AotDictionary>(serverProperties), f.GetValue<AotList>(matchProperties));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -376,7 +376,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             serverPropertiesToMatch = ValueInput<AotList>(nameof(serverPropertiesToMatch), null);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.TeleportToBestMatchServer?.Invoke(f.GetValue<int>(maxParticipants), f.GetValue<AotDictionary>(serverProperties), f.GetValue<AotList>(serverPropertiesToMatch));
+                SpatialBridge.TeleportToBestMatchServer?.Invoke(f.GetValue<int>(maxParticipants), f.GetValue<AotDictionary>(serverProperties), f.GetValue<AotList>(serverPropertiesToMatch));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));

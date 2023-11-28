@@ -32,10 +32,10 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             actor = ValueInput<int>(nameof(actor), -1);
 
-            avatarExists = ValueOutput<bool>(nameof(avatarExists), (f) => ClientBridge.GetAvatarExists.Invoke(f.GetValue<int>(actor)));
-            avatarPosition = ValueOutput<Vector3>(nameof(avatarPosition), (f) => ClientBridge.GetAvatarPositionWithActor.Invoke(f.GetValue<int>(actor)));
-            avatarRotation = ValueOutput<Quaternion>(nameof(avatarRotation), (f) => ClientBridge.GetAvatarRotationWithActor.Invoke(f.GetValue<int>(actor)));
-            avatarVelocity = ValueOutput<Vector3>(nameof(avatarVelocity), (f) => ClientBridge.GetAvatarVelocityWithActor.Invoke(f.GetValue<int>(actor)));
+            avatarExists = ValueOutput<bool>(nameof(avatarExists), (f) => SpatialBridge.GetAvatarExists.Invoke(f.GetValue<int>(actor)));
+            avatarPosition = ValueOutput<Vector3>(nameof(avatarPosition), (f) => SpatialBridge.GetAvatarPositionWithActor.Invoke(f.GetValue<int>(actor)));
+            avatarRotation = ValueOutput<Quaternion>(nameof(avatarRotation), (f) => SpatialBridge.GetAvatarRotationWithActor.Invoke(f.GetValue<int>(actor)));
+            avatarVelocity = ValueOutput<Vector3>(nameof(avatarVelocity), (f) => SpatialBridge.GetAvatarVelocityWithActor.Invoke(f.GetValue<int>(actor)));
         }
     }
 
@@ -58,9 +58,9 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            avatarPosition = ValueOutput<Vector3>(nameof(avatarPosition), (f) => ClientBridge.GetLocalAvatarPosition.Invoke());
-            avatarRotation = ValueOutput<Quaternion>(nameof(avatarRotation), (f) => ClientBridge.GetLocalAvatarRotation.Invoke());
-            avatarVelocity = ValueOutput<Vector3>(nameof(avatarVelocity), (f) => ClientBridge.GetLocalAvatarVelocity.Invoke());
+            avatarPosition = ValueOutput<Vector3>(nameof(avatarPosition), (f) => SpatialBridge.GetLocalAvatarPosition.Invoke());
+            avatarRotation = ValueOutput<Quaternion>(nameof(avatarRotation), (f) => SpatialBridge.GetLocalAvatarRotation.Invoke());
+            avatarVelocity = ValueOutput<Vector3>(nameof(avatarVelocity), (f) => SpatialBridge.GetLocalAvatarVelocity.Invoke());
         }
     }
 
@@ -76,7 +76,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            isGrounded = ValueOutput<bool>(nameof(isGrounded), (f) => ClientBridge.GetLocalAvatarGrounded.Invoke());
+            isGrounded = ValueOutput<bool>(nameof(isGrounded), (f) => SpatialBridge.GetLocalAvatarGrounded.Invoke());
         }
     }
 }

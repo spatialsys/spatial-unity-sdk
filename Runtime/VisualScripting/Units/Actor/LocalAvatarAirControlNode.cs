@@ -27,7 +27,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             airControl = ValueInput<float>(nameof(airControl), 1); // This default should be matched with AvatarController
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetLocalAvatarAirControl?.Invoke(f.GetValue<float>(airControl));
+                SpatialBridge.SetLocalAvatarAirControl?.Invoke(f.GetValue<float>(airControl));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -48,7 +48,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            airControl = ValueOutput<float>(nameof(airControl), (f) => ClientBridge.GetLocalAvatarAirControl?.Invoke() ?? 1);
+            airControl = ValueOutput<float>(nameof(airControl), (f) => SpatialBridge.GetLocalAvatarAirControl?.Invoke() ?? 1);
         }
     }
 }

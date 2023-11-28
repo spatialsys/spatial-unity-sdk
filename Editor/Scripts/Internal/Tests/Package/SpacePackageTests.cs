@@ -1,6 +1,5 @@
 using System.Collections.Generic;
-using UnityEditor;
-using UnityEngine;
+using SpatialSys.UnitySDK.Internal;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -108,19 +107,19 @@ namespace SpatialSys.UnitySDK.Editor
         [PackageTest(PackageType.Space)]
         public static void EnsureCapacityDoesNotExceedMaximum(SpaceConfig config)
         {
-            if (config.settings.serverCapacitySetting == ServerCapacitySetting.Custom)
+            if (config.settings.serverCapacitySetting != ServerCapacitySetting.Custom)
+                return;
+
+            if (config.settings.serverInstanceCapacity < 1 || config.settings.serverInstanceCapacity > SpaceConfig.PLATFORM_MAX_CAPACITY)
             {
-                if (config.settings.serverInstanceCapacity < 2 || config.settings.serverInstanceCapacity > SpaceConfig.PLATFORM_MAX_CAPACITY)
-                {
-                    SpatialValidator.AddResponse(
-                        new SpatialTestResponse(
-                            config,
-                            TestResponseType.Fail,
-                            "Invalid space maximum capacity",
-                            $"The maximum capacity for a Space should be minimum 2 and cannot exceed {SpaceConfig.PLATFORM_MAX_CAPACITY}"
-                        )
-                    );
-                }
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(
+                        config,
+                        TestResponseType.Fail,
+                        "Invalid space maximum capacity",
+                        $"The maximum capacity for a Space should be at between 1 and {SpaceConfig.PLATFORM_MAX_CAPACITY}"
+                    )
+                );
             }
         }
     }

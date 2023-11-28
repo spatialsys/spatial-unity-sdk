@@ -67,11 +67,15 @@ namespace SpatialSys.UnitySDK.Editor
                 maxPackageSize += 5 * 1024 * 1024; // Add 5MB to the limit in batch mode to account for file size differences between operating systems
 
             // Get size of each dependency
-            Tuple<string, FileInfo>[] dependencyInfos = dependencies.Select(d => new Tuple<string, FileInfo>(d, new FileInfo(d))).ToArray();
+            IEnumerable<Tuple<string, FileInfo>> dependencyInfos = dependencies.Select(d => new Tuple<string, FileInfo>(d, new FileInfo(d)));
             long totalSize = dependencyInfos.Sum(d => d.Item2.Length);
             if (totalSize > maxPackageSize)
             {
-                var orderedDependencies = dependencyInfos.OrderByDescending(d => d.Item2.Length).Select(d => $"{d.Item2.Length / 1024 / 1024f:0.000}MB - {d.Item1}").Take(25);
+                IEnumerable<string> orderedDependencies = dependencyInfos
+                    .OrderByDescending(d => d.Item2.Length)
+                    .Take(100)
+                    .Select(d => $"{d.Item2.Length / 1024 / 1024f:0.000}MB - {d.Item1}");
+
                 SpatialValidator.AddResponse(
                     new SpatialTestResponse(
                         null,
@@ -80,7 +84,7 @@ namespace SpatialSys.UnitySDK.Editor
                         $"The package is {totalSize / 1024f / 1024f:0.00}MB, but the maximum size is {maxPackageSize / 1024 / 1024}MB. " +
                         "The size of the package is equal to the raw file size of all your assets which get uploaded to Spatial. Import settings will not change this. " +
                         "Sometimes, texture and audio source assets can be very large on disk, and it can help to downscale them or re-export them in a different format." +
-                        $"Here's a list of assets ordered by largest to smallest:\n - {string.Join("\n - ", orderedDependencies)}"
+                        $"\nHere's a list of the largest assets:\n - {string.Join("\n - ", orderedDependencies)}"
                     )
                 );
             }

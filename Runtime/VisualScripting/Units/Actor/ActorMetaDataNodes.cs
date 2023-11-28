@@ -31,7 +31,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             variableValue = ValueInput<object>(nameof(variableValue), null);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetLocalActorCustomVariable?.Invoke(f.GetValue<string>(variableName), f.GetValue<object>(variableValue));
+                SpatialBridge.SetLocalActorCustomVariable?.Invoke(f.GetValue<string>(variableName), f.GetValue<object>(variableValue));
                 return outputTrigger;
             });
 
@@ -57,7 +57,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         protected override void Definition()
         {
             variableName = ValueInput<string>(nameof(variableName), "");
-            value = ValueOutput<object>(nameof(value), (f) => ClientBridge.GetLocalActorCustomVariable?.Invoke(f.GetValue<string>(variableName)) ?? null);
+            value = ValueOutput<object>(nameof(value), (f) => SpatialBridge.GetLocalActorCustomVariable?.Invoke(f.GetValue<string>(variableName)) ?? null);
         }
     }
 
@@ -81,7 +81,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             actor = ValueInput<int>(nameof(actor), -1);
             variableName = ValueInput<string>(nameof(variableName), "");
-            value = ValueOutput<object>(nameof(value), (f) => ClientBridge.GetActorCustomVariable?.Invoke(f.GetValue<int>(actor), f.GetValue<string>(variableName)) ?? null);
+            value = ValueOutput<object>(nameof(value), (f) => SpatialBridge.GetActorCustomVariable?.Invoke(f.GetValue<int>(actor), f.GetValue<string>(variableName)) ?? null);
         }
     }
 }

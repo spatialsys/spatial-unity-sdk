@@ -27,7 +27,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             maxJumpCount = ValueInput<int>(nameof(maxJumpCount), 2); // This default should be matched with AvatarController
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetLocalAvatarMaxJumpCount?.Invoke(f.GetValue<int>(maxJumpCount));
+                SpatialBridge.SetLocalAvatarMaxJumpCount?.Invoke(f.GetValue<int>(maxJumpCount));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -50,7 +50,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            maxJumpCount = ValueOutput<int>(nameof(maxJumpCount), (f) => ClientBridge.GetLocalAvatarMaxJumpCount?.Invoke() ?? 2);
+            maxJumpCount = ValueOutput<int>(nameof(maxJumpCount), (f) => SpatialBridge.GetLocalAvatarMaxJumpCount?.Invoke() ?? 2);
         }
     }
 }

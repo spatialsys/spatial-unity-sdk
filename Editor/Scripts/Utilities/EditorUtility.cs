@@ -186,6 +186,56 @@ namespace SpatialSys.UnitySDK.Editor
             return true;
         }
 
+        public static string TruncateTextForUI(string text, bool fast = false)
+        {
+            // Text elements are limited to 49152 vertices (weirdly specific).
+            // Each non-whitespace character (space, new lines, etc) uses 2 triangles, or 4 vertices to form a rect.
+            // So only 12288 non-whitespace characters are allowed. Truncate earlier to add a little buffer.
+            const int MAX_LENGTH_NO_WHITESPACE = 12200;
+
+            bool doTruncate = false;
+            int substrLen = 0;
+            if (text?.Length > MAX_LENGTH_NO_WHITESPACE)
+            {
+                if (fast)
+                {
+                    // Truncate without accounting for whitespace characters. This may cause the string to render less than what's actually supported.
+                    doTruncate = true;
+                    substrLen = MAX_LENGTH_NO_WHITESPACE;
+                }
+                else
+                {
+                    // NOTE: Not slow if you're only doing this once. Consider the "fast" option if you're processing many UI elements.
+                    int nonWhiteSpaceCount = 0;
+
+                    foreach (char c in text)
+                    {
+                        if (!char.IsWhiteSpace(c))
+                        {
+                            nonWhiteSpaceCount++;
+
+                            if (nonWhiteSpaceCount > MAX_LENGTH_NO_WHITESPACE)
+                            {
+                                // This character will cause renderer to exceed the vertex limit, so don't include it and break out.
+                                doTruncate = true;
+                                break;
+                            }
+                        }
+
+                        substrLen++;
+                    }
+                }
+            }
+
+            if (doTruncate)
+            {
+                const string TRUNCATED_MSG = "...<truncated>";
+                return text.Substring(0, substrLen - TRUNCATED_MSG.Length) + TRUNCATED_MSG;
+            }
+
+            return text;
+        }
+
         public static string FormatNumber(this int num)
         {
             // Add comma-separators (e.g. 1,000,000)

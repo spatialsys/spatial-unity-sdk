@@ -27,7 +27,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             speed = ValueInput<float>(nameof(speed), 6.875f); // This default should be matched with AvatarController RunSpeed.
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetLocalAvatarRunSpeed?.Invoke(f.GetValue<float>(speed));
+                SpatialBridge.SetLocalAvatarRunSpeed?.Invoke(f.GetValue<float>(speed));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -50,7 +50,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            speed = ValueOutput<float>(nameof(speed), (f) => ClientBridge.GetLocalAvatarRunSpeed?.Invoke() ?? 6.875f);
+            speed = ValueOutput<float>(nameof(speed), (f) => SpatialBridge.GetLocalAvatarRunSpeed?.Invoke() ?? 6.875f);
         }
     }
 }

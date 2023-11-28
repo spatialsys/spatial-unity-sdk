@@ -28,10 +28,10 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             actor = ValueInput<int>(nameof(actor), -1);
 
-            displayName = ValueOutput<string>(nameof(displayName), (f) => ClientBridge.GetActorNametagDisplayName.Invoke(f.GetValue<int>(actor)));
-            subtext = ValueOutput<string>(nameof(subtext), (f) => ClientBridge.GetActorNametagSubtext.Invoke(f.GetValue<int>(actor)));
-            barVisible = ValueOutput<bool>(nameof(barVisible), (f) => ClientBridge.GetActorNametagBarVisible.Invoke(f.GetValue<int>(actor)));
-            barValue = ValueOutput<float>(nameof(barValue), (f) => ClientBridge.GetActorNametagBarValue.Invoke(f.GetValue<int>(actor)));
+            displayName = ValueOutput<string>(nameof(displayName), (f) => SpatialBridge.GetActorNametagDisplayName.Invoke(f.GetValue<int>(actor)));
+            subtext = ValueOutput<string>(nameof(subtext), (f) => SpatialBridge.GetActorNametagSubtext.Invoke(f.GetValue<int>(actor)));
+            barVisible = ValueOutput<bool>(nameof(barVisible), (f) => SpatialBridge.GetActorNametagBarVisible.Invoke(f.GetValue<int>(actor)));
+            barValue = ValueOutput<float>(nameof(barValue), (f) => SpatialBridge.GetActorNametagBarValue.Invoke(f.GetValue<int>(actor)));
         }
     }
 }

@@ -29,7 +29,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             useVariableHeight = ValueInput<bool>(nameof(useVariableHeight), true); // This default should be matched with AvatarController
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetLocalAvatarUseVariableHeightJump?.Invoke(f.GetValue<bool>(useVariableHeight));
+                SpatialBridge.SetLocalAvatarUseVariableHeightJump?.Invoke(f.GetValue<bool>(useVariableHeight));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -52,7 +52,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            useVariableHeight = ValueOutput<bool>(nameof(useVariableHeight), (f) => ClientBridge.GetLocalAvatarUseVariableHeightJump?.Invoke() ?? true);
+            useVariableHeight = ValueOutput<bool>(nameof(useVariableHeight), (f) => SpatialBridge.GetLocalAvatarUseVariableHeightJump?.Invoke() ?? true);
         }
     }
 }

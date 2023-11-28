@@ -27,7 +27,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             height = ValueInput<float>(nameof(height), 1.5f); // This default should be matched with AvatarController
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetLocalAvatarJumpHeight?.Invoke(f.GetValue<float>(height));
+                SpatialBridge.SetLocalAvatarJumpHeight?.Invoke(f.GetValue<float>(height));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -50,7 +50,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            height = ValueOutput<float>(nameof(height), (f) => ClientBridge.GetLocalAvatarJumpHeight?.Invoke() ?? 1.5f);
+            height = ValueOutput<float>(nameof(height), (f) => SpatialBridge.GetLocalAvatarJumpHeight?.Invoke() ?? 1.5f);
         }
     }
 }

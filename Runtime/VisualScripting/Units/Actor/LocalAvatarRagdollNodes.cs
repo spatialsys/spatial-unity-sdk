@@ -15,7 +15,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            active = ValueOutput<bool>(nameof(active), (f) => ClientBridge.GetLocalAvatarRagdollPhysicsActive.Invoke());
+            active = ValueOutput<bool>(nameof(active), (f) => SpatialBridge.GetLocalAvatarRagdollPhysicsActive.Invoke());
         }
     }
 
@@ -43,7 +43,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             active = ValueInput<bool>(nameof(active), @default: true);
             initialVelocity = ValueInput<Vector3>(nameof(initialVelocity), @default: Vector3.zero);
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetLocalAvatarRagdollPhysicsActive.Invoke(f.GetValue<bool>(active), f.GetValue<Vector3>(initialVelocity));
+                SpatialBridge.SetLocalAvatarRagdollPhysicsActive.Invoke(f.GetValue<bool>(active), f.GetValue<Vector3>(initialVelocity));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -63,7 +63,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            velocity = ValueOutput<Vector3>(nameof(velocity), (f) => ClientBridge.GetLocalAvatarRagdollVelocity.Invoke());
+            velocity = ValueOutput<Vector3>(nameof(velocity), (f) => SpatialBridge.GetLocalAvatarRagdollVelocity.Invoke());
         }
     }
 
@@ -88,7 +88,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             velocity = ValueInput<Vector3>(nameof(velocity), @default: Vector3.zero);
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetLocalAvatarRagdollVelocity.Invoke(f.GetValue<Vector3>(velocity));
+                SpatialBridge.SetLocalAvatarRagdollVelocity.Invoke(f.GetValue<Vector3>(velocity));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -120,7 +120,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             force = ValueInput<Vector3>(nameof(force), @default: Vector3.zero);
             ignoreMass = ValueInput<bool>(nameof(ignoreMass), @default: false);
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.AddForceToLocalAvatarRagdoll.Invoke(f.GetValue<Vector3>(force), f.GetValue<bool>(ignoreMass));
+                SpatialBridge.AddForceToLocalAvatarRagdoll.Invoke(f.GetValue<Vector3>(force), f.GetValue<bool>(ignoreMass));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));

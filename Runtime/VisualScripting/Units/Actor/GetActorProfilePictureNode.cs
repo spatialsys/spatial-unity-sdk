@@ -21,7 +21,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         [DoNotSerialize]
         public ValueInput actor { get; private set; }
-       
+
         [DoNotSerialize]
         [PortLabel("Texture")]
         public ValueOutput actorTexture { get; private set; }
@@ -44,7 +44,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             if (actorId >= 0)
             {
                 bool completed = false;
-                ClientBridge.GetActorProfilePicture.Invoke(actorId, texture => {
+                SpatialBridge.GetActorProfilePicture.Invoke(actorId, texture => {
                     completed = true;
                     flow.SetValue(actorTexture, texture);
                 });

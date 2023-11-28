@@ -15,7 +15,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            hasLoved = ValueOutput<bool>(nameof(hasLoved), (f) => ClientBridge.HasLocalLovedSpace.Invoke());
+            hasLoved = ValueOutput<bool>(nameof(hasLoved), (f) => SpatialBridge.HasLocalLovedSpace.Invoke());
         }
     }
 }

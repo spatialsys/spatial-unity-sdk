@@ -6,6 +6,7 @@ using UnityEditor;
 using UnityEngine.SceneManagement;
 using UnityEditor.Callbacks;
 using UnityEngine.Rendering.Universal;
+using SpatialSys.UnitySDK.Internal;
 
 namespace SpatialSys.UnitySDK.Editor
 {

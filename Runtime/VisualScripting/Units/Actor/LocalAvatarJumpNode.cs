@@ -22,7 +22,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         protected override void Definition()
         {
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.TriggerJumpLocalAvatar?.Invoke();
+                SpatialBridge.TriggerJumpLocalAvatar?.Invoke();
                 return outputTrigger;
             });
 

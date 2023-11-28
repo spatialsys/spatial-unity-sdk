@@ -33,7 +33,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             sprint = ValueInput<bool>(nameof(sprint), false);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.MoveLocalAvatar?.Invoke(f.GetValue<Vector2>(moveInput), f.GetValue<bool>(sprint));
+                SpatialBridge.MoveLocalAvatar?.Invoke(f.GetValue<Vector2>(moveInput), f.GetValue<bool>(sprint));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));

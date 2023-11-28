@@ -15,7 +15,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            actors = ValueOutput<List<int>>(nameof(actors), (f) => ClientBridge.GetActors.Invoke());
+            actors = ValueOutput<List<int>>(nameof(actors), (f) => SpatialBridge.GetActors.Invoke());
         }
     }
 }

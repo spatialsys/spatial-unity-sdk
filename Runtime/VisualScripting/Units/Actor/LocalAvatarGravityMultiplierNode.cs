@@ -26,7 +26,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             gravityMultiplier = ValueInput<float>(nameof(gravityMultiplier), 1.5f); // This default should be matched with AvatarController
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetLocalAvatarGravityMultiplier?.Invoke(f.GetValue<float>(gravityMultiplier));
+                SpatialBridge.SetLocalAvatarGravityMultiplier?.Invoke(f.GetValue<float>(gravityMultiplier));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -49,7 +49,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            gravityMultiplier = ValueOutput<float>(nameof(gravityMultiplier), (f) => ClientBridge.GetLocalAvatarGravityMultiplier?.Invoke() ?? 1.5f);
+            gravityMultiplier = ValueOutput<float>(nameof(gravityMultiplier), (f) => SpatialBridge.GetLocalAvatarGravityMultiplier?.Invoke() ?? 1.5f);
         }
     }
 }

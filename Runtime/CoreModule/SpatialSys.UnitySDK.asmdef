@@ -1,0 +1,18 @@
+{
+    "name": "SpatialSys.UnitySDK",
+    "rootNamespace": "SpatialSys.UnitySDK",
+    "references": [
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.VisualScripting.Core",
+        "Unity.VisualScripting.Flow"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

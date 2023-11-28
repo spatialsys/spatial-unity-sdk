@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.VisualScripting;
+using SpatialSys.UnitySDK.Internal;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
@@ -37,7 +38,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             actionButton = ValueInput<bool>(nameof(actionButton), true);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetInputOverrides.Invoke(
+                SpatialBridge.SetInputOverrides.Invoke(
                     f.GetValue<bool>(movement),
                     f.GetValue<bool>(jump),
                     f.GetValue<bool>(sprint),
@@ -56,7 +57,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             base.Uninstantiate(instance);
             if (instance?.gameObject != null)
-                ClientBridge.OnInputGraphRootObjectDestroyed?.Invoke(instance.gameObject);
+                SpatialBridge.OnInputGraphRootObjectDestroyed?.Invoke(instance.gameObject);
         }
     }
 
@@ -90,7 +91,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             secondaryButtonSprite = ValueInput<Sprite>(nameof(secondaryButtonSprite), null);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.StartVehicleInputCapture.Invoke(
+                SpatialBridge.StartVehicleInputCapture.Invoke(
                     f.GetValue<VehicleInputFlags>(flags),
                     f.GetValue<Sprite>(primaryButtonSprite),
                     f.GetValue<Sprite>(secondaryButtonSprite),
@@ -108,7 +109,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             base.Uninstantiate(instance);
             if (instance?.gameObject != null)
-                ClientBridge.OnInputGraphRootObjectDestroyed?.Invoke(instance.gameObject);
+                SpatialBridge.OnInputGraphRootObjectDestroyed?.Invoke(instance.gameObject);
         }
     }
 
@@ -129,9 +130,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            inputTrigger = ControlInput(nameof(inputTrigger), (f) =>
-            {
-                ClientBridge.StartCompleteCustomInputCapture.Invoke(
+            inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
+                SpatialBridge.StartCompleteCustomInputCapture.Invoke(
                     f.stack.self
                 );
                 return outputTrigger;
@@ -146,7 +146,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             base.Uninstantiate(instance);
             if (instance?.gameObject != null)
-                ClientBridge.OnInputGraphRootObjectDestroyed?.Invoke(instance.gameObject);
+                SpatialBridge.OnInputGraphRootObjectDestroyed?.Invoke(instance.gameObject);
         }
     }
 
@@ -167,7 +167,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         protected override void Definition()
         {
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.ReleaseInputCapture.Invoke(
+                SpatialBridge.ReleaseInputCapture.Invoke(
                     f.stack.self
                 );
                 return outputTrigger;

@@ -15,7 +15,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            isOwner = ValueOutput<bool>(nameof(isOwner), (f) => ClientBridge.IsLocalOwner.Invoke());
+            isOwner = ValueOutput<bool>(nameof(isOwner), (f) => SpatialBridge.IsLocalOwner.Invoke());
         }
     }
 }

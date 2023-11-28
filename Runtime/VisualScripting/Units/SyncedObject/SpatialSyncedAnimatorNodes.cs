@@ -36,7 +36,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             value = ValueInput<object>(nameof(value), null);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetSyncedAnimatorParameter?.Invoke(f.GetValue<SpatialSyncedAnimator>(syncedAnimator), f.GetValue<string>(parameter), f.GetValue<object>(value));
+                SpatialBridge.SetSyncedAnimatorParameter?.Invoke(f.GetValue<SpatialSyncedAnimator>(syncedAnimator), f.GetValue<string>(parameter), f.GetValue<object>(value));
                 return outputTrigger;
             });
 
@@ -73,7 +73,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             trigger = ValueInput<string>(nameof(trigger), "");
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetSyncedAnimatorTrigger?.Invoke(f.GetValue<SpatialSyncedAnimator>(syncedAnimator), f.GetValue<string>(trigger));
+                SpatialBridge.SetSyncedAnimatorTrigger?.Invoke(f.GetValue<SpatialSyncedAnimator>(syncedAnimator), f.GetValue<string>(trigger));
                 return outputTrigger;
             });
 

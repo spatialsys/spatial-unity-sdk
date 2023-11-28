@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using Unity.VisualScripting;
+using SpatialSys.UnitySDK.Internal;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
@@ -51,7 +52,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         private IEnumerator ExecuteAsync(Flow flow)
         {
             bool completed = false;
-            ClientBridge.GetDataStoreVariableValue?.Invoke(
+            SpatialBridge.GetDataStoreVariableValue?.Invoke(
                 flow.GetValue<ClientBridge.DataStoreScope>(scope),
                 flow.GetValue<string>(key),
                 flow.GetValue<object>(defaultValue),
@@ -110,7 +111,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         private IEnumerator ExecuteAsync(Flow flow)
         {
             bool completed = false;
-            ClientBridge.SetDataStoreVariableValue?.Invoke(
+            SpatialBridge.SetDataStoreVariableValue?.Invoke(
                 scope: flow.GetValue<ClientBridge.DataStoreScope>(scope),
                 key: flow.GetValue<string>(key),
                 value: flow.GetValue<object>(value),
@@ -165,7 +166,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         private IEnumerator ExecuteAsync(Flow flow)
         {
             bool completed = false;
-            ClientBridge.DeleteDataStoreVariable?.Invoke(
+            SpatialBridge.DeleteDataStoreVariable?.Invoke(
                 scope: flow.GetValue<ClientBridge.DataStoreScope>(scope),
                 key: flow.GetValue<string>(key),
                 result => {
@@ -216,7 +217,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         private IEnumerator ExecuteAsync(Flow flow)
         {
             bool completed = false;
-            ClientBridge.ClearDataStore?.Invoke(
+            SpatialBridge.ClearDataStore?.Invoke(
                 scope: flow.GetValue<ClientBridge.DataStoreScope>(scope),
                 result => {
                     completed = true;
@@ -272,7 +273,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         private IEnumerator ExecuteAsync(Flow flow)
         {
             bool completed = false;
-            ClientBridge.HasDataStoreVariable?.Invoke(
+            SpatialBridge.HasDataStoreVariable?.Invoke(
                 scope: flow.GetValue<ClientBridge.DataStoreScope>(scope),
                 key: flow.GetValue<string>(key),
                 result => {
@@ -327,7 +328,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         private IEnumerator ExecuteAsync(Flow flow)
         {
             bool completed = false;
-            ClientBridge.DataStoreHasAnyVariable?.Invoke(
+            SpatialBridge.DataStoreHasAnyVariable?.Invoke(
                 scope: flow.GetValue<ClientBridge.DataStoreScope>(scope),
                 result => {
                     completed = true;
@@ -381,7 +382,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         private IEnumerator ExecuteAsync(Flow flow)
         {
             bool completed = false;
-            ClientBridge.DumpDataStoreVariables?.Invoke(
+            SpatialBridge.DumpDataStoreVariables?.Invoke(
                 scope: flow.GetValue<ClientBridge.DataStoreScope>(scope),
                 result => {
                     completed = true;

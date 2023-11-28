@@ -27,7 +27,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             newPosition = ValueInput<Vector3>(nameof(newPosition), Vector3.zero);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetLocalAvatarPosition?.Invoke(f.GetValue<Vector3>(newPosition));
+                SpatialBridge.SetLocalAvatarPosition?.Invoke(f.GetValue<Vector3>(newPosition));
                 return outputTrigger;
             });
 
@@ -63,7 +63,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             newRotation = ValueInput<Quaternion>(nameof(newRotation), Quaternion.identity);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                ClientBridge.SetLocalAvatarPositionRotation?.Invoke(f.GetValue<Vector3>(newPosition), f.GetValue<Quaternion>(newRotation));
+                SpatialBridge.SetLocalAvatarPositionRotation?.Invoke(f.GetValue<Vector3>(newPosition), f.GetValue<Quaternion>(newRotation));
                 return outputTrigger;
             });
 

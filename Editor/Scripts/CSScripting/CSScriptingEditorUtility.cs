@@ -6,6 +6,7 @@ using UnityEditorInternal;
 using UnityEditor.Build.Player;
 using System.Security.Cryptography;
 using System.Text;
+using SpatialSys.UnitySDK.Internal;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -50,20 +51,18 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 case "71303bc05617d4e9aa08596f62b1aa3ebb74ffc0000d81d2d0e76df15ab2c088":
                     return "Placeholder1";
+                case "bab100648c3f568cb4b14f7765ae46cf50e973819fc972e61e25d703c135fd88":
+                    return "Placeholder2";
                 case "d028dbd5e554c43f2c33d58603af76c6e70b5c3b99fbcdce157e343718047310":
                     return "Placeholder3";
                 case "1b6ab678554cbf1db00532dcb14d5965f3cb97e66f2d31ba4ee7c8774940176a":
                     return "Placeholder4";
-                case "49a73d957e76f92f67eebfa3ee0aa08dc812a0ef412b606bbc790c92a30d4768":
-                    return "Placeholder5";
-                case "5dc94cecece2c7be476b4b9d98855c9ee35347f7d0cbe8bd7b262568c84b2a39":
-                    return "Placeholder6";
-                case "4d4ddbcfc4d4ffe33487828b250d76b8f88031289314e299dbbf0fde49a3e6c6":
-                    return "Placeholder7";
-                case "319000e8795a6e199ae559cbbe9ae2953f2ae6b3d61358fd83cec5f6da3044af":
-                    return "Placeholder8";
-                case "fdd6834435e4f96fa3621d87e3232d475e8eee641c041989030bae7d1f736bda":
-                    return "Placeholder9";
+                case "d8831920b04b56a3dee9f5af1bc1666d98ac350cf91d21bac206ba35b3707e8e":
+                    return "Placeholder2";
+                case "da2c04554cb7595da4d6a242afcdfa773d684010919e3986d930310023dbe4d0":
+                    return "Placeholder1";
+                case "4f5de27d999b69eb282bcde9a11def038d17ad17b0bb6f1c0006890c7422ab04":
+                    return "Placeholder3";
                 default:
                     return CSScriptingUtility.DEFAULT_CSHARP_ASSEMBLY_NAME;
             }

@@ -49,7 +49,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         private IEnumerator ExecuteAsync(Flow flow)
         {
             bool completed = false;
-            ClientBridge.EquipAvatarAttachmentPackage?.Invoke(
+            SpatialBridge.EquipAvatarAttachmentPackage?.Invoke(
                 flow.GetValue<string>(sku),
                 flow.GetValue<bool>(equip),
                 flow.GetValue<bool>(clearSlot),
@@ -102,7 +102,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             succeeded = ValueOutput<bool>(nameof(succeeded));
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                bool success = ClientBridge.EquipAvatarAttachmentEmbedded?.Invoke(
+                bool success = SpatialBridge.EquipAvatarAttachmentEmbedded?.Invoke(
                     f.GetValue<string>(assetID),
                     f.GetValue<bool>(equip),
                     f.GetValue<bool>(clearSlot),
@@ -153,7 +153,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         private IEnumerator ExecuteAsync(Flow flow)
         {
             bool completed = false;
-            ClientBridge.EquipAvatarAttachmentItem?.Invoke(flow.GetValue<string>(itemID), flow.GetValue<bool>(equip), success => {
+            SpatialBridge.EquipAvatarAttachmentItem?.Invoke(flow.GetValue<string>(itemID), flow.GetValue<bool>(equip), success => {
                 completed = true;
                 flow.SetValue(succeeded, success);
             });
@@ -180,7 +180,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             itemIDOrPackageSKU = ValueInput<string>(nameof(itemIDOrPackageSKU), "");
             equipped = ValueOutput<bool>(nameof(equipped), (flow) => {
-                return ClientBridge.IsAvatarAttachmentEquipped(flow.GetValue<string>(itemIDOrPackageSKU));
+                return SpatialBridge.IsAvatarAttachmentEquipped(flow.GetValue<string>(itemIDOrPackageSKU));
             });
         }
     }
@@ -208,7 +208,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            ClientBridge.ClearAllAvatarAttachments?.Invoke();
+            SpatialBridge.ClearAllAvatarAttachments?.Invoke();
             yield return outputTrigger;
         }
     }
@@ -241,7 +241,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            ClientBridge.ClearAvatarAttachmentSlot?.Invoke(flow.GetValue<SpatialAvatarAttachment.Slot>(slot));
+            SpatialBridge.ClearAvatarAttachmentSlot?.Invoke(flow.GetValue<SpatialAvatarAttachment.Slot>(slot));
             yield return outputTrigger;
         }
     }
@@ -274,7 +274,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            ClientBridge.ClearAvatarAttachmentsByTag?.Invoke(flow.GetValue<string>(tag));
+            SpatialBridge.ClearAvatarAttachmentsByTag?.Invoke(flow.GetValue<string>(tag));
             yield return outputTrigger;
         }
     }
