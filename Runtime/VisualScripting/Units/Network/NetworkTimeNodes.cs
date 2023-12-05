@@ -15,7 +15,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            time = ValueOutput<double>(nameof(time), (f) => SpatialBridge.GetNetworkTime?.Invoke() ?? 0.0);
+            time = ValueOutput<double>(nameof(time), (f) => SpatialBridge.networkingService.networkTime);
         }
     }
 }

@@ -30,19 +30,22 @@ namespace SpatialSys.UnitySDK
 
         public void InvokeCompletionEvent()
         {
-            if (_completionCallback != null)
+            if (isDone)
+                return;
+
+            isDone = true;
+            if (_completionCallback == null)
+                return;
+
+            try
             {
-                isDone = true;
-                try
-                {
-                    _completionCallback(this);
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"Error invoking completion callback for {GetType().Name}; Exception: {ex}");
-                }
-                _completionCallback = null;
+                _completionCallback(this);
             }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error invoking completion callback for {GetType().Name}; Exception: {ex}");
+            }
+            _completionCallback = null;
         }
     }
 }

@@ -2,29 +2,6 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
-    // We cannot move these into the `.Services` namespace without making breaking changes
-
-    public enum SpatialCameraMode
-    {
-        Actor = 0,
-        Vehicle = 1
-    }
-
-    public enum SpatialCameraRotationMode
-    {
-        /// <summary>Automatic rotation as player moves</summary>
-        AutoRotate = 0,
-        /// <summary>Locked to the cursor</summary>
-        PointerLock_Locked = 1,
-        /// <summary>Left mouse button or touch rotation</summary>
-        DragToRotate = 2,
-        /// <summary>Cursor is unlocked, but next non-ui click returns to PointerLock</summary>
-        PointerLock_Unlocked = 3,
-    }
-}
-
-namespace SpatialSys.UnitySDK.Services
-{
     public interface ICameraService
     {
         Vector3 position { get; }
@@ -58,5 +35,34 @@ namespace SpatialSys.UnitySDK.Services
         Transform targetOverride { get; }
         void SetTargetOverride(Transform target, SpatialCameraMode cameraMode);
         void ClearTargetOverride();
+    }
+
+    public enum SpatialCameraMode
+    {
+        Actor = 0,
+        Vehicle = 1
+    }
+
+    public enum SpatialCameraRotationMode
+    {
+        /// <summary>
+        /// Automatic rotation as player moves
+        /// </summary>
+        AutoRotate = 0,
+
+        /// <summary>
+        /// Left mouse button or touch rotation
+        /// </summary>
+        DragToRotate = 2,
+
+        /// <summary>
+        /// Locked to the cursor
+        /// </summary>
+        PointerLock_Locked = 1,
+
+        /// <summary>
+        /// Cursor is unlocked, but next non-ui click returns to PointerLock
+        /// </summary>
+        PointerLock_Unlocked = 3,
     }
 }

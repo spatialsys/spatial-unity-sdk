@@ -5,38 +5,15 @@ using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
-    public struct IncomingNetworkEventArgs
-    {
-        public string stringID;
-        public byte byteID;
-        public int senderActor;
-        public object[] args;
-
-        public IncomingNetworkEventArgs(string stringID, int sendActor, params object[] args)
-        {
-            byteID = 0;
-            this.stringID = stringID;
-            this.senderActor = sendActor;
-            this.args = args;
-        }
-
-        public IncomingNetworkEventArgs(byte byteID, int sendActor, params object[] args)
-        {
-            this.byteID = byteID;
-            stringID = "";
-            this.senderActor = sendActor;
-            this.args = args;
-        }
-    }
-
-    [UnitTitle("Spatial Sync: Receive Event (RPC)")]
+    [UnitTitle("Spatial Sync: Receive Remote Event (RPC)")]
     [UnitSurtitle("Spatial Sync")]
     [UnitShortTitle("Receive Event (RPC)")]
     [UnitCategory("Events\\Spatial\\Network")]
     [TypeIcon(typeof(SpatialComponentBase))]
-    public class IncomingNetworkEventByteNode : EventUnit<IncomingNetworkEventArgs>
+    public class IncomingNetworkEventByteNode : EventUnit<NetworkingRemoteEventArgs>
     {
-        public static string eventName = "OnSDKNetEventByte";
+        public const string EVENT_HOOK_ID = "OnSDKNetEventByte";
+
         protected override bool register => true;
 
         [SerializeAs(nameof(argumentCount))]
@@ -61,7 +38,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
         }
 
         protected override void Definition()
@@ -78,18 +55,16 @@ namespace SpatialSys.UnitySDK.VisualScripting
             }
         }
 
-        protected override bool ShouldTrigger(Flow flow, IncomingNetworkEventArgs args)
+        protected override bool ShouldTrigger(Flow flow, NetworkingRemoteEventArgs args)
         {
-            return flow.GetValue<byte>(eventID) == args.byteID;
+            return flow.GetValue<byte>(eventID) == args.eventID;
         }
 
-        protected override void AssignArguments(Flow flow, IncomingNetworkEventArgs arg)
+        protected override void AssignArguments(Flow flow, NetworkingRemoteEventArgs args)
         {
             for (var i = 0; i < argumentCount; i++)
-            {
-                flow.SetValue(argumentPorts[i], arg.args[i]);
-            }
-            flow.SetValue(senderActor, arg.senderActor);
+                flow.SetValue(argumentPorts[i], args.eventArgs[i]);
+            flow.SetValue(senderActor, args.senderActor);
         }
     }
 }

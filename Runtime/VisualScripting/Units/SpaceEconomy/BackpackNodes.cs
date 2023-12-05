@@ -26,7 +26,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             open = ValueInput<bool>(nameof(open));
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SetBackpackMenuOpen.Invoke(f.GetValue<bool>(open));
+                SpatialBridge.coreGUIService.SetCoreGUIOpen(SpatialCoreGUITypeFlags.Backpack, f.GetValue<bool>(open));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));

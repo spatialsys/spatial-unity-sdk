@@ -1,4 +1,4 @@
-using SpatialSys.UnitySDK.Services;
+using SpatialSys.UnitySDK;
 using UnityEngine;
 
 namespace SpatialSys.UnitySDK.EditorSimulation
@@ -40,6 +40,9 @@ namespace SpatialSys.UnitySDK.EditorSimulation
             targetOverride = target;
         }
 
-        public void ClearTargetOverride() { }
+        public void ClearTargetOverride()
+        {
+            targetOverride = null;
+        }
     }
 }

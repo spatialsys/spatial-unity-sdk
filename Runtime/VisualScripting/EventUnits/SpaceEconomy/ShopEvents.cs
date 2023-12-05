@@ -11,7 +11,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnShopMenuOpenChangedNode : EventUnit<bool>
     {
-        public static string eventName = "SpatialOnShopMenuOpenChanged";
+        public const string EVENT_HOOK_ID = "SpatialOnShopMenuOpenChanged";
+
         protected override bool register => true;
 
         [DoNotSerialize]
@@ -19,18 +20,13 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
         }
 
         protected override void Definition()
         {
             base.Definition();
             isOpen = ValueOutput<bool>(nameof(isOpen));
-        }
-
-        protected override bool ShouldTrigger(Flow flow, bool isOpen)
-        {
-            return true;
         }
 
         protected override void AssignArguments(Flow flow, bool isOpen)
@@ -46,7 +42,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnShopSpecificItemPurchasedNode : EventUnit<string>
     {
-        public static string eventName = "SpatialOnShopItemPurchased";
+        public const string EVENT_HOOK_ID = "SpatialOnShopItemPurchased";
+
         protected override bool register => true;
 
         [DoNotSerialize]
@@ -54,7 +51,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
         }
 
         protected override void Definition()
@@ -76,7 +73,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnShopItemPurchasedNode : EventUnit<string>
     {
-        public static string eventName = "SpatialOnShopAnyItemPurchased";
+        public const string EVENT_HOOK_ID = "SpatialOnShopAnyItemPurchased";
+
         protected override bool register => true;
 
         [DoNotSerialize]
@@ -84,18 +82,13 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
         }
 
         protected override void Definition()
         {
             base.Definition();
             itemID = ValueOutput<string>(nameof(itemID));
-        }
-
-        protected override bool ShouldTrigger(Flow flow, string itemID)
-        {
-            return true;
         }
 
         protected override void AssignArguments(Flow flow, string itemID)

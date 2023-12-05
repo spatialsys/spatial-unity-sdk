@@ -1,10 +1,9 @@
 using System;
-using System.Collections.Generic;
-using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
     [Flags]
+    [Obsolete("Use SpatialCoreGUITypeFlags instead")]
     public enum SpatialSystemGUIType
     {
         None = 0,

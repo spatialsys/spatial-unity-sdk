@@ -9,7 +9,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnConnectedChangedNode : EventUnit<bool>
     {
-        public static string eventName = "SpatialOnConnectedChanged";
+        public const string EVENT_HOOK_ID = "SpatialOnConnectedChanged";
+
         protected override bool register => true;
 
         [DoNotSerialize]
@@ -17,7 +18,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
         }
 
         protected override void Definition()
@@ -25,8 +26,6 @@ namespace SpatialSys.UnitySDK.VisualScripting
             base.Definition();
             connected = ValueOutput<bool>(nameof(connected));
         }
-
-        protected override bool ShouldTrigger(Flow flow, bool connected) => true;
 
         protected override void AssignArguments(Flow flow, bool connected)
         {
@@ -41,7 +40,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnSpaceParticipantCountChangedNode : EventUnit<int>
     {
-        public static string eventName = "SpatialOnSpaceParticipantCountChanged";
+        public const string EVENT_HOOK_ID = "SpatialOnSpaceParticipantCountChanged";
+
         protected override bool register => true;
 
         [DoNotSerialize]
@@ -49,7 +49,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
         }
 
         protected override void Definition()
@@ -57,8 +57,6 @@ namespace SpatialSys.UnitySDK.VisualScripting
             base.Definition();
             count = ValueOutput<int>(nameof(count));
         }
-
-        protected override bool ShouldTrigger(Flow flow, int count) => true;
 
         protected override void AssignArguments(Flow flow, int count)
         {
@@ -73,7 +71,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnServerParticipantCountChangedNode : EventUnit<int>
     {
-        public static string eventName = "SpatialOnServerParticipantCountChanged";
+        public const string EVENT_HOOK_ID = "SpatialOnServerParticipantCountChanged";
+
         protected override bool register => true;
 
         [DoNotSerialize]
@@ -81,7 +80,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
         }
 
         protected override void Definition()
@@ -89,8 +88,6 @@ namespace SpatialSys.UnitySDK.VisualScripting
             base.Definition();
             count = ValueOutput<int>(nameof(count));
         }
-
-        protected override bool ShouldTrigger(Flow flow, int count) => true;
 
         protected override void AssignArguments(Flow flow, int count)
         {

@@ -55,11 +55,21 @@ namespace SpatialSys.UnitySDK.VisualScripting
             }
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SendSDKNetworkEventByte?.Invoke(
-                    everyone: f.GetValue<NetworkEventTargets>(sendTo) == NetworkEventTargets.Everyone,
-                    f.GetValue<byte>(eventID),
-                    argumentPorts.Select(f.GetConvertedValue).ToArray()
-                );
+                if (f.GetValue<NetworkEventTargets>(sendTo) == NetworkEventTargets.Everyone)
+                {
+                    SpatialBridge.networkingService.remoteEvents.RaiseEventAll(
+                        f.GetValue<byte>(eventID),
+                        argumentPorts.Select(f.GetConvertedValue).ToArray()
+                    );
+                }
+                else
+                {
+                    SpatialBridge.networkingService.remoteEvents.RaiseEventOthers(
+                        f.GetValue<byte>(eventID),
+                        argumentPorts.Select(f.GetConvertedValue).ToArray()
+                    );
+                }
+
                 return outputTrigger;
             });
 
@@ -113,8 +123,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
             }
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SendSDKNetworkEventToActorByte?.Invoke(
-                    f.GetValue<int>(sendTo),
+                SpatialBridge.networkingService.remoteEvents.RaiseEvent(
+                    new [] { f.GetValue<int>(sendTo) },
                     f.GetValue<byte>(eventID),
                     argumentPorts.Select(f.GetConvertedValue).ToArray()
                 );

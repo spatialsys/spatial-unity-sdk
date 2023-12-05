@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using SpatialSys.UnitySDK.Services;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -9,7 +8,9 @@ namespace SpatialSys.UnitySDK
     public static class SpatialBridge
     {
         public static ICameraService cameraService;
+        public static ICoreGUIService coreGUIService;
         public static IMarketplaceService marketplaceService;
+        public static INetworkingService networkingService;
 
         public delegate int GetSpacePackageVersionDelegate();
         public static GetSpacePackageVersionDelegate GetSpacePackageVersion;
@@ -267,9 +268,6 @@ namespace SpatialSys.UnitySDK
         public static RewardBadgeDelegate RewardBadge;
 
         // Backpack
-        public delegate void SetBackpackMenuOpenDelegate(bool open);
-        public static SetBackpackMenuOpenDelegate SetBackpackMenuOpen;
-
         public delegate void AddBackpackItemDelegate(string itemID, ulong quantity, bool showToast, Action<bool> callback);
         public static AddBackpackItemDelegate AddBackpackItem;
 
@@ -310,19 +308,6 @@ namespace SpatialSys.UnitySDK
 
         public delegate void AwardWorldCurrencyDelegate(ulong amount, Action<bool> callback);
         public static AwardWorldCurrencyDelegate AwardWorldCurrency;
-
-        // Shop
-        public delegate void SetShopMenuOpenDelegate(bool open);
-        public static SetShopMenuOpenDelegate SetShopMenuOpen;
-
-        public delegate void SelectShopMenuItemDelegate(string itemID);
-        public static SelectShopMenuItemDelegate SelectShopMenuItem;
-
-        public delegate void SetShopItemEnabledDelegate(string itemID, bool enabled, string disabledMessage);
-        public static SetShopItemEnabledDelegate SetShopItemEnabled;
-
-        public delegate void SetShopItemVisibilityDelegate(string itemID, bool visible);
-        public static SetShopItemVisibilityDelegate SetShopItemVisibility;
 
         //Synced objects
         public delegate bool TakeoverSyncedObjectOwnerhipDelegate(SpatialSyncedObject syncedObject);
@@ -380,9 +365,6 @@ namespace SpatialSys.UnitySDK
         public delegate bool GetIsSceneInitializedDelegate();
         public static GetIsSceneInitializedDelegate GetIsSceneInitialized;
 
-        public delegate bool GetIsConnectedToSessionDelegate();
-        public static GetIsConnectedToSessionDelegate GetIsConnectedToSession;
-
         public delegate void InitializeSpatialSeatHotspotDelegate(SpatialSeatHotspot spatialHotspot);
         public static InitializeSpatialSeatHotspotDelegate InitializeSpatialSeatHotspot;
 
@@ -422,17 +404,6 @@ namespace SpatialSys.UnitySDK
         public delegate float GetActorNametagBarValueDelegate(int actor);
         public static GetActorNametagBarValueDelegate GetActorNametagBarValue;
 
-        //Network events (RPC)
-        public delegate void SendSDKNetworkEventByteDelegate(bool everyone, byte eventID, object[] args);
-        public static SendSDKNetworkEventByteDelegate SendSDKNetworkEventByte;
-
-        public delegate void SendSDKNetworkEventToActorByteDelegate(int targetActor, byte eventID, object[] args);
-        public static SendSDKNetworkEventToActorByteDelegate SendSDKNetworkEventToActorByte;
-
-        // Network
-        public delegate double GetNetworkTimeDelegate();
-        public static GetNetworkTimeDelegate GetNetworkTime;
-
         public delegate void PlaySpatialSFXPositionDelegate(SpatialSFX sfx, Vector3 position, float extraVolume, float extraPitch);
         public static PlaySpatialSFXPositionDelegate PlaySpatialSFXPosition;
 
@@ -441,12 +412,6 @@ namespace SpatialSys.UnitySDK
 
         public delegate void CreateFloatingTextDelegate(string text, FloatingTextAnimStyle style, Vector3 position, Vector3 force, Color color, bool gravity, AnimationCurve scaleCurve, AnimationCurve alphaCurve, float lifetime);
         public static CreateFloatingTextDelegate CreateFloatingText;
-
-        public delegate void MinimizeSystemUIDelegate();
-        public static MinimizeSystemUIDelegate MinimizeSystemUI;
-
-        public delegate void SetSystemGUIEnabledDelegate(SpatialSystemGUIType guiFlags, bool enabled);
-        public static SetSystemGUIEnabledDelegate SetSystemGUIEnabled;
 
         public delegate Action InitializeVirtualCameraDelegate(SpatialVirtualCamera virtualCamera);
         public static InitializeVirtualCameraDelegate InitializeSpatialVirtualCamera;
@@ -493,53 +458,6 @@ namespace SpatialSys.UnitySDK
 
         public delegate void DumpDataStoreVariablesDelegate(ClientBridge.DataStoreScope scope, Action<DataStoreOperationResult> callback);
         public static DumpDataStoreVariablesDelegate DumpDataStoreVariables;
-
-        // Server Instancing
-
-        public delegate int GetSpaceParticipantCountDelegate();
-        public static GetSpaceParticipantCountDelegate GetSpaceParticipantCount;
-
-        public delegate int GetServerParticipantCountDelegate();
-        public static GetServerParticipantCountDelegate GetServerParticipantCount;
-
-        public delegate int GetServerUniqueUsersCountDelegate();
-        public static GetServerUniqueUsersCountDelegate GetServerUniqueUsersCount;
-
-        public delegate int GetTotalServersCountDelegate();
-        public static GetTotalServersCountDelegate GetTotalServersCount;
-
-        public delegate bool GetServerOpenDelegate();
-        public static GetServerOpenDelegate GetServerOpen;
-
-        public delegate void SetServerOpenDelegate(bool isOpen);
-        public static SetServerOpenDelegate SetServerOpen;
-
-        public delegate bool GetServerVisibleDelegate();
-        public static GetServerVisibleDelegate GetServerVisible;
-
-        public delegate void SetServerVisibleDelegate(bool isVisible);
-        public static SetServerVisibleDelegate SetServerVisible;
-
-        public delegate int GetServerMaxParticipantsDelegate();
-        public static GetServerMaxParticipantsDelegate GetServerMaxParticipants;
-
-        public delegate void SetServerMaxParticipantsDelegate(int maxParticipants);
-        public static SetServerMaxParticipantsDelegate SetServerMaxParticipants;
-
-        public delegate AotDictionary GetServerPropertiesDelegate();
-        public static GetServerPropertiesDelegate GetServerProperties;
-
-        public delegate void SetServerPropertiesDelegate(AotDictionary serverProperties);
-        public static SetServerPropertiesDelegate SetServerProperties;
-
-        public delegate void TeleportToNewServerDelegate(int maxParticipants, bool isOpen, bool isVisible, AotDictionary serverProperties, AotList matchProperties);
-        public static TeleportToNewServerDelegate TeleportToNewServer;
-
-        public delegate void TeleportActorsToNewServerDelegate(AotList actorNumbers, int maxParticipants, bool isVisible, AotDictionary serverProperties, AotList matchProperties);
-        public static TeleportActorsToNewServerDelegate TeleportActorsToNewServer;
-
-        public delegate void TeleportToBestMatchServerDelegate(int maxParticipants, AotDictionary serverProperties, AotList serverPropertiesToMatch);
-        public static TeleportToBestMatchServerDelegate TeleportToBestMatchServer;
 
         // Actor data
         public delegate object GetLocalActorCustomVariableDelegate(string name);

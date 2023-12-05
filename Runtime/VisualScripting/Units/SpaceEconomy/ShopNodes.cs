@@ -1,5 +1,4 @@
 using System.Collections;
-using SpatialSys.UnitySDK.Services;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -27,7 +26,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             open = ValueInput<bool>(nameof(open));
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SetShopMenuOpen.Invoke(f.GetValue<bool>(open));
+                SpatialBridge.coreGUIService.SetCoreGUIOpen(SpatialCoreGUITypeFlags.Shop, f.GetValue<bool>(open));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -57,7 +56,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             itemID = ValueInput<string>(nameof(itemID));
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SelectShopMenuItem.Invoke(f.GetValue<string>(itemID));
+                SpatialBridge.coreGUIService.shop.SelectItem(f.GetValue<string>(itemID));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -95,7 +94,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             disabledMessage = ValueInput<string>(nameof(disabledMessage), null);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SetShopItemEnabled.Invoke(f.GetValue<string>(itemID), f.GetValue<bool>(enabled), f.GetValue<string>(disabledMessage));
+                SpatialBridge.coreGUIService.shop.SetItemEnabled(f.GetValue<string>(itemID), f.GetValue<bool>(enabled), f.GetValue<string>(disabledMessage));
                 return outputTrigger;
             });
 
@@ -131,7 +130,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             visible = ValueInput<bool>(nameof(visible), true);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SetShopItemVisibility.Invoke(f.GetValue<string>(itemID), f.GetValue<bool>(visible));
+                SpatialBridge.coreGUIService.shop.SetItemVisibility(f.GetValue<string>(itemID), f.GetValue<bool>(visible));
                 return outputTrigger;
             });
 
