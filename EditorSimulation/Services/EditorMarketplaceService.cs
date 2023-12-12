@@ -1,10 +1,9 @@
-using System;
 
 namespace SpatialSys.UnitySDK.EditorSimulation
 {
     public class EditorMarketplaceService : IMarketplaceService
     {
-        public event Action<ItemPurchasedEventArgs> onItemPurchased;
+        public event IMarketplaceService.OnItemPurchasedDelegate onItemPurchased;
 
         public PurchaseItemRequest PurchaseItem(string itemID, ulong amount = 1, bool silent = false)
         {

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 
@@ -257,15 +258,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
             properties = ValueInput<AotDictionary>(nameof(properties));
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                Dictionary<string, object> props = new();
-                foreach (KeyValuePair<object, object> kvp in f.GetValue<AotDictionary>(properties))
-                {
-                    if (kvp.Key is not string)
-                        throw new System.Exception($"{nameof(SetServerPropertiesNode)}: all server property keys must be strings, but was {kvp.Key?.GetType()?.Name ?? "null"}");
-
-                    props.Add((string)kvp.Key, kvp.Value);
-                }
-                SpatialBridge.networkingService.SetServerProperties(props);
+                Dictionary<string, object> serverProps = f.GetValue<AotDictionary>(properties).ToDictionary<string>();
+                SpatialBridge.networkingService.SetServerProperties(serverProps);
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -309,30 +303,15 @@ namespace SpatialSys.UnitySDK.VisualScripting
             matchProperties = ValueInput<AotList>(nameof(matchProperties), null);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                AotDictionary serverProps = f.GetValue<AotDictionary>(serverProperties);
-                Dictionary<string, object> serverPropsDict = null;
-                if (serverProps != null)
-                {
-                    serverPropsDict = new(serverProps.Count);
-                    foreach (KeyValuePair<string, object> kvp in serverProps)
-                        serverPropsDict.Add(kvp.Key, kvp.Value);
-                }
-
-                AotList matchProps = f.GetValue<AotList>(matchProperties);
-                List<string> matchPropsList = null;
-                if (matchProps != null)
-                {
-                    matchPropsList = new(matchProps.Count);
-                    foreach (string s in matchProps)
-                        matchProps.Add(s);
-                }
+                Dictionary<string, object> serverProps = f.GetValue<AotDictionary>(serverProperties).ToDictionary<string>();
+                List<string> matchProps = f.GetValue<AotList>(matchProperties).ToList<string>();
 
                 SpatialBridge.networkingService.TeleportToNewServer(
                     f.GetValue<int>(maxParticipants),
                     f.GetValue<bool>(isOpen),
                     f.GetValue<bool>(isVisible),
-                    serverPropsDict,
-                    matchPropsList
+                    serverProps,
+                    matchProps
                 );
 
                 return outputTrigger;
@@ -382,30 +361,15 @@ namespace SpatialSys.UnitySDK.VisualScripting
                 foreach (int actorID in f.GetValue<AotList>(actors))
                     actorIDs.Add(actorID);
 
-                AotDictionary serverProps = f.GetValue<AotDictionary>(serverProperties);
-                Dictionary<string, object> serverPropsDict = null;
-                if (serverProps != null)
-                {
-                    serverPropsDict = new(serverProps.Count);
-                    foreach (KeyValuePair<string, object> kvp in serverProps)
-                        serverPropsDict.Add(kvp.Key, kvp.Value);
-                }
-
-                AotList matchProps = f.GetValue<AotList>(matchProperties);
-                List<string> matchPropsList = null;
-                if (matchProps != null)
-                {
-                    matchPropsList = new(matchProps.Count);
-                    foreach (string s in matchProps)
-                        matchProps.Add(s);
-                }
+                Dictionary<string, object> serverProps = f.GetValue<AotDictionary>(serverProperties).ToDictionary<string>();
+                List<string> matchProps = f.GetValue<AotList>(matchProperties).ToList<string>();
 
                 SpatialBridge.networkingService.TeleportActorsToNewServer(
                     actorIDs,
                     f.GetValue<int>(maxParticipants),
                     f.GetValue<bool>(isVisible),
-                    serverPropsDict,
-                    matchPropsList
+                    serverProps,
+                    matchProps
                 );
 
                 return outputTrigger;
@@ -445,28 +409,13 @@ namespace SpatialSys.UnitySDK.VisualScripting
             serverPropertiesToMatch = ValueInput<AotList>(nameof(serverPropertiesToMatch), null);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                AotDictionary serverProps = f.GetValue<AotDictionary>(serverProperties);
-                Dictionary<string, object> serverPropsDict = null;
-                if (serverProps != null)
-                {
-                    serverPropsDict = new(serverProps.Count);
-                    foreach (KeyValuePair<string, object> kvp in serverProps)
-                        serverPropsDict.Add(kvp.Key, kvp.Value);
-                }
-
-                AotList matchProps = f.GetValue<AotList>(serverPropertiesToMatch);
-                List<string> matchPropsList = null;
-                if (matchProps != null)
-                {
-                    matchPropsList = new(matchProps.Count);
-                    foreach (string s in matchProps)
-                        matchProps.Add(s);
-                }
+                Dictionary<string, object> serverProps = f.GetValue<AotDictionary>(serverProperties).ToDictionary<string>();
+                List<string> matchProps = f.GetValue<AotList>(serverPropertiesToMatch).ToList<string>();
 
                 SpatialBridge.networkingService.TeleportToBestMatchServer(
                     f.GetValue<int>(maxParticipants),
-                    serverPropsDict,
-                    matchPropsList
+                    serverProps,
+                    matchProps
                 );
 
                 return outputTrigger;

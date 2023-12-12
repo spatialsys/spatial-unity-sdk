@@ -9,7 +9,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnConnectedChangedNode : EventUnit<bool>
     {
-        public const string EVENT_HOOK_ID = "SpatialOnConnectedChanged";
+        private const string EVENT_HOOK_ID = "SpatialOnConnectedChanged";
 
         protected override bool register => true;
 
@@ -19,6 +19,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public override EventHook GetHook(GraphReference reference)
         {
             return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(ServerConnectionStatus status)
+        {
+            bool isConnected = status == ServerConnectionStatus.Connected;
+            EventBus.Trigger(EVENT_HOOK_ID, isConnected);
         }
 
         protected override void Definition()
@@ -40,7 +46,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnSpaceParticipantCountChangedNode : EventUnit<int>
     {
-        public const string EVENT_HOOK_ID = "SpatialOnSpaceParticipantCountChanged";
+        private const string EVENT_HOOK_ID = "SpatialOnSpaceParticipantCountChanged";
 
         protected override bool register => true;
 
@@ -50,6 +56,11 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public override EventHook GetHook(GraphReference reference)
         {
             return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(int count)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, count);
         }
 
         protected override void Definition()
@@ -71,7 +82,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnServerParticipantCountChangedNode : EventUnit<int>
     {
-        public const string EVENT_HOOK_ID = "SpatialOnServerParticipantCountChanged";
+        private const string EVENT_HOOK_ID = "SpatialOnServerParticipantCountChanged";
 
         protected override bool register => true;
 
@@ -81,6 +92,11 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public override EventHook GetHook(GraphReference reference)
         {
             return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(int count)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, count);
         }
 
         protected override void Definition()

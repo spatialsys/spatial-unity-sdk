@@ -186,9 +186,6 @@ namespace SpatialSys.UnitySDK
         public delegate void OpenURLDelegate(string url);
         public static OpenURLDelegate OpenURL;
 
-        public delegate void SendToastDelegate(string message, float duration);
-        public static SendToastDelegate SendToast;
-
         public delegate void PlayLocalAvatarPackageEmoteDelegate(string sku, bool immediately = false, bool loop = false);
         public static PlayLocalAvatarPackageEmoteDelegate PlayLocalAvatarPackageEmote;
         public delegate void PlayLocalAvatarEmbeddedEmoteDelegate(string assetID, bool immediately = false, bool loop = false);
@@ -241,6 +238,9 @@ namespace SpatialSys.UnitySDK
 
         public delegate void ClearAvatarAttachmentsByTagDelegate(string tag);
         public static ClearAvatarAttachmentsByTagDelegate ClearAvatarAttachmentsByTag;
+
+        public delegate int GetActorFromAvatarAttachmentObjectDelegate(SpatialAvatarAttachment attachment);
+        public static GetActorFromAvatarAttachmentObjectDelegate GetActorFromAvatarAttachmentObject;
 
         // Quests
         public delegate void QuestDelegate(SpatialQuest quest);

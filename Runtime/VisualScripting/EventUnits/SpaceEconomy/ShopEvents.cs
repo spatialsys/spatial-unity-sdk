@@ -11,7 +11,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnShopMenuOpenChangedNode : EventUnit<bool>
     {
-        public const string EVENT_HOOK_ID = "SpatialOnShopMenuOpenChanged";
+        private const string EVENT_HOOK_ID = "SpatialOnShopMenuOpenChanged";
 
         protected override bool register => true;
 
@@ -21,6 +21,11 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public override EventHook GetHook(GraphReference reference)
         {
             return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(bool open)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, open);
         }
 
         protected override void Definition()
@@ -42,7 +47,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnShopSpecificItemPurchasedNode : EventUnit<string>
     {
-        public const string EVENT_HOOK_ID = "SpatialOnShopItemPurchased";
+        private const string EVENT_HOOK_ID = "SpatialOnShopItemPurchased";
 
         protected override bool register => true;
 
@@ -52,6 +57,11 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public override EventHook GetHook(GraphReference reference)
         {
             return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(ItemPurchasedEventArgs args)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, args.itemID);
         }
 
         protected override void Definition()
@@ -73,7 +83,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnShopItemPurchasedNode : EventUnit<string>
     {
-        public const string EVENT_HOOK_ID = "SpatialOnShopAnyItemPurchased";
+        private const string EVENT_HOOK_ID = "SpatialOnShopAnyItemPurchased";
 
         protected override bool register => true;
 
@@ -83,6 +93,11 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public override EventHook GetHook(GraphReference reference)
         {
             return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(ItemPurchasedEventArgs args)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, args.itemID);
         }
 
         protected override void Definition()

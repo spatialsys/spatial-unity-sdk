@@ -44,7 +44,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
 
     public class EditorNetworkingRemoteEventsService : INetworkingRemoteEventsService
     {
-        public event Action<NetworkingRemoteEventArgs> onEvent;
+        public event INetworkingRemoteEventsService.OnEventDelegate onEvent;
 
         public void RaiseEventAll(byte eventID, params object[] args)
         {

@@ -12,7 +12,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class IncomingNetworkEventByteNode : EventUnit<NetworkingRemoteEventArgs>
     {
-        public const string EVENT_HOOK_ID = "OnSDKNetEventByte";
+        private const string EVENT_HOOK_ID = "OnSDKNetEventByte";
 
         protected override bool register => true;
 
@@ -39,6 +39,11 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public override EventHook GetHook(GraphReference reference)
         {
             return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(NetworkingRemoteEventArgs args)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, args);
         }
 
         protected override void Definition()

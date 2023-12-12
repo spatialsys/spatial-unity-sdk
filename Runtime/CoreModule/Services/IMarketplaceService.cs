@@ -1,11 +1,12 @@
-
-using System;
-
 namespace SpatialSys.UnitySDK
 {
     public interface IMarketplaceService
     {
-        public event Action<ItemPurchasedEventArgs> onItemPurchased;
+        /// <summary>
+        /// Triggered when an item is purchased by the local user
+        /// </summary>
+        event OnItemPurchasedDelegate onItemPurchased;
+        public delegate void OnItemPurchasedDelegate(ItemPurchasedEventArgs args);
 
         /// <summary>
         /// Purchase an item from the shop for the current space.

@@ -212,7 +212,8 @@ namespace SpatialSys.UnitySDK
         /// <summary>
         /// Event that triggers when a remote event is received
         /// </summary>
-        event Action<NetworkingRemoteEventArgs> onEvent;
+        event OnEventDelegate onEvent;
+        public delegate void OnEventDelegate(NetworkingRemoteEventArgs args);
 
         /// <summary>
         /// Raise a remote event to all actors connected to the current server.

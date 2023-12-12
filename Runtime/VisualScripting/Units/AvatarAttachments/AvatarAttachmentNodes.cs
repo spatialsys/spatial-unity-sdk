@@ -278,4 +278,28 @@ namespace SpatialSys.UnitySDK.VisualScripting
             yield return outputTrigger;
         }
     }
+
+    [UnitTitle("Spatial: Get Actor From Avatar Attachment Object")]
+    [UnitSurtitle("Spatial")]
+    [UnitShortTitle("Get Actor From Avatar Attachment Object")]
+    [UnitCategory("Spatial\\Avatar Attachments")]
+    [TypeIcon(typeof(SpatialComponentBase))]
+    public class GetActorFromAvatarAttachmentObjectNode : Unit
+    {
+        [NullMeansSelf]
+        [DoNotSerialize]
+        [PortLabel("Attachment")]
+        public ValueInput attachmentObject { get; private set; }
+
+        [DoNotSerialize]
+        public ValueOutput actor { get; private set; }
+
+        protected override void Definition()
+        {
+            attachmentObject = ValueInput<SpatialAvatarAttachment>(nameof(attachmentObject), null).NullMeansSelf();
+            actor = ValueOutput<int>(nameof(actor), (flow) => {
+                return SpatialBridge.GetActorFromAvatarAttachmentObject?.Invoke(flow.GetValue<SpatialAvatarAttachment>(attachmentObject)) ?? 0;
+            });
+        }
+    }
 }
