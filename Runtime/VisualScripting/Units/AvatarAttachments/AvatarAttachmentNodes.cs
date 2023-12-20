@@ -1,6 +1,5 @@
 using System.Collections;
 using Unity.VisualScripting;
-using UnityEngine;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
@@ -48,18 +47,15 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            bool completed = false;
-            SpatialBridge.EquipAvatarAttachmentPackage?.Invoke(
+            EquipAttachmentRequest request = SpatialBridge.actorService.localActor.avatar.EquipAttachment(
+                AssetType.Package,
                 flow.GetValue<string>(sku),
                 flow.GetValue<bool>(equip),
                 flow.GetValue<bool>(clearSlot),
-                flow.GetValue<string>(optionalTag),
-                success => {
-                    completed = true;
-                    flow.SetValue(succeeded, success);
-                }
+                flow.GetValue<string>(optionalTag)
             );
-            yield return new WaitUntil(() => completed);
+            yield return request;
+            flow.SetValue(succeeded, request.succeeded);
             yield return outputTrigger;
         }
     }
@@ -102,13 +98,15 @@ namespace SpatialSys.UnitySDK.VisualScripting
             succeeded = ValueOutput<bool>(nameof(succeeded));
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                bool success = SpatialBridge.EquipAvatarAttachmentEmbedded?.Invoke(
+                // Equipping embedded attachment assets always resolves synchronously
+                EquipAttachmentRequest request = SpatialBridge.actorService.localActor.avatar.EquipAttachment(
+                    AssetType.EmbeddedAsset,
                     f.GetValue<string>(assetID),
                     f.GetValue<bool>(equip),
                     f.GetValue<bool>(clearSlot),
                     f.GetValue<string>(optionalTag)
-                ) ?? false;
-                f.SetValue(succeeded, success);
+                );
+                f.SetValue(succeeded, request.succeeded);
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -152,12 +150,13 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            bool completed = false;
-            SpatialBridge.EquipAvatarAttachmentItem?.Invoke(flow.GetValue<string>(itemID), flow.GetValue<bool>(equip), success => {
-                completed = true;
-                flow.SetValue(succeeded, success);
-            });
-            yield return new WaitUntil(() => completed);
+            EquipAttachmentRequest request = SpatialBridge.actorService.localActor.avatar.EquipAttachment(
+                AssetType.BackpackItem,
+                flow.GetValue<string>(itemID),
+                flow.GetValue<bool>(equip)
+            );
+            yield return request;
+            flow.SetValue(succeeded, request.succeeded);
             yield return outputTrigger;
         }
     }
@@ -180,7 +179,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             itemIDOrPackageSKU = ValueInput<string>(nameof(itemIDOrPackageSKU), "");
             equipped = ValueOutput<bool>(nameof(equipped), (flow) => {
-                return SpatialBridge.IsAvatarAttachmentEquipped(flow.GetValue<string>(itemIDOrPackageSKU));
+                return SpatialBridge.actorService.localActor.avatar.IsAttachmentEquipped(flow.GetValue<string>(itemIDOrPackageSKU));
             });
         }
     }
@@ -208,7 +207,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            SpatialBridge.ClearAllAvatarAttachments?.Invoke();
+            SpatialBridge.actorService.localActor.avatar.ClearAttachments();
             yield return outputTrigger;
         }
     }
@@ -241,7 +240,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            SpatialBridge.ClearAvatarAttachmentSlot?.Invoke(flow.GetValue<SpatialAvatarAttachment.Slot>(slot));
+            SpatialBridge.actorService.localActor.avatar.ClearAttachmentSlot(flow.GetValue<SpatialAvatarAttachment.Slot>(slot));
             yield return outputTrigger;
         }
     }
@@ -274,7 +273,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            SpatialBridge.ClearAvatarAttachmentsByTag?.Invoke(flow.GetValue<string>(tag));
+            SpatialBridge.actorService.localActor.avatar.ClearAttachmentsByTag(flow.GetValue<string>(tag));
             yield return outputTrigger;
         }
     }

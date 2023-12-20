@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
@@ -15,7 +12,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            actor = ValueOutput<int>(nameof(actor), (f) => SpatialBridge.GetLocalActor.Invoke());
+            actor = ValueOutput<int>(nameof(actor), (f) => SpatialBridge.actorService.localActor.actorNumber);
         }
     }
 }

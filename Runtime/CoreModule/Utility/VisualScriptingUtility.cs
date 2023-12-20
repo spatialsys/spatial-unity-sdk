@@ -1,4 +1,3 @@
-using SpatialSys.UnitySDK.VisualScripting;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,25 +23,6 @@ namespace SpatialSys.UnitySDK
         public static void TriggerCustomEvent(GameObject target, string message, params object[] args)
         {
             EventBus.Trigger(new EventHook(EventHooks.Custom, target), new CustomEventArgs(message, args));
-        }
-
-        /// <summary>
-        /// Convert the Spatial client platform to the scripting platform enum type.
-        /// </summary>
-        public static SpatialPlatform ConvertClientPlatformToScriptingPlatform(int clientPlatform)
-        {
-            switch (clientPlatform)
-            {
-                case 0:
-                    return SpatialPlatform.Web;
-                case 2:
-                case 3:
-                    return SpatialPlatform.Mobile;
-                case 4:
-                    return SpatialPlatform.MetaQuest;
-                default:
-                    return SpatialPlatform.Unknown;
-            }
         }
 
         public static List<T> ToList<T>(this AotList aotList)

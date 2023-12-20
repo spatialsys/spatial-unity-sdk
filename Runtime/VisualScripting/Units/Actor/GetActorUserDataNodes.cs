@@ -16,6 +16,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         [DoNotSerialize]
         public ValueOutput username { get; private set; }
         [DoNotSerialize]
+        [PortLabel(nameof(IActor.isRegistered))]
         public ValueOutput isSignedIn { get; private set; }
         [DoNotSerialize]
         public ValueOutput isSpaceAdmin { get; private set; }
@@ -24,14 +25,14 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            userID = ValueOutput<string>(nameof(userID), (f) => SpatialBridge.GetLocalActorUserData.Invoke().userID);
-            displayName = ValueOutput<string>(nameof(displayName), (f) => SpatialBridge.GetLocalActorUserData.Invoke().displayName);
-            username = ValueOutput<string>(nameof(username), (f) => SpatialBridge.GetLocalActorUserData.Invoke().username);
-            isSignedIn = ValueOutput<bool>(nameof(isSignedIn), (f) => SpatialBridge.GetLocalActorUserData.Invoke().isSignedIn);
-            isSpaceAdmin = ValueOutput<bool>(nameof(isSpaceAdmin), (f) => SpatialBridge.GetLocalActorUserData.Invoke().isSpaceAdmin);
-            platform = ValueOutput<SpatialPlatform>(nameof(platform), (f) => {
-                return VisualScriptingUtility.ConvertClientPlatformToScriptingPlatform(SpatialBridge.GetLocalActorUserData.Invoke().platform);
-            });
+            userID = ValueOutput<string>(nameof(userID), (f) => SpatialBridge.actorService.localActor.userID);
+            displayName = ValueOutput<string>(nameof(displayName), (f) => SpatialBridge.actorService.localActor.displayName);
+            username = ValueOutput<string>(nameof(username), (f) => SpatialBridge.actorService.localActor.username);
+            isSignedIn = ValueOutput<bool>(nameof(isSignedIn), (f) => SpatialBridge.actorService.localActor.isRegistered);
+            isSpaceAdmin = ValueOutput<bool>(nameof(isSpaceAdmin), (f) => SpatialBridge.actorService.localActor.isSpaceAdministrator);
+#pragma warning disable CS0618 // Type or member is obsolete
+            platform = ValueOutput<SpatialPlatform>(nameof(platform), (f) => (SpatialPlatform)(int)SpatialBridge.actorService.localActor.platform);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
     }
 
@@ -54,6 +55,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         [DoNotSerialize]
         public ValueOutput username { get; private set; }
         [DoNotSerialize]
+        [PortLabel(nameof(IActor.isRegistered))]
         public ValueOutput isSignedIn { get; private set; }
         [DoNotSerialize]
         public ValueOutput isSpaceAdmin { get; private set; }
@@ -64,15 +66,25 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             actor = ValueInput<int>(nameof(actor), -1);
 
-            exists = ValueOutput<bool>(nameof(exists), (f) => SpatialBridge.GetActorUserData.Invoke(f.GetValue<int>(actor)).exists);
-            userID = ValueOutput<string>(nameof(userID), (f) => SpatialBridge.GetActorUserData.Invoke(f.GetValue<int>(actor)).userID);
-            displayName = ValueOutput<string>(nameof(displayName), (f) => SpatialBridge.GetActorUserData.Invoke(f.GetValue<int>(actor)).displayName);
-            username = ValueOutput<string>(nameof(username), (f) => SpatialBridge.GetActorUserData.Invoke(f.GetValue<int>(actor)).username);
-            isSignedIn = ValueOutput<bool>(nameof(isSignedIn), (f) => SpatialBridge.GetActorUserData.Invoke(f.GetValue<int>(actor)).isSignedIn);
-            isSpaceAdmin = ValueOutput<bool>(nameof(isSpaceAdmin), (f) => SpatialBridge.GetActorUserData.Invoke(f.GetValue<int>(actor)).isSpaceAdmin);
-            platform = ValueOutput<SpatialPlatform>(nameof(platform), (f) =>
-                VisualScriptingUtility.ConvertClientPlatformToScriptingPlatform(SpatialBridge.GetActorUserData.Invoke(f.GetValue<int>(actor)).platform)
-            );
+            exists = ValueOutput<bool>(nameof(exists), (f) => GetActor(f) != null);
+            userID = ValueOutput<string>(nameof(userID), (f) => GetActor(f)?.userID);
+            displayName = ValueOutput<string>(nameof(displayName), (f) => GetActor(f)?.displayName);
+            username = ValueOutput<string>(nameof(username), (f) => GetActor(f)?.username);
+            isSignedIn = ValueOutput<bool>(nameof(isSignedIn), (f) => GetActor(f)?.isRegistered ?? false);
+            isSpaceAdmin = ValueOutput<bool>(nameof(isSpaceAdmin), (f) => GetActor(f)?.isSpaceAdministrator ?? false);
+#pragma warning disable CS0618 // Type or member is obsolete
+            platform = ValueOutput<SpatialPlatform>(nameof(platform), (f) => {
+                IActor actor = GetActor(f);
+                return (actor != null) ? (SpatialPlatform)(int)actor.platform : SpatialPlatform.Unknown;
+            });
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
+
+        private IActor GetActor(Flow f)
+        {
+            if (SpatialBridge.actorService.actors.TryGetValue(f.GetValue<int>(actor), out IActor a))
+                return a;
+            return null;
         }
     }
 
@@ -89,7 +101,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            userID = ValueOutput<string>(nameof(userID), (f) => SpatialBridge.GetLocalActorUserData.Invoke().userID);
+            userID = ValueOutput<string>(nameof(userID), (f) => SpatialBridge.actorService.localActor.userID);
         }
     }
 
@@ -112,8 +124,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             actor = ValueInput<int>(nameof(actor), -1);
 
             userID = ValueOutput<string>(nameof(userID), (f) => {
-                SpatialBridge.ActorUserData userData = SpatialBridge.GetActorUserData.Invoke(f.GetValue<int>(actor));
-                return userData.exists ? userData.userID : "";
+                return SpatialBridge.actorService.actors.TryGetValue(f.GetValue<int>(actor), out IActor a) ? a.userID : null;
             });
         }
     }
@@ -131,7 +142,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            actorName = ValueOutput<string>(nameof(actorName), (f) => SpatialBridge.GetLocalActorUserData.Invoke().displayName);
+            actorName = ValueOutput<string>(nameof(actorName), (f) => SpatialBridge.actorService.localActor.displayName);
         }
     }
 
@@ -154,8 +165,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             actor = ValueInput<int>(nameof(actor), -1);
 
             actorName = ValueOutput<string>(nameof(actorName), (f) => {
-                SpatialBridge.ActorUserData userData = SpatialBridge.GetActorUserData.Invoke(f.GetValue<int>(actor));
-                return userData.exists ? userData.displayName : "";
+                return SpatialBridge.actorService.actors.TryGetValue(f.GetValue<int>(actor), out IActor a) ? a.displayName : null;
             });
         }
     }
@@ -173,7 +183,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            username = ValueOutput<string>(nameof(username), (f) => SpatialBridge.GetLocalActorUserData.Invoke().username);
+            username = ValueOutput<string>(nameof(username), (f) => SpatialBridge.actorService.localActor.username);
         }
     }
 
@@ -196,15 +206,14 @@ namespace SpatialSys.UnitySDK.VisualScripting
             actor = ValueInput<int>(nameof(actor), -1);
 
             username = ValueOutput<string>(nameof(username), (f) => {
-                SpatialBridge.ActorUserData userData = SpatialBridge.GetActorUserData.Invoke(f.GetValue<int>(actor));
-                return userData.exists ? userData.username : "";
+                return SpatialBridge.actorService.actors.TryGetValue(f.GetValue<int>(actor), out IActor a) ? a.username : null;
             });
         }
     }
 
-    [UnitTitle("Local Actor: Is Signed In")]
+    [UnitTitle("Local Actor: Is Registered")]
     [UnitSurtitle("Local Actor")]
-    [UnitShortTitle("Is Signed In")]
+    [UnitShortTitle("Is Registered")]
     [UnitCategory("Spatial\\Actor")]
     [TypeIcon(typeof(SpatialComponentBase))]
     public class GetLocalActorIsSignedInNode : Unit
@@ -215,13 +224,13 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            isSignedIn = ValueOutput<bool>(nameof(isSignedIn), (f) => SpatialBridge.GetLocalActorUserData.Invoke().isSignedIn);
+            isSignedIn = ValueOutput<bool>(nameof(isSignedIn), (f) => SpatialBridge.actorService.localActor.isRegistered);
         }
     }
 
-    [UnitTitle("Actor: Is Signed In")]
+    [UnitTitle("Actor: Is Registered")]
     [UnitSurtitle("Actor")]
-    [UnitShortTitle("Is Signed In")]
+    [UnitShortTitle("Is Registered")]
     [UnitCategory("Spatial\\Actor")]
     [TypeIcon(typeof(SpatialComponentBase))]
     public class GetActorIsSignedInNode : Unit
@@ -238,8 +247,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             actor = ValueInput<int>(nameof(actor), -1);
 
             isSignedIn = ValueOutput<bool>(nameof(isSignedIn), (f) => {
-                SpatialBridge.ActorUserData userData = SpatialBridge.GetActorUserData.Invoke(f.GetValue<int>(actor));
-                return userData.exists && userData.isSignedIn;
+                return SpatialBridge.actorService.actors.TryGetValue(f.GetValue<int>(actor), out IActor a) && a.isRegistered;
             });
         }
     }
@@ -257,7 +265,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            isSpaceAdmin = ValueOutput<bool>(nameof(isSpaceAdmin), (f) => SpatialBridge.GetLocalActorUserData.Invoke().isSpaceAdmin);
+            isSpaceAdmin = ValueOutput<bool>(nameof(isSpaceAdmin), (f) => SpatialBridge.actorService.localActor.isSpaceAdministrator);
         }
     }
 
@@ -280,8 +288,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             actor = ValueInput<int>(nameof(actor), -1);
 
             isSpaceAdmin = ValueOutput<bool>(nameof(isSpaceAdmin), (f) => {
-                SpatialBridge.ActorUserData userData = SpatialBridge.GetActorUserData.Invoke(f.GetValue<int>(actor));
-                return userData.exists && userData.isSpaceAdmin;
+                return SpatialBridge.actorService.actors.TryGetValue(f.GetValue<int>(actor), out IActor a) && a.isSpaceAdministrator;
             });
         }
     }
@@ -299,9 +306,11 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            actorPlatform = ValueOutput<SpatialPlatform>(nameof(actorPlatform),
-                (f) => VisualScriptingUtility.ConvertClientPlatformToScriptingPlatform(SpatialBridge.GetLocalActorUserData.Invoke().platform)
-            );
+#pragma warning disable CS0618 // Type or member is obsolete
+            actorPlatform = ValueOutput<SpatialPlatform>(nameof(actorPlatform), (f) => {
+                return (SpatialPlatform)(int)SpatialBridge.actorService.localActor.platform;
+            });
+#pragma warning restore CS0618 // Type or member is obsolete
         }
     }
 
@@ -323,10 +332,14 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             actor = ValueInput<int>(nameof(actor), -1);
 
-            actorPlatform = ValueOutput<SpatialPlatform>(nameof(actorPlatform),
-                (f) => VisualScriptingUtility.ConvertClientPlatformToScriptingPlatform(SpatialBridge.GetActorUserData.Invoke(f.GetValue<int>(actor)).platform)
-            );
-            actorExists = ValueOutput<bool>(nameof(actorExists), (f) => SpatialBridge.GetActorUserData.Invoke(f.GetValue<int>(actor)).exists);
+#pragma warning disable CS0618 // Type or member is obsolete
+            actorPlatform = ValueOutput<SpatialPlatform>(nameof(actorPlatform), (f) => {
+                if (SpatialBridge.actorService.actors.TryGetValue(f.GetValue<int>(actor), out IActor a))
+                    return (SpatialPlatform)(int)a.platform;
+                return SpatialPlatform.Unknown;
+            });
+#pragma warning restore CS0618 // Type or member is obsolete
+            actorExists = ValueOutput<bool>(nameof(actorExists), (f) => SpatialBridge.actorService.actors.ContainsKey(f.GetValue<int>(actor)));
         }
     }
 
@@ -343,7 +356,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            isTalking = ValueOutput<bool>(nameof(isTalking), (f) => SpatialBridge.GetLocalActorUserData.Invoke().isTalking);
+            isTalking = ValueOutput<bool>(nameof(isTalking), (f) => SpatialBridge.actorService.localActor.isTalking);
         }
     }
 
@@ -366,8 +379,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             actor = ValueInput<int>(nameof(actor), -1);
 
             isTalking = ValueOutput<bool>(nameof(isTalking), (f) => {
-                SpatialBridge.ActorUserData userData = SpatialBridge.GetActorUserData.Invoke(f.GetValue<int>(actor));
-                return userData.exists && userData.isTalking;
+                return SpatialBridge.actorService.actors.TryGetValue(f.GetValue<int>(actor), out IActor a) && a.isTalking;
             });
         }
     }

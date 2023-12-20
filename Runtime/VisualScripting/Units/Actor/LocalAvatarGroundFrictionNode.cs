@@ -1,14 +1,11 @@
-using UnityEngine;
 using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitCategory("Spatial\\Actor")]
     [UnitTitle("Local Actor: Set Ground Friction")]
-
     [UnitSurtitle("Local Actor Control Settings")]
     [UnitShortTitle("Set Ground Friction")]
-
     [TypeIcon(typeof(SpatialComponentBase))]
     public class SetLocalAvatarGroundFrictionNode : Unit
     {
@@ -27,7 +24,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             friction = ValueInput<float>(nameof(friction), 1); // This default should be matched with AvatarController
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SetLocalAvatarGroundFriction?.Invoke(f.GetValue<float>(friction));
+                SpatialBridge.actorService.localActor.avatar.groundFriction = f.GetValue<float>(friction);
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -37,10 +34,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
     [UnitCategory("Spatial\\Actor")]
     [UnitTitle("Local Actor: Get Ground Friction")]
-
     [UnitSurtitle("Local Actor Control Settings")]
     [UnitShortTitle("Get Ground Friction")]
-
     [TypeIcon(typeof(SpatialComponentBase))]
     public class GetLocalAvatarGroundFrictionNode : Unit
     {
@@ -49,7 +44,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            friction = ValueOutput<float>(nameof(friction), (f) => SpatialBridge.GetLocalAvatarGroundFriction?.Invoke() ?? 1);
+            friction = ValueOutput<float>(nameof(friction), (f) => SpatialBridge.actorService.localActor.avatar.groundFriction);
         }
     }
 }

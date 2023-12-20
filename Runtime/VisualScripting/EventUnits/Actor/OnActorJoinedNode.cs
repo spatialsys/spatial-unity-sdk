@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
@@ -10,7 +7,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnActorJoinedNode : EventUnit<int>
     {
-        public static string eventName = "OnActorJoined";
+        private const string EVENT_HOOK_ID = "OnActorJoined";
+
         protected override bool register => true;
 
         [DoNotSerialize]
@@ -18,7 +16,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(int actorNumber)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, actorNumber);
         }
 
         protected override void Definition()

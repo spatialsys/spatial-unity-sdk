@@ -7,10 +7,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitCategory("Spatial\\Actor")]
     [UnitTitle("Local Actor: Set Walk Speed")]
-
     [UnitSurtitle("Local Actor Control Settings")]
     [UnitShortTitle("Set Walk Speed (m/s)")]
-
     [TypeIcon(typeof(SpatialComponentBase))]
     public class SetLocalAvatarMovingSpeedNode : Unit
     {
@@ -29,7 +27,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             speed = ValueInput<float>(nameof(speed), 3.0f); // This default should be matched with AvatarController movingSpeed.
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SetLocalAvatarMovingSpeed?.Invoke(f.GetValue<float>(speed));
+                SpatialBridge.actorService.localActor.avatar.walkSpeed = f.GetValue<float>(speed);
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -39,10 +37,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
     [UnitCategory("Spatial\\Actor")]
     [UnitTitle("Local Actor: Get Walk Speed")]
-
     [UnitSurtitle("Local Actor Control Settings")]
     [UnitShortTitle("Get Walk Speed (m/s)")]
-
     [TypeIcon(typeof(SpatialComponentBase))]
     public class GetLocalAvatarMovingSpeedNode : Unit
     {
@@ -52,7 +48,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            speed = ValueOutput<float>(nameof(speed), (f) => SpatialBridge.GetLocalAvatarMovingSpeed?.Invoke() ?? 3.0f);
+            speed = ValueOutput<float>(nameof(speed), (f) => SpatialBridge.actorService.localActor.avatar.walkSpeed);
         }
     }
 }

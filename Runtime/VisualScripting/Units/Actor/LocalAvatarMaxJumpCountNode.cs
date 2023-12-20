@@ -1,14 +1,11 @@
-using UnityEngine;
 using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitCategory("Spatial\\Actor")]
     [UnitTitle("Local Actor: Set Maximum Jump Count")]
-
     [UnitSurtitle("Local Actor Control Settings")]
     [UnitShortTitle("Set Max Jump Count")]
-
     [TypeIcon(typeof(SpatialComponentBase))]
     public class SetLocalAvatarMaxJumpCountNode : Unit
     {
@@ -27,7 +24,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             maxJumpCount = ValueInput<int>(nameof(maxJumpCount), 2); // This default should be matched with AvatarController
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SetLocalAvatarMaxJumpCount?.Invoke(f.GetValue<int>(maxJumpCount));
+                SpatialBridge.actorService.localActor.avatar.maxJumpCount = f.GetValue<int>(maxJumpCount);
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -37,10 +34,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
     [UnitCategory("Spatial\\Actor")]
     [UnitTitle("Local Actor: Get Maximum Jump Count")]
-
     [UnitSurtitle("Local Actor Control Settings")]
     [UnitShortTitle("Get Max Jump Count")]
-
     [TypeIcon(typeof(SpatialComponentBase))]
     public class GetLocalAvatarMaxJumpCountNode : Unit
     {
@@ -50,7 +45,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            maxJumpCount = ValueOutput<int>(nameof(maxJumpCount), (f) => SpatialBridge.GetLocalAvatarMaxJumpCount?.Invoke() ?? 2);
+            maxJumpCount = ValueOutput<int>(nameof(maxJumpCount), (f) => SpatialBridge.actorService.localActor.avatar.maxJumpCount);
         }
     }
 }

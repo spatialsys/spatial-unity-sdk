@@ -1,6 +1,5 @@
 using UnityEngine;
 using Unity.VisualScripting;
-using SpatialSys.UnitySDK;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
@@ -12,7 +11,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnLocalAvatarJumpNode : EventUnit<bool>
     {
-        public static string eventName = "OnLocalAvatarJump";
+        private const string EVENT_HOOK_ID = "OnLocalAvatarJump";
 
         protected override bool register => true;
 
@@ -21,7 +20,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(bool isGrounded)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, isGrounded);
         }
 
         protected override void Definition()
@@ -49,13 +53,18 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnLocalAvatarEmoteNode : EventUnit<EmptyEventArgs>
     {
-        public static string eventName = "OnLocalAvatarEmote";
+        private const string EVENT_HOOK_ID = "OnLocalAvatarEmote";
 
         protected override bool register => true;
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent()
+        {
+            EventBus.Trigger(EVENT_HOOK_ID);
         }
 
         protected override bool ShouldTrigger(Flow flow, EmptyEventArgs args)
@@ -72,13 +81,18 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnLocalAvatarLandNode : EventUnit<EmptyEventArgs>
     {
-        public static string eventName = "OnLocalAvatarLand";
+        private const string EVENT_HOOK_ID = "OnLocalAvatarLand";
 
         protected override bool register => true;
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent()
+        {
+            EventBus.Trigger(EVENT_HOOK_ID);
         }
 
         protected override bool ShouldTrigger(Flow flow, EmptyEventArgs args)
@@ -95,7 +109,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnLocalAvatarColliderHitNode : EventUnit<(ControllerColliderHit, Vector3)>
     {
-        public static string eventName = "OnLocalAvatarColliderHit";
+        private const string EVENT_HOOK_ID = "OnLocalAvatarColliderHit";
 
         [DoNotSerialize]
         public ValueOutput collider { get; private set; }
@@ -114,7 +128,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(ControllerColliderHit hit, Vector3 avatarVelocity)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, (hit, avatarVelocity));
         }
 
         protected override void Definition()
@@ -153,7 +172,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnLocalAvatarIsGroundedChangedNode : EventUnit<bool>
     {
-        public static string eventName = "OnLocalAvatarGroundedChanged";
+        private const string EVENT_HOOK_ID = "OnLocalAvatarGroundedChanged";
 
         protected override bool register => true;
 
@@ -162,7 +181,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(bool isGrounded)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, isGrounded);
         }
 
         protected override void Definition()

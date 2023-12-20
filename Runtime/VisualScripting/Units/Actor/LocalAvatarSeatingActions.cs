@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Unity.VisualScripting;
 
@@ -28,7 +26,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             seat = ValueInput<Transform>(nameof(seat), null).NullMeansSelf();
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SendLocalAvatarToSeat.Invoke(f.GetValue<Transform>(seat));
+                SpatialBridge.actorService.localActor.avatar.Sit(f.GetValue<Transform>(seat));
                 return outputTrigger;
             });
 
@@ -55,7 +53,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         protected override void Definition()
         {
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SetLocalAvatarToStand.Invoke();
+                SpatialBridge.actorService.localActor.avatar.Stand();
                 return outputTrigger;
             });
 

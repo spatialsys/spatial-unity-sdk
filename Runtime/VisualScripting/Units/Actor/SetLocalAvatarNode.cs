@@ -24,7 +24,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             sku = ValueInput<string>(nameof(sku), "");
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SetLocalAvatarFromPackage?.Invoke(f.GetValue<string>(sku));
+                SpatialBridge.actorService.localActor.avatar.SetAvatarBody(AssetType.Package, f.GetValue<string>(sku));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -54,7 +54,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             assetID = ValueInput<string>(nameof(assetID), "");
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SetLocalAvatarFromEmbedded?.Invoke(f.GetValue<string>(assetID));
+                SpatialBridge.actorService.localActor.avatar.SetAvatarBody(AssetType.EmbeddedAsset, f.GetValue<string>(assetID));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -79,7 +79,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         protected override void Definition()
         {
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.ResetLocalAvatar?.Invoke();
+                SpatialBridge.actorService.localActor.avatar.ResetAvatarBody();
                 return outputTrigger;
             });
 

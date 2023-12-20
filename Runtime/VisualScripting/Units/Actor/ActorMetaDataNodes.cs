@@ -1,13 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
-    [UnitTitle("Local Actor: Set Custom Variable")]
+    [UnitTitle("Local Actor: Set Custom Property")]
     [UnitSurtitle("Local Actor")]
-    [UnitShortTitle("Set Custom Variable")]
+    [UnitShortTitle("Set Custom Property")]
     [UnitCategory("Spatial\\Actor")]
     [TypeIcon(typeof(SpatialComponentBase))]
     public class SetLocalActorCustomVariableNode : Unit
@@ -20,9 +17,11 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public ControlOutput outputTrigger { get; private set; }
 
         [DoNotSerialize]
+        [PortLabel("name")]
         public ValueInput variableName { get; private set; }
 
         [DoNotSerialize]
+        [PortLabel("value")]
         public ValueInput variableValue { get; private set; }
 
         protected override void Definition()
@@ -31,7 +30,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             variableValue = ValueInput<object>(nameof(variableValue), null);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SetLocalActorCustomVariable?.Invoke(f.GetValue<string>(variableName), f.GetValue<object>(variableValue));
+                SpatialBridge.actorService.localActor.SetCustomProperty(f.GetValue<string>(variableName), f.GetValue<object>(variableValue));
                 return outputTrigger;
             });
 
@@ -41,14 +40,15 @@ namespace SpatialSys.UnitySDK.VisualScripting
         }
     }
 
-    [UnitTitle("Local Actor: Get Custom Variable")]
+    [UnitTitle("Local Actor: Get Custom Property")]
     [UnitSurtitle("Local Actor")]
-    [UnitShortTitle("Get Custom Variable")]
+    [UnitShortTitle("Get Custom Property")]
     [UnitCategory("Spatial\\Actor")]
     [TypeIcon(typeof(SpatialComponentBase))]
     public class GetLocalActorCustomVariableNode : Unit
     {
         [DoNotSerialize]
+        [PortLabel("propertyName")]
         public ValueInput variableName { get; private set; }
 
         [DoNotSerialize]
@@ -57,13 +57,26 @@ namespace SpatialSys.UnitySDK.VisualScripting
         protected override void Definition()
         {
             variableName = ValueInput<string>(nameof(variableName), "");
-            value = ValueOutput<object>(nameof(value), (f) => SpatialBridge.GetLocalActorCustomVariable?.Invoke(f.GetValue<string>(variableName)) ?? null);
+            value = ValueOutput<object>(nameof(value), (f) => {
+                string varName = f.GetValue<string>(variableName);
+                if (string.IsNullOrEmpty(varName))
+                {
+                    SpatialBridge.LogError?.Invoke($"GetLocalActorCustomPropertyNode: Property name must be a valid string, but was null or empty");
+                    return null;
+                }
+
+                if (SpatialBridge.actorService.localActor.customProperties.TryGetValue(varName, out object value))
+                    return value;
+
+                // SpatialBridge.LogError?.Invoke($"GetLocalActorCustomPropertyNode: Property name '{varName}' does not exist");
+                return null;
+            });
         }
     }
 
-    [UnitTitle("Actor: Get Custom Variable")]
+    [UnitTitle("Actor: Get Custom Property")]
     [UnitSurtitle("Actor")]
-    [UnitShortTitle("Get Custom Variable")]
+    [UnitShortTitle("Get Custom Property")]
     [UnitCategory("Spatial\\Actor")]
     [TypeIcon(typeof(SpatialComponentBase))]
     public class GetActorCustomVariableNode : Unit
@@ -72,6 +85,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public ValueInput actor { get; private set; }
 
         [DoNotSerialize]
+        [PortLabel("propertyName")]
         public ValueInput variableName { get; private set; }
 
         [DoNotSerialize]
@@ -81,7 +95,27 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             actor = ValueInput<int>(nameof(actor), -1);
             variableName = ValueInput<string>(nameof(variableName), "");
-            value = ValueOutput<object>(nameof(value), (f) => SpatialBridge.GetActorCustomVariable?.Invoke(f.GetValue<int>(actor), f.GetValue<string>(variableName)) ?? null);
+            value = ValueOutput<object>(nameof(value), (f) => {
+                string varName = f.GetValue<string>(variableName);
+                if (string.IsNullOrEmpty(varName))
+                {
+                    SpatialBridge.LogError?.Invoke($"GetActorCustomPropertyNode: Property name must be a valid string, but was null or empty");
+                    return null;
+                }
+
+                int actorNumber = f.GetValue<int>(actor);
+                if (!SpatialBridge.actorService.actors.TryGetValue(actorNumber, out IActor sdkActor))
+                {
+                    SpatialBridge.LogError?.Invoke($"GetActorCustomPropertyNode: Actor with actor number '{actorNumber}' does not exist");
+                    return null;
+                }
+
+                if (sdkActor.customProperties.TryGetValue(varName, out object value))
+                    return value;
+
+                // SpatialBridge.LogError?.Invoke($"GetActorCustomPropertyNode: Property name '{varName}' does not exist");
+                return null;
+            });
         }
     }
 }

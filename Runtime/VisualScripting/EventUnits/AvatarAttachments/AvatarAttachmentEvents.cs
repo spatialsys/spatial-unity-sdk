@@ -9,11 +9,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnAvatarAttachmentEquipChangedNode : EventUnit<(string, bool)>
     {
-        public static string eventName = "SpatialOnAvatarAttachmentEquipChanged";
+        private const string EVENT_HOOK_ID = "SpatialOnAvatarAttachmentEquipChanged";
+
         protected override bool register => true;
 
         [DoNotSerialize]
-        [PortLabel("Item ID or Package SKU")]
+        [PortLabel("Asset ID")]
         public ValueInput itemID { get; private set; }
 
         [DoNotSerialize]
@@ -21,7 +22,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(string assetID, bool isEquipped)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, (assetID, isEquipped));
         }
 
         protected override void Definition()

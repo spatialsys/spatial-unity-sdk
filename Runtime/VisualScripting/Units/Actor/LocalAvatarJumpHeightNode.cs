@@ -1,14 +1,11 @@
-using UnityEngine;
 using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitCategory("Spatial\\Actor")]
     [UnitTitle("Local Actor: Set Jump Height")]
-
     [UnitSurtitle("Local Actor Control Settings")]
     [UnitShortTitle("Set Jump Height (meter)")]
-
     [TypeIcon(typeof(SpatialComponentBase))]
     public class SetLocalAvatarJumpHeightNode : Unit
     {
@@ -27,7 +24,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             height = ValueInput<float>(nameof(height), 1.5f); // This default should be matched with AvatarController
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SetLocalAvatarJumpHeight?.Invoke(f.GetValue<float>(height));
+                SpatialBridge.actorService.localActor.avatar.jumpHeight = f.GetValue<float>(height);
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -37,10 +34,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
     [UnitCategory("Spatial\\Actor")]
     [UnitTitle("Local Actor: Get Jump Height")]
-
     [UnitSurtitle("Local Actor Control Settings")]
     [UnitShortTitle("Get Jump Height (meter)")]
-
     [TypeIcon(typeof(SpatialComponentBase))]
     public class GetLocalAvatarJumpHeightNode : Unit
     {
@@ -50,7 +45,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            height = ValueOutput<float>(nameof(height), (f) => SpatialBridge.GetLocalAvatarJumpHeight?.Invoke() ?? 1.5f);
+            height = ValueOutput<float>(nameof(height), (f) => SpatialBridge.actorService.localActor.avatar.jumpHeight);
         }
     }
 }

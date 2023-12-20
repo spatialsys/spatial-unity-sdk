@@ -1,32 +1,35 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
-
-    [UnitTitle("Actor: On Custom Variable Changed")]
+    [UnitTitle("Actor: On Custom Property Changed")]
     [UnitSurtitle("Actor")]
-    [UnitShortTitle("On Custom Variable Changed")]
+    [UnitShortTitle("On Custom Property Changed")]
     [UnitSubtitle("Event")]
     [UnitCategory("Events\\Spatial\\Actor")]
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnActorCustomVariableChanged : EventUnit<(int, string, object)>
     {
-        public static string eventName = "OnActorCustomVariableChanged";
+        private const string EVENT_HOOK_ID = "OnActorCustomVariableChanged";
         protected override bool register => true;
 
         [DoNotSerialize]
         public ValueOutput actor { get; private set; }
         [DoNotSerialize]
+        [PortLabel("Property Name")]
         public ValueOutput variableName { get; private set; }
         [DoNotSerialize]
+        [PortLabel("Property Value")]
         public ValueOutput variableValue { get; private set; }
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(int actor, string variableName, object variableValue)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, (actor, variableName, variableValue));
         }
 
         protected override void Definition()

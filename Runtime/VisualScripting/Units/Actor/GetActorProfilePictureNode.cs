@@ -40,18 +40,16 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            int actorId = flow.GetValue<int>(actor);
-            if (actorId >= 0)
+            int actorNumber = flow.GetValue<int>(actor);
+            if (!SpatialBridge.actorService.actors.TryGetValue(actorNumber, out IActor sdkActor))
             {
-                bool completed = false;
-                SpatialBridge.GetActorProfilePicture.Invoke(actorId, texture => {
-                    completed = true;
-                    flow.SetValue(actorTexture, texture);
-                });
-                yield return new WaitUntil(() => completed);
+                ActorProfilePictureRequest request = sdkActor.GetProfilePicture();
+                yield return request;
+                flow.SetValue(actorTexture, request.texture);
             }
             else
             {
+                SpatialBridge.LogError?.Invoke($"{nameof(GetActorProfilePictureNode)}: Actor with actor number '{actorNumber}' does not exist");
                 flow.SetValue(actorTexture, null);
             }
             yield return outputTrigger;

@@ -1,7 +1,6 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using Unity.VisualScripting;
+using System.Linq;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
@@ -15,7 +14,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            actors = ValueOutput<List<int>>(nameof(actors), (f) => SpatialBridge.GetActors.Invoke());
+            actors = ValueOutput<List<int>>(nameof(actors), (f) => SpatialBridge.actorService.actors.Keys.ToList());
         }
     }
 }

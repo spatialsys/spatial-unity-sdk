@@ -26,7 +26,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             subtext = ValueInput<string>(nameof(subtext), string.Empty);
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SetLocalActorNametagSubtext.Invoke(f.GetValue<string>(subtext));
+                SpatialBridge.actorService.localActor.avatar.nametagSubtext = f.GetValue<string>(subtext);
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -55,7 +55,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             visible = ValueInput<bool>(nameof(visible), false);
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SetLocalActorNametagBarVisible.Invoke(f.GetValue<bool>(visible));
+                SpatialBridge.actorService.localActor.avatar.nametagBarVisible = f.GetValue<bool>(visible);
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -84,7 +84,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             value = ValueInput<float>(nameof(value), 0f);
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SetLocalActorNametagBarValue.Invoke(f.GetValue<float>(value));
+                SpatialBridge.actorService.localActor.avatar.nametagBarValue = f.GetValue<float>(value);
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));

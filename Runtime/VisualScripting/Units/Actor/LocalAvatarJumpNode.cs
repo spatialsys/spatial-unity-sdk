@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
@@ -22,7 +19,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         protected override void Definition()
         {
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.TriggerJumpLocalAvatar?.Invoke();
+                SpatialBridge.actorService.localActor.avatar.Jump();
                 return outputTrigger;
             });
 

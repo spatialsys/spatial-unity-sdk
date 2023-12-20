@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
@@ -15,7 +12,11 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            actor = ValueOutput<int>(nameof(actor), (f) => SpatialBridge.GetRandomActor.Invoke());
+            actor = ValueOutput<int>(nameof(actor), (f) => {
+                if (SpatialBridge.actorService.TryGetRandomActor(includeLocalActor: true, out IActor a))
+                    return a.actorNumber;
+                return -1;
+            });
         }
     }
 }

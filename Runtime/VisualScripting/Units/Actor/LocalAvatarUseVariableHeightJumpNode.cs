@@ -1,16 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitCategory("Spatial\\Actor")]
     [UnitTitle("Local Actor: Set Use Variable Height Jump")]
-
     [UnitSurtitle("Local Actor Control Settings")]
     [UnitShortTitle("Set Use Variable Height Jump")]
-
     [TypeIcon(typeof(SpatialComponentBase))]
     public class SetLocalAvatarUseVariableHeightJumpNode : Unit
     {
@@ -29,7 +24,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             useVariableHeight = ValueInput<bool>(nameof(useVariableHeight), true); // This default should be matched with AvatarController
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SetLocalAvatarUseVariableHeightJump?.Invoke(f.GetValue<bool>(useVariableHeight));
+                SpatialBridge.actorService.localActor.avatar.useVariableHeightJump = f.GetValue<bool>(useVariableHeight);
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
@@ -39,10 +34,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
     [UnitCategory("Spatial\\Actor")]
     [UnitTitle("Local Actor: Get Use Variable Height Jump")]
-
     [UnitSurtitle("Local Actor Control Settings")]
     [UnitShortTitle("Get Use Variable Height Jump")]
-
     [TypeIcon(typeof(SpatialComponentBase))]
     public class GetLocalAvatarUseVariableHeightJumpNode : Unit
     {
@@ -52,7 +45,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            useVariableHeight = ValueOutput<bool>(nameof(useVariableHeight), (f) => SpatialBridge.GetLocalAvatarUseVariableHeightJump?.Invoke() ?? true);
+            useVariableHeight = ValueOutput<bool>(nameof(useVariableHeight), (f) => SpatialBridge.actorService.localActor.avatar.useVariableHeightJump);
         }
     }
 }

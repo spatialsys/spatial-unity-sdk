@@ -5,10 +5,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitCategory("Spatial\\Actor")]
     [UnitTitle("Local Actor: Move")]
-
     [UnitSurtitle("Local Actor Control")]
     [UnitShortTitle("Move")]
-
     [TypeIcon(typeof(SpatialComponentBase))]
     public class MoveLocalAvatarNode : Unit
     {
@@ -33,7 +31,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             sprint = ValueInput<bool>(nameof(sprint), false);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.MoveLocalAvatar?.Invoke(f.GetValue<Vector2>(moveInput), f.GetValue<bool>(sprint));
+                SpatialBridge.actorService.localActor.avatar.Move(f.GetValue<Vector2>(moveInput), f.GetValue<bool>(sprint));
                 return outputTrigger;
             });
             outputTrigger = ControlOutput(nameof(outputTrigger));
