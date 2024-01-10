@@ -151,7 +151,7 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(Volume),
 
             //Spatial Types
-            typeof(SpatialPlatform),
+            typeof(UnitySDK.VisualScripting.SpatialPlatform),
             typeof(SpatialQuestTaskType),
             typeof(SpatialQuestStatus),
             typeof(SpatialCameraMode),

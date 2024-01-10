@@ -41,7 +41,16 @@ namespace SpatialSys.UnitySDK.VisualScripting
         private IEnumerator ExecuteAsync(Flow flow)
         {
             int actorNumber = flow.GetValue<int>(actor);
-            if (!SpatialBridge.actorService.actors.TryGetValue(actorNumber, out IActor sdkActor))
+            IActor sdkActor = null;
+            if (actorNumber == SpatialBridge.actorService.localActorNumber)
+            {
+                sdkActor = SpatialBridge.actorService.localActor;
+            }
+            else
+            {
+                SpatialBridge.actorService.actors.TryGetValue(actorNumber, out sdkActor);
+            }
+            if (sdkActor != null)
             {
                 ActorProfilePictureRequest request = sdkActor.GetProfilePicture();
                 yield return request;

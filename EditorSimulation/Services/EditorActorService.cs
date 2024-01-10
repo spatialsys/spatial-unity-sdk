@@ -45,6 +45,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         public string displayName => string.Empty;
         public bool isRegistered => true;
         public bool isSpaceAdministrator => false;
+        public bool isSpaceOwner => false;
         public SpatialPlatform platform => SpatialPlatform.Unknown;
         public bool isTalking => false;
         public IReadOnlyAvatar avatar => null;
@@ -74,6 +75,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         public string displayName => "Editor Local Actor";
         public bool isRegistered => true;
         public bool isSpaceAdministrator => true;
+        public bool isSpaceOwner => false;
         public SpatialPlatform platform => SpatialPlatform.Web;
         public bool isTalking => false;
         public IReadOnlyDictionary<string, object> customProperties => _customProperties;

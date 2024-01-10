@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
@@ -15,7 +12,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            isOwner = ValueOutput<bool>(nameof(isOwner), (f) => SpatialBridge.IsLocalOwner.Invoke());
+            isOwner = ValueOutput<bool>(nameof(isOwner), (f) => SpatialBridge.actorService.localActor.isSpaceOwner);
         }
     }
 }

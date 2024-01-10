@@ -11,9 +11,9 @@ namespace SpatialSys.UnitySDK
         public static ICoreGUIService coreGUIService;
         public static IMarketplaceService marketplaceService;
         public static INetworkingService networkingService;
+        public static IUserWorldDataStoreService userWorldDataStoreService;
 
-        public delegate void LogErrorDelegate(string message, Exception ex = null, Dictionary<string, object> data = null);
-        public static LogErrorDelegate LogError;
+        #region ISpaceService
 
         public delegate int GetSpacePackageVersionDelegate();
         public static GetSpacePackageVersionDelegate GetSpacePackageVersion;
@@ -21,32 +21,25 @@ namespace SpatialSys.UnitySDK
         public delegate bool IsInSandboxDelegate();
         public static IsInSandboxDelegate IsInSandbox;
 
-        public delegate bool IsLocalOwnerDelegate();
-        public static IsLocalOwnerDelegate IsLocalOwner;
-
-        public delegate bool IsLocalHostDelegate();
-        public static IsLocalHostDelegate IsLocalHost;
-
         public delegate bool HasLocalLovedSpaceDelegate();
         public static HasLocalLovedSpaceDelegate HasLocalLovedSpace;
 
         public delegate void OpenURLDelegate(string url);
         public static OpenURLDelegate OpenURL;
 
-        public delegate void SpawnPrefabObjectFromPackageDelegate(string sku, Vector3 position, Quaternion rotation);
-        public static SpawnPrefabObjectFromPackageDelegate SpawnPrefabObjectFromPackage;
-
-        public delegate void SpawnPrefabObjectFromEmbeddedDelegate(string assetID, Vector3 position, Quaternion rotation);
-        public static SpawnPrefabObjectFromEmbeddedDelegate SpawnPrefabObjectFromEmbedded;
-
         public delegate void EnableAvatarToAvatarCollisionsDelegate(bool enabled);
         public static EnableAvatarToAvatarCollisionsDelegate EnableAvatarToAvatarCollisions;
 
-        // Avatar Attachments
-        public delegate int GetActorFromAvatarAttachmentObjectDelegate(SpatialAvatarAttachment attachment);
-        public static GetActorFromAvatarAttachmentObjectDelegate GetActorFromAvatarAttachmentObject;
+        #endregion
 
-        // Quests
+        #region ILoggingService
+
+        public delegate void LogErrorDelegate(string message, Exception ex = null, Dictionary<string, object> data = null);
+        public static LogErrorDelegate LogError;
+
+        #endregion
+
+        #region IQuestSystemService
         public delegate void QuestDelegate(SpatialQuest quest);
         public static QuestDelegate StartQuest;
         public static QuestDelegate CompleteQuest;
@@ -67,10 +60,14 @@ namespace SpatialSys.UnitySDK
 
         public delegate int GetQuestTaskStatusDelegate(SpatialQuest quest, uint taskID);
         public static GetQuestTaskStatusDelegate GetQuestTaskStatus;
+        #endregion
 
+        #region IBadgeService
         public delegate void RewardBadgeDelegate(string badgeID);
         public static RewardBadgeDelegate RewardBadge;
+        #endregion
 
+        #region IInventoryService
         // Backpack
         public delegate void AddBackpackItemDelegate(string itemID, ulong quantity, bool showToast, Action<bool> callback);
         public static AddBackpackItemDelegate AddBackpackItem;
@@ -112,6 +109,20 @@ namespace SpatialSys.UnitySDK
 
         public delegate void AwardWorldCurrencyDelegate(ulong amount, Action<bool> callback);
         public static AwardWorldCurrencyDelegate AwardWorldCurrency;
+        #endregion
+
+        #region ISceneService
+
+        // Avatar Attachments
+        public delegate int GetActorFromAvatarAttachmentObjectDelegate(SpatialAvatarAttachment attachment);
+        public static GetActorFromAvatarAttachmentObjectDelegate GetActorFromAvatarAttachmentObject;
+
+        // Prefab Objects
+        public delegate void SpawnPrefabObjectFromPackageDelegate(string sku, Vector3 position, Quaternion rotation);
+        public static SpawnPrefabObjectFromPackageDelegate SpawnPrefabObjectFromPackage;
+
+        public delegate void SpawnPrefabObjectFromEmbeddedDelegate(string assetID, Vector3 position, Quaternion rotation);
+        public static SpawnPrefabObjectFromEmbeddedDelegate SpawnPrefabObjectFromEmbedded;
 
         //Synced objects
         public delegate bool TakeoverSyncedObjectOwnerhipDelegate(SpatialSyncedObject syncedObject);
@@ -141,6 +152,9 @@ namespace SpatialSys.UnitySDK
         public delegate void SetSyncedAnimatorTriggerDelegate(SpatialSyncedAnimator syncedAnimator, string triggerName);
         public static SetSyncedAnimatorTriggerDelegate SetSyncedAnimatorTrigger;
 
+        #endregion
+
+        #region IInputService
         public delegate void SetInputOverridesDelegate(bool movementOverride, bool jumpOverride, bool sprintOverride, bool actionButtonOverride, GameObject target);
         public static SetInputOverridesDelegate SetInputOverrides;
 
@@ -155,8 +169,9 @@ namespace SpatialSys.UnitySDK
 
         public delegate void ReleaseInputCaptureDelegate(GameObject target);
         public static ReleaseInputCaptureDelegate ReleaseInputCapture;
+        #endregion
 
-        //Component Initialization
+        #region ISpatialComponentService
         public delegate void InitializeSpatialInteractableDelegate(SpatialInteractable spatialInteractable);
         public static InitializeSpatialInteractableDelegate InitializeSpatialInteractable;
 
@@ -187,59 +202,21 @@ namespace SpatialSys.UnitySDK
         public delegate void InitializeSpatialCameraPassthroughDelegate(SpatialCameraPassthrough spatialCameraPassthrough);
         public static InitializeSpatialCameraPassthroughDelegate InitializeSpatialCameraPassthrough;
 
+        public delegate Action InitializeVirtualCameraDelegate(SpatialVirtualCamera virtualCamera);
+        public static InitializeVirtualCameraDelegate InitializeSpatialVirtualCamera;
+        #endregion
+
+        #region IAudioService
         public delegate void PlaySpatialSFXPositionDelegate(SpatialSFX sfx, Vector3 position, float extraVolume, float extraPitch);
         public static PlaySpatialSFXPositionDelegate PlaySpatialSFXPosition;
 
         public delegate void PlaySpatialSFXSourceDelegate(SpatialSFX sfx, AudioSource source, float extraVolume, float extraPitch);
         public static PlaySpatialSFXSourceDelegate PlaySpatialSFXSource;
+        #endregion
 
+        #region IVFXService
         public delegate void CreateFloatingTextDelegate(string text, FloatingTextAnimStyle style, Vector3 position, Vector3 force, Color color, bool gravity, AnimationCurve scaleCurve, AnimationCurve alphaCurve, float lifetime);
         public static CreateFloatingTextDelegate CreateFloatingText;
-
-        public delegate Action InitializeVirtualCameraDelegate(SpatialVirtualCamera virtualCamera);
-        public static InitializeVirtualCameraDelegate InitializeSpatialVirtualCamera;
-
-        // Data Stores
-        public struct DataStoreOperationResult
-        {
-            public bool succeeded;
-            public int responseCode;
-            public object value; // only used for GetDataStoreVariableValue
-
-            public DataStoreOperationResult(bool succeeded, int responseCode)
-            {
-                this.succeeded = succeeded;
-                this.responseCode = responseCode;
-                this.value = null;
-            }
-
-            public DataStoreOperationResult(bool succeeded, int responseCode, object value)
-            {
-                this.succeeded = succeeded;
-                this.responseCode = responseCode;
-                this.value = value;
-            }
-        }
-
-        public delegate void GetDataStoreVariableValueDelegate(ClientBridge.DataStoreScope scope, string key, object defaultValue, Action<DataStoreOperationResult> callback);
-        public static GetDataStoreVariableValueDelegate GetDataStoreVariableValue;
-
-        public delegate void SetDataStoreVariableValueDelegate(ClientBridge.DataStoreScope scope, string key, object value, Action<DataStoreOperationResult> callback);
-        public static SetDataStoreVariableValueDelegate SetDataStoreVariableValue;
-
-        public delegate void DeleteDataStoreVariableDelegate(ClientBridge.DataStoreScope scope, string key, Action<DataStoreOperationResult> callback);
-        public static DeleteDataStoreVariableDelegate DeleteDataStoreVariable;
-
-        public delegate void ClearDataStoreDelegate(ClientBridge.DataStoreScope scope, Action<DataStoreOperationResult> callback);
-        public static ClearDataStoreDelegate ClearDataStore;
-
-        public delegate void HasDataStoreVariableDelegate(ClientBridge.DataStoreScope scope, string key, Action<DataStoreOperationResult> callback);
-        public static HasDataStoreVariableDelegate HasDataStoreVariable;
-
-        public delegate void DataStoreHasAnyVariableDelegate(ClientBridge.DataStoreScope scope, Action<DataStoreOperationResult> callback);
-        public static DataStoreHasAnyVariableDelegate DataStoreHasAnyVariable;
-
-        public delegate void DumpDataStoreVariablesDelegate(ClientBridge.DataStoreScope scope, Action<DataStoreOperationResult> callback);
-        public static DumpDataStoreVariablesDelegate DumpDataStoreVariables;
+        #endregion
     }
 }

@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
@@ -15,7 +12,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            isHost = ValueOutput<bool>(nameof(isHost), (f) => SpatialBridge.IsLocalHost.Invoke());
+            isHost = ValueOutput<bool>(nameof(isHost), (f) => SpatialBridge.actorService.localActor.isSpaceAdministrator);
         }
     }
 }

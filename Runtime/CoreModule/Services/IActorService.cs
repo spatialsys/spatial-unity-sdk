@@ -114,6 +114,11 @@ namespace SpatialSys.UnitySDK
         bool isSpaceAdministrator { get; }
 
         /// <summary>
+        /// Is the user for this actor the owner of the space?
+        /// </summary>
+        bool isSpaceOwner { get; }
+
+        /// <summary>
         /// The platform that the actor is currently using to join this space.
         /// </summary>
         SpatialPlatform platform { get; }

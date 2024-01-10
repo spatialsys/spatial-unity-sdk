@@ -1,6 +1,8 @@
-using System.Collections;
 using UnityEngine;
 using Unity.VisualScripting;
+using System.Collections.Generic;
+using System.Collections;
+using System;
 using SpatialSys.UnitySDK.Internal;
 
 namespace SpatialSys.UnitySDK.VisualScripting
@@ -51,19 +53,30 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            bool completed = false;
-            SpatialBridge.GetDataStoreVariableValue?.Invoke(
-                flow.GetValue<ClientBridge.DataStoreScope>(scope),
-                flow.GetValue<string>(key),
-                flow.GetValue<object>(defaultValue),
-                result => {
-                    completed = true;
-                    flow.SetValue(value, result.value);
-                    flow.SetValue(succeeded, result.succeeded);
-                    flow.SetValue(responseCode, result.responseCode);
+            ClientBridge.DataStoreScope scopeValue = flow.GetValue<ClientBridge.DataStoreScope>(scope);
+            if (scopeValue == ClientBridge.DataStoreScope.UserWorldData)
+            {
+                DataStoreGetVariableRequest request = SpatialBridge.userWorldDataStoreService.GetVariable(flow.GetValue<string>(key), flow.GetValue<object>(defaultValue));
+                yield return request;
+
+                // Try to convert from internal types to VS types
+                if (request.responseCode == DataStoreResponseCode.Ok)
+                {
+                    request.responseCode = DataStoreVisualScriptingTypeSupport.TryConvertFromInternalTypes(request.value, out request.value);
+                    request.succeeded = request.responseCode == DataStoreResponseCode.Ok;
                 }
-            );
-            yield return new WaitUntil(() => completed);
+
+                flow.SetValue(value, request.value);
+                flow.SetValue(succeeded, request.succeeded);
+                flow.SetValue(responseCode, (int)request.responseCode);
+            }
+            else // Unsupported scope
+            {
+                Debug.LogError($"{nameof(GetDataStoreVariableValueNode)}: Unsupported DataStore scope {scopeValue}");
+                flow.SetValue(value, null);
+                flow.SetValue(succeeded, false);
+                flow.SetValue(responseCode, (int)DataStoreResponseCode.InternalError);
+            }
             yield return outputTrigger;
         }
     }
@@ -110,18 +123,33 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            bool completed = false;
-            SpatialBridge.SetDataStoreVariableValue?.Invoke(
-                scope: flow.GetValue<ClientBridge.DataStoreScope>(scope),
-                key: flow.GetValue<string>(key),
-                value: flow.GetValue<object>(value),
-                result => {
-                    completed = true;
-                    flow.SetValue(succeeded, result.succeeded);
-                    flow.SetValue(responseCode, result.responseCode);
-                }
-            );
-            yield return new WaitUntil(() => completed);
+            // Convert from VS types to internal types
+            object variableValue = flow.GetValue<object>(value);
+            DataStoreResponseCode conversionResponseCode = DataStoreVisualScriptingTypeSupport.TryConvertToInternalTypes(variableValue, out variableValue);
+
+            // Fail early if conversion failed
+            if (conversionResponseCode != DataStoreResponseCode.Ok)
+            {
+                flow.SetValue(succeeded, false);
+                flow.SetValue(responseCode, (int)conversionResponseCode);
+                yield return outputTrigger;
+                yield break;
+            }
+
+            ClientBridge.DataStoreScope scopeValue = flow.GetValue<ClientBridge.DataStoreScope>(scope);
+            if (scopeValue == ClientBridge.DataStoreScope.UserWorldData)
+            {
+                DataStoreOperationRequest request = SpatialBridge.userWorldDataStoreService.SetVariable(flow.GetValue<string>(key), variableValue);
+                yield return request;
+                flow.SetValue(succeeded, request.succeeded);
+                flow.SetValue(responseCode, (int)request.responseCode);
+            }
+            else // Unsupported scope
+            {
+                Debug.LogError($"{nameof(SetDataStoreVariableValueNode)}: Unsupported DataStore scope {scopeValue}");
+                flow.SetValue(succeeded, false);
+                flow.SetValue(responseCode, (int)DataStoreResponseCode.InternalError);
+            }
             yield return outputTrigger;
         }
     }
@@ -165,17 +193,20 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            bool completed = false;
-            SpatialBridge.DeleteDataStoreVariable?.Invoke(
-                scope: flow.GetValue<ClientBridge.DataStoreScope>(scope),
-                key: flow.GetValue<string>(key),
-                result => {
-                    completed = true;
-                    flow.SetValue(succeeded, result.succeeded);
-                    flow.SetValue(responseCode, result.responseCode);
-                }
-            );
-            yield return new WaitUntil(() => completed);
+            ClientBridge.DataStoreScope scopeValue = flow.GetValue<ClientBridge.DataStoreScope>(scope);
+            if (scopeValue == ClientBridge.DataStoreScope.UserWorldData)
+            {
+                DataStoreOperationRequest request = SpatialBridge.userWorldDataStoreService.DeleteVariable(flow.GetValue<string>(key));
+                yield return request;
+                flow.SetValue(succeeded, request.succeeded);
+                flow.SetValue(responseCode, (int)request.responseCode);
+            }
+            else // Unsupported scope
+            {
+                Debug.LogError($"{nameof(DeleteDataStoreVariableNode)}: Unsupported DataStore scope {scopeValue}");
+                flow.SetValue(succeeded, false);
+                flow.SetValue(responseCode, (int)DataStoreResponseCode.InternalError);
+            }
             yield return outputTrigger;
         }
     }
@@ -216,16 +247,20 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            bool completed = false;
-            SpatialBridge.ClearDataStore?.Invoke(
-                scope: flow.GetValue<ClientBridge.DataStoreScope>(scope),
-                result => {
-                    completed = true;
-                    flow.SetValue(succeeded, result.succeeded);
-                    flow.SetValue(responseCode, result.responseCode);
-                }
-            );
-            yield return new WaitUntil(() => completed);
+            ClientBridge.DataStoreScope scopeValue = flow.GetValue<ClientBridge.DataStoreScope>(scope);
+            if (scopeValue == ClientBridge.DataStoreScope.UserWorldData)
+            {
+                DataStoreOperationRequest request = SpatialBridge.userWorldDataStoreService.ClearAllVariables();
+                yield return request;
+                flow.SetValue(succeeded, request.succeeded);
+                flow.SetValue(responseCode, (int)request.responseCode);
+            }
+            else // Unsupported scope
+            {
+                Debug.LogError($"{nameof(ClearDataStoreNode)}: Unsupported DataStore scope {scopeValue}");
+                flow.SetValue(succeeded, false);
+                flow.SetValue(responseCode, (int)DataStoreResponseCode.InternalError);
+            }
             yield return outputTrigger;
         }
     }
@@ -272,18 +307,22 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            bool completed = false;
-            SpatialBridge.HasDataStoreVariable?.Invoke(
-                scope: flow.GetValue<ClientBridge.DataStoreScope>(scope),
-                key: flow.GetValue<string>(key),
-                result => {
-                    completed = true;
-                    flow.SetValue(exists, (bool)result.value == true);
-                    flow.SetValue(succeeded, result.succeeded);
-                    flow.SetValue(responseCode, result.responseCode);
-                }
-            );
-            yield return new WaitUntil(() => completed);
+            ClientBridge.DataStoreScope scopeValue = flow.GetValue<ClientBridge.DataStoreScope>(scope);
+            if (scopeValue == ClientBridge.DataStoreScope.UserWorldData)
+            {
+                DataStoreHasVariableRequest request = SpatialBridge.userWorldDataStoreService.HasVariable(flow.GetValue<string>(key));
+                yield return request;
+                flow.SetValue(exists, request.hasVariable);
+                flow.SetValue(succeeded, request.succeeded);
+                flow.SetValue(responseCode, (int)request.responseCode);
+            }
+            else // Unsupported scope
+            {
+                Debug.LogError($"{nameof(DataStoreVariableExistsNode)}: Unsupported DataStore scope {scopeValue}");
+                flow.SetValue(exists, false);
+                flow.SetValue(succeeded, false);
+                flow.SetValue(responseCode, (int)DataStoreResponseCode.InternalError);
+            }
             yield return outputTrigger;
         }
     }
@@ -327,17 +366,22 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            bool completed = false;
-            SpatialBridge.DataStoreHasAnyVariable?.Invoke(
-                scope: flow.GetValue<ClientBridge.DataStoreScope>(scope),
-                result => {
-                    completed = true;
-                    flow.SetValue(hasAny, (bool)result.value == true);
-                    flow.SetValue(succeeded, result.succeeded);
-                    flow.SetValue(responseCode, result.responseCode);
-                }
-            );
-            yield return new WaitUntil(() => completed);
+            ClientBridge.DataStoreScope scopeValue = flow.GetValue<ClientBridge.DataStoreScope>(scope);
+            if (scopeValue == ClientBridge.DataStoreScope.UserWorldData)
+            {
+                DataStoreHasAnyVariableRequest request = SpatialBridge.userWorldDataStoreService.HasAnyVariable();
+                yield return request;
+                flow.SetValue(hasAny, request.hasAnyVariable);
+                flow.SetValue(succeeded, request.succeeded);
+                flow.SetValue(responseCode, (int)request.responseCode);
+            }
+            else // Unsupported scope
+            {
+                Debug.LogError($"{nameof(DataStoreHasAnyVariablesNode)}: Unsupported DataStore scope {scopeValue}");
+                flow.SetValue(hasAny, false);
+                flow.SetValue(succeeded, false);
+                flow.SetValue(responseCode, (int)DataStoreResponseCode.InternalError);
+            }
             yield return outputTrigger;
         }
     }
@@ -381,18 +425,180 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            bool completed = false;
-            SpatialBridge.DumpDataStoreVariables?.Invoke(
-                scope: flow.GetValue<ClientBridge.DataStoreScope>(scope),
-                result => {
-                    completed = true;
-                    flow.SetValue(json, (string)result.value);
-                    flow.SetValue(succeeded, result.succeeded);
-                    flow.SetValue(responseCode, result.responseCode);
-                }
-            );
-            yield return new WaitUntil(() => completed);
+            ClientBridge.DataStoreScope scopeValue = flow.GetValue<ClientBridge.DataStoreScope>(scope);
+            if (scopeValue == ClientBridge.DataStoreScope.UserWorldData)
+            {
+                DataStoreDumpVariablesRequest request = SpatialBridge.userWorldDataStoreService.DumpVariablesAsJSON();
+                yield return request;
+                flow.SetValue(json, request.json);
+                flow.SetValue(succeeded, request.succeeded);
+                flow.SetValue(responseCode, (int)request.responseCode);
+            }
+            else // Unsupported scope
+            {
+                Debug.LogError($"{nameof(DumpDataStoreVariablesNode)}: Unsupported DataStore scope {scopeValue}");
+                flow.SetValue(json, null);
+                flow.SetValue(succeeded, false);
+                flow.SetValue(responseCode, (int)DataStoreResponseCode.InternalError);
+            }
             yield return outputTrigger;
+        }
+    }
+
+    public static class DataStoreVisualScriptingTypeSupport
+    {
+        private static readonly HashSet<Type> SUPPORTED_PRIMITIVE_ARRAY_TYPES = new() {
+            typeof(string),
+            typeof(bool),
+            typeof(int),
+            typeof(float),
+        };
+
+        /// <summary>
+        /// Converts arrays and dictionary internal type representations to AotList and AotDictionary types
+        /// </summary>
+        public static DataStoreResponseCode TryConvertFromInternalTypes(object value, out object result)
+        {
+            try
+            {
+                if (value is string[] || value is bool[] || value is int[] || value is float[])
+                {
+                    Array arrayValue = (Array)value;
+                    AotList aotList = new(arrayValue.Length);
+                    for (int i = 0; i < arrayValue.Length; i++)
+                        aotList.Add(arrayValue.GetValue(i));
+                    result = aotList;
+                    return DataStoreResponseCode.Ok;
+                }
+                else if (value is Dictionary<string, object> dict)
+                {
+                    AotDictionary aotDict = new(dict.Count);
+                    foreach (KeyValuePair<string, object> kvp in dict)
+                    {
+                        DataStoreResponseCode responseCode = TryConvertFromInternalTypes(kvp.Value, out object convertedValue);
+                        if (responseCode != DataStoreResponseCode.Ok)
+                        {
+                            result = null;
+                            return responseCode;
+                        }
+
+                        aotDict.Add(kvp.Key, convertedValue);
+                    }
+                    result = aotDict;
+                    return DataStoreResponseCode.Ok;
+                }
+                else
+                {
+                    result = value;
+                    return DataStoreResponseCode.Ok;
+                }
+            }
+            catch
+            {
+                result = null;
+                return DataStoreResponseCode.UnknownError;
+            }
+        }
+
+        /// <summary>
+        /// Converts AotList and AotDictionary types to primitive array type like int[] and Dictionary<string, object>
+        /// </summary>
+        public static DataStoreResponseCode TryConvertToInternalTypes(object value, out object result)
+        {
+            if (value is AotList aotList)
+            {
+                // If list is empty, we default to most common
+                // This may convert existing type to string but this is unavoidable since we can't know what the type is
+                if (aotList.Count == 0)
+                {
+                    result = new string[0];
+                    return DataStoreResponseCode.Ok;
+                }
+
+                // Try to get the type for the list
+                object firstNonNullElementValue = null;
+                for (int i = 0; i < aotList.Count; i++)
+                {
+                    if (aotList[i] != null)
+                    {
+                        firstNonNullElementValue = aotList[i];
+                        break;
+                    }
+                }
+                Type typeOfFirstElement;
+                if (firstNonNullElementValue == null)
+                {
+                    typeOfFirstElement = typeof(string);
+                }
+                else
+                {
+                    typeOfFirstElement = firstNonNullElementValue.GetType();
+                }
+
+                if (!SUPPORTED_PRIMITIVE_ARRAY_TYPES.Contains(typeOfFirstElement))
+                {
+                    result = null;
+                    return DataStoreResponseCode.UnsupportedValueType;
+                }
+
+                Array valueArray;
+                if (firstNonNullElementValue is string || firstNonNullElementValue == null)
+                {
+                    valueArray = new string[aotList.Count];
+                }
+                else if (firstNonNullElementValue is bool)
+                {
+                    valueArray = new bool[aotList.Count];
+                }
+                else if (firstNonNullElementValue is int)
+                {
+                    valueArray = new int[aotList.Count];
+                }
+                else if (firstNonNullElementValue is float)
+                {
+                    valueArray = new float[aotList.Count];
+                }
+                else
+                {
+                    result = null;
+                    return DataStoreResponseCode.UnsupportedValueType;
+                }
+
+                for (int i = 0; i < aotList.Count; i++)
+                    valueArray.SetValue(aotList[i], i); // Let it fail with cast exceptions here; Try/catch would be too slow
+
+                result = valueArray;
+                return DataStoreResponseCode.Ok;
+            }
+            else if (value is AotDictionary aotDict)
+            {
+                Dictionary<string, object> dict = new(aotDict.Count);
+                foreach (object key in aotDict.Keys)
+                {
+                    if (key is not string)
+                    {
+                        result = null;
+                        return DataStoreResponseCode.UnsupportedDictionaryKeyType;
+                    }
+
+                    DataStoreResponseCode responseCode = TryConvertToInternalTypes(aotDict[key], out object convertedValue);
+                    if (responseCode != DataStoreResponseCode.Ok)
+                    {
+                        result = null;
+                        return responseCode;
+                    }
+
+                    dict.Add((string)key, convertedValue);
+                }
+
+                result = dict;
+                return DataStoreResponseCode.Ok;
+            }
+            else
+            {
+                result = value;
+                return DataStoreResponseCode.Ok;
+            }
         }
     }
 }
