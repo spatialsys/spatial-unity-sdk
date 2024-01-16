@@ -61,14 +61,14 @@ namespace SpatialSys.UnitySDK.VisualScripting
                 string varName = f.GetValue<string>(variableName);
                 if (string.IsNullOrEmpty(varName))
                 {
-                    SpatialBridge.LogError?.Invoke($"GetLocalActorCustomPropertyNode: Property name must be a valid string, but was null or empty");
+                    SpatialBridge.loggingService.LogError($"GetLocalActorCustomPropertyNode: Property name must be a valid string, but was null or empty");
                     return null;
                 }
 
                 if (SpatialBridge.actorService.localActor.customProperties.TryGetValue(varName, out object value))
                     return value;
 
-                // SpatialBridge.LogError?.Invoke($"GetLocalActorCustomPropertyNode: Property name '{varName}' does not exist");
+                // SpatialBridge.loggingService.LogError($"GetLocalActorCustomPropertyNode: Property name '{varName}' does not exist");
                 return null;
             });
         }
@@ -99,21 +99,21 @@ namespace SpatialSys.UnitySDK.VisualScripting
                 string varName = f.GetValue<string>(variableName);
                 if (string.IsNullOrEmpty(varName))
                 {
-                    SpatialBridge.LogError?.Invoke($"GetActorCustomPropertyNode: Property name must be a valid string, but was null or empty");
+                    SpatialBridge.loggingService.LogError($"GetActorCustomPropertyNode: Property name must be a valid string, but was null or empty");
                     return null;
                 }
 
                 int actorNumber = f.GetValue<int>(actor);
                 if (!SpatialBridge.actorService.actors.TryGetValue(actorNumber, out IActor sdkActor))
                 {
-                    SpatialBridge.LogError?.Invoke($"GetActorCustomPropertyNode: Actor with actor number '{actorNumber}' does not exist");
+                    SpatialBridge.loggingService.LogError($"GetActorCustomPropertyNode: Actor with actor number '{actorNumber}' does not exist");
                     return null;
                 }
 
                 if (sdkActor.customProperties.TryGetValue(varName, out object value))
                     return value;
 
-                // SpatialBridge.LogError?.Invoke($"GetActorCustomPropertyNode: Property name '{varName}' does not exist");
+                // SpatialBridge.loggingService.LogError($"GetActorCustomPropertyNode: Property name '{varName}' does not exist");
                 return null;
             });
         }

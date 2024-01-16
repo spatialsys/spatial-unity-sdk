@@ -11,7 +11,7 @@ namespace SpatialSys.UnitySDK
         public override bool isExperimental => true;
         private void Start()
         {
-            SpatialBridge.InitializeSpatialClimbable?.Invoke(this);
+            SpatialBridge.spatialComponentService.InitializeClimbable(this);
         }
     }
 }

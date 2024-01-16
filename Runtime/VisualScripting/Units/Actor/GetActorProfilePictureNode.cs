@@ -58,7 +58,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             }
             else
             {
-                SpatialBridge.LogError?.Invoke($"{nameof(GetActorProfilePictureNode)}: Actor with actor number '{actorNumber}' does not exist");
+                SpatialBridge.loggingService.LogError($"{nameof(GetActorProfilePictureNode)}: Actor with actor number '{actorNumber}' does not exist");
                 flow.SetValue(actorTexture, null);
             }
             yield return outputTrigger;

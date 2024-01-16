@@ -15,7 +15,7 @@ namespace SpatialSys.UnitySDK
 
         private void Start()
         {
-            SpatialBridge.InitializeSpatialAvatarTeleporter?.Invoke(this);
+            SpatialBridge.spatialComponentService.InitializeAvatarTeleporter(this);
         }
 
         private void OnDrawGizmos()

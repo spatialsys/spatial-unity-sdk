@@ -42,7 +42,7 @@ namespace SpatialSys.UnitySDK
 
         private void Start()
         {
-            SpatialBridge.InitializeSpatialInteractable?.Invoke(this);
+            SpatialBridge.spatialComponentService.InitializeInteractable(this);
         }
 
 #if UNITY_EDITOR

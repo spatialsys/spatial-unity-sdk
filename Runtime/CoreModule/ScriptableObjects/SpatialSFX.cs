@@ -62,7 +62,7 @@ namespace SpatialSys.UnitySDK
 
         public void Play(Vector3 position, float extraVolume, float extraPitch)
         {
-            SpatialBridge.PlaySpatialSFXPosition?.Invoke(this, position, extraVolume, extraPitch);
+            SpatialBridge.audioService.PlaySFX(this, position, extraVolume, extraPitch);
         }
 
         public void Play(AudioSource source)
@@ -72,7 +72,7 @@ namespace SpatialSys.UnitySDK
 
         public void Play(AudioSource source, float extraVolume, float extraPitch)
         {
-            SpatialBridge.PlaySpatialSFXSource?.Invoke(this, source, extraVolume, extraPitch);
+            SpatialBridge.audioService.PlaySFX(this, source, extraVolume, extraPitch);
         }
 
         public AudioClip GetRandomClip()

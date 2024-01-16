@@ -42,17 +42,17 @@ namespace SpatialSys.UnitySDK
 
         private void Start()
         {
-            SpatialBridge.InitializeSpatialTriggerEvent?.Invoke(this);
+            SpatialBridge.spatialComponentService.InitializeTriggerEvent(this);
         }
 
         private void OnEnable()
         {
-            SpatialBridge.TriggerEventEnabledChanged?.Invoke(this, true);
+            SpatialBridge.spatialComponentService.TriggerEventEnabledChanged(this, true);
         }
 
         private void OnDisable()
         {
-            SpatialBridge.TriggerEventEnabledChanged?.Invoke(this, false);
+            SpatialBridge.spatialComponentService.TriggerEventEnabledChanged(this, false);
         }
 
         private void Reset()

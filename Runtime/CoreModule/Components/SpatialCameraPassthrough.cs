@@ -13,7 +13,7 @@ namespace SpatialSys.UnitySDK
 
         private void Start()
         {
-            SpatialBridge.InitializeSpatialCameraPassthrough?.Invoke(this);
+            SpatialBridge.spatialComponentService.InitializeCameraPassthrough(this);
         }
     }
 }

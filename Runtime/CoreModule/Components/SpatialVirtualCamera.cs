@@ -71,7 +71,7 @@ namespace SpatialSys.UnitySDK
 
         private void Start()
         {
-            valueChangedCallback = SpatialBridge.InitializeSpatialVirtualCamera?.Invoke(this);
+            valueChangedCallback = SpatialBridge.spatialComponentService.InitializeVirtualCamera(this);
         }
 
         private void UpdateProperties()

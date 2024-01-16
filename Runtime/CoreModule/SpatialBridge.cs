@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using UnityEngine;
 
 namespace SpatialSys.UnitySDK
@@ -7,11 +8,19 @@ namespace SpatialSys.UnitySDK
     public static class SpatialBridge
     {
         public static IActorService actorService;
+        public static IAudioService audioService;
+        public static IBadgeService badgeService;
         public static ICameraService cameraService;
         public static ICoreGUIService coreGUIService;
+        public static ILoggingService loggingService;
         public static IMarketplaceService marketplaceService;
         public static INetworkingService networkingService;
         public static IUserWorldDataStoreService userWorldDataStoreService;
+        public static IVFXService vfxService;
+
+        #region Internal services
+        public static Internal.ISpatialComponentService spatialComponentService;
+        #endregion
 
         #region ISpaceService
 
@@ -29,13 +38,6 @@ namespace SpatialSys.UnitySDK
 
         public delegate void EnableAvatarToAvatarCollisionsDelegate(bool enabled);
         public static EnableAvatarToAvatarCollisionsDelegate EnableAvatarToAvatarCollisions;
-
-        #endregion
-
-        #region ILoggingService
-
-        public delegate void LogErrorDelegate(string message, Exception ex = null, Dictionary<string, object> data = null);
-        public static LogErrorDelegate LogError;
 
         #endregion
 
@@ -60,11 +62,6 @@ namespace SpatialSys.UnitySDK
 
         public delegate int GetQuestTaskStatusDelegate(SpatialQuest quest, uint taskID);
         public static GetQuestTaskStatusDelegate GetQuestTaskStatus;
-        #endregion
-
-        #region IBadgeService
-        public delegate void RewardBadgeDelegate(string badgeID);
-        public static RewardBadgeDelegate RewardBadge;
         #endregion
 
         #region IInventoryService
@@ -171,52 +168,8 @@ namespace SpatialSys.UnitySDK
         public static ReleaseInputCaptureDelegate ReleaseInputCapture;
         #endregion
 
-        #region ISpatialComponentService
-        public delegate void InitializeSpatialInteractableDelegate(SpatialInteractable spatialInteractable);
-        public static InitializeSpatialInteractableDelegate InitializeSpatialInteractable;
-
-        public delegate void InitializeSpatialPointOfInterestDelegate(SpatialPointOfInterest spatialPointOfInterest);
-        public static InitializeSpatialPointOfInterestDelegate InitializeSpatialPointOfInterest;
-
-        public delegate void PointOfInterestEnabledChangedDelegate(SpatialPointOfInterest spatialPointOfInterest, bool enabled);
-        public static PointOfInterestEnabledChangedDelegate PointOfInterestEnabledChanged;
 
         public delegate bool GetIsSceneInitializedDelegate();
         public static GetIsSceneInitializedDelegate GetIsSceneInitialized;
-
-        public delegate void InitializeSpatialSeatHotspotDelegate(SpatialSeatHotspot spatialHotspot);
-        public static InitializeSpatialSeatHotspotDelegate InitializeSpatialSeatHotspot;
-
-        public delegate void InitializeSpatialAvatarTeleporterDelegate(SpatialAvatarTeleporter spatialAvatarTeleporter);
-        public static InitializeSpatialAvatarTeleporterDelegate InitializeSpatialAvatarTeleporter;
-
-        public delegate void InitializeSpatialTriggerEventDelegate(SpatialTriggerEvent spatialTriggerEvent);
-        public static InitializeSpatialTriggerEventDelegate InitializeSpatialTriggerEvent;
-
-        public delegate void TriggerEventEnabledChangedDelegate(SpatialTriggerEvent spatialTriggerEvent, bool enabled);
-        public static TriggerEventEnabledChangedDelegate TriggerEventEnabledChanged;
-
-        public delegate void InitializeSpatialClimbableDelegate(SpatialClimbable climbable);
-        public static InitializeSpatialClimbableDelegate InitializeSpatialClimbable;
-
-        public delegate void InitializeSpatialCameraPassthroughDelegate(SpatialCameraPassthrough spatialCameraPassthrough);
-        public static InitializeSpatialCameraPassthroughDelegate InitializeSpatialCameraPassthrough;
-
-        public delegate Action InitializeVirtualCameraDelegate(SpatialVirtualCamera virtualCamera);
-        public static InitializeVirtualCameraDelegate InitializeSpatialVirtualCamera;
-        #endregion
-
-        #region IAudioService
-        public delegate void PlaySpatialSFXPositionDelegate(SpatialSFX sfx, Vector3 position, float extraVolume, float extraPitch);
-        public static PlaySpatialSFXPositionDelegate PlaySpatialSFXPosition;
-
-        public delegate void PlaySpatialSFXSourceDelegate(SpatialSFX sfx, AudioSource source, float extraVolume, float extraPitch);
-        public static PlaySpatialSFXSourceDelegate PlaySpatialSFXSource;
-        #endregion
-
-        #region IVFXService
-        public delegate void CreateFloatingTextDelegate(string text, FloatingTextAnimStyle style, Vector3 position, Vector3 force, Color color, bool gravity, AnimationCurve scaleCurve, AnimationCurve alphaCurve, float lifetime);
-        public static CreateFloatingTextDelegate CreateFloatingText;
-        #endregion
     }
 }

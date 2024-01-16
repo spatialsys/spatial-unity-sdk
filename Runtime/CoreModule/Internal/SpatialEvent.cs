@@ -2,9 +2,24 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using System;
 
 namespace SpatialSys.UnitySDK.Internal
 {
+    /// <summary>
+    /// Spatial event that can be used to trigger actions.
+    /// </summary>
+    /// <example>
+    /// This example shows how to add action events to spatial events.
+    /// <code>
+    /// class TestClass
+    /// {
+    ///     SpatialEvent onOpen;
+    /// }
+    /// TestClass testClass = new TestClass();
+    /// testClass.onOpen += () => Debug.Log("Opened");
+    /// </code>
+    /// </example>
     [System.Serializable]
     public class SpatialEvent
     {
@@ -14,12 +29,27 @@ namespace SpatialSys.UnitySDK.Internal
         public UnityEvent unityEvent;
         public AnimatorEvent animatorEvent;
         public QuestEvent questEvent;
+        private int _runtimeEventCount = 0;
 
-        public bool hasUnityEvent => unityEvent?.GetPersistentEventCount() > 0;
+        public bool hasUnityEvent => (_runtimeEventCount + unityEvent?.GetPersistentEventCount()) > 0;
         public bool hasAnimatorEvent => animatorEvent?.events?.Count > 0;
         public bool hasQuestEvent => questEvent?.events?.Count > 0;
 
         public bool isSyncedEvent => (unityEventIsSynced || (hasAnimatorEvent && animatorEvent.events.Any(e => e.syncedAnimator != null)));
+
+        public static SpatialEvent operator +(SpatialEvent spatialEvent, UnityAction action)
+        {
+            spatialEvent._runtimeEventCount++;
+            spatialEvent.unityEvent.AddListener(action);
+            return spatialEvent;
+        }
+
+        public static SpatialEvent operator -(SpatialEvent spatialEvent, UnityAction action)
+        {
+            spatialEvent._runtimeEventCount--;
+            spatialEvent.unityEvent.RemoveListener(action);
+            return spatialEvent;
+        }
     }
 
     [System.Serializable]

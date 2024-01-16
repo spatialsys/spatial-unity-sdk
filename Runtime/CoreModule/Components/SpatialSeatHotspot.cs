@@ -13,7 +13,7 @@ namespace SpatialSys.UnitySDK
 
         private void Start()
         {
-            SpatialBridge.InitializeSpatialSeatHotspot?.Invoke(this);
+            SpatialBridge.spatialComponentService.InitializeSeatHotspot(this);
         }
 
         private void OnDrawGizmos()

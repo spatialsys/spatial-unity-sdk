@@ -13,7 +13,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialInteractable))]
     public class SpatialInteractableOnInteract : EventUnit<SpatialInteractable>
     {
-        public static string eventName = "OnSpatialInteractableInteract";
+        private const string EVENT_HOOK_ID = "OnSpatialInteractableInteract";
 
         [NullMeansSelf]
         [PortLabelHidden]
@@ -23,7 +23,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(SpatialInteractable interactable)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, interactable);
         }
 
         protected override void Definition()
@@ -54,7 +59,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialInteractable))]
     public class SpatialInteractableOnEnter : EventUnit<SpatialInteractable>
     {
-        public static string eventName = "OnSpatialInteractableEnter";
+        private const string EVENT_HOOK_ID = "OnSpatialInteractableEnter";
 
         [NullMeansSelf]
         [PortLabelHidden]
@@ -64,7 +69,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(SpatialInteractable interactable)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, interactable);
         }
 
         protected override void Definition()
@@ -95,7 +105,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialInteractable))]
     public class SpatialInteractableOnExit : EventUnit<SpatialInteractable>
     {
-        public static string eventName = "OnSpatialInteractableExit";
+        private const string EVENT_HOOK_ID = "OnSpatialInteractableExit";
 
         [NullMeansSelf]
         [PortLabelHidden]
@@ -105,7 +115,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(SpatialInteractable interactable)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, interactable);
         }
 
         protected override void Definition()

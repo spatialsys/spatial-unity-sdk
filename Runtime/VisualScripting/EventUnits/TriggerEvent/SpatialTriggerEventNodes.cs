@@ -9,7 +9,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialTriggerEvent))]
     public class SpatialTriggerEventOnEnter : EventUnit<SpatialTriggerEvent>
     {
-        public static string eventName = "SpatialTriggerOnEnter";
+        private const string EVENT_HOOK_ID = "SpatialTriggerOnEnter";
 
         [NullMeansSelf]
         [PortLabelHidden]
@@ -19,7 +19,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(SpatialTriggerEvent triggerEvent)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, triggerEvent);
         }
 
         protected override void Definition()
@@ -47,7 +52,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialTriggerEvent))]
     public class SpatialTriggerEventOnExit : EventUnit<SpatialTriggerEvent>
     {
-        public static string eventName = "SpatialTriggerOnExit";
+        private const string EVENT_HOOK_ID = "SpatialTriggerOnExit";
 
         [NullMeansSelf]
         [PortLabelHidden]
@@ -57,7 +62,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(SpatialTriggerEvent triggerEvent)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, triggerEvent);
         }
 
         protected override void Definition()

@@ -71,7 +71,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
                 Vector3 randomForce = new Vector3(Random.Range(-forceValue, forceValue), Random.Range(-forceValue, forceValue), Random.Range(-forceValue, forceValue));
                 bool isCustom = animStyle == FloatingTextAnimStyle.Custom;
 
-                SpatialBridge.CreateFloatingText?.Invoke(
+                SpatialBridge.vfxService.CreateFloatingText(
                     f.GetValue<string>(text),
                     animStyle,
                     f.GetValue<Vector3>(textPosition),
@@ -148,7 +148,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
                 bool isCustom = animStyle == FloatingTextAnimStyle.Custom;
 
-                SpatialBridge.CreateFloatingText?.Invoke(
+                SpatialBridge.vfxService.CreateFloatingText(
                     f.GetValue<string>(text),
                     animStyle,
                     f.GetValue<Vector3>(textPosition),

@@ -33,17 +33,17 @@ namespace SpatialSys.UnitySDK
 
         private void Start()
         {
-            SpatialBridge.InitializeSpatialPointOfInterest?.Invoke(this);
+            SpatialBridge.spatialComponentService.InitializePointOfInterest(this);
         }
 
         private void OnEnable()
         {
-            SpatialBridge.PointOfInterestEnabledChanged?.Invoke(this, true);
+            SpatialBridge.spatialComponentService.PointOfInterestEnabledChanged(this, true);
         }
 
         private void OnDisable()
         {
-            SpatialBridge.PointOfInterestEnabledChanged?.Invoke(this, false);
+            SpatialBridge.spatialComponentService.PointOfInterestEnabledChanged(this, false);
         }
 
 #if UNITY_EDITOR

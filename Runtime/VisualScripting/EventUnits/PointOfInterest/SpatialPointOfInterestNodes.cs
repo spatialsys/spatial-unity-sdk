@@ -13,7 +13,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialPointOfInterest))]
     public class SpatialPointOfInterestOnEnter : EventUnit<SpatialPointOfInterest>
     {
-        public static string eventName = "OnSpatialPointOfInterestEnter";
+        private const string EVENT_HOOK_ID = "OnSpatialPointOfInterestEnter";
 
         [NullMeansSelf]
         [PortLabelHidden]
@@ -24,7 +24,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(SpatialPointOfInterest pointOfInterest)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, pointOfInterest);
         }
 
         protected override void Definition()
