@@ -12,6 +12,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
             SpatialBridge.badgeService = new EditorBadgeService();
             SpatialBridge.cameraService = new EditorCameraService();
             SpatialBridge.coreGUIService = new EditorCoreGUIService();
+            SpatialBridge.inventoryService = new EditorInventoryService();
             SpatialBridge.loggingService = new EditorLoggingService();
             SpatialBridge.marketplaceService = new EditorMarketplaceService();
             SpatialBridge.networkingService = new EditorNetworkingService();

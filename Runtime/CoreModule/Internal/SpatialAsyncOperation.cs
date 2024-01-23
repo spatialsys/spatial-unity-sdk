@@ -3,12 +3,26 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
+    /// <summary>
+    /// Base class for all Spatial's async operations. This class is yieldable and can be used in coroutines.
+    /// </summary>
     public class SpatialAsyncOperation : CustomYieldInstruction
     {
         private event Action<SpatialAsyncOperation> _completionCallback;
 
+        /// <summary>
+        /// Returns true if the operation is not done.
+        /// </summary>
         public override bool keepWaiting => !isDone;
+
+        /// <summary>
+        /// Returns true if the operation is done.
+        /// </summary>
         public bool isDone { get; private set; }
+
+        /// <summary>
+        /// Event that is invoked when the operation is completed.
+        /// </summary>
         public event Action<SpatialAsyncOperation> completed
         {
             add
@@ -28,6 +42,9 @@ namespace SpatialSys.UnitySDK
             }
         }
 
+        /// <summary>
+        /// Invokes the completion event.
+        /// </summary>
         public void InvokeCompletionEvent()
         {
             if (isDone)

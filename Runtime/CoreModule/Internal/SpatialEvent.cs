@@ -29,25 +29,23 @@ namespace SpatialSys.UnitySDK.Internal
         public UnityEvent unityEvent;
         public AnimatorEvent animatorEvent;
         public QuestEvent questEvent;
-        private int _runtimeEventCount = 0;
+        public Action runtimeEvent;
 
-        public bool hasUnityEvent => (_runtimeEventCount + unityEvent?.GetPersistentEventCount()) > 0;
+        public bool hasUnityEvent => unityEvent?.GetPersistentEventCount() > 0;
         public bool hasAnimatorEvent => animatorEvent?.events?.Count > 0;
         public bool hasQuestEvent => questEvent?.events?.Count > 0;
 
         public bool isSyncedEvent => (unityEventIsSynced || (hasAnimatorEvent && animatorEvent.events.Any(e => e.syncedAnimator != null)));
 
-        public static SpatialEvent operator +(SpatialEvent spatialEvent, UnityAction action)
+        public static SpatialEvent operator +(SpatialEvent spatialEvent, Action action)
         {
-            spatialEvent._runtimeEventCount++;
-            spatialEvent.unityEvent.AddListener(action);
+            spatialEvent.runtimeEvent += action;
             return spatialEvent;
         }
 
-        public static SpatialEvent operator -(SpatialEvent spatialEvent, UnityAction action)
+        public static SpatialEvent operator -(SpatialEvent spatialEvent, Action action)
         {
-            spatialEvent._runtimeEventCount--;
-            spatialEvent.unityEvent.RemoveListener(action);
+            spatialEvent.runtimeEvent -= action;
             return spatialEvent;
         }
     }

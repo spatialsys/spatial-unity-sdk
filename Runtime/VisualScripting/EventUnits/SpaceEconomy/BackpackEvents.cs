@@ -9,7 +9,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnBackpackMenuOpenChangedNode : EventUnit<bool>
     {
-        public static string eventName = "SpatialOnBackpackMenuOpenChanged";
+        private const string EVENT_HOOK_ID = "SpatialOnBackpackMenuOpenChanged";
         protected override bool register => true;
 
         [DoNotSerialize]
@@ -17,7 +17,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(bool isOpen)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, isOpen);
         }
 
         protected override void Definition()
@@ -44,7 +49,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnBackpackItemOwnedChangedNode : EventUnit<(string, bool)>
     {
-        public static string eventName = "SpatialOnBackpackItemOwnedChanged";
+        private const string EVENT_HOOK_ID = "SpatialOnBackpackItemOwnedChanged";
         protected override bool register => true;
 
         [DoNotSerialize]
@@ -55,7 +60,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(string itemID, bool owned)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, (itemID, owned));
         }
 
         protected override void Definition()
@@ -83,7 +93,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnBackpackAnyItemOwnedChangedNode : EventUnit<(string, bool)>
     {
-        public static string eventName = "SpatialOnBackpackAnyItemOwnedChanged";
+        private const string EVENT_HOOK_ID = "SpatialOnBackpackAnyItemOwnedChanged";
         protected override bool register => true;
 
         [DoNotSerialize]
@@ -94,7 +104,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(string itemID, bool owned)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, (itemID, owned));
         }
 
         protected override void Definition()
@@ -124,7 +139,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnBackpackItemAmountChangedNode : EventUnit<(string, ulong)>
     {
-        public static string eventName = "SpatialOnBackpackItemAmountChanged";
+        private const string EVENT_HOOK_ID = "SpatialOnBackpackItemAmountChanged";
         protected override bool register => true;
 
         [DoNotSerialize]
@@ -135,7 +150,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(string itemID, ulong amount)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, (itemID, amount));
         }
 
         protected override void Definition()
@@ -163,7 +183,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnBackpackItemUsedNode : EventUnit<string>
     {
-        public static string eventName = "SpatialOnBackpackItemUsed";
+        private const string EVENT_HOOK_ID = "SpatialOnBackpackItemUsed";
         protected override bool register => true;
 
         [DoNotSerialize]
@@ -171,8 +191,14 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
         }
+
+        public static void TriggerEvent(string itemID)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, itemID);
+        }
+
 
         protected override void Definition()
         {
@@ -193,7 +219,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnBackpackAnyItemUsedNode : EventUnit<string>
     {
-        public static string eventName = "SpatialOnBackpackAnyItemUsed";
+        private const string EVENT_HOOK_ID = "SpatialOnBackpackAnyItemUsed";
         protected override bool register => true;
 
         [DoNotSerialize]
@@ -201,7 +227,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(string itemID)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, itemID);
         }
 
         protected override void Definition()
@@ -228,7 +259,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnBackpackItemConsumedNode : EventUnit<string>
     {
-        public static string eventName = "SpatialOnBackpackItemConsumed";
+        private const string EVENT_HOOK_ID = "SpatialOnBackpackItemConsumed";
         protected override bool register => true;
 
         [DoNotSerialize]
@@ -236,7 +267,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(string itemID)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, itemID);
         }
 
         protected override void Definition()
@@ -258,7 +294,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnBackpackAnyItemConsumedNode : EventUnit<string>
     {
-        public static string eventName = "SpatialOnBackpackAnyItemConsumed";
+        private const string EVENT_HOOK_ID = "SpatialOnBackpackAnyItemConsumed";
         protected override bool register => true;
 
         [DoNotSerialize]
@@ -266,7 +302,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(string itemID)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, itemID);
         }
 
         protected override void Definition()
@@ -293,7 +334,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnConsumableItemDurationExpiredNode : EventUnit<string>
     {
-        public static string eventName = "SpatialOnConsumableItemDurationExpired";
+        private const string EVENT_HOOK_ID = "SpatialOnConsumableItemDurationExpired";
         protected override bool register => true;
 
         [DoNotSerialize]
@@ -301,7 +342,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(string itemID)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, itemID);
         }
 
         protected override void Definition()

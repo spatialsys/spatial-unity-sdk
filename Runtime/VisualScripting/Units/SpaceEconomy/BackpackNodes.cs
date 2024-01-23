@@ -74,12 +74,9 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            bool completed = false;
-            SpatialBridge.AddBackpackItem.Invoke(flow.GetValue<string>(itemID), flow.GetValue<ulong>(amount), flow.GetValue<bool>(showToastMessage), success => {
-                completed = true;
-                flow.SetValue(succeeded, success);
-            });
-            yield return new WaitUntil(() => completed);
+            AddInventoryItemRequest request = SpatialBridge.inventoryService.AddItem(flow.GetValue<string>(itemID), flow.GetValue<ulong>(amount), !flow.GetValue<bool>(showToastMessage));
+            yield return request;
+            flow.SetValue(succeeded, request.succeeded);
             yield return outputTrigger;
         }
     }
@@ -116,12 +113,9 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            bool completed = false;
-            SpatialBridge.DeleteBackpackItem.Invoke(flow.GetValue<string>(itemID), success => {
-                completed = true;
-                flow.SetValue(succeeded, success);
-            });
-            yield return new WaitUntil(() => completed);
+            DeleteInventoryItemRequest request = SpatialBridge.inventoryService.DeleteItem(flow.GetValue<string>(itemID));
+            yield return request;
+            flow.SetValue(succeeded, request.succeeded);
             yield return outputTrigger;
         }
     }
@@ -155,21 +149,21 @@ namespace SpatialSys.UnitySDK.VisualScripting
             isOwned = ValueOutput<bool>(nameof(isOwned));
             amount = ValueOutput<ulong>(nameof(amount));
 
-            inputTrigger = ControlInputCoroutine(nameof(inputTrigger), ExecuteAsync);
+            inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
+                if (SpatialBridge.inventoryService.items.TryGetValue(f.GetValue<string>(itemID), out IInventoryItem item))
+                {
+                    f.SetValue(isOwned, item.isOwned);
+                    f.SetValue(amount, item.amount);
+                }
+                else
+                {
+                    f.SetValue(isOwned, false);
+                    f.SetValue(amount, (ulong)0);
+                }
+                return outputTrigger;
+            });
             outputTrigger = ControlOutput(nameof(outputTrigger));
             Succession(inputTrigger, outputTrigger);
-        }
-
-        private IEnumerator ExecuteAsync(Flow flow)
-        {
-            bool completed = false;
-            SpatialBridge.GetBackpackItem.Invoke(flow.GetValue<string>(itemID), resp => {
-                completed = true;
-                flow.SetValue(isOwned, resp.userOwnsItem);
-                flow.SetValue(amount, resp.amount);
-            });
-            yield return new WaitUntil(() => completed);
-            yield return outputTrigger;
         }
     }
 
@@ -205,13 +199,16 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         private IEnumerator ExecuteAsync(Flow flow)
         {
-            bool completed = false;
-            SpatialBridge.UseBackpackItem.Invoke(flow.GetValue<string>(itemID), success => {
-                completed = true;
-                flow.SetValue(succeeded, success);
-            });
-            yield return new WaitUntil(() => completed);
-            yield return outputTrigger;
+            if (SpatialBridge.inventoryService.items.TryGetValue(flow.GetValue<string>(itemID), out IInventoryItem item))
+            {
+                UseInventoryItemRequest request = item.Use();
+                yield return request;
+                flow.SetValue(succeeded, request.succeeded);
+            }
+            else
+            {
+                flow.SetValue(succeeded, false);
+            }
         }
     }
 
@@ -245,7 +242,14 @@ namespace SpatialSys.UnitySDK.VisualScripting
             disabledMessage = ValueInput<string>(nameof(disabledMessage), null);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SetBackpackItemEnabled.Invoke(f.GetValue<string>(itemID), f.GetValue<bool>(enabled), f.GetValue<string>(disabledMessage));
+                if (SpatialBridge.inventoryService.items.TryGetValue(f.GetValue<string>(itemID), out IInventoryItem item))
+                {
+                    item.SetEnabled(f.GetValue<bool>(enabled), f.GetValue<string>(disabledMessage));
+                }
+                else
+                {
+                    SpatialBridge.loggingService.LogError($"SetBackpackItemEnabledNode: Item {f.GetValue<string>(itemID)} not found");
+                }
                 return outputTrigger;
             });
 
@@ -285,7 +289,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             disabledMessage = ValueInput<string>(nameof(disabledMessage), null);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SetBackpackItemTypeEnabled.Invoke(f.GetValue<ItemType>(itemType), f.GetValue<bool>(enabled), f.GetValue<string>(disabledMessage));
+                SpatialBridge.inventoryService.SetItemTypeEnabled(f.GetValue<ItemType>(itemType), f.GetValue<bool>(enabled), f.GetValue<string>(disabledMessage));
                 return outputTrigger;
             });
 
@@ -326,30 +330,29 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            inputTrigger = ControlInputCoroutine(nameof(inputTrigger), ExecuteAsync);
-            outputTrigger = ControlOutput(nameof(outputTrigger));
-            Succession(inputTrigger, outputTrigger);
-
             itemID = ValueInput<string>(nameof(itemID), "");
 
             isActive = ValueOutput<bool>(nameof(isActive));
             durationRemaining = ValueOutput<float>(nameof(durationRemaining));
             onCooldown = ValueOutput<bool>(nameof(onCooldown));
             cooldownRemaining = ValueOutput<float>(nameof(cooldownRemaining));
-        }
 
-        private IEnumerator ExecuteAsync(Flow flow)
-        {
-            bool completed = false;
-            SpatialBridge.GetConsumableItemState.Invoke(flow.GetValue<string>(itemID), resp => {
-                completed = true;
-                flow.SetValue(isActive, resp.isActive);
-                flow.SetValue(durationRemaining, resp.durationRemaining);
-                flow.SetValue(onCooldown, resp.onCooldown);
-                flow.SetValue(cooldownRemaining, resp.cooldownRemaining);
+            inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
+                if (SpatialBridge.inventoryService.items.TryGetValue(f.GetValue<string>(itemID), out IInventoryItem item))
+                {
+                    f.SetValue(isActive, item.isConsumeActive);
+                    f.SetValue(durationRemaining, item.consumableDurationRemaining);
+                    f.SetValue(onCooldown, item.isOnCooldown);
+                    f.SetValue(cooldownRemaining, item.consumableCooldownRemaining);
+                }
+                else
+                {
+                    SpatialBridge.loggingService.LogError($"GetConsumableItemStateNode: Item {f.GetValue<string>(itemID)} not found");
+                }
+                return outputTrigger;
             });
-            yield return new WaitUntil(() => completed);
-            yield return outputTrigger;
+            outputTrigger = ControlOutput(nameof(outputTrigger));
+            Succession(inputTrigger, outputTrigger);
         }
     }
 }

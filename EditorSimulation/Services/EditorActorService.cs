@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace SpatialSys.UnitySDK.EditorSimulation
 {
@@ -43,6 +44,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         public string userID => string.Empty;
         public string username => string.Empty;
         public string displayName => string.Empty;
+        public Color profileColor => Color.white;
         public bool isRegistered => true;
         public bool isSpaceAdministrator => false;
         public bool isSpaceOwner => false;
@@ -73,6 +75,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         public string userID => string.Empty;
         public string username => string.Empty;
         public string displayName => "Editor Local Actor";
+        public Color profileColor => Color.white;
         public bool isRegistered => true;
         public bool isSpaceAdministrator => true;
         public bool isSpaceOwner => false;

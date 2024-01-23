@@ -26,10 +26,14 @@ namespace SpatialSys.UnitySDK.VisualScripting
         [PortLabel("Texture")]
         public ValueOutput actorTexture { get; private set; }
 
+        [DoNotSerialize]
+        public ValueOutput actorProfileColor { get; private set; }
+
         protected override void Definition()
         {
             actor = ValueInput<int>(nameof(actor), -1);
             actorTexture = ValueOutput<Texture2D>(nameof(actorTexture));
+            actorProfileColor = ValueOutput<Color>(nameof(actorProfileColor));
 
             inputTrigger = ControlInputCoroutine(nameof(inputTrigger), ExecuteAsync);
 
@@ -55,11 +59,13 @@ namespace SpatialSys.UnitySDK.VisualScripting
                 ActorProfilePictureRequest request = sdkActor.GetProfilePicture();
                 yield return request;
                 flow.SetValue(actorTexture, request.texture);
+                flow.SetValue(actorProfileColor, sdkActor.profileColor);
             }
             else
             {
                 SpatialBridge.loggingService.LogError($"{nameof(GetActorProfilePictureNode)}: Actor with actor number '{actorNumber}' does not exist");
                 flow.SetValue(actorTexture, null);
+                flow.SetValue(actorProfileColor, Color.clear);
             }
             yield return outputTrigger;
         }

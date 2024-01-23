@@ -4,6 +4,7 @@ using SpatialSys.UnitySDK.Internal;
 
 namespace SpatialSys.UnitySDK.EditorSimulation
 {
+#pragma warning disable 67 // Disable unused event warning
     public class EditorSpatialComponentService : ISpatialComponentService
     {
         public event Action<SpatialInteractable> onInitializeInteractable;

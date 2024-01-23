@@ -9,15 +9,21 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnWorldCurrencyBalanceChangedNode : EventUnit<ulong>
     {
-        public static string eventName = "OnWorldCurrencyBalanceChanged";
+        public const string EVENT_HOOK_ID = "OnWorldCurrencyBalanceChanged";
         protected override bool register => true;
 
         [DoNotSerialize]
         public ValueOutput balance { get; private set; }
 
+
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(ulong balance)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, balance);
         }
 
         protected override void Definition()

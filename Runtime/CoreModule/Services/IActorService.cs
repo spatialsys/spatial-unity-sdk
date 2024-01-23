@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
+    /// <summary>
+    /// Service for interacting with actors and users in the space.
+    /// </summary>
     public interface IActorService
     {
         /// <summary>
@@ -17,13 +20,13 @@ namespace SpatialSys.UnitySDK
         int pendingActorCount { get; }
 
         /// <summary>
-        /// The actor number of the local actor (the local user). This changes whenever the local user joins a new
+        /// The actor number of the local actor (user on the current machine). This changes whenever the local user joins a new
         /// server instance (or disconnects and reconnects to the same server instance).
         /// </summary>
         int localActorNumber { get; }
 
         /// <summary>
-        /// The local actor (the local user)
+        /// The local actor (user on the current machine).
         /// </summary>
         ILocalActor localActor { get; }
 
@@ -72,6 +75,9 @@ namespace SpatialSys.UnitySDK
         bool TryGetRandomActor(bool includeLocalActor, out IActor actor);
     }
 
+    /// <summary>
+    /// An actor in the space. This represents a user who has joined the server instance.
+    /// </summary>
     public interface IActor
     {
         /// <summary>
@@ -101,6 +107,11 @@ namespace SpatialSys.UnitySDK
         /// The display name for the user. This is displayed in the nametag and on the user's profile page.
         /// </summary>
         string displayName { get; }
+
+        /// <summary>
+        /// The color of the actor's profile picture background.
+        /// </summary>
+        Color profileColor { get; }
 
         /// <summary>
         /// Does the user for this actor have a fully completed Spatial account?
@@ -162,6 +173,9 @@ namespace SpatialSys.UnitySDK
         ActorProfilePictureRequest GetProfilePicture();
     }
 
+    /// <summary>
+    /// The local actor (user on the current machine).
+    /// </summary>
     public interface ILocalActor : IActor
     {
         /// <summary>

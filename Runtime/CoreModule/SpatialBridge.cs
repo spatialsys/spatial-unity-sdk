@@ -1,24 +1,77 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
+    /// <summary>
+    /// The main interface that provides access to Spatial services.
+    /// This acts like a bridge between user code and Spatial core functionality.
+    /// </summary>
     public static class SpatialBridge
     {
+        /// <summary>
+        /// Service for interacting with actors and users in the space.
+        /// </summary>
         public static IActorService actorService;
+
+        /// <summary>
+        /// Service for handling audio and sound effects.
+        /// </summary>
         public static IAudioService audioService;
+
+        /// <summary>
+        /// Service for handling badges.
+        /// </summary>
         public static IBadgeService badgeService;
+
+        /// <summary>
+        /// Provides access to all camera related functionality: Main camera state, player camera settings,
+        /// camera shake, and target overrides.
+        /// </summary>
         public static ICameraService cameraService;
+
+        /// <summary>
+        /// Service for handling all UI related functionality.
+        /// </summary>
         public static ICoreGUIService coreGUIService;
+
+        /// <summary>
+        /// Service to handle inventory and currency.
+        /// </summary>
+        public static IInventoryService inventoryService;
+
+        /// <summary>
+        /// Service for logging errors and messages to the console.
+        /// </summary>
         public static ILoggingService loggingService;
+
+        /// <summary>
+        /// Service to handle item purchases on the store.
+        /// </summary>
         public static IMarketplaceService marketplaceService;
+
+        /// <summary>
+        /// This service provides access to all the networking functionality in Spatial: connectivity, server management,
+        /// matchmaking, remove events (RPCs/Messaging), etc.
+        /// </summary>
         public static INetworkingService networkingService;
+
+        /// <summary>
+        /// This service provides access to the <c>Users</c> datastore for the current <c>world</c>. Spaces that belong to
+        /// the same <c>world</c> share the same user world datastore.
+        /// </summary>
         public static IUserWorldDataStoreService userWorldDataStoreService;
+
+        /// <summary>
+        /// A service for handling visual effects.
+        /// </summary>
         public static IVFXService vfxService;
 
         #region Internal services
+
+        /// <summary>
+        /// Used to initialize Spatial components in the Unity SDK. This is an internal type and should not be used by developers,
+        /// only on spatial components themselves.
+        /// </summary>
         public static Internal.ISpatialComponentService spatialComponentService;
         #endregion
 
@@ -62,50 +115,6 @@ namespace SpatialSys.UnitySDK
 
         public delegate int GetQuestTaskStatusDelegate(SpatialQuest quest, uint taskID);
         public static GetQuestTaskStatusDelegate GetQuestTaskStatus;
-        #endregion
-
-        #region IInventoryService
-        // Backpack
-        public delegate void AddBackpackItemDelegate(string itemID, ulong quantity, bool showToast, Action<bool> callback);
-        public static AddBackpackItemDelegate AddBackpackItem;
-
-        public delegate void DeleteBackpackItemDelegate(string itemID, Action<bool> callback);
-        public static DeleteBackpackItemDelegate DeleteBackpackItem;
-
-        public struct GetBackpackItemResponse
-        {
-            public bool userOwnsItem;
-            public ulong amount;
-        }
-        public delegate void GetBackpackItemDelegate(string itemID, Action<SpatialBridge.GetBackpackItemResponse> callback);
-        public static GetBackpackItemDelegate GetBackpackItem;
-
-        public delegate void UseBackpackItemDelegate(string itemID, Action<bool> callback);
-        public static UseBackpackItemDelegate UseBackpackItem;
-
-        public delegate void SetBackpackItemEnabledDelegate(string itemID, bool enabled, string disabledMessage);
-        public static SetBackpackItemEnabledDelegate SetBackpackItemEnabled;
-
-        public delegate void SetBackpackItemTypeEnabledDelegate(ItemType itemType, bool enabled, string disabledMessage);
-        public static SetBackpackItemTypeEnabledDelegate SetBackpackItemTypeEnabled;
-
-        // Consumables
-        public struct GetConsumableItemStateResponse
-        {
-            public bool isActive;
-            public float durationRemaining;
-            public bool onCooldown;
-            public float cooldownRemaining;
-        }
-        public delegate void GetConsumableItemStateDelegate(string itemID, Action<GetConsumableItemStateResponse> callback);
-        public static GetConsumableItemStateDelegate GetConsumableItemState;
-
-        // World Currency
-        public delegate ulong GetWorldCurrencyBalanceDelegate();
-        public static GetWorldCurrencyBalanceDelegate GetWorldCurrencyBalance;
-
-        public delegate void AwardWorldCurrencyDelegate(ulong amount, Action<bool> callback);
-        public static AwardWorldCurrencyDelegate AwardWorldCurrency;
         #endregion
 
         #region ISceneService

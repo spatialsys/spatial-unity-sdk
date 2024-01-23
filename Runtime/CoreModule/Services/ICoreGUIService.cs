@@ -2,6 +2,9 @@ using System;
 
 namespace SpatialSys.UnitySDK
 {
+    /// <summary>
+    /// Service for handling all UI related functionality.
+    /// </summary>
     public interface ICoreGUIService
     {
         /// <summary>
