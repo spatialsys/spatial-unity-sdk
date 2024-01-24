@@ -25,7 +25,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
             _coroutineRunner = g.AddComponent<CoroutineRunner>();
 
             // Ensure there's an audio listener
-            if (GameObject.FindObjectsByType<AudioListener>(FindObjectsSortMode.None).Length == 0)
+            if (GameObject.FindObjectsOfType<AudioListener>().Length == 0)
             {
                 g.AddComponent<AudioListener>();
             }
