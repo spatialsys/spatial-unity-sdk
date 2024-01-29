@@ -1,0 +1,55 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "../Runtime",
+          // Since there's no csproj file, specify the C# files here manually
+          "files": ["**/*.cs", "*.cs"]
+        }
+      ],
+      "outputFormat": "apiPage",
+      // Unsure if this setting is better or worse
+      // "namespaceLayout": "nested",
+      // I could not get this setting to work. This setting is supposed to tell DocFx to create separate pages for each member
+      // "memberLayout": "separatePages",
+      // the output folder for the generated yml files
+      "dest": "api",
+      // See https://dotnet.github.io/docfx/docs/dotnet-api-docs.html#filter-apis
+      "filter": "filter.yml",
+      "globalNamespaceId": "Global",
+      // See https://github.com/dotnet/docfx/issues/8429, docfx does not appear to work with Unity unless this is set to true
+      "allowCompilationErrors": true
+    }
+  ],
+  "build": {
+    // using a custom template, which is (and others) found here: https://dotnet.github.io/docfx/extensions/templates.html
+    "template": ["default", "templates/modern"],
+    "globalMetadata": {
+      "_appFooter": "<p><a href='https://docs.spatial.io/' target='_blank'>Spatial Creator Toolkit Docs</a><span> | © Spatial Systems, Inc. All rights reserved.</span></p>",
+      // We do not set a logo: the logo is set manually by modifying `_master.tmpl` in order to be theme-aware
+      "_appFaviconPath": "resources/favicon.png",
+      "_appTitle": "Spatial C# API Reference",
+      "_disableSideFilter": false,
+      "_enableNewTab": true,
+      "_enableSearch": true,
+      "_gitContribute": false,
+      "pdf": false
+    },
+    "content": [
+      {
+        // toc.yml is what's displayed in the left hand menu
+        // index.md is what's displayed in the content pane when the docs are first opened (or when the Spatial logo is clicked)
+        "files": ["toc.yml", "index.md", "**/*.{md,yml}"],
+        "exclude": ["_site/**", "obj/**", "README.md"]
+      }
+    ],
+    "disableGitFeatures": true,
+    "resource": [{ "files": ["resources/**/*"] }],
+    // This is supposed to get generate links to Unity docs for Unity types,
+    // but it does not appear to work as expected
+    "xref": ["https://normanderwan.github.io/UnityXrefMaps/xrefmap.yml"],
+    "xrefService": ["https://xref.docs.microsoft.com/query?uid={uid}"],
+    "dest": "../dist/_site"
+  }
+}

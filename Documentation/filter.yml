@@ -1,0 +1,8 @@
+# See https://dotnet.github.io/docfx/docs/dotnet-api-docs.html#filter-apis
+apiRules:
+  - exclude:
+      hasAttribute:
+        uid: SpatialSys.UnitySDK.Internal.InternalTypeAttribute
+  - exclude:
+      uidRegex: SpatialSys\.UnitySDK\.Internal
+      type: Namespace
