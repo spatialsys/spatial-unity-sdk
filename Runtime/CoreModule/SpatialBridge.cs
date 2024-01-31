@@ -56,6 +56,11 @@ namespace SpatialSys.UnitySDK
         public static INetworkingService networkingService;
 
         /// <summary>
+        /// Service for interacting with the current space.
+        /// </summary>
+        public static ISpaceService spaceService;
+
+        /// <summary>
         /// This service provides access to the <c>Users</c> datastore for the current <c>world</c>. Spaces that belong to
         /// the same <c>world</c> share the same user world datastore.
         /// </summary>
@@ -73,25 +78,6 @@ namespace SpatialSys.UnitySDK
         /// only on spatial components themselves.
         /// </summary>
         public static Internal.ISpatialComponentService spatialComponentService;
-        #endregion
-
-        #region ISpaceService
-
-        public delegate int GetSpacePackageVersionDelegate();
-        public static GetSpacePackageVersionDelegate GetSpacePackageVersion;
-
-        public delegate bool IsInSandboxDelegate();
-        public static IsInSandboxDelegate IsInSandbox;
-
-        public delegate bool HasLocalLovedSpaceDelegate();
-        public static HasLocalLovedSpaceDelegate HasLocalLovedSpace;
-
-        public delegate void OpenURLDelegate(string url);
-        public static OpenURLDelegate OpenURL;
-
-        public delegate void EnableAvatarToAvatarCollisionsDelegate(bool enabled);
-        public static EnableAvatarToAvatarCollisionsDelegate EnableAvatarToAvatarCollisions;
-
         #endregion
 
         #region IQuestSystemService

@@ -15,7 +15,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            version = ValueOutput<int>(nameof(version), (f) => SpatialBridge.GetSpacePackageVersion?.Invoke() ?? 0);
+            version = ValueOutput<int>(nameof(version), (f) => SpatialBridge.spaceService.spacePackageVersion);
         }
     }
 }

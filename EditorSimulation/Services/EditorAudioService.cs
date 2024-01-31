@@ -4,11 +4,6 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK.EditorSimulation
 {
-    // Helper class used to run coroutines in the editor. By placing this class on a shared file, Unity
-    // doesn't detect this file as an 'Editor' file and lets us attach it to a GameObject.
-    public class CoroutineRunner: MonoBehaviour
-    {
-    }
     public class EditorAudioService : IAudioService
     {
         private Queue<AudioSource> _audioSources = new Queue<AudioSource>();

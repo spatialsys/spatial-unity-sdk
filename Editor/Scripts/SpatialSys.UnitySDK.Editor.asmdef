@@ -17,7 +17,8 @@
         "Unity.VisualScripting.Core",
         "Unity.EditorCoroutines.Editor",
         "Unity.TextMeshPro",
-        "SpatialSys.UnitySDK.VisualScripting"
+        "SpatialSys.UnitySDK.VisualScripting",
+        "Unity.AI.Navigation"
     ],
     "includePlatforms": [
         "Editor"

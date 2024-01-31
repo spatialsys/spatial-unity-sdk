@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using SpatialSys.UnitySDK.VisualScripting;
 using UnityEngine.AI;
+using Unity.AI.Navigation;
 using UnityEngine.Audio;
 using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
@@ -34,6 +35,8 @@ namespace SpatialSys.UnitySDK.Editor
     {
         public static readonly HashSet<string> namespaceAllowList = new HashSet<string>() {
             "UnityEngine",
+            "UnityEngine.AI",
+            "Unity.AI.Navigation",
             "UnityEngine.UI",
             "UnityEngine.Rendering",
             "Unity.VisualScripting",
@@ -54,6 +57,8 @@ namespace SpatialSys.UnitySDK.Editor
             "SpatialSys.UnitySDK.Internal.VisualScripting",
 
             "UnityEngine.CoreModule",
+            "UnityEngine.AIModule",
+            "Unity.AI.Navigation",
             "UnityEngine.AudioModule",
             "UnityEngine.PhysicsModule",
             "UnityEngine.AnimationModule",
@@ -126,7 +131,6 @@ namespace SpatialSys.UnitySDK.Editor
             typeof(GUILayout),
             typeof(GUIUtility),
             typeof(AudioMixerGroup),
-            typeof(NavMesh),
             typeof(Gizmos),
             typeof(AnimatorStateInfo),
             typeof(BaseEventData),
@@ -162,6 +166,32 @@ namespace SpatialSys.UnitySDK.Editor
 
             //Additional types
             typeof(ParticleSystem),
+
+            //AI Classes
+            //Subset of AI features that seem the most useful from: https://docs.unity3d.com/ScriptReference/UnityEngine.AIModule.html
+            typeof(NavMesh),
+            typeof(NavMeshAgent),
+            typeof(NavMeshBuilder),
+            typeof(NavMeshData),
+            typeof(NavMeshObstacle),
+            typeof(NavMeshPath),
+            typeof(OffMeshLink),
+            //AI Structs
+            typeof(NavMeshHit),
+            typeof(NavMeshLinkData),
+            typeof(NavMeshLinkInstance),
+            typeof(NavMeshQueryFilter),
+            typeof(NavMeshTriangulation),
+            //AI Enums
+            typeof(NavMeshObstacleShape),
+            typeof(NavMeshPathStatus),
+            typeof(ObstacleAvoidanceType),
+            typeof(OffMeshLinkType),
+            //AI.Navigation
+            typeof(NavMeshSurface),
+            typeof(NavMeshModifierVolume),
+            typeof(NavMeshModifier),
+            typeof(NavMeshLink),
         };
 
         //Block types from instantiating in the AOT graph, but also stops them from generating in the editor. So you won't see them in the fuzzy finder.

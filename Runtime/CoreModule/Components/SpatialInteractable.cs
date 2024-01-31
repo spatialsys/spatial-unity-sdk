@@ -45,13 +45,27 @@ namespace SpatialSys.UnitySDK
             SpatialBridge.spatialComponentService.InitializeInteractable(this);
         }
 
+        public void UpdateRadius(float interactiveRadius, float visibilityRadius)
+        {
+            this.interactiveRadius = interactiveRadius;
+            this.visibilityRadius = visibilityRadius;
+            ValidateParameters();
+        }
+
+        private void ValidateParameters()
+        {
+            if (visibilityRadius < interactiveRadius)
+            {
+                visibilityRadius = interactiveRadius;
+            }
+        }
+
 #if UNITY_EDITOR
         protected override void OnValidate()
         {
             base.OnValidate();
 
-            if (visibilityRadius < interactiveRadius)
-                visibilityRadius = interactiveRadius;
+            ValidateParameters();
         }
 #endif
     }

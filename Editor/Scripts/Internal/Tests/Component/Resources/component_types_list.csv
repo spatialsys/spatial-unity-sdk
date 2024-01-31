@@ -29,6 +29,10 @@ Unity.VisualScripting.Variables,Y,Y,N,Y,N,Y,N,Y,N,Y
 UnityEngine.AI.NavMeshAgent,Y,Y,Y,Y,N,Y,N,N,N,N
 UnityEngine.AI.NavMeshObstacle,Y,Y,Y,Y,N,Y,N,N,N,N
 UnityEngine.AI.OffMeshLink,Y,Y,N,N,N,Y,N,N,N,N
+Unity.AI.Navigation.NavMeshSurface,Y,Y,N,N,N,N,N,N,N,N
+Unity.AI.Navigation.NavMeshModifierVolume,Y,Y,N,N,N,N,N,N,N,N
+Unity.AI.Navigation.NavMeshModifier,Y,Y,N,N,N,N,N,N,N,N
+Unity.AI.Navigation.NavMeshLink,Y,Y,N,N,N,N,N,N,N,N
 UnityEngine.Animator,Y,Y,Y,Y,N,Y,Y,Y,Y,Y
 UnityEngine.AudioChorusFilter,Y,Y,N,Y,N,Y,Y,Y,Y,Y
 UnityEngine.AudioDistortionFilter,Y,Y,N,Y,N,Y,Y,Y,Y,Y

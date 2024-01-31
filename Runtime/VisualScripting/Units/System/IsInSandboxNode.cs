@@ -15,7 +15,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            inSandbox = ValueOutput<bool>(nameof(inSandbox), (f) => SpatialBridge.IsInSandbox?.Invoke() ?? false);
+            inSandbox = ValueOutput<bool>(nameof(inSandbox), (f) => SpatialBridge.spaceService.isSandbox);
         }
     }
 }
