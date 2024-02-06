@@ -13,10 +13,12 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         private static void Initialize()
         {
             SpatialBridge.actorService = new EditorActorService();
+            SpatialBridge.adService = new EditorAdService();
             SpatialBridge.audioService = new EditorAudioService();
             SpatialBridge.badgeService = new EditorBadgeService();
             SpatialBridge.cameraService = new EditorCameraService();
             SpatialBridge.coreGUIService = new EditorCoreGUIService();
+            SpatialBridge.inputService = new EditorInputService();
             SpatialBridge.inventoryService = new EditorInventoryService();
             SpatialBridge.loggingService = new EditorLoggingService();
             SpatialBridge.marketplaceService = new EditorMarketplaceService();

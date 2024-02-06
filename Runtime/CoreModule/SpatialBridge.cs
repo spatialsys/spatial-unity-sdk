@@ -14,6 +14,11 @@ namespace SpatialSys.UnitySDK
         public static IActorService actorService;
 
         /// <summary>
+        /// Service to handle ads integration
+        /// </summary>
+        public static IAdService adService;
+
+        /// <summary>
         /// Service for handling audio and sound effects.
         /// </summary>
         public static IAudioService audioService;
@@ -33,6 +38,11 @@ namespace SpatialSys.UnitySDK
         /// Service for handling all UI related functionality.
         /// </summary>
         public static ICoreGUIService coreGUIService;
+
+        /// <summary>
+        /// Service for handling all input related functionality.
+        /// </summary>
+        public static IInputService inputService;
 
         /// <summary>
         /// Service to handle inventory and currency.
@@ -145,24 +155,6 @@ namespace SpatialSys.UnitySDK
         public static SetSyncedAnimatorTriggerDelegate SetSyncedAnimatorTrigger;
 
         #endregion
-
-        #region IInputService
-        public delegate void SetInputOverridesDelegate(bool movementOverride, bool jumpOverride, bool sprintOverride, bool actionButtonOverride, GameObject target);
-        public static SetInputOverridesDelegate SetInputOverrides;
-
-        public delegate void OnInputGraphRootObjectDestroyedDelegate(GameObject target);
-        public static OnInputGraphRootObjectDestroyedDelegate OnInputGraphRootObjectDestroyed;
-
-        public delegate void StartVehicleInputCaptureDelegate(VehicleInputFlags flags, Sprite primaryButtonSprite, Sprite secondaryButtonSprite, GameObject target);
-        public static StartVehicleInputCaptureDelegate StartVehicleInputCapture;
-
-        public delegate void StartCompleteCustomInputCaptureDelegate(GameObject target);
-        public static StartCompleteCustomInputCaptureDelegate StartCompleteCustomInputCapture;
-
-        public delegate void ReleaseInputCaptureDelegate(GameObject target);
-        public static ReleaseInputCaptureDelegate ReleaseInputCapture;
-        #endregion
-
 
         public delegate bool GetIsSceneInitializedDelegate();
         public static GetIsSceneInitializedDelegate GetIsSceneInitialized;

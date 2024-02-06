@@ -91,7 +91,7 @@ namespace SpatialSys.UnitySDK.Editor
                             mixer,
                             SpatialValidator.runContext == ValidationRunContext.UploadingToSandbox ? TestResponseType.Warning : TestResponseType.Fail,
                             $"Audio Mixer {mixer.name} is missing required exposed parameters.",
-$@"All audio mixers must have the following paramters:
+$@"All audio mixers must have the following parameters:
 - {MASTER_VOLUME_PARAM}, {SOUND_EFFECTS_VOLUME_PARAM}, {MUSIC_VOLUME_PARAM}, {AMBIENCE_VOLUME_PARAM}, {INTERFACE_VOLUME_PARAM}, {DIALOGUE_VOLUME_PARAM}
 
 This audio mixer is missing the following:
@@ -128,7 +128,7 @@ This audio mixer is missing the following:
                             new SpatialTestResponse(
                                 source,
                                 SpatialValidator.runContext == ValidationRunContext.UploadingToSandbox ? TestResponseType.Warning : TestResponseType.Fail,
-                                $"Audio Source on Prefab \"{prefab.name}\"  is missing a mixer group.",
+                                $"Audio Source on Prefab \"{prefab.name}\" is missing a mixer group.",
                                 "All audio sources used must have a mixer group assigned."
                             )
                         );

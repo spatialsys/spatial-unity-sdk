@@ -12,8 +12,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(InputIcon))]
     public class SpatialOnVehicleSteerInput : GameObjectEventUnit<(InputPhase, Vector2)>
     {
-        public static string eventName = "SpatialOnVehicleSteerInput";
-        protected override string hookName => eventName;
+        private const string EVENT_HOOK_ID = "SpatialOnVehicleSteerInput";
+        protected override string hookName => EVENT_HOOK_ID;
         public override Type MessageListenerType => null;
 
         [Serialize, Inspectable, UnitHeaderInspectable]
@@ -21,6 +21,11 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         [DoNotSerialize]
         public ValueOutput steer { get; private set; }
+
+        public static void TriggerEvent(GameObject gameObject, InputPhase phase, Vector2 steer)
+        {
+            EventBus.Trigger(new EventHook(EVENT_HOOK_ID, gameObject), (phase, steer));
+        }
 
         protected override void Definition()
         {
@@ -46,8 +51,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(InputIcon))]
     public class SpatialOnVehicleThrottleInput : GameObjectEventUnit<(InputPhase, float)>
     {
-        public static string eventName = "SpatialOnVehicleThrottleInput";
-        protected override string hookName => eventName;
+        private const string EVENT_HOOK_ID = "SpatialOnVehicleThrottleInput";
+        protected override string hookName => EVENT_HOOK_ID;
         public override Type MessageListenerType => null;
 
         [Serialize, Inspectable, UnitHeaderInspectable]
@@ -55,6 +60,11 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         [DoNotSerialize]
         public ValueOutput throttle { get; private set; }
+
+        public static void TriggerEvent(GameObject gameObject, InputPhase phase, float throttle)
+        {
+            EventBus.Trigger(new EventHook(EVENT_HOOK_ID, gameObject), (phase, throttle));
+        }
 
         protected override void Definition()
         {
@@ -80,8 +90,8 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(InputIcon))]
     public class SpatialOnVehicleReverseInput : GameObjectEventUnit<(InputPhase, float)>
     {
-        public static string eventName = "SpatialOnVehicleReverseInput";
-        protected override string hookName => eventName;
+        private const string EVENT_HOOK_ID = "SpatialOnVehicleReverseInput";
+        protected override string hookName => EVENT_HOOK_ID;
         public override Type MessageListenerType => null;
 
         [Serialize, Inspectable, UnitHeaderInspectable]
@@ -89,6 +99,11 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         [DoNotSerialize]
         public ValueOutput reverse { get; private set; }
+
+        public static void TriggerEvent(GameObject gameObject, InputPhase phase, float reverse)
+        {
+            EventBus.Trigger(new EventHook(EVENT_HOOK_ID, gameObject), (phase, reverse));
+        }
 
         protected override void Definition()
         {
@@ -114,12 +129,17 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(InputIcon))]
     public class SpatialOnVehiclePrimaryActionInput : GameObjectEventUnit<InputPhase>
     {
-        public static string eventName = "SpatialOnVehiclePrimaryActionInput";
-        protected override string hookName => eventName;
+        private const string EVENT_HOOK_ID = "SpatialOnVehiclePrimaryActionInput";
+        protected override string hookName => EVENT_HOOK_ID;
         public override Type MessageListenerType => null;
 
         [Serialize, Inspectable, UnitHeaderInspectable]
         public InputPhase inputPhase;
+
+        public static void TriggerEvent(GameObject gameObject, InputPhase phase)
+        {
+            EventBus.Trigger(new EventHook(EVENT_HOOK_ID, gameObject), phase);
+        }
 
         protected override void Definition()
         {
@@ -139,12 +159,17 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(InputIcon))]
     public class SpatialOnVehicleSecondaryActionInput : GameObjectEventUnit<InputPhase>
     {
-        public static string eventName = "SpatialOnVehicleSecondaryActionInput";
-        protected override string hookName => eventName;
+        private const string EVENT_HOOK_ID = "SpatialOnVehicleSecondaryActionInput";
+        protected override string hookName => EVENT_HOOK_ID;
         public override Type MessageListenerType => null;
 
         [Serialize, Inspectable, UnitHeaderInspectable]
         public InputPhase inputPhase;
+
+        public static void TriggerEvent(GameObject gameObject, InputPhase phase)
+        {
+            EventBus.Trigger(new EventHook(EVENT_HOOK_ID, gameObject), phase);
+        }
 
         protected override void Definition()
         {
@@ -164,9 +189,15 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(InputIcon))]
     public class SpatialOnExitVehicleInput : GameObjectEventUnit<EmptyEventArgs>
     {
-        public static string eventName = "SpatialOnExitVehicleInput";
-        protected override string hookName => eventName;
+        private const string EVENT_HOOK_ID = "SpatialOnExitVehicleInput";
+        protected override string hookName => EVENT_HOOK_ID;
         public override Type MessageListenerType => null;
+
+        public static void TriggerEvent(GameObject gameObject)
+        {
+            EventBus.Trigger(new EventHook(EVENT_HOOK_ID, gameObject));
+        }
+
         protected override bool ShouldTrigger(Flow flow, EmptyEventArgs args)
         {
             return true;

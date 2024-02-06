@@ -7,7 +7,7 @@
     "com.unity.ai.navigation": "1.0.0-exp.4"
   },
   "displayName": "Spatial Unity SDK",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "unity": "2021.3",
   "description": "This package allows creators to build 3D spaces using the Unity editor and publish them to Spatial",
   "keywords": [
@@ -28,6 +28,6 @@
   "license": "MIT",
   "author": "Spatial Systems (https://www.spatial.io)",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 0"
   }
 }

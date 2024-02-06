@@ -43,6 +43,18 @@ namespace SpatialSys.UnitySDK
         }
 
         /// <summary>
+        /// Sets the completion event, same as setting the event using the completed property, but returns
+        /// the operation itself.
+        /// </summary>
+        /// <param name="callback"></param>
+        /// <returns></returns>
+        public SpatialAsyncOperation SetCompletedEvent(Action<SpatialAsyncOperation> callback)
+        {
+            completed += callback;
+            return this;
+        }
+
+        /// <summary>
         /// Invokes the completion event.
         /// </summary>
         public void InvokeCompletionEvent()
@@ -60,7 +72,7 @@ namespace SpatialSys.UnitySDK
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Error invoking completion callback for {GetType().Name}; Exception: {ex}");
+                SpatialBridge.loggingService.LogError($"Error invoking completion callback for {GetType().Name}; Exception: {ex}");
             }
             _completionCallback = null;
         }

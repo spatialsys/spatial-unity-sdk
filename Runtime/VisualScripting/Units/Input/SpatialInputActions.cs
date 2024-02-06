@@ -10,7 +10,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [UnitTitle("Spatial Input: Set Overriden Avatar Input Capture")]
     [UnitSurtitle("Spatial Input")]
     [UnitShortTitle("Set Overriden Avatar Input Capture")]
-    [UnitCategory("Spatial\\System")]
+    [UnitCategory("Spatial\\Input")]
     [TypeIcon(typeof(InputIcon))]
     public class SetInputOverrides : Unit
     {
@@ -37,13 +37,16 @@ namespace SpatialSys.UnitySDK.VisualScripting
             sprint = ValueInput<bool>(nameof(sprint), true);
             actionButton = ValueInput<bool>(nameof(actionButton), true);
 
-            inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SetInputOverrides.Invoke(
+            inputTrigger = ControlInput(nameof(inputTrigger), (f) =>
+            {
+                var listener = f.stack.self.GetOrAddComponent<SpatialInputActionsListenerComponent>();
+
+                SpatialBridge.inputService.StartAvatarInputCapture(
                     f.GetValue<bool>(movement),
                     f.GetValue<bool>(jump),
                     f.GetValue<bool>(sprint),
                     f.GetValue<bool>(actionButton),
-                    f.stack.self
+                    listener
                 );
                 return outputTrigger;
             });
@@ -52,19 +55,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
             Succession(inputTrigger, outputTrigger);
         }
-
-        public override void Uninstantiate(GraphReference instance)
-        {
-            base.Uninstantiate(instance);
-            if (instance?.gameObject != null)
-                SpatialBridge.OnInputGraphRootObjectDestroyed?.Invoke(instance.gameObject);
-        }
     }
 
     [UnitTitle("Spatial Input: Start Vehicle Input Capture")]
     [UnitSurtitle("Spatial Input")]
     [UnitShortTitle("Start Vehicle Input Capture")]
-    [UnitCategory("Spatial\\System")]
+    [UnitCategory("Spatial\\Input")]
     [TypeIcon(typeof(InputIcon))]
     public class StartVehicleInputCapture : Unit
     {
@@ -90,12 +86,14 @@ namespace SpatialSys.UnitySDK.VisualScripting
             primaryButtonSprite = ValueInput<Sprite>(nameof(primaryButtonSprite), null);
             secondaryButtonSprite = ValueInput<Sprite>(nameof(secondaryButtonSprite), null);
 
-            inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.StartVehicleInputCapture.Invoke(
+            inputTrigger = ControlInput(nameof(inputTrigger), (f) =>
+            {
+                var listener = f.stack.self.GetOrAddComponent<SpatialInputActionsListenerComponent>();
+                SpatialBridge.inputService.StartVehicleInputCapture(
                     f.GetValue<VehicleInputFlags>(flags),
                     f.GetValue<Sprite>(primaryButtonSprite),
                     f.GetValue<Sprite>(secondaryButtonSprite),
-                    f.stack.self
+                    listener
                 );
                 return outputTrigger;
             });
@@ -104,20 +102,13 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
             Succession(inputTrigger, outputTrigger);
         }
-
-        public override void Uninstantiate(GraphReference instance)
-        {
-            base.Uninstantiate(instance);
-            if (instance?.gameObject != null)
-                SpatialBridge.OnInputGraphRootObjectDestroyed?.Invoke(instance.gameObject);
-        }
     }
 
     [UnitTitle("Spatial Input: Start Custom Player Input Capture")]
     [UnitSubtitle("Disables default Spatial player input\nIncluding camera control and mobile on-screen controls")]
     [UnitSurtitle("Spatial Input")]
     [UnitShortTitle("Start Custom Player Input Capture")]
-    [UnitCategory("Spatial\\System")]
+    [UnitCategory("Spatial\\Input")]
     [TypeIcon(typeof(InputIcon))]
     public class StartCustomInputCapture : Unit
     {
@@ -130,10 +121,10 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.StartCompleteCustomInputCapture.Invoke(
-                    f.stack.self
-                );
+            inputTrigger = ControlInput(nameof(inputTrigger), (f) =>
+            {
+                var listener = f.stack.self.GetOrAddComponent<SpatialInputActionsListenerComponent>();
+                SpatialBridge.inputService.StartCompleteCustomInputCapture(listener);
                 return outputTrigger;
             });
 
@@ -141,19 +132,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
             Succession(inputTrigger, outputTrigger);
         }
-
-        public override void Uninstantiate(GraphReference instance)
-        {
-            base.Uninstantiate(instance);
-            if (instance?.gameObject != null)
-                SpatialBridge.OnInputGraphRootObjectDestroyed?.Invoke(instance.gameObject);
-        }
     }
 
     [UnitTitle("Spatial Input: Release Input Capturer")]
     [UnitSurtitle("Spatial Input")]
     [UnitShortTitle("Release Input Capture")]
-    [UnitCategory("Spatial\\System")]
+    [UnitCategory("Spatial\\Input")]
     [TypeIcon(typeof(InputIcon))]
     public class ReleaseInputCapture : Unit
     {
@@ -166,10 +150,11 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         protected override void Definition()
         {
-            inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.ReleaseInputCapture.Invoke(
-                    f.stack.self
-                );
+            inputTrigger = ControlInput(nameof(inputTrigger), (f) =>
+            {
+                var listener = f.stack.self.GetComponent<SpatialInputActionsListenerComponent>();
+                if (listener != null)
+                    SpatialBridge.inputService.ReleaseInputCapture(listener);
                 return outputTrigger;
             });
 

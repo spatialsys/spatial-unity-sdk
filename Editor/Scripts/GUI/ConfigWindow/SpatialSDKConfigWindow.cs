@@ -38,6 +38,7 @@ namespace SpatialSys.UnitySDK.Editor
         private DropdownField _configActivePackageDropdown;
         private DropdownField _configDefaultWorldSelectionDropdown;
         private EnumField _configCreatePackageTypeDropdown;
+        private TextField _packageConfigName;
         private VisualElement _packageConfigSKUEmptyElement;
         private VisualElement _packageConfigSKUElement;
         private Label _configPackageType;
@@ -226,6 +227,12 @@ namespace SpatialSys.UnitySDK.Editor
                 if (UnityEditor.EditorUtility.DisplayDialog("Delete Package", $"Are you sure you want to delete {ProjectConfig.activePackageConfig.packageName}?", "Yes", "No"))
                     ProjectConfig.RemovePackage(ProjectConfig.activePackageConfig);
             };
+
+            _packageConfigName = root.Q(PACKAGE_CONFIG_ELEMENT_NAME).Query<TextField>("name");
+            _packageConfigName.RegisterCallback<KeyUpEvent>(evt => {
+                PopulatePackageDropdownLabels(_configActivePackageDropdown);
+                PopulatePackageDropdownLabels(_issuesActivePackageDropdown);
+            });
             _packageConfigSKUEmptyElement = root.Q(PACKAGE_CONFIG_ELEMENT_NAME).Q("packageSKUEmpty");
             _packageConfigSKUElement = root.Q(PACKAGE_CONFIG_ELEMENT_NAME).Q("packageSKU");
             _configPackageType = root.Q(PACKAGE_CONFIG_ELEMENT_NAME).Query<Label>("packageTypeValue").First();
@@ -354,16 +361,11 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 dropdown.SetEnabled(true);
 
-                PackageConfig packageConfig = ProjectConfig.activePackageConfig;
-                Func<PackageConfig, string> getPackageDropdownLabel = (PackageConfig config) => $"{config.packageType} - {config.packageName}";
-
                 // Update elements
                 if (dropdown.choices == null || dropdown.choices.Count != ProjectConfig.packages.Count)
-                    dropdown.choices = ProjectConfig.packages.Select(getPackageDropdownLabel).ToList();
-
-                // Update the selected label
-                if (packageConfig != null)
-                    dropdown.choices[ProjectConfig.activePackageIndex] = getPackageDropdownLabel(packageConfig);
+                {
+                    PopulatePackageDropdownLabels(dropdown);
+                }
 
                 dropdown.index = ProjectConfig.activePackageIndex;
             }
@@ -372,6 +374,44 @@ namespace SpatialSys.UnitySDK.Editor
                 dropdown.SetEnabled(false);
                 dropdown.choices = new List<string>() { "None (Create New Package)" };
                 dropdown.index = 0;
+            }
+        }
+
+        private void PopulatePackageDropdownLabels(DropdownField dropdown)
+        {
+            Func<PackageConfig, string> getPackageDropdownLabel = (PackageConfig config) => $"{config.packageType} - {config.packageName}";
+            dropdown.choices = ProjectConfig.packages.Select(getPackageDropdownLabel).ToList();
+
+            // Modify all duplicate package names from the dropdown choices so they're all unique, otherwise the duplicates won't appear unless the duplicates are renamed manually.
+            // select duplicate package labels as keys, value is a counter for packages without SKU
+            Dictionary<string, int> duplicates = dropdown.choices.GroupBy(c => c)
+                                                                .Where(group => group.Count() > 1)
+                                                                .Select(group => group.Key)
+                                                                .ToDictionary(c => c, c => 0);
+
+            if (duplicates.Count == 0)
+                return;
+
+            for (int i = 0; i < dropdown.choices.Count; i++)
+            {
+                string choice = dropdown.choices[i];
+                if (!duplicates.ContainsKey(choice))
+                    continue;
+
+                if (string.IsNullOrEmpty(ProjectConfig.packages[i].sku))
+                {
+                    // if there's no SKU to append, use a number instead.
+                    if (duplicates[choice] > 0)
+                    {
+                        dropdown.choices[i] += $" ({duplicates[choice]})";
+                    }
+                    duplicates[choice]++;
+                }
+                else
+                {
+                    // append sku
+                    dropdown.choices[i] += $" ({ProjectConfig.packages[i].sku})";
+                }
             }
         }
 
@@ -554,13 +594,16 @@ namespace SpatialSys.UnitySDK.Editor
                 showSelectedIssue = true;
             }
 
-            if (_errorIssues.Count > 0)
+            if (showSelectedIssue)
             {
-                SelectIssue(_errorIssues[0]);
-            }
-            else if (_warningIssues.Count > 0)
-            {
-                SelectIssue(_warningIssues[0]);
+                if (_errorIssues.Count > 0)
+                {
+                    SelectIssue(_errorIssues[0]);
+                }
+                else if (_warningIssues.Count > 0)
+                {
+                    SelectIssue(_warningIssues[0]);
+                }
             }
 
             _issuesScrollBlock.style.display = showSelectedIssue ? DisplayStyle.Flex : DisplayStyle.None;

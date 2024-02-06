@@ -19,6 +19,6 @@ namespace SpatialSys.UnitySDK
         /// <param name="scaleCurve">Animation curve for scaling</param>
         /// <param name="alphaCurve">Animation curve for alpha</param>
         /// <param name="lifetime">Time to keep text visible</param>
-        void CreateFloatingText(string text, FloatingTextAnimStyle style, Vector3 position, Vector3 force, Color color, bool gravity, AnimationCurve scaleCurve, AnimationCurve alphaCurve, float lifetime);
+        void CreateFloatingText(string text, FloatingTextAnimStyle style, Vector3 position, Vector3 force, Color color, bool gravity = false, AnimationCurve scaleCurve = null, AnimationCurve alphaCurve = null, float lifetime = 1);
     }
 }

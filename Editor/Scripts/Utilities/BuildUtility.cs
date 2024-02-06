@@ -41,7 +41,8 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static IPromise BuildAndUploadForSandbox(BuildTarget target = BuildTarget.WebGL)
         {
-            OnBeforeBuild();
+            // Must save open scenes for sandbox and publishing space-based packages.
+            OnBeforeBuild(saveOpenScenes: true);
 
             IPromise<SpatialValidationSummary> validationPromise;
             if (ProjectConfig.activePackageConfig.isSpaceBasedPackage)
@@ -124,8 +125,13 @@ namespace SpatialSys.UnitySDK.Editor
                         .Then(() => {
                             bool openBrowser = target == BuildTarget.WebGL;
                             if (openBrowser)
+                            {
                                 EditorUtility.OpenSandboxInBrowser();
-                            Debug.Log("Sandbox content uploaded successfully");
+                            }
+                            else
+                            {
+                                UnityEditor.EditorUtility.DisplayDialog("Sandbox content uploaded successfully", "", "OK");
+                            }
                         })
                         .Catch(exc => {
                             (string exceptionMessage, Action callback) = GetExceptionMessageAndCallback(exc);
@@ -271,7 +277,8 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static IPromise PackageForPublishing()
         {
-            OnBeforeBuild();
+            // Must save open scenes for sandbox and publishing space-based packages.
+            OnBeforeBuild(saveOpenScenes: ProjectConfig.activePackageConfig.isSpaceBasedPackage);
 
             void RestoreAssetBackups()
             {
@@ -572,10 +579,14 @@ namespace SpatialSys.UnitySDK.Editor
         /// <summary>
         /// Called before validation runs, at the very start of the build process.
         /// </summary>
-        private static void OnBeforeBuild()
+        private static void OnBeforeBuild(bool saveOpenScenes)
         {
             // We must save all scenes, otherwise the bundle build will fail without explanation.
-            EditorSceneManager.SaveOpenScenes();
+            // Required for sandbox and publishing space-based packages.
+            if (saveOpenScenes)
+            {
+                EditorSceneManager.SaveOpenScenes();
+            }
 
             // Update project settings and assign to the package config so other places can reference it during build process.
             ProjectConfig.activePackageConfig.savedProjectSettings = SaveProjectSettingsToAsset();

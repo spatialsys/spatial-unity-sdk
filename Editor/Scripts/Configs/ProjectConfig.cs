@@ -32,7 +32,25 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
         public static bool hasPackages => instance != null && instance._packages.Count > 0;
-        public static IReadOnlyList<PackageConfig> packages => instance?._packages;
+        public static IReadOnlyList<PackageConfig> packages
+        {
+            get
+            {
+                int newActiveIndex = activePackageIndex;
+                for (int i = 0; i < instance?._packages.Count; i++)
+                {
+                    if (instance?._packages[i] != null)
+                        continue;
+
+                    instance?._packages.RemoveAt(i);
+
+                    if (i < activePackageIndex)
+                        newActiveIndex--;
+                }
+                activePackageIndex = newActiveIndex;
+                return instance?._packages;
+            }
+        }
         public static PackageConfig activePackageConfig => hasPackages ? packages[activePackageIndex] : null;
         public static int activePackageIndex
         {

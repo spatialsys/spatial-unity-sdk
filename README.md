@@ -6,4 +6,4 @@ This package allows creators to create content in Unity and publish it to Spatia
 
 MIT License
 
-Copyright © 2022 Spatial Systems Inc
+Copyright © 2024 Spatial Systems Inc

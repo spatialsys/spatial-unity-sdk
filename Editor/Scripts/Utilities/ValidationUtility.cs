@@ -517,7 +517,7 @@ namespace SpatialSys.UnitySDK.Editor
             if (totalTextureMemory > textureMemoryLimit)
             {
                 double totalTextureMemoryMB = totalTextureMemory / 1024.0 / 1024.0;
-
+                double textureMemoryLimitMB = textureMemoryLimit / 1024.0 / 1024.0;
                 // Sort textures by size (descending)
                 usedTextures.Sort((a, b) => b.Item2.CompareTo(a.Item2));
 
@@ -525,10 +525,10 @@ namespace SpatialSys.UnitySDK.Editor
                     new SpatialTestResponse(
                         prefab,
                         TestResponseType.Fail,
-                        $"The object uses too much texture memory ({totalTextureMemoryMB.ToString("0.00")}MB)",
-                        $"This object uses a total of {totalTextureMemory} bytes of texture memory but it must not exceed {textureMemoryLimit} bytes.\n"
-                        + "High memory usage can cause application crashes on lower end devices. Reduce the number of textures, reduce the resolution or modify the comporession of textures to comply with this limit.\n\n"
-                        + "Here's a list of all the textures used by the avatar attachment:\n - " + string.Join("\n - ", usedTextures.Take(20).Select(m => $"{(m.Item2 / 1024.0 / 1024.0):0.00}MB - {m.Item1}"))
+                        $"The object uses too much texture memory ({totalTextureMemoryMB.ToString("0.00")} MB)",
+                        $"This object uses a total of {totalTextureMemoryMB.ToString("0.00")} MB of texture memory but it must not exceed {textureMemoryLimitMB.ToString("0.00")} MB.\n"
+                        + "High memory usage can cause application crashes on lower end devices. Reduce the number of textures, reduce the resolution or modify the compression of textures to comply with this limit.\n\n"
+                        + "Here's a list of all the textures used by the avatar attachment:\n - " + string.Join("\n - ", usedTextures.Take(20).Select(m => $"{(m.Item2 / 1024.0 / 1024.0):0.00} MB - {m.Item1}"))
                     )
                 );
             }

@@ -8,11 +8,11 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [UnitTitle("Spatial Input: On Overridden Avatar Move")]
     [UnitSurtitle("Spatial Input")]
     [UnitShortTitle("On Overridden Avatar Move")]
-    [UnitCategory("Events\\Spatial\\System")]
+    [UnitCategory("Events\\Spatial\\Input")]
     [TypeIcon(typeof(InputIcon))]
     public class SpatialOnOverriddenMoveInput : EventUnit<(InputPhase, Vector2)>
     {
-        public static string eventName = "SpatialOnOverriddenMoveInput";
+        private const string EVENT_HOOK_ID = "SpatialOnOverriddenMoveInput";
         protected override bool register => true;
 
         [Serialize, Inspectable, UnitHeaderInspectable]
@@ -23,7 +23,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(InputPhase phase, Vector2 movement)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, (phase, movement));
         }
 
         protected override void Definition()
@@ -46,11 +51,11 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [UnitTitle("Spatial Input: On Overridden Avatar Jump")]
     [UnitSurtitle("Spatial Input")]
     [UnitShortTitle("On Overridden Avatar Jump")]
-    [UnitCategory("Events\\Spatial\\System")]
+    [UnitCategory("Events\\Spatial\\Input")]
     [TypeIcon(typeof(InputIcon))]
     public class SpatialOnOverriddenJumpInput : EventUnit<InputPhase>
     {
-        public static string eventName = "SpatialOnOverriddenJumpInput";
+        private const string EVENT_HOOK_ID = "SpatialOnOverriddenJumpInput";
         protected override bool register => true;
 
         [Serialize, Inspectable, UnitHeaderInspectable]
@@ -58,7 +63,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(InputPhase phase)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, phase);
         }
 
         protected override bool ShouldTrigger(Flow flow, InputPhase args)
@@ -70,11 +80,11 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [UnitTitle("Spatial Input: On Overridden Avatar Sprint")]
     [UnitSurtitle("Spatial Input")]
     [UnitShortTitle("On Overridden Avatar Sprint")]
-    [UnitCategory("Events\\Spatial\\System")]
+    [UnitCategory("Events\\Spatial\\Input")]
     [TypeIcon(typeof(InputIcon))]
     public class SpatialOnOverriddenSprintInput : EventUnit<InputPhase>
     {
-        public static string eventName = "SpatialOnOverriddenSprintInput";
+        private const string EVENT_HOOK_ID = "SpatialOnOverriddenSprintInput";
         protected override bool register => true;
 
         [Serialize, Inspectable, UnitHeaderInspectable]
@@ -82,7 +92,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(InputPhase phase)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, phase);
         }
 
         protected override bool ShouldTrigger(Flow flow, InputPhase args)
@@ -94,11 +109,11 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [UnitTitle("Spatial Input: On Overridden Avatar Action Button")]
     [UnitSurtitle("Spatial Input")]
     [UnitShortTitle("On Overridden Action Button")]
-    [UnitCategory("Events\\Spatial\\System")]
+    [UnitCategory("Events\\Spatial\\Input")]
     [TypeIcon(typeof(InputIcon))]
     public class SpatialOnOverriddenActionButtonInput : EventUnit<InputPhase>
     {
-        public static string eventName = "SpatialOnOverriddenActionButtonInput";
+        private const string EVENT_HOOK_ID = "SpatialOnOverriddenActionButtonInput";
         protected override bool register => true;
 
         [Serialize, Inspectable, UnitHeaderInspectable]
@@ -106,7 +121,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(InputPhase phase)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, phase);
         }
 
         protected override bool ShouldTrigger(Flow flow, InputPhase args)
@@ -118,16 +138,22 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [UnitTitle("Spatial Input: On Auto Sprint Toggled On")]
     [UnitSurtitle("Spatial Input")]
     [UnitShortTitle("On Auto Sprint Toggled On")]
-    [UnitCategory("Events\\Spatial\\System")]
+    [UnitCategory("Events\\Spatial\\Input")]
     [TypeIcon(typeof(InputIcon))]
     public class SpatialOnAutoSprintToggledOn : EventUnit<EmptyEventArgs>
     {
-        public static string eventName = "SpatialOnAutoSprintToggledOn";
+        private const string EVENT_HOOK_ID = "SpatialOnAutoSprintToggledOn";
         protected override bool register => true;
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(bool on)
+        {
+            if (on)
+                EventBus.Trigger(EVENT_HOOK_ID);
         }
 
         protected override bool ShouldTrigger(Flow flow, EmptyEventArgs args)
@@ -139,13 +165,18 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [UnitTitle("Spatial Input: On Input Capture Stopped")]
     [UnitSurtitle("Spatial Input")]
     [UnitShortTitle("On Input Capture Stopped")]
-    [UnitCategory("Events\\Spatial\\System")]
+    [UnitCategory("Events\\Spatial\\Input")]
     [TypeIcon(typeof(InputIcon))]
     public class SpatialOnInputCaptureStopped : GameObjectEventUnit<EmptyEventArgs>
     {
-        public static string eventName = "SpatialOnInputCaptureStopped";
-        protected override string hookName => eventName;
+        private const string EVENT_HOOK_ID = "SpatialOnInputCaptureStopped";
+        protected override string hookName => EVENT_HOOK_ID;
         public override Type MessageListenerType => null;
+
+        public static void TriggerEvent(InputCaptureType type)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID);
+        }
 
         protected override bool ShouldTrigger(Flow flow, EmptyEventArgs args)
         {

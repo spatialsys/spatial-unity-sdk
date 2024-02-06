@@ -9,6 +9,8 @@ namespace SpatialSys.UnitySDK.Editor
     [InitializeOnLoad]
     public static class Toolbar
     {
+        private const string SANDBOX_TARGET_BUILD_PLATFORM_KEY = "SpatialSDK_TargetBuildPlatform";
+
         static Toolbar()
         {
             ToolbarExtender.RightToolbarGUI.Add(OnToolbarGUI);
@@ -34,7 +36,13 @@ namespace SpatialSys.UnitySDK.Editor
                 string buttonText, buttonTooltipText;
 
 #if SPATIAL_UNITYSDK_STAGING
-                _selectedTarget = EditorGUILayout.Popup(_selectedTarget, _targetOptions, GUILayout.Width(80));
+                _selectedTarget = SessionState.GetInt(SANDBOX_TARGET_BUILD_PLATFORM_KEY, 0);
+                int newSelection = EditorGUILayout.Popup(_selectedTarget, _targetOptions, GUILayout.Width(80));
+                if (_selectedTarget != newSelection)
+                {
+                    _selectedTarget = newSelection;
+                    SessionState.SetInt(SANDBOX_TARGET_BUILD_PLATFORM_KEY, _selectedTarget);
+                }
 #endif
                 if (activeConfig == null || activeConfig.isSpaceBasedPackage)
                 {
@@ -102,7 +110,8 @@ namespace SpatialSys.UnitySDK.Editor
                 return "Feature disabled while in play mode";
             if (ProjectConfig.activePackageConfig == null)
                 return "There is no active package selected. You can create and select a package through the configuration window.";
-
+            if (!AuthUtility.isAuthenticated)
+                return "Must be logged into a Spatial account";
             return null;
         }
     }
