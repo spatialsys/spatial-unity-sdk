@@ -13,7 +13,7 @@ namespace SpatialSys.UnitySDK
         public const int MAX_DESCRIPTION_LENGTH = 500;
 
         public override string prettyName => "Quest";
-        public override string tooltip => $"This components describes a quest and its tasks.";
+        public override string tooltip => $"This component describes a quest and its tasks.";
 
         public override string documentationURL => "https://docs.spatial.io/quests";
         public override bool isExperimental => true;
@@ -49,39 +49,18 @@ namespace SpatialSys.UnitySDK
             public int amount = 1; // only used for item reward type
         }
 
-        public enum RewardType
-        {
-            Badge = 0,
-            Item = 1,
-        }
-
         [Serializable]
         public class Task
         {
             [HideInInspector]
             public uint id;
             public string name;
-            public TaskType type;
+            public QuestTaskType type;
             public int progressSteps;
             public GameObject[] taskMarkers;
             public SpatialEvent onStartedEvent;
             public SpatialEvent onCompletedEvent;
             public SpatialEvent onPreviouslyCompleted;
-        }
-
-        // NOTE: If any new types are introduced here, make sure to also add validation checks for them
-        public enum TaskType
-        {
-            /// <summary>
-            /// One time only. Eg. "Go to this point of interest" or "Talk to X"
-            /// Meant to be completed using Quest.CompleteTask
-            /// </summary>
-            Check = 0,
-            /// <summary>
-            /// Several times. Eg. "Interact with x 5 times" or "Collect 3 swords"
-            /// Meant to be completed using Quest.AddTaskProgress the amount of times specified in the progress variable
-            /// </summary>
-            ProgressBar = 1,
         }
 
 #if UNITY_EDITOR

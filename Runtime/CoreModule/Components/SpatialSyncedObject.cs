@@ -1,7 +1,7 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Unity.VisualScripting;
+using UnityEngine.Serialization;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -22,8 +22,191 @@ namespace SpatialSys.UnitySDK
         public bool saveWithSpace = false;
         public bool destroyOnCreatorDisconnect = false;
 
-        [HideInInspector] public string assetID; // unity prefab asset ID
-        [HideInInspector] public string instanceID;
+        [FormerlySerializedAs("assetID"), HideInInspector, SerializeField]
+        private string _assetID; // unity prefab asset ID
+
+        [FormerlySerializedAs("instanceID"), HideInInspector, SerializeField]
+        private string _instanceID;
+
+        public string assetID => _assetID;
+        public string instanceID => _instanceID;
+
+        public delegate void OnOwnerChangedDelegate(int newOwner);
+        public delegate void OnVariableChangedDelegate(string variableName, object newValue);
+
+        private Action _onInitialized;
+        private OnOwnerChangedDelegate _onOwnerChanged;
+        private OnVariableChangedDelegate _onVariableChanged;
+        private bool _handlingInit;
+        private bool _handlingOwnerChange;
+        private bool _handlingVariableChange;
+
+        private void OnEnable()
+        {
+            if (_onInitialized != null && _onInitialized.GetInvocationList().Length > 0)
+            {
+                SpatialBridge.spaceContentService.onSyncedObjectInitialized += HandleSyncedObjectInitialized;
+                _handlingInit = true;
+            }
+            if (_onOwnerChanged != null && _onOwnerChanged.GetInvocationList().Length > 0)
+            {
+                SpatialBridge.spaceContentService.onSyncedObjectOwnerChanged += HandleSyncedObjectOwnerChanged;
+                _handlingOwnerChange = true;
+            }
+            if (_onVariableChanged != null && _onVariableChanged.GetInvocationList().Length > 0)
+            {
+                SpatialBridge.spaceContentService.onSyncedObjectVariableChanged += HandleSyncedObjectVariableChanged;
+                _handlingVariableChange = true;
+            }
+        }
+
+        private void OnDisable()
+        {
+            SpatialBridge.spaceContentService.onSyncedObjectInitialized -= HandleSyncedObjectInitialized;
+            SpatialBridge.spaceContentService.onSyncedObjectOwnerChanged -= HandleSyncedObjectOwnerChanged;
+            SpatialBridge.spaceContentService.onSyncedObjectVariableChanged -= HandleSyncedObjectVariableChanged;
+        }
+
+        //------------------------------------------------------------------------------------------------------------
+        // Observers
+        //------------------------------------------------------------------------------------------------------------
+
+        private void HandleSyncedObjectInitialized(SpatialSyncedObject syncedObject)
+        {
+            if (syncedObject == this)
+            {
+                _onInitialized?.Invoke();
+            }
+        }
+
+        private void HandleSyncedObjectOwnerChanged(SpatialSyncedObject syncedObject, int newOwner)
+        {
+            if (syncedObject == this)
+            {
+                _onOwnerChanged?.Invoke(newOwner);
+            }
+        }
+
+        private void HandleSyncedObjectVariableChanged(SpatialSyncedVariables syncedVariables, string variableName, object newValue)
+        {
+            if (syncedVariables.gameObject == gameObject)
+            {
+                _onVariableChanged?.Invoke(variableName, newValue);
+            }
+        }
+
+        //------------------------------------------------------------------------------------------------------------
+        // Spatial Bridge shortcuts
+        //------------------------------------------------------------------------------------------------------------
+
+        /// <summary>
+        /// Does this synced object have control?
+        /// </summary>
+        public bool hasControl => SpatialBridge.spaceContentService.GetSyncedObjectHasControl(this);
+
+        /// <summary>
+        /// Is this synced object locally owned?
+        /// </summary>
+        public bool isLocallyOwned => SpatialBridge.spaceContentService.GetSyncedObjectIsLocallyOwned(this);
+
+        /// <summary>
+        /// Is this synced object synced across clients?
+        /// </summary>
+        public bool isSynced => SpatialBridge.spaceContentService.GetSyncedObjectIsSynced(this);
+
+        /// <summary>
+        /// The ID of this synced object.
+        /// </summary>
+        public int syncedObjectID => SpatialBridge.spaceContentService.GetSyncedObjectID(this);
+
+        /// <summary>
+        /// The actor ID of the owner of this synced object.
+        /// </summary>
+        public int ownerActorID => SpatialBridge.spaceContentService.GetSyncedObjectOwner(this);
+
+        /// <summary>
+        /// Called when this synced object is initialized.
+        /// </summary>
+        public event Action onObjectInitialized
+        {
+            add
+            {
+                _onInitialized += value;
+                if (!_handlingInit)
+                {
+                    SpatialBridge.spaceContentService.onSyncedObjectInitialized += HandleSyncedObjectInitialized;
+                    _handlingInit = true;
+                }
+            }
+            remove
+            {
+                _onInitialized -= value;
+                if (_onInitialized.GetInvocationList().Length == 0)
+                {
+                    SpatialBridge.spaceContentService.onSyncedObjectInitialized -= HandleSyncedObjectInitialized;
+                    _handlingInit = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when the owner of this synced object changes.
+        /// </summary>
+        public event OnOwnerChangedDelegate onOwnerChanged
+        {
+            add
+            {
+                _onOwnerChanged += value;
+                if (!_handlingOwnerChange)
+                {
+                    SpatialBridge.spaceContentService.onSyncedObjectOwnerChanged += HandleSyncedObjectOwnerChanged;
+                    _handlingOwnerChange = true;
+                }
+            }
+            remove
+            {
+                _onOwnerChanged -= value;
+                if (_onOwnerChanged.GetInvocationList().Length == 0)
+                {
+                    SpatialBridge.spaceContentService.onSyncedObjectOwnerChanged -= HandleSyncedObjectOwnerChanged;
+                    _handlingOwnerChange = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when a synced variable on this synced object changes.
+        /// </summary>
+        public event OnVariableChangedDelegate onVariableChanged
+        {
+            add
+            {
+                _onVariableChanged += value;
+                if (!_handlingVariableChange)
+                {
+                    SpatialBridge.spaceContentService.onSyncedObjectVariableChanged += HandleSyncedObjectVariableChanged;
+                    _handlingVariableChange = true;
+                }
+            }
+            remove
+            {
+                _onVariableChanged -= value;
+                if (_onVariableChanged.GetInvocationList().Length == 0)
+                {
+                    SpatialBridge.spaceContentService.onSyncedObjectVariableChanged -= HandleSyncedObjectVariableChanged;
+                    _handlingVariableChange = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Takeover ownership of this synced object.
+        /// </summary>
+        /// <returns>True if takeover was successful.</returns>
+        public bool TakeoverOwnership()
+        {
+            return SpatialBridge.spaceContentService.TakeoverSyncedObjectOwnership(this);
+        }
 
 #if UNITY_EDITOR
         [ContextMenu("Remove Synced Variables")]
@@ -55,21 +238,21 @@ namespace SpatialSys.UnitySDK
             {
                 string assetPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(gameObject);
                 string assetGUID = AssetDatabase.AssetPathToGUID(assetPath);
-                if (assetID != assetGUID)
+                if (_assetID != assetGUID)
                 {
-                    assetID = assetGUID;
+                    _assetID = assetGUID;
                 }
             }
             else
             {
-                assetID = null;
+                _assetID = null;
             }
 
             // set instance ID if it's an instance in the scene
             // or embedded within a prefab object
             if (isPrefabAsset && !isChildOfPrefabObject)
             {
-                instanceID = null;
+                _instanceID = null;
             }
             else
             {
@@ -80,12 +263,12 @@ namespace SpatialSys.UnitySDK
                     if (syncedObject == this)
                         continue;
 
-                    allInstanceIDs.Add(syncedObject.instanceID);
+                    allInstanceIDs.Add(syncedObject._instanceID);
                 }
 
-                while (string.IsNullOrEmpty(instanceID) || allInstanceIDs.Contains(instanceID))
+                while (string.IsNullOrEmpty(_instanceID) || allInstanceIDs.Contains(_instanceID))
                 {
-                    instanceID = System.Guid.NewGuid().ToString();
+                    _instanceID = System.Guid.NewGuid().ToString();
                 }
             }
         }

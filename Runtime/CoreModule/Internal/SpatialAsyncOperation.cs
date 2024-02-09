@@ -43,18 +43,6 @@ namespace SpatialSys.UnitySDK
         }
 
         /// <summary>
-        /// Sets the completion event, same as setting the event using the completed property, but returns
-        /// the operation itself.
-        /// </summary>
-        /// <param name="callback"></param>
-        /// <returns></returns>
-        public SpatialAsyncOperation SetCompletedEvent(Action<SpatialAsyncOperation> callback)
-        {
-            completed += callback;
-            return this;
-        }
-
-        /// <summary>
         /// Invokes the completion event.
         /// </summary>
         public void InvokeCompletionEvent()
@@ -75,6 +63,27 @@ namespace SpatialSys.UnitySDK
                 SpatialBridge.loggingService.LogError($"Error invoking completion callback for {GetType().Name}; Exception: {ex}");
             }
             _completionCallback = null;
+        }
+    }
+
+    /// <summary>
+    /// Extension methods for SpatialAsyncOperation.
+    /// </summary>
+    public static class SpatialAsyncOperationExtensions
+    {
+        /// <summary>
+        /// Sets the completion event, same as setting the event using the completed property, but returns
+        /// the operation itself.
+        /// </summary>
+        /// <typeparam name="T">class deriving from SpatialAsyncOperation</typeparam>
+        /// <param name="operation">SpatialAsyncOperation type</param>
+        /// <param name="callback">Callback function</param>
+        /// <returns>Returns the same operation</returns>
+        public static T SetCompletedEvent<T>(this T operation, Action<T> callback) where T : SpatialAsyncOperation
+        {
+            // Ideally this would be a cast, but Action<T:SpatialAsyncOperation> can't be cast to Action<SpatialAsyncOperation>
+            operation.completed += _ => callback(operation);
+            return operation;
         }
     }
 }

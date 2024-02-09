@@ -23,10 +23,13 @@ namespace SpatialSys.UnitySDK.EditorSimulation
             SpatialBridge.loggingService = new EditorLoggingService();
             SpatialBridge.marketplaceService = new EditorMarketplaceService();
             SpatialBridge.networkingService = new EditorNetworkingService();
+            SpatialBridge.questService = new EditorQuestService();
+            SpatialBridge.spaceContentService = new EditorSpaceContentService();
             SpatialBridge.spaceService = new EditorSpaceService();
             SpatialBridge.spatialComponentService = new EditorSpatialComponentService();
             SpatialBridge.userWorldDataStoreService = new EditorUserWorldDataStoreService();
             SpatialBridge.vfxService = new EditorVFXService();
+            SpatialBridge.eventService = new EditorEventService();
         }
     }
 }

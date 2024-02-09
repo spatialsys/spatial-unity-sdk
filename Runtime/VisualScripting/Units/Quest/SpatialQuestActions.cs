@@ -29,7 +29,10 @@ namespace SpatialSys.UnitySDK.VisualScripting
             questRef = ValueInput<SpatialQuest>(nameof(questRef), null).NullMeansSelf();
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.StartQuest?.Invoke(f.GetValue<SpatialQuest>(questRef));
+                if (SpatialBridge.questService.quests.TryGetValue(f.GetValue<SpatialQuest>(questRef).id, out var quest))
+                {
+                    quest.Start();
+                }
                 return outputTrigger;
             });
 
@@ -62,7 +65,10 @@ namespace SpatialSys.UnitySDK.VisualScripting
             questRef = ValueInput<SpatialQuest>(nameof(questRef), null).NullMeansSelf();
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.CompleteQuest?.Invoke(f.GetValue<SpatialQuest>(questRef));
+                if (SpatialBridge.questService.quests.TryGetValue(f.GetValue<SpatialQuest>(questRef).id, out var quest))
+                {
+                    quest.Complete();
+                }
                 return outputTrigger;
             });
 
@@ -95,7 +101,10 @@ namespace SpatialSys.UnitySDK.VisualScripting
             questRef = ValueInput<SpatialQuest>(nameof(questRef), null).NullMeansSelf();
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.ResetQuest?.Invoke(f.GetValue<SpatialQuest>(questRef));
+                if (SpatialBridge.questService.quests.TryGetValue(f.GetValue<SpatialQuest>(questRef).id, out var quest))
+                {
+                    quest.Reset();
+                }
                 return outputTrigger;
             });
 
@@ -132,7 +141,11 @@ namespace SpatialSys.UnitySDK.VisualScripting
             taskID = ValueInput<uint>(nameof(taskID), 0);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.StartQuestTask?.Invoke(f.GetValue<SpatialQuest>(questRef), f.GetValue<uint>(taskID));
+                if (SpatialBridge.questService.quests.TryGetValue(f.GetValue<SpatialQuest>(questRef).id, out var quest))
+                {
+                    var task = quest.GetTaskByID(f.GetValue<uint>(taskID));
+                    task?.Start();
+                }
                 return outputTrigger;
             });
 
@@ -169,7 +182,11 @@ namespace SpatialSys.UnitySDK.VisualScripting
             taskID = ValueInput<uint>(nameof(taskID), 0);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.CompleteQuestTask?.Invoke(f.GetValue<SpatialQuest>(questRef), f.GetValue<uint>(taskID));
+                if (SpatialBridge.questService.quests.TryGetValue(f.GetValue<SpatialQuest>(questRef).id, out var quest))
+                {
+                    var task = quest.GetTaskByID(f.GetValue<uint>(taskID));
+                    task?.Complete();
+                }
                 return outputTrigger;
             });
 
@@ -208,7 +225,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
             progress = ValueInput<int>(nameof(progress), 1);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.AddQuestTaskProgress?.Invoke(f.GetValue<SpatialQuest>(questRef), f.GetValue<uint>(taskID), f.GetValue<int>(progress));
+                if (SpatialBridge.questService.quests.TryGetValue(f.GetValue<SpatialQuest>(questRef).id, out var quest))
+                {
+                    var task = quest.GetTaskByID(f.GetValue<uint>(taskID));
+                    if (task != null)
+                        task.progress += f.GetValue<int>(progress);
+                }
                 return outputTrigger;
             });
 
@@ -247,7 +269,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
             progress = ValueInput<int>(nameof(progress), 1);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SetQuestTaskProgress?.Invoke(f.GetValue<SpatialQuest>(questRef), f.GetValue<uint>(taskID), f.GetValue<int>(progress));
+                if (SpatialBridge.questService.quests.TryGetValue(f.GetValue<SpatialQuest>(questRef).id, out var quest))
+                {
+                    var task = quest.GetTaskByID(f.GetValue<uint>(taskID));
+                    if (task != null)
+                        task.progress = f.GetValue<int>(progress);
+                }
                 return outputTrigger;
             });
 
@@ -257,3 +284,4 @@ namespace SpatialSys.UnitySDK.VisualScripting
         }
     }
 }
+

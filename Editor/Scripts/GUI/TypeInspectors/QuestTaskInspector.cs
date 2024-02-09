@@ -38,7 +38,7 @@ namespace SpatialSys.UnitySDK.Editor
             rect.y += typeRect.height + EditorGUIUtility.standardVerticalSpacing;
 
             // Progress steps (only for progress bar)
-            if (taskTypeProp.enumValueIndex == (int)SpatialQuest.TaskType.ProgressBar)
+            if (taskTypeProp.enumValueIndex == (int)QuestTaskType.ProgressBar)
             {
                 Rect progressRect = new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight);
                 progressRect = EditorGUI.IndentedRect(progressRect);

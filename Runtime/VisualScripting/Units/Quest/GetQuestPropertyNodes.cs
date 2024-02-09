@@ -203,9 +203,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             questRef = ValueInput<SpatialQuest>(nameof(questRef), null).NullMeansSelf();
 
-            status = ValueOutput<SpatialQuestStatus>(nameof(status), (f) =>
-                (SpatialQuestStatus)SpatialBridge.GetQuestStatus?.Invoke(f.GetValue<SpatialQuest>(questRef))
-            );
+            status = ValueOutput<SpatialQuestStatus>(nameof(status), (f) => {
+                var quest = f.GetValue<SpatialQuest>(questRef);
+                if (SpatialBridge.questService.quests.TryGetValue(quest.id, out var questState))
+                    return (SpatialQuestStatus)questState.status;
+                return SpatialQuestStatus.None;
+            });
         }
     }
 
@@ -231,9 +234,16 @@ namespace SpatialSys.UnitySDK.VisualScripting
             questRef = ValueInput<SpatialQuest>(nameof(questRef), null).NullMeansSelf();
             taskID = ValueInput<uint>(nameof(taskID), 0);
 
-            taskProgress = ValueOutput<int>(nameof(taskProgress), (f) =>
-                SpatialBridge.GetQuestTaskProgress?.Invoke(f.GetValue<SpatialQuest>(questRef), f.GetValue<uint>(taskID)) ?? 0
-            );
+            taskProgress = ValueOutput<int>(nameof(taskProgress), (f) => {
+                var quest = f.GetValue<SpatialQuest>(questRef);
+                if (SpatialBridge.questService.quests.TryGetValue(quest.id, out var questState))
+                {
+                    IQuestTask task = questState.GetTaskByID(f.GetValue<uint>(taskID));
+                    if (task != null)
+                        return task.progress;
+                }
+                return 0;
+            });
         }
     }
     [UnitTitle("Spatial Quest: Get Task Status")]
@@ -258,9 +268,16 @@ namespace SpatialSys.UnitySDK.VisualScripting
             questRef = ValueInput<SpatialQuest>(nameof(questRef), null).NullMeansSelf();
             taskID = ValueInput<uint>(nameof(taskID), 0);
 
-            taskStatus = ValueOutput<SpatialQuestStatus>(nameof(taskStatus), (f) =>
-                (SpatialQuestStatus)SpatialBridge.GetQuestTaskStatus?.Invoke(f.GetValue<SpatialQuest>(questRef), f.GetValue<uint>(taskID))
-            );
+            taskStatus = ValueOutput<SpatialQuestStatus>(nameof(taskStatus), (f) => {
+                var quest = f.GetValue<SpatialQuest>(questRef);
+                if (SpatialBridge.questService.quests.TryGetValue(quest.id, out var questState))
+                {
+                    IQuestTask task = questState.GetTaskByID(f.GetValue<uint>(taskID));
+                    if (task != null)
+                        return (SpatialQuestStatus)task.status;
+                }
+                return SpatialQuestStatus.None;
+            });
         }
     }
 

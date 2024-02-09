@@ -13,13 +13,18 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialComponentBase))]
     public class OnSceneInitializedNode : EventUnit<EmptyEventArgs>
     {
-        public static string eventName = "OnSceneInitialized";
+        private const string EVENT_HOOK_ID = "OnSceneInitialized";
 
         protected override bool register => true;
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent()
+        {
+            EventBus.Trigger(EVENT_HOOK_ID);
         }
 
         protected override bool ShouldTrigger(Flow flow, EmptyEventArgs args)

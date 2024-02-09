@@ -106,7 +106,7 @@ namespace SpatialSys.UnitySDK.Editor
             if (target.questRewards == null || target.questRewards.Length == 0)
                 return Promise.Resolved();
 
-            if (target.questRewards.Any(r => r.type == SpatialQuest.RewardType.Item && (string.IsNullOrEmpty(r.id) || r.amount <= 0)))
+            if (target.questRewards.Any(r => r.type == RewardType.Item && (string.IsNullOrEmpty(r.id) || r.amount <= 0)))
             {
                 SpatialValidator.AddResponse(new SpatialTestResponse(
                     target,
@@ -116,7 +116,7 @@ namespace SpatialSys.UnitySDK.Editor
                 ));
             }
 
-            if (target.questRewards.Count(r => r.type == SpatialQuest.RewardType.Badge) > 1)
+            if (target.questRewards.Count(r => r.type == RewardType.Badge) > 1)
             {
                 SpatialValidator.AddResponse(new SpatialTestResponse(
                     target,
@@ -125,9 +125,9 @@ namespace SpatialSys.UnitySDK.Editor
                     "Only one badge can be rewarded per quest. Remove everything else."
                 ));
             }
-            else if (target.questRewards.Any(r => r.type == SpatialQuest.RewardType.Badge))
+            else if (target.questRewards.Any(r => r.type == RewardType.Badge))
             {
-                var badgeReward = target.questRewards.First(r => r.type == SpatialQuest.RewardType.Badge);
+                var badgeReward = target.questRewards.First(r => r.type == RewardType.Badge);
                 if (string.IsNullOrEmpty(badgeReward.id))
                 {
                     SpatialValidator.AddResponse(new SpatialTestResponse(
@@ -256,22 +256,22 @@ namespace SpatialSys.UnitySDK.Editor
                         else
                         {
                             SpatialQuest.Task task = quest.tasks.First(t => t.id == questEvent.taskID);
-                            if (questEvent.questEventType == QuestEvent.QuestEventType.CompleteTask && task.type != SpatialQuest.TaskType.Check)
+                            if (questEvent.questEventType == QuestEvent.QuestEventType.CompleteTask && task.type != QuestTaskType.Check)
                             {
                                 SpatialValidator.AddResponse(new SpatialTestResponse(
                                     associatedComponent,
                                     TestResponseType.Fail,
-                                    $"Quest event `{nameof(QuestEvent.QuestEventType.CompleteTask)}` can only be used on Quest Tasks that are of type `{nameof(SpatialQuest.TaskType.Check)}`",
-                                    $"You will either need to change the Quest Task Type to `{nameof(SpatialQuest.TaskType.Check)}`, or change the event type on the object at path `{associatedComponent.gameObject.GetPath()}`"
+                                    $"Quest event `{nameof(QuestEvent.QuestEventType.CompleteTask)}` can only be used on Quest Tasks that are of type `{nameof(QuestTaskType.Check)}`",
+                                    $"You will either need to change the Quest Task Type to `{nameof(QuestTaskType.Check)}`, or change the event type on the object at path `{associatedComponent.gameObject.GetPath()}`"
                                 ));
                             }
-                            else if (questEvent.questEventType == QuestEvent.QuestEventType.AddTaskProgress && task.type != SpatialQuest.TaskType.ProgressBar)
+                            else if (questEvent.questEventType == QuestEvent.QuestEventType.AddTaskProgress && task.type != QuestTaskType.ProgressBar)
                             {
                                 SpatialValidator.AddResponse(new SpatialTestResponse(
                                     associatedComponent,
                                     TestResponseType.Fail,
-                                    $"Quest event `{nameof(QuestEvent.QuestEventType.AddTaskProgress)}` can only be used on Quest Tasks that are of type `{nameof(SpatialQuest.TaskType.ProgressBar)}`",
-                                    $"You will either need to change the Quest Task Type to `{nameof(SpatialQuest.TaskType.ProgressBar)}`, or change the event type on the object at path `{associatedComponent.gameObject.GetPath()}`"
+                                    $"Quest event `{nameof(QuestEvent.QuestEventType.AddTaskProgress)}` can only be used on Quest Tasks that are of type `{nameof(QuestTaskType.ProgressBar)}`",
+                                    $"You will either need to change the Quest Task Type to `{nameof(QuestTaskType.ProgressBar)}`, or change the event type on the object at path `{associatedComponent.gameObject.GetPath()}`"
                                 ));
                             }
                         }

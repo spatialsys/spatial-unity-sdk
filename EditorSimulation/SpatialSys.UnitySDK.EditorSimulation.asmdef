@@ -2,7 +2,9 @@
     "name": "SpatialSys.UnitySDK.EditorSimulation",
     "rootNamespace": "SpatialSys.UnitySDK.EditorSimulation",
     "references": [
-        "SpatialSys.UnitySDK"
+        "SpatialSys.UnitySDK",
+        "Unity.VisualScripting.Core",
+        "SpatialSys.UnitySDK.Editor"
     ],
     "includePlatforms": [
         "Editor"

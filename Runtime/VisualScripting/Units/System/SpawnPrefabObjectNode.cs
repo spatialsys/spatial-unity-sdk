@@ -31,7 +31,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             spawnRotation = ValueInput<Quaternion>(nameof(spawnRotation), Quaternion.identity);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SpawnPrefabObjectFromPackage?.Invoke(f.GetValue<string>(sku), f.GetValue<Vector3>(spawnPosition), f.GetValue<Quaternion>(spawnRotation));
+                SpatialBridge.spaceContentService.SpawnPrefabObject(AssetType.Package, f.GetValue<string>(sku), f.GetValue<Vector3>(spawnPosition), f.GetValue<Quaternion>(spawnRotation));
                 return outputTrigger;
             });
 
@@ -69,7 +69,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             spawnRotation = ValueInput<Quaternion>(nameof(spawnRotation), Quaternion.identity);
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.SpawnPrefabObjectFromEmbedded?.Invoke(f.GetValue<string>(assetID), f.GetValue<Vector3>(spawnPosition), f.GetValue<Quaternion>(spawnRotation));
+                SpatialBridge.spaceContentService.SpawnPrefabObject(AssetType.EmbeddedAsset, f.GetValue<string>(assetID), f.GetValue<Vector3>(spawnPosition), f.GetValue<Quaternion>(spawnRotation));
                 return outputTrigger;
             });
 

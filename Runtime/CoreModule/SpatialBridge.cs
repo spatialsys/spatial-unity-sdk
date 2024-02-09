@@ -40,6 +40,11 @@ namespace SpatialSys.UnitySDK
         public static ICoreGUIService coreGUIService;
 
         /// <summary>
+        /// A service with helper methods for subscribing to events.
+        /// </summary>
+        public static IEventService eventService;
+
+        /// <summary>
         /// Service for handling all input related functionality.
         /// </summary>
         public static IInputService inputService;
@@ -66,6 +71,16 @@ namespace SpatialSys.UnitySDK
         public static INetworkingService networkingService;
 
         /// <summary>
+        /// Service for managing Quests on the space.
+        /// </summary>
+        public static IQuestService questService;
+
+        /// <summary>
+        /// Service for interacting with the current scene's synced objects
+        /// </summary>
+        public static ISpaceContentService spaceContentService;
+
+        /// <summary>
         /// Service for interacting with the current space.
         /// </summary>
         public static ISpaceService spaceService;
@@ -88,75 +103,7 @@ namespace SpatialSys.UnitySDK
         /// only on spatial components themselves.
         /// </summary>
         public static Internal.ISpatialComponentService spatialComponentService;
-        #endregion
-
-        #region IQuestSystemService
-        public delegate void QuestDelegate(SpatialQuest quest);
-        public static QuestDelegate StartQuest;
-        public static QuestDelegate CompleteQuest;
-        public static QuestDelegate ResetQuest;
-
-        public delegate void QuestTaskDelegate(SpatialQuest quest, uint taskID);
-        public static QuestTaskDelegate StartQuestTask;
-        public static QuestTaskDelegate CompleteQuestTask;
-        public delegate void QuestTaskProgressDelegate(SpatialQuest quest, uint taskID, int progress);
-        public static QuestTaskProgressDelegate AddQuestTaskProgress;
-        public static QuestTaskProgressDelegate SetQuestTaskProgress;
-
-        public delegate int GetQuestTaskProgressDelegate(SpatialQuest quest, uint taskID);
-        public static GetQuestTaskProgressDelegate GetQuestTaskProgress;
-
-        public delegate int GetQuestStatusDelegate(SpatialQuest quest);
-        public static GetQuestStatusDelegate GetQuestStatus;
-
-        public delegate int GetQuestTaskStatusDelegate(SpatialQuest quest, uint taskID);
-        public static GetQuestTaskStatusDelegate GetQuestTaskStatus;
-        #endregion
-
-        #region ISceneService
-
-        // Avatar Attachments
-        public delegate int GetActorFromAvatarAttachmentObjectDelegate(SpatialAvatarAttachment attachment);
-        public static GetActorFromAvatarAttachmentObjectDelegate GetActorFromAvatarAttachmentObject;
-
-        // Prefab Objects
-        public delegate void SpawnPrefabObjectFromPackageDelegate(string sku, Vector3 position, Quaternion rotation);
-        public static SpawnPrefabObjectFromPackageDelegate SpawnPrefabObjectFromPackage;
-
-        public delegate void SpawnPrefabObjectFromEmbeddedDelegate(string assetID, Vector3 position, Quaternion rotation);
-        public static SpawnPrefabObjectFromEmbeddedDelegate SpawnPrefabObjectFromEmbedded;
-
-        //Synced objects
-        public delegate bool TakeoverSyncedObjectOwnerhipDelegate(SpatialSyncedObject syncedObject);
-        public static TakeoverSyncedObjectOwnerhipDelegate TakeoverSyncedObjectOwnership;
-
-        public delegate SpatialSyncedObject GetSyncedObjectByIDDelegate(int id);
-        public static GetSyncedObjectByIDDelegate GetSyncedObjectByID;
-
-        public delegate bool GetSyncedObjectIsSyncedDelegate(SpatialSyncedObject syncedObject);
-        public static GetSyncedObjectIsSyncedDelegate GetSyncedObjectIsSynced;
-
-        public delegate int GetSyncedObjectIDDelegate(SpatialSyncedObject syncedObject);
-        public static GetSyncedObjectIDDelegate GetSyncedObjectID;
-
-        public delegate int GetSyncedObjectOwnerDelegate(SpatialSyncedObject syncedObject);
-        public static GetSyncedObjectOwnerDelegate GetSyncedObjectOwner;
-
-        public delegate bool GetSyncedObjectHasControlDelegate(SpatialSyncedObject syncedObject);
-        public static GetSyncedObjectHasControlDelegate GetSyncedObjectHasControl;
-
-        public delegate bool GetSyncedObjectIsLocallyOwnedDelegate(SpatialSyncedObject syncedObject);
-        public static GetSyncedObjectIsLocallyOwnedDelegate GetSyncedObjectIsLocallyOwned;
-
-        public delegate void SetSyncedAnimatorParameterDelegate(SpatialSyncedAnimator syncedAnimator, string parameterName, object value);
-        public static SetSyncedAnimatorParameterDelegate SetSyncedAnimatorParameter;
-
-        public delegate void SetSyncedAnimatorTriggerDelegate(SpatialSyncedAnimator syncedAnimator, string triggerName);
-        public static SetSyncedAnimatorTriggerDelegate SetSyncedAnimatorTrigger;
 
         #endregion
-
-        public delegate bool GetIsSceneInitializedDelegate();
-        public static GetIsSceneInitializedDelegate GetIsSceneInitialized;
     }
 }

@@ -10,9 +10,9 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [UnitShortTitle("On Synced Variable Changed")]
     [UnitCategory("Events\\Spatial\\Synced Object")]
     [TypeIcon(typeof(SpatialComponentBase))]
-    public class SpatialSyncedVariablesOnVariableChanged : EventUnit<(SpatialSyncedVariables, string)>
+    public class SpatialSyncedVariablesOnVariableChanged : EventUnit<(SpatialSyncedVariables, string, object)>
     {
-        public static string eventName = "SpatialSyncedVariablesOnVariableChanged";
+        private const string EVENT_HOOK_ID = "SpatialSyncedVariablesOnVariableChanged";
 
         [NullMeansSelf]
         [PortLabelHidden]
@@ -30,7 +30,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(SpatialSyncedVariables syncedVariables, string variableName, object value)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, (syncedVariables, variableName, value));
         }
 
         protected override void Definition()
@@ -41,7 +46,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             value = ValueOutput<object>(nameof(value));
         }
 
-        protected override bool ShouldTrigger(Flow flow, (SpatialSyncedVariables, string) args)
+        protected override bool ShouldTrigger(Flow flow, (SpatialSyncedVariables, string, object) args)
         {
             if (flow.GetValue<SpatialSyncedVariables>(syncedVariablesRef) == args.Item1 && flow.GetValue<string>(variableName) == args.Item2)
             {
@@ -50,16 +55,9 @@ namespace SpatialSys.UnitySDK.VisualScripting
             return false;
         }
 
-        protected override void AssignArguments(Flow flow, (SpatialSyncedVariables, string) args)
+        protected override void AssignArguments(Flow flow, (SpatialSyncedVariables, string, object) args)
         {
-            foreach (SpatialSyncedVariables.Data data in args.Item1.variableSettings)
-            {
-                if (data.name == args.Item2)
-                {
-                    flow.SetValue(value, data.declaration.value);
-                    break;
-                }
-            }
+            flow.SetValue(value, args.Item3);
         }
     }
 }

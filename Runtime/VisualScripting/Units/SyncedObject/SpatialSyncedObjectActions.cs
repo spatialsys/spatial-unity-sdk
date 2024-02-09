@@ -29,7 +29,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             syncedObject = ValueInput<SpatialSyncedObject>(nameof(syncedObject), null).NullMeansSelf();
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                SpatialBridge.TakeoverSyncedObjectOwnership.Invoke(f.GetValue<SpatialSyncedObject>(syncedObject));
+                SpatialBridge.spaceContentService.TakeoverSyncedObjectOwnership(f.GetValue<SpatialSyncedObject>(syncedObject));
                 return outputTrigger;
             });
 
@@ -66,7 +66,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
             syncedObject = ValueInput<SpatialSyncedObject>(nameof(syncedObject), null).NullMeansSelf();
 
             inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
-                if (SpatialBridge.GetSyncedObjectIsLocallyOwned.Invoke(f.GetValue<SpatialSyncedObject>(syncedObject)))
+                if (SpatialBridge.spaceContentService.GetSyncedObjectIsLocallyOwned(f.GetValue<SpatialSyncedObject>(syncedObject)))
                 {
                     return outputTriggerTrue;
                 }

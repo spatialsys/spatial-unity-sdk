@@ -24,13 +24,13 @@ namespace SpatialSys.UnitySDK.Editor
             rect.y += typeRect.height + EditorGUIUtility.standardVerticalSpacing;
 
             // Reward type dropdown
-            if (typeProp.enumValueIndex == (int)SpatialQuest.RewardType.Badge)
+            if (typeProp.enumValueIndex == (int)RewardType.Badge)
             {
                 Rect idRect = new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight);
                 EditorGUI.PropertyField(idRect, idProp);
                 rect.y += idRect.height + EditorGUIUtility.standardVerticalSpacing;
             }
-            else if (typeProp.enumValueIndex == (int)SpatialQuest.RewardType.Item)
+            else if (typeProp.enumValueIndex == (int)RewardType.Item)
             {
                 SerializedProperty amountProp = property.FindPropertyRelative(nameof(SpatialQuest.Reward.amount));
 
@@ -49,7 +49,7 @@ namespace SpatialSys.UnitySDK.Editor
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             SerializedProperty typeProp = property.FindPropertyRelative(nameof(SpatialQuest.Reward.type));
-            int lines = typeProp.enumValueIndex == (int)SpatialQuest.RewardType.Badge ? 2 : 3;
+            int lines = typeProp.enumValueIndex == (int)RewardType.Badge ? 2 : 3;
             return EditorGUIUtility.singleLineHeight * lines + EditorGUIUtility.standardVerticalSpacing * (lines - 1);
         }
     }

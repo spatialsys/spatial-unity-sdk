@@ -10,9 +10,9 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [UnitShortTitle("On Owner Changed")]
     [UnitCategory("Events\\Spatial\\Synced Object")]
     [TypeIcon(typeof(SpatialSyncedObject))]
-    public class SpatialSyncedObjectEventOnOwnerChanged : EventUnit<SpatialSyncedObject>
+    public class SpatialSyncedObjectEventOnOwnerChanged : EventUnit<(SpatialSyncedObject, int)>
     {
-        public static string eventName = "SpatialSyncedObjectOnOwnerChanged";
+        private const string EVENT_HOOK_ID = "SpatialSyncedObjectOnOwnerChanged";
 
         [NullMeansSelf]
         [PortLabelHidden]
@@ -20,28 +20,39 @@ namespace SpatialSys.UnitySDK.VisualScripting
         public ValueInput syncedObjectRef { get; private set; }
         protected override bool register => true;
 
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ValueOutput ownerID { get; private set; }
+
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(SpatialSyncedObject spatialSyncedObject, int ownerID)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, spatialSyncedObject);
         }
 
         protected override void Definition()
         {
             base.Definition();
             syncedObjectRef = ValueInput<SpatialSyncedObject>(nameof(syncedObjectRef), null).NullMeansSelf();
+            ownerID = ValueOutput<int>(nameof(ownerID));
         }
 
-        protected override bool ShouldTrigger(Flow flow, SpatialSyncedObject args)
+        protected override bool ShouldTrigger(Flow flow, (SpatialSyncedObject, int) args)
         {
-            if (args == null)
+            if (args.Item1 == null)
             {
                 return false;
             }
-            if (flow.GetValue<SpatialSyncedObject>(syncedObjectRef) == args)
-            {
-                return true;
-            }
-            return false;
+            return flow.GetValue<SpatialSyncedObject>(syncedObjectRef) == args.Item1;
+        }
+
+        protected override void AssignArguments(Flow flow, (SpatialSyncedObject, int) args)
+        {
+            flow.SetValue(ownerID, args.Item2);
         }
     }
 
@@ -52,7 +63,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialSyncedObject))]
     public class SpatialSyncedObjectEventOnObjectInitialized : EventUnit<SpatialSyncedObject>
     {
-        public static string eventName = "SpatialSyncedObjectOnObjectIntialized";
+        private const string EVENT_HOOK_ID = "SpatialSyncedObjectOnObjectIntialized";
 
         [NullMeansSelf]
         [PortLabelHidden]
@@ -62,7 +73,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(SpatialSyncedObject spatialSyncedObject)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, spatialSyncedObject);
         }
 
         protected override void Definition()

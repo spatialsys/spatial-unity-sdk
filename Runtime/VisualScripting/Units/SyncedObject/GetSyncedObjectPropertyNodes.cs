@@ -22,7 +22,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             objectID = ValueInput<int>(nameof(objectID));
 
-            syncedObject = ValueOutput<SpatialSyncedObject>(nameof(syncedObject), (f) => SpatialBridge.GetSyncedObjectByID.Invoke(f.GetValue<int>(objectID)));
+            syncedObject = ValueOutput<SpatialSyncedObject>(nameof(syncedObject), (f) => SpatialBridge.spaceContentService.GetSyncedObjectByID(f.GetValue<int>(objectID)));
         }
     }
 
@@ -45,7 +45,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             syncedObject = ValueInput<SpatialSyncedObject>(nameof(syncedObject), null).NullMeansSelf();
 
-            isSynced = ValueOutput<bool>(nameof(isSynced), (f) => SpatialBridge.GetSyncedObjectIsSynced.Invoke(f.GetValue<SpatialSyncedObject>(syncedObject)));
+            isSynced = ValueOutput<bool>(nameof(isSynced), (f) => SpatialBridge.spaceContentService.GetSyncedObjectIsSynced(f.GetValue<SpatialSyncedObject>(syncedObject)));
         }
     }
 
@@ -69,7 +69,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             syncedObject = ValueInput<SpatialSyncedObject>(nameof(syncedObject), null).NullMeansSelf();
 
-            objectID = ValueOutput<int>(nameof(objectID), (f) => SpatialBridge.GetSyncedObjectID.Invoke(f.GetValue<SpatialSyncedObject>(syncedObject)));
+            objectID = ValueOutput<int>(nameof(objectID), (f) => SpatialBridge.spaceContentService.GetSyncedObjectID(f.GetValue<SpatialSyncedObject>(syncedObject)));
         }
     }
 
@@ -92,7 +92,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             syncedObject = ValueInput<SpatialSyncedObject>(nameof(syncedObject), null).NullMeansSelf();
 
-            owner = ValueOutput<int>(nameof(owner), (f) => SpatialBridge.GetSyncedObjectOwner.Invoke(f.GetValue<SpatialSyncedObject>(syncedObject)));
+            owner = ValueOutput<int>(nameof(owner), (f) => SpatialBridge.spaceContentService.GetSyncedObjectOwner(f.GetValue<SpatialSyncedObject>(syncedObject)));
         }
     }
 
@@ -115,7 +115,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             syncedObject = ValueInput<SpatialSyncedObject>(nameof(syncedObject), null).NullMeansSelf();
 
-            hasControl = ValueOutput<bool>(nameof(hasControl), (f) => SpatialBridge.GetSyncedObjectHasControl.Invoke(f.GetValue<SpatialSyncedObject>(syncedObject)));
+            hasControl = ValueOutput<bool>(nameof(hasControl), (f) => SpatialBridge.spaceContentService.GetSyncedObjectHasControl(f.GetValue<SpatialSyncedObject>(syncedObject)));
         }
     }
 }

@@ -9,7 +9,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialQuest))]
     public class SpatialQuestEventOnStarted : EventUnit<SpatialQuest>
     {
-        public static string eventName = "SpatialQuestOnStarted";
+        private const string EVENT_HOOK_ID = "SpatialQuestOnStarted";
 
         [NullMeansSelf]
         [PortLabelHidden]
@@ -19,7 +19,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(SpatialQuest quest)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, quest);
         }
 
         protected override void Definition()
@@ -49,7 +54,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialQuest))]
     public class SpatialQuestEventOnCompleted : EventUnit<SpatialQuest>
     {
-        public static string eventName = "SpatialQuestOnCompleted";
+        private const string EVENT_HOOK_ID = "SpatialQuestOnCompleted";
 
         [NullMeansSelf]
         [PortLabelHidden]
@@ -59,7 +64,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(SpatialQuest quest)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, quest);
         }
 
         protected override void Definition()
@@ -89,7 +99,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialQuest))]
     public class SpatialQuestEventOnPreviouslyCompleted : EventUnit<SpatialQuest>
     {
-        public static string eventName = "SpatialQuestOnPreviouslyCompleted";
+        private const string EVENT_HOOK_ID = "SpatialQuestOnPreviouslyCompleted";
 
         [NullMeansSelf]
         [PortLabelHidden]
@@ -99,7 +109,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(SpatialQuest quest)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, quest);
         }
 
         protected override void Definition()
@@ -129,7 +144,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialQuest))]
     public class SpatialQuestEventOnReset : EventUnit<SpatialQuest>
     {
-        public static string eventName = "SpatialQuestOnReset";
+        private const string EVENT_HOOK_ID = "SpatialQuestOnReset";
 
         [NullMeansSelf]
         [PortLabelHidden]
@@ -139,7 +154,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(SpatialQuest quest)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, quest);
         }
 
         protected override void Definition()
@@ -169,7 +189,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialQuest))]
     public class SpatialQuestEventOnTaskStarted : EventUnit<(SpatialQuest, uint)>
     {
-        public static string eventName = "SpatialQuestOnTaskStarted";
+        private const string EVENT_HOOK_ID = "SpatialQuestOnTaskStarted";
 
         [NullMeansSelf]
         [PortLabelHidden]
@@ -183,7 +203,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(SpatialQuest quest, uint taskID)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, (quest, taskID));
         }
 
         protected override void Definition()
@@ -211,7 +236,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialQuest))]
     public class SpatialQuestEventOnTaskCompleted : EventUnit<(SpatialQuest, uint)>
     {
-        public static string eventName = "SpatialQuestOnTaskCompleted";
+        private const string EVENT_HOOK_ID = "SpatialQuestOnTaskCompleted";
 
         [NullMeansSelf]
         [PortLabelHidden]
@@ -225,7 +250,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(SpatialQuest quest, uint taskID)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, (quest, taskID));
         }
 
         protected override void Definition()
@@ -253,7 +283,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialQuest))]
     public class SpatialQuestEventOnTaskPreviouslyCompleted : EventUnit<(SpatialQuest, uint)>
     {
-        public static string eventName = "SpatialQuestOnTaskPreviouslyCompleted";
+        private const string EVENT_HOOK_ID = "SpatialQuestOnTaskPreviouslyCompleted";
 
         [NullMeansSelf]
         [PortLabelHidden]
@@ -267,7 +297,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(SpatialQuest quest, uint taskID)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, (quest, taskID));
         }
 
         protected override void Definition()
@@ -295,7 +330,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialQuest))]
     public class SpatialQuestEventOnAnyTaskStarted : EventUnit<SpatialQuest>
     {
-        public static string eventName = "SpatialQuestOnAnyTaskStarted";
+        private const string EVENT_HOOK_ID = "SpatialQuestOnAnyTaskStarted";
 
         [NullMeansSelf]
         [PortLabelHidden]
@@ -306,7 +341,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(SpatialQuest quest)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, quest);
         }
 
         protected override void Definition()
@@ -332,7 +372,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
     [TypeIcon(typeof(SpatialQuest))]
     public class SpatialQuestEventOnAnyTaskCompleted : EventUnit<SpatialQuest>
     {
-        public static string eventName = "SpatialQuestOnAnyTaskCompleted";
+        private const string EVENT_HOOK_ID = "SpatialQuestOnAnyTaskCompleted";
 
         [NullMeansSelf]
         [PortLabelHidden]
@@ -343,7 +383,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
 
         public override EventHook GetHook(GraphReference reference)
         {
-            return new EventHook(eventName);
+            return new EventHook(EVENT_HOOK_ID);
+        }
+
+        public static void TriggerEvent(SpatialQuest quest)
+        {
+            EventBus.Trigger(EVENT_HOOK_ID, quest);
         }
 
         protected override void Definition()

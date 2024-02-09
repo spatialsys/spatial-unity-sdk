@@ -297,7 +297,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
         {
             attachmentObject = ValueInput<SpatialAvatarAttachment>(nameof(attachmentObject), null).NullMeansSelf();
             actor = ValueOutput<int>(nameof(actor), (flow) => {
-                return SpatialBridge.GetActorFromAvatarAttachmentObject?.Invoke(flow.GetValue<SpatialAvatarAttachment>(attachmentObject)) ?? 0;
+                return SpatialBridge.spaceContentService.GetOwnerActor(flow.GetValue<SpatialAvatarAttachment>(attachmentObject));
             });
         }
     }
