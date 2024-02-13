@@ -22,14 +22,14 @@ namespace SpatialSys.UnitySDK
         public bool saveWithSpace = false;
         public bool destroyOnCreatorDisconnect = false;
 
-        [FormerlySerializedAs("assetID"), HideInInspector, SerializeField]
-        private string _assetID; // unity prefab asset ID
+        [HideInInspector, SerializeField]
+        private string assetID; // unity prefab asset ID
 
-        [FormerlySerializedAs("instanceID"), HideInInspector, SerializeField]
-        private string _instanceID;
+        [HideInInspector, SerializeField]
+        private string instanceID;
 
-        public string assetID => _assetID;
-        public string instanceID => _instanceID;
+        public string AssetID => assetID;
+        public string InstanceID => instanceID;
 
         public delegate void OnOwnerChangedDelegate(int newOwner);
         public delegate void OnVariableChangedDelegate(string variableName, object newValue);
@@ -238,21 +238,21 @@ namespace SpatialSys.UnitySDK
             {
                 string assetPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(gameObject);
                 string assetGUID = AssetDatabase.AssetPathToGUID(assetPath);
-                if (_assetID != assetGUID)
+                if (assetID != assetGUID)
                 {
-                    _assetID = assetGUID;
+                    assetID = assetGUID;
                 }
             }
             else
             {
-                _assetID = null;
+                assetID = null;
             }
 
             // set instance ID if it's an instance in the scene
             // or embedded within a prefab object
             if (isPrefabAsset && !isChildOfPrefabObject)
             {
-                _instanceID = null;
+                instanceID = null;
             }
             else
             {
@@ -263,12 +263,12 @@ namespace SpatialSys.UnitySDK
                     if (syncedObject == this)
                         continue;
 
-                    allInstanceIDs.Add(syncedObject._instanceID);
+                    allInstanceIDs.Add(syncedObject.instanceID);
                 }
 
-                while (string.IsNullOrEmpty(_instanceID) || allInstanceIDs.Contains(_instanceID))
+                while (string.IsNullOrEmpty(instanceID) || allInstanceIDs.Contains(instanceID))
                 {
-                    _instanceID = System.Guid.NewGuid().ToString();
+                    instanceID = System.Guid.NewGuid().ToString();
                 }
             }
         }
