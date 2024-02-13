@@ -103,11 +103,11 @@ namespace SpatialSys.UnitySDK.Editor
                 if (!Directory.Exists(outputDir))
                     Directory.CreateDirectory(outputDir);
 
-                PlayerBuildInterface.CompilePlayerScripts(scriptCompilationSettings, outputDir);
+                ScriptCompilationResult compilationResult = PlayerBuildInterface.CompilePlayerScripts(scriptCompilationSettings, outputDir);
 
                 // Copy dll to generated folder
                 string dllPath = Path.Combine(outputDir, assemblyName + ".dll");
-                if (File.Exists(dllPath))
+                if (File.Exists(dllPath) && compilationResult.assemblies.Count > 0)
                 {
                     string dllAssetPathOutputDir = Path.GetDirectoryName(OUTPUT_ASSET_PATH);
                     if (!Directory.Exists(dllAssetPathOutputDir))

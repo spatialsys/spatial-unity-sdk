@@ -85,15 +85,8 @@ namespace SpatialSys.UnitySDK.Editor
                     EditorUserBuildSettings.SwitchActiveBuildTarget(BuildPipeline.GetBuildTargetGroup(target), target);
 
                     // Compile custom c# dlls
-                    if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig && spaceConfig.csharpAssembly != null)
-                    {
-                        // Create backup because we're going to modify the assembly name
-                        EditorUtility.CreateAssetBackup(spaceConfig.csharpAssembly);
-                        CSScriptingEditorUtility.EnforceCustomAssemblyName(spaceConfig.csharpAssembly, null);
-
-                        if (!CSScriptingEditorUtility.CompileAssembly(spaceConfig.csharpAssembly, null))
-                            return Promise.Rejected(new System.Exception("Failed to compile custom c# scripts"));
-                    }
+                    if (!CompileAssemblyIfExists())
+                        return Promise.Rejected(new System.Exception("Failed to compile custom c# scripts"));
 
                     // Auto-assign necessary bundle names
                     AssignBundleNamesToPackageAssets();
@@ -286,6 +279,9 @@ namespace SpatialSys.UnitySDK.Editor
                 EditorUtility.RestoreAssetFromBackup(ProjectConfig.activePackageConfig);
                 EditorUtility.RestoreAssetFromBackup(ProjectConfig.instance);
             }
+
+            if (!CompileAssemblyIfExists())
+                return Promise.Rejected(new System.Exception("Failed to compile custom c# scripts"));
 
             return CheckValidationPromise(SpatialValidator.RunTestsOnPackage(ValidationRunContext.PublishingPackage))
                 .Then(() => {
@@ -574,6 +570,20 @@ namespace SpatialSys.UnitySDK.Editor
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
+        }
+
+        private static bool CompileAssemblyIfExists()
+        {
+            if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig && spaceConfig.csharpAssembly != null)
+            {
+                // Create backup because we're going to modify the assembly name
+                EditorUtility.CreateAssetBackup(spaceConfig.csharpAssembly);
+                CSScriptingEditorUtility.EnforceCustomAssemblyName(spaceConfig.csharpAssembly, null);
+
+                return CSScriptingEditorUtility.CompileAssembly(spaceConfig.csharpAssembly, null);
+            }
+
+            return true;
         }
 
         /// <summary>
