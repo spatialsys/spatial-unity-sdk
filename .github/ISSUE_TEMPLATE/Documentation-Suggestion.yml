@@ -1,0 +1,41 @@
+name: Documentation Suggestion
+description: Suggest an example or correction to improve the Spatial documentation!
+title: "[DOC SUGGESTION]: "
+labels: ["documentation"]
+assignees:
+  - alanSherba
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out a suggestion!
+  - type: textarea
+    id: pagelinks
+    attributes:
+      label: Doc Page Links
+      description: Paste a link to the exact page your are proposing an example or correction for. If applicable to multiple pages post a link to each page.
+      placeholder: ex. https://cs.spatial.io/api/SpatialSys.UnitySDK.IAvatar.html
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Explain Suggestion
+      description: Explain your suggestion in detail.
+      placeholder: This page should show using the function in this way...
+    validations:
+      required: true
+  - type: textarea
+    id: codeSuggestion
+    attributes:
+      label: Code Suggestion
+      description: Paste any code suggestions here. All code should compile, no sudo-code.
+      render: csharp
+  - type: input
+    id: credit
+    attributes:
+      label: Contribution Credit
+      description: If your suggestion is approved how should we credit you? (Optional)
+      placeholder: ex. SpatialLover100
+    validations:
+      required: false
