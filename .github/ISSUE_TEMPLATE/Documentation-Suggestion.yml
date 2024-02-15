@@ -1,6 +1,6 @@
 name: Documentation Suggestion
 description: Suggest an example or correction to improve the Spatial documentation!
-title: "[DOC SUGGESTION]: "
+title: "[DOC SUGGESTION] "
 labels: ["documentation"]
 assignees:
   - alanSherba
@@ -13,7 +13,7 @@ body:
     id: pagelinks
     attributes:
       label: Doc Page Links
-      description: Paste a link to the exact page your are proposing an example or correction for. If applicable to multiple pages post a link to each page.
+      description: Paste a link to the exact page you are proposing an example or correction for. If applicable to multiple pages post a link to each page.
       placeholder: ex. https://cs.spatial.io/api/SpatialSys.UnitySDK.IAvatar.html
     validations:
       required: true
@@ -29,13 +29,29 @@ body:
     id: codeSuggestion
     attributes:
       label: Code Suggestion
-      description: Paste any code suggestions here. All code should compile, no sudo-code.
+      description: Paste any code suggestions here. All code should compile, no pseudo-code.
       render: csharp
   - type: input
     id: credit
     attributes:
       label: Contribution Credit
-      description: If your suggestion is approved how should we credit you? (Optional)
-      placeholder: ex. SpatialLover100
+      description: If your suggestion is approved how should we credit you on the site? (Optional)
+      placeholder: SpatialLover100
+    validations:
+      required: false
+  - type: input
+    id: spatialcredit
+    attributes:
+      label: Spatial.io handle
+      description: Add your Spatial.io handle. (Optional)
+      placeholder: @username
+    validations:
+      required: false
+  - type: input
+    id: discordcredit
+    attributes:
+      label: Discord handle
+      description: Get a @contributor roll on discord if your suggestion is approved. (Optional)
+      placeholder: @username
     validations:
       required: false
