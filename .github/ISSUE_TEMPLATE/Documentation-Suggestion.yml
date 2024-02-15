@@ -44,7 +44,7 @@ body:
     attributes:
       label: Spatial.io handle
       description: Add your Spatial.io handle. (Optional)
-      placeholder: @username
+      placeholder: username
     validations:
       required: false
   - type: input
@@ -52,6 +52,6 @@ body:
     attributes:
       label: Discord handle
       description: Get a @contributor roll on discord if your suggestion is approved. (Optional)
-      placeholder: @username
+      placeholder: username
     validations:
       required: false
