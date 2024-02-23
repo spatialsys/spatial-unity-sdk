@@ -18,6 +18,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         private const string SUPPORT_URL = "https://support.spatial.io/hc/en-us";
         private const string DISCORD_URL = "https://discord.com/invite/spatial";
+        private const string FORUM_URL = "https://github.com/spatialsys/spatial-unity-sdk/discussions";
 
         private static bool _isOpen = false;
 
@@ -279,6 +280,7 @@ namespace SpatialSys.UnitySDK.Editor
             root.Query<Button>("gotoDocumentation").First().clicked += () => Application.OpenURL(PackageManagerUtility.documentationUrl);
             root.Query<Button>("gotoSupport").First().clicked += () => Application.OpenURL(SUPPORT_URL);
             root.Query<Button>("gotoDiscord").First().clicked += () => Application.OpenURL(DISCORD_URL);
+            root.Query<Button>("gotoForum").First().clicked += () => Application.OpenURL(FORUM_URL);
 
             _issueListParent = root.Q("issuesScroll");
 

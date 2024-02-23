@@ -13,7 +13,7 @@ namespace SpatialSys.UnitySDK.Internal
             Override,
         }
 
-        public bool disableTeleport = false;
+        public bool disableTeleport = true;
         public bool useSeatsAsSpawnPoints = false;
         public bool enableAvatarToAvatarCollisions = false;
         [Tooltip("Allow avatars to be activated and deactivated through scripting.")]

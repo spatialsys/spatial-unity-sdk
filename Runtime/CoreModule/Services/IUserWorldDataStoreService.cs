@@ -8,6 +8,9 @@ namespace SpatialSys.UnitySDK
     /// This service provides access to the <c>Users</c> datastore for the current <c>world</c>. Spaces that belong to
     /// the same <c>world</c> share the same user world datastore.
     /// </summary>
+    /// <remarks>
+    /// <code source="Services/DataStoreExamples.cs" region="DataStoreMainExample" lang="csharp"></code>
+    /// </remarks>
     public interface IUserWorldDataStoreService
     {
         /// <summary>

@@ -10,10 +10,38 @@ namespace SpatialSys.UnitySDK.Editor
     public static class Toolbar
     {
         private const string SANDBOX_TARGET_BUILD_PLATFORM_KEY = "SpatialSDK_TargetBuildPlatform";
+        private static bool styleInitialized;
+        private static Texture2D _helpTextTexture;
+        private static Texture2D _helpButtonTexture;
+        private static Texture2D _helpButtonHoveredTexture;
+
+        private static GUIStyle _helpButtonStyle;
 
         static Toolbar()
         {
             ToolbarExtender.RightToolbarGUI.Add(OnToolbarGUI);
+            styleInitialized = false;
+        }
+
+        private static void InitStyle()
+        {
+            _helpTextTexture = SpatialGUIUtility.LoadGUITexture("GUI/HelpText.png");
+            _helpButtonTexture = SpatialGUIUtility.LoadGUITexture("GUI/HelpButtonTexture.png");
+            _helpButtonHoveredTexture = SpatialGUIUtility.LoadGUITexture("GUI/HelpButtonTextureSelected.png");
+
+            _helpButtonStyle = new GUIStyle(GUI.skin.button) {
+                border = new RectOffset(3, 3, 3, 3),
+                //Something internally messes with padding on dark vs light skin...
+                padding = new RectOffset(6, 6, EditorGUIUtility.isProSkin ? 4 : 3, EditorGUIUtility.isProSkin ? 0 : 1),
+            };
+            _helpButtonStyle.normal.background = _helpButtonTexture;
+            _helpButtonStyle.hover.background = _helpButtonHoveredTexture;
+            if (ColorUtility.TryParseHtmlString("#00FF77", out Color color))
+            {
+                _helpButtonStyle.normal.textColor = color;
+                _helpButtonStyle.active.textColor = color;
+                _helpButtonStyle.hover.textColor = color;
+            }
         }
 
         private static int _selectedTarget = 0;
@@ -24,6 +52,11 @@ namespace SpatialSys.UnitySDK.Editor
 
         static void OnToolbarGUI()
         {
+            if (!styleInitialized)
+            {
+                styleInitialized = true;
+                InitStyle();
+            }
             GUILayout.FlexibleSpace();
 
             GUI.color = Color.white * 0.75f;
@@ -93,13 +126,30 @@ namespace SpatialSys.UnitySDK.Editor
                 SpatialSDKConfigWindow.OpenWindow(SpatialSDKConfigWindow.CONFIG_TAB_NAME);
             }
 
-            if (GUILayout.Button(EditorGUIUtility.IconContent("d_SettingsIcon")))
+            if (GUILayout.Button(EditorGUIUtility.IconContent(EditorGUIUtility.isProSkin ? "d_SettingsIcon" : "SettingsIcon")))
             {
                 SpatialSDKConfigWindow.OpenWindow(SpatialSDKConfigWindow.CONFIG_TAB_NAME);
             }
 
+            GUILayout.Space(8);
+
+            if (GUILayout.Button(new GUIContent(_helpTextTexture), _helpButtonStyle))
+            {
+                GenericMenu menu = new GenericMenu();
+                menu.AddSeparator("Read Docs & Tutorials");
+                menu.AddItem(new GUIContent("Documentation"), false, () => Application.OpenURL("https://docs.spatial.io/"));
+                menu.AddItem(new GUIContent("Scripting API"), false, () => Application.OpenURL("https://cs.spatial.io/api/"));
+                menu.AddSeparator("");
+                menu.AddSeparator("Ask for Help");
+                menu.AddItem(new GUIContent("Help and Discussion Forum"), false, () => Application.OpenURL("https://github.com/spatialsys/spatial-unity-sdk/discussions"));
+                menu.AddSeparator("");
+                menu.AddSeparator("Ask the Community");
+                menu.AddItem(new GUIContent("Community Discord"), false, () => Application.OpenURL("https://discord.gg/spatial"));
+                menu.ShowAsContext();
+            }
+
             GUI.color = Color.white;
-            GUILayout.Space(15);
+            GUILayout.Space(8);
         }
 
         private static string GetTestButtonErrorString()

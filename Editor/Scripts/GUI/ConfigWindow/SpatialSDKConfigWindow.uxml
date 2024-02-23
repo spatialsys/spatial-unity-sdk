@@ -227,6 +227,14 @@
                         <ui:VisualElement name="Filler" style="flex-grow: 1;" />
                     </ui:VisualElement>
                 </ui:VisualElement>
+                <ui:VisualElement name="ForumBlock" class="block_white block_base">
+                    <ui:Label text="Discussion Forum" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
+                    <ui:Label text="Ask for help and read discussions!" display-tooltip-when-elided="true" name="Text" class="blockText" />
+                    <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: flex;">
+                        <ui:Button text="Open" display-tooltip-when-elided="true" name="gotoForum" class="blockButton" />
+                        <ui:VisualElement name="Filler" style="flex-grow: 1;" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
                 <ui:VisualElement name="SupportBlock" class="block_white block_base">
                     <ui:Label text="Spatial Support" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
                     <ui:Label text="Get help with using Spatial." display-tooltip-when-elided="true" name="Text" class="blockText" />
