@@ -136,15 +136,28 @@ namespace SpatialSys.UnitySDK.Editor
             if (GUILayout.Button(new GUIContent(_helpTextTexture), _helpButtonStyle))
             {
                 GenericMenu menu = new GenericMenu();
-                menu.AddSeparator("Read Docs & Tutorials");
-                menu.AddItem(new GUIContent("Documentation"), false, () => Application.OpenURL("https://docs.spatial.io/"));
-                menu.AddItem(new GUIContent("Scripting API"), false, () => Application.OpenURL("https://cs.spatial.io/api/"));
-                menu.AddSeparator("");
-                menu.AddSeparator("Ask for Help");
-                menu.AddItem(new GUIContent("Help and Discussion Forum"), false, () => Application.OpenURL("https://github.com/spatialsys/spatial-unity-sdk/discussions"));
-                menu.AddSeparator("");
-                menu.AddSeparator("Ask the Community");
-                menu.AddItem(new GUIContent("Community Discord"), false, () => Application.OpenURL("https://discord.gg/spatial"));
+                if (Application.platform == RuntimePlatform.OSXEditor)
+                {
+                    menu.AddSeparator("Read Docs & Tutorials");
+                    menu.AddItem(new GUIContent("Documentation"), false, () => Application.OpenURL("https://docs.spatial.io/"));
+                    menu.AddItem(new GUIContent("Scripting API"), false, () => Application.OpenURL("https://cs.spatial.io/api/"));
+                    menu.AddSeparator("");
+                    menu.AddSeparator("Ask for Help");
+                    menu.AddItem(new GUIContent("Help and Discussion Forum"), false, () => Application.OpenURL("https://github.com/spatialsys/spatial-unity-sdk/discussions"));
+                    menu.AddSeparator("");
+                    menu.AddSeparator("Ask the Community");
+                    menu.AddItem(new GUIContent("Community Discord"), false, () => Application.OpenURL("https://discord.gg/spatial"));
+                }
+                else
+                {
+                    // windows doesnt render the separators nicely...idk why
+                    menu.AddItem(new GUIContent("Documentation"), false, () => Application.OpenURL("https://docs.spatial.io/"));
+                    menu.AddItem(new GUIContent("Scripting API"), false, () => Application.OpenURL("https://cs.spatial.io/api/"));
+                    menu.AddSeparator("");
+                    menu.AddItem(new GUIContent("Help and Discussion Forum"), false, () => Application.OpenURL("https://github.com/spatialsys/spatial-unity-sdk/discussions"));
+                    menu.AddSeparator("");
+                    menu.AddItem(new GUIContent("Community Discord"), false, () => Application.OpenURL("https://discord.gg/spatial"));
+                }
                 menu.ShowAsContext();
             }
 
