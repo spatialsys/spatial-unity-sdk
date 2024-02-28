@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK.EditorSimulation
 {
-    #pragma warning disable 67 // Disable unused event warning
+#pragma warning disable 67 // Disable unused event warning
 
     public class EditorNetworkingService : INetworkingService
     {
@@ -23,6 +23,8 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         public bool isServerOpen { get; private set; } = true;
         public bool isServerVisible { get; private set; } = false;
         public bool isServerInstancingEnabled => false;
+        public bool isMasterClient => true;
+        public int masterClientActorNumber => SpatialBridge.actorService.localActorNumber;
 
         public event INetworkingService.OnServerConnectionStatusChangedDelegate onConnectionStatusChanged;
         public event INetworkingService.OnSpaceParticipantCountChangedDelegate onSpaceParticipantCountChanged;

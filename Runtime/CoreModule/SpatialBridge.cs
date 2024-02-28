@@ -5,6 +5,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// The main interface that provides access to Spatial services.
     /// This acts like a bridge between user code and Spatial core functionality.
+    /// <code source="Services/SpatialBridgeExamples.cs" region="BridgeHelloWorld"/>
     /// </summary>
     public static class SpatialBridge
     {

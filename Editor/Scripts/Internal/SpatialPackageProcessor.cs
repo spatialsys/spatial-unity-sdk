@@ -76,6 +76,10 @@ namespace SpatialSys.UnitySDK.Editor
             SpatialEnvironmentSettingsOverrides environmentSettingsOverrides = GameObject.FindObjectOfType<SpatialEnvironmentSettingsOverrides>(true);
             data.environmentSettings = environmentSettingsOverrides != null ? environmentSettingsOverrides.environmentSettings : new EnvironmentSettings();
 
+            // RenderPipeline Setting
+            SpatialRenderPipelineSettingsOverrides renderPipelineSettingsOverrides = GameObject.FindObjectOfType<SpatialRenderPipelineSettingsOverrides>(true);
+            data.renderPipelineSettings = (renderPipelineSettingsOverrides != null && renderPipelineSettingsOverrides.overrideSettings) ? renderPipelineSettingsOverrides.renderPipelineSettings : new RenderPipelineSettings();
+
             // Animators
             (data.syncedAnimators, data.unsyncedAnimators) = ProcessAnimators(GameObject.FindObjectsOfType<Animator>(true));
 

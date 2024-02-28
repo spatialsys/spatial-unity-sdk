@@ -27,6 +27,7 @@ namespace SpatialSys.UnitySDK
 
         public EnvironmentSettings environmentSettings;
         public SavedProjectSettings savedProjectSettings;
+        public RenderPipelineSettings renderPipelineSettings;
 
         public SpatialEvent[] spatialEvents;
 

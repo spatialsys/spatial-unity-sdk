@@ -7,13 +7,16 @@ namespace SpatialSys.UnitySDK
     /// camera shake, and target overrides.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// In spatial there is a single internally managed <c>Main Camera</c>, which is driven by various
     /// <c>VirtualCameras</c>. The default <c>Actor Camera</c> is a virtual camera that follows the player actor.
-    /// This can be overridden using the <see cref="SpatialVirtualCamera"> component.
-    /// 
-    /// <para>Spatial limits access to the internal <c>Main Camera</c> component. This service provides a limited
+    /// This can be overridden using the <see cref="SpatialVirtualCamera"/> component.
+    /// </para>
+    /// <para>
+    /// Spatial limits access to the internal <c>Main Camera</c> component. This service provides a limited
     /// subset of useful camera properties and functions.
-    /// Most properties and methods implement the corresponding member from Unity's <c>Camera</c> class.</para>
+    /// Most properties and methods implement the corresponding member from Unity's <c>Camera</c> class.
+    /// </para>
     /// </remarks>
     public interface ICameraService
     {
@@ -23,7 +26,7 @@ namespace SpatialSys.UnitySDK
         Vector3 position { get; }
 
         /// <summary>
-        /// The world roatation of the main camera
+        /// The world rotation of the main camera
         /// </summary>
         Quaternion rotation { get; }
 
@@ -105,9 +108,16 @@ namespace SpatialSys.UnitySDK
         float kickDecay { get; set; }
 
         /// <summary>
-        /// Apply a high frequency shake to the player camera and all virtual cameras. Good for short, low to high intensity impacts.
-        /// <para>Equivilant to <code>Shake(Vector3.down * force)</code></para>
+        /// The blend time in seconds for virtual camera transitions. Default is 0.6 seconds.
         /// </summary>
+        float virtualCameraBlendTime { get; set; }
+
+        /// <summary>
+        /// Apply a high frequency shake to the player camera and all virtual cameras. Good for short, low to high intensity impacts.
+        /// </summary>
+        /// <remarks>
+        /// Equivalent to <code>Shake(Vector3.down * force)</code>
+        /// </remarks>
         void Shake(float force);
 
         /// <summary>
@@ -118,8 +128,10 @@ namespace SpatialSys.UnitySDK
         /// <summary>
         /// Apply a low frequency shake to the player camera and all virtual cameras. Good for longer high intensity impacts.
         /// Makes the camera feel <c>dazed</c> or off balance.
-        /// <para>Equivilant to <code>Wobble(Vector3.down * force)</code></para>
         /// </summary>
+        /// <remarks>
+        /// Equivalent to <code>Wobble(Vector3.down * force)</code>
+        /// </remarks>
         void Wobble(float force);
 
         /// <summary>
@@ -136,7 +148,7 @@ namespace SpatialSys.UnitySDK
         /// drive the slope. A larger <c>kickDecay</c> creates a shorter/faster kick.</para>
         /// 
         /// <para>Kicks are additive, but there can only be one active kick. This means two kicks in rapid succession
-        /// can combine to create a larger kick, but two kicks in instant succesion (during the same frame) will override
+        /// can combine to create a larger kick, but two kicks in instant succession (during the same frame) will override
         /// each other, and will not produce a larger kick.</para>
         /// </summary>
         void Kick(Vector2 degrees);
@@ -156,10 +168,10 @@ namespace SpatialSys.UnitySDK
         /// </summary>
         void ClearTargetOverride();
 
-#region Unity Main Camera Functionality
+        #region Unity Main Camera Functionality
 
         // Spatial Limits access to the internal <c>Main Camera</c> component. This interface provides a limited subset
-        // of usefull camera properties and functions.
+        // of useful camera properties and functions.
 
         /// <summary>
         /// Matrix that transforms from camera space to world space (Read Only).
@@ -293,16 +305,16 @@ namespace SpatialSys.UnitySDK
         /// </summary>
         Vector3 WorldToViewportPoint(Vector3 pos, Camera.MonoOrStereoscopicEye eye);
 
-        //* Other usefull methods that normally require a Camera component input:
+        //* Other useful methods that normally require a Camera component input:
 
         /// <summary>
-        /// Calculates frustum planes using the worldToProjection matrix from the main camera. Equivilant to
+        /// Calculates frustum planes using the worldToProjection matrix from the main camera. Equivalent to
         /// <c>GeometryUtility.CalculateFrustumPlanes(Camera.main)</c>.
         /// <para><see href="https://docs.unity3d.com/ScriptReference/GeometryUtility.CalculateFrustumPlanes.html">Unity docs</see></para>
         /// </summary>
         Plane[] CalculateFrustumPlanes();
 
-#endregion
+        #endregion
     }
 
     public enum SpatialCameraMode

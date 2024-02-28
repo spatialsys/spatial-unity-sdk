@@ -18,7 +18,8 @@
         "Unity.EditorCoroutines.Editor",
         "Unity.TextMeshPro",
         "SpatialSys.UnitySDK.VisualScripting",
-        "Unity.AI.Navigation"
+        "Unity.AI.Navigation",
+        "Unity.RenderPipelines.Core.Editor"
     ],
     "includePlatforms": [
         "Editor"

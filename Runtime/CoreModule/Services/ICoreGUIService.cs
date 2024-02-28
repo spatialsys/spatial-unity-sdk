@@ -31,6 +31,7 @@ namespace SpatialSys.UnitySDK
         /// If the GUI is currently disabled and an attempt is made to open the UI, it will not be opened, nor will it be opened if it is eventually enabled.
         /// However, closing the GUI even when it is disabed will still mark it as closed.
         /// </summary>
+        /// <example><code source="Services/CoreGUIServiceExamples.cs" region="SetCoreGUIOpen"/></example>
         void SetCoreGUIOpen(SpatialCoreGUITypeFlags guis, bool open);
 
         /// <summary>
@@ -40,6 +41,7 @@ namespace SpatialSys.UnitySDK
         /// opened by the user until it is re-enabled. When re-enabled, the GUI will be restored to its previous open state,
         /// either minimized or open/maximized.
         /// </summary>
+        /// <example><code source="Services/CoreGUIServiceExamples.cs" region="SetCoreGUIEnabled"/></example>
         void SetCoreGUIEnabled(SpatialCoreGUITypeFlags guis, bool enabled);
 
         /// <summary>

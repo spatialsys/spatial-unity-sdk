@@ -25,6 +25,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         public float wobbleAmplitude { get; set; }
         public float wobbleFrequency { get; set; }
         public float kickDecay { get; set; }
+        public float virtualCameraBlendTime { get; set; }
         public void Kick(Vector2 degrees) { }
         public void Shake(float force) { }
         public void Shake(Vector3 velocity) { }

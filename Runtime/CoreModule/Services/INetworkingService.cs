@@ -90,6 +90,18 @@ namespace SpatialSys.UnitySDK
         bool isServerInstancingEnabled { get; }
 
         /// <summary>
+        /// Is the local client the master client? The master client is in charge of various server simulation tasks and is a good candidate 
+        /// for running code that should only run once per server instance.
+        /// </summary>
+        bool isMasterClient { get; }
+
+        /// <summary>
+        /// The actor number of the master client. The master client is in charge of various server simulation tasks and is a good candidate 
+        /// for running code that should only run once per server instance.
+        /// </summary>
+        int masterClientActorNumber { get; }
+
+        /// <summary>
         /// Event that triggers when the server connection status changes
         /// </summary>
         event OnServerConnectionStatusChangedDelegate onConnectionStatusChanged;
@@ -207,11 +219,13 @@ namespace SpatialSys.UnitySDK
     /// Supported event argument types: byte, bool, short, int, long, float, double, string, Vector2, Vector3,
     /// Quaternion, Color, Color32, Vector4, DateTime
     /// </summary>
+    /// <example><code source="Services/NetworkingServiceExamples.cs" region="RPCExample"/></example>
     public interface INetworkingRemoteEventsService
     {
         /// <summary>
         /// Event that triggers when a remote event is received
         /// </summary>
+        /// <example><code source="Services/NetworkingServiceExamples.cs" region="RPCExample"/></example>
         event OnEventDelegate onEvent;
         public delegate void OnEventDelegate(NetworkingRemoteEventArgs args);
 
@@ -219,6 +233,7 @@ namespace SpatialSys.UnitySDK
         /// Raise a remote event to all actors connected to the current server.
         /// Note that this will also raise the event on the current actor, which triggers the `onEvent` callback.
         /// </summary>
+        /// <example><code source="Services/NetworkingServiceExamples.cs" region="RPCExample"/></example>
         void RaiseEventAll(byte eventID, params object[] args);
 
         /// <summary>
