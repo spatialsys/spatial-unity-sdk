@@ -5,6 +5,7 @@ using UnityEngine;
 namespace SpatialSys.UnitySDK
 {
     [Flags]
+    [DocumentationCategory("Input Service")]
     public enum VehicleInputFlags
     {
         None = 0,

@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
+    [DocumentationCategory("Spatial Components")]
     public class SpatialSeatHotspot : SpatialComponentBase
     {
         public override string prettyName => "Seat Hotspot";

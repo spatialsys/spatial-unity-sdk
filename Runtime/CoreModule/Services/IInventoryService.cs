@@ -5,6 +5,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Service to handle inventory and currency
     /// </summary>
+    [DocumentationCategory("Inventory Service")]
     public interface IInventoryService
     {
         /// <summary>
@@ -76,6 +77,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Represents an item in the user's inventory / backpack.
     /// </summary>
+    [DocumentationCategory("Inventory Service")]
     public interface IInventoryItem
     {
         /// <summary>
@@ -158,6 +160,7 @@ namespace SpatialSys.UnitySDK
         UseInventoryItemRequest Use();
     }
 
+    [DocumentationCategory("Inventory Service")]
     public class AwardWorldCurrencyRequest : SpatialAsyncOperation
     {
         /// <summary>
@@ -171,6 +174,7 @@ namespace SpatialSys.UnitySDK
         public bool succeeded;
     }
 
+    [DocumentationCategory("Inventory Service")]
     public class AddInventoryItemRequest : SpatialAsyncOperation
     {
         /// <summary>
@@ -189,6 +193,7 @@ namespace SpatialSys.UnitySDK
         public bool succeeded;
     }
 
+    [DocumentationCategory("Inventory Service")]
     public class DeleteInventoryItemRequest : SpatialAsyncOperation
     {
         /// <summary>
@@ -202,6 +207,7 @@ namespace SpatialSys.UnitySDK
         public bool succeeded;
     }
 
+    [DocumentationCategory("Inventory Service")]
     public class GetInventoryItemRequest : SpatialAsyncOperation
     {
         /// <summary>
@@ -215,6 +221,7 @@ namespace SpatialSys.UnitySDK
         public bool succeeded;
     }
 
+    [DocumentationCategory("Inventory Service")]
     public class UseInventoryItemRequest : SpatialAsyncOperation
     {
         /// <summary>

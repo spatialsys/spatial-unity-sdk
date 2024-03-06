@@ -7,6 +7,8 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Service for interacting with actors and users in the space.
     /// </summary>
+    /// <remarks>Actor Service</remarks>
+    [DocumentationCategory("Actor Service")]
     public interface IActorService
     {
         /// <summary>
@@ -50,7 +52,7 @@ namespace SpatialSys.UnitySDK
         IReadOnlyDictionary<int, IActor> actors { get; }
 
         /// <summary>
-        /// Event that is triggered initially apon connection for all actors who are in the server, and then
+        /// Event that is triggered initially upon connection for all actors who are in the server, and then
         /// when a new actor joins the server.
         /// </summary>
         /// <remarks>
@@ -59,6 +61,7 @@ namespace SpatialSys.UnitySDK
         /// already joined or not.
         /// Note that this is also triggered for the local actor when the local actor joins the server.
         /// </remarks>
+        /// <example><code source="Services/ActorExamples.cs" region="Custom Properties" lang="csharp"/></example>
         event ActorJoinedDelegate onActorJoined;
         public delegate void ActorJoinedDelegate(ActorJoinedEventArgs args);
 
@@ -66,6 +69,7 @@ namespace SpatialSys.UnitySDK
         /// Event that is triggered when an actor leaves the server (this can be for any reason, including
         /// disconnecting, timing out, or being kicked)
         /// </summary>
+        /// <example><code source="Services/ActorExamples.cs" region="Custom Properties" lang="csharp"/></example>
         event ActorLeftDelegate onActorLeft;
         public delegate void ActorLeftDelegate(ActorLeftEventArgs args);
 
@@ -78,6 +82,8 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// An actor in the space. This represents a user who has joined the server instance.
     /// </summary>
+    /// <example><code source="Services/ActorExamples.cs" region="GetActorData" lang="csharp"/></example>
+    [DocumentationCategory("Actor Service")]
     public interface IActor
     {
         /// <summary>
@@ -96,21 +102,25 @@ namespace SpatialSys.UnitySDK
         /// <summary>
         /// The user ID of the actor
         /// </summary>
+        /// <example><code source="Services/ActorExamples.cs" region="GetActorData" lang="csharp"/></example>
         string userID { get; }
 
         /// <summary>
         /// The username for the public profile of the user.
         /// </summary>
+        /// <example><code source="Services/ActorExamples.cs" region="GetActorData" lang="csharp"/></example>
         string username { get; }
 
         /// <summary>
         /// The display name for the user. This is displayed in the nametag and on the user's profile page.
         /// </summary>
+        /// <example><code source="Services/ActorExamples.cs" region="GetActorData" lang="csharp"/></example>
         string displayName { get; }
 
         /// <summary>
         /// The color of the actor's profile picture background.
         /// </summary>
+        /// <example><code source="Services/ActorExamples.cs" region="GetProfilePicture" lang="csharp"/></example>
         Color profileColor { get; }
 
         /// <summary>
@@ -151,6 +161,7 @@ namespace SpatialSys.UnitySDK
         /// An actor's properties are only cleared if they leave the space. Teleporting between servers of the same
         /// space will not clear the properties.
         /// </summary>
+        /// <example><code source="Services/ActorExamples.cs" region="Custom Properties" lang="csharp"/></example>
         IReadOnlyDictionary<string, object> customProperties { get; }
 
         /// <summary>
@@ -163,12 +174,14 @@ namespace SpatialSys.UnitySDK
         /// <summary>
         /// Event that is triggered when any of the actor's custom properties change.
         /// </summary>
+        /// <example><code source="Services/ActorExamples.cs" region="Custom Properties" lang="csharp"/></example>
         event ActorCustomPropertiesChangedDelegate onCustomPropertiesChanged;
         public delegate void ActorCustomPropertiesChangedDelegate(ActorCustomPropertiesChangedEventArgs args);
 
         /// <summary>
         /// Get the profile picture texture for the actor.
         /// </summary>
+        /// <example><code source="Services/ActorExamples.cs" region="GetProfilePicture" lang="csharp"/></example>
         /// <returns>The profile picture texture if it can be found. Returns null if the texture is not available</returns>
         ActorProfilePictureRequest GetProfilePicture();
     }
@@ -176,6 +189,8 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// The local actor (user on the current machine).
     /// </summary>
+    /// <example><code source="Services/ActorExamples.cs" region="GetActorData" lang="csharp"/></example>
+    [DocumentationCategory("Actor Service")]
     public interface ILocalActor : IActor
     {
         /// <summary>
@@ -189,9 +204,14 @@ namespace SpatialSys.UnitySDK
         /// An actor's properties are only cleared if they leave the space. Teleporting between servers of the same
         /// space will not clear the properties.
         /// </summary>
+        /// <example><code source="Services/ActorExamples.cs" region="Custom Properties" lang="csharp"/></example>
         void SetCustomProperty(string name, object value);
     }
 
+    /// <summary>
+    /// Arguments for the <see cref="IActorService.onActorJoined"/> event.
+    /// </summary>
+    [DocumentationCategory("Actor Service")]
     public struct ActorJoinedEventArgs
     {
         public int actorNumber;
@@ -204,30 +224,53 @@ namespace SpatialSys.UnitySDK
         public bool wasAlreadyJoined;
     }
 
+    /// <summary>
+    /// Arguments for the <see cref="IActorService.onActorLeft"/> event.
+    /// </summary>
+    [DocumentationCategory("Actor Service")]
     public struct ActorLeftEventArgs
     {
         public int actorNumber;
     }
 
+    /// <summary>
+    /// Arguments for the <see cref="IActor.onCustomPropertiesChanged"/> event.
+    /// </summary>
+    /// <example><code source="Services/ActorExamples.cs" region="Custom Properties" lang="csharp"/></example>
+    [DocumentationCategory("Actor Service")]
     public struct ActorCustomPropertiesChangedEventArgs
     {
         /// <summary>
         /// Properties that were newly added or changed.
-        /// This dictionary reference is re-pooled and resused between events, so you should not cache it.
+        /// This dictionary reference is re-pooled and re-used between events, so you should not cache it.
         /// </summary>
         public IReadOnlyDictionary<string, object> changedProperties;
 
         /// <summary>
         /// Properties that were removed.
-        /// This list reference is re-pooled and resused between events, so you should not cache it.
+        /// This list reference is re-pooled and re-used between events, so you should not cache it.
         /// </summary>
         public IReadOnlyList<string> removedProperties;
     }
 
+    /// <summary> 
+    /// The result of a request to get an actor's profile picture.
+    /// </summary>
+    /// <example><code source="Services/ActorExamples.cs" region="GetProfilePicture" lang="csharp"/></example>
+    [DocumentationCategory("Actor Service")]
     public class ActorProfilePictureRequest : SpatialAsyncOperation
     {
+        /// <summary>
+        /// Was the request successful?
+        /// </summary>
         public bool succeeded;
+        /// <summary>
+        /// The actor number of the actor that the profile picture is for.
+        /// </summary>
         public int actorNumber;
+        /// <summary>
+        /// The profile picture texture for the actor. Null if the actor or texture could not be found.
+        /// </summary>
         public Texture2D texture;
     }
 }

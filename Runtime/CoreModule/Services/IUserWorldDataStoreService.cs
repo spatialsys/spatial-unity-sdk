@@ -11,6 +11,7 @@ namespace SpatialSys.UnitySDK
     /// <remarks>
     /// <code source="Services/DataStoreExamples.cs" region="DataStoreMainExample" lang="csharp"></code>
     /// </remarks>
+    [DocumentationCategory("User World Data Store Service")]
     public interface IUserWorldDataStoreService
     {
         /// <summary>
@@ -20,6 +21,7 @@ namespace SpatialSys.UnitySDK
         /// The key can be a <c>/</c> separated path to search through dictionaries. For example, the key <c>"player/inventory/loot"</c> will return the variable found at <c>dataStore["player"]["inventory"]["loot"]</c>.
         /// </remarks>
         /// <returns><c>Async</c> Returns the the current dataStore value if it exists, otherwise returns the default value provided.</returns>
+        /// <example><code source="Services/DataStoreExamples.cs" region="DataStoreMainExample" lang="csharp"/></example>
         DataStoreGetVariableRequest GetVariable(string key, object defaultValue);
 
         /// <summary>
@@ -29,6 +31,7 @@ namespace SpatialSys.UnitySDK
         /// The key can be a <c>/</c> separated path to set the value in a nested dictionary. For example, the key <c>"player/inventory/loot"</c> will set the variable found at <c>dataStore["player"]["inventory"]["loot"]</c>.
         /// </remarks>
         /// <returns><c>Async</c> Returns a boolean <c>succeeded</c> if the variable was succesfully set or not.</returns>
+        /// <example><code source="Services/DataStoreExamples.cs" region="DataStoreMainExample" lang="csharp"/></example>
         DataStoreOperationRequest SetVariable(string key, object value);
 
         /// <summary>
@@ -68,14 +71,31 @@ namespace SpatialSys.UnitySDK
         DataStoreDumpVariablesRequest DumpVariablesAsJSON();
     }
 
+    /// <summary>
+    /// Operation to be performed on the data store.
+    /// </summary>
+    [DocumentationCategory("User World Data Store Service")]
     public class DataStoreOperationRequest : SpatialAsyncOperation
     {
+        /// <summary>
+        /// Whether the operation succeeded or not.
+        /// </summary>
         public bool succeeded;
+        /// <summary>
+        /// The response code for the operation.
+        /// </summary>
         public DataStoreResponseCode responseCode;
     }
 
+    /// <summary>
+    /// Request to get a variable from the data store.
+    /// </summary>
+    [DocumentationCategory("User World Data Store Service")]
     public class DataStoreGetVariableRequest : DataStoreOperationRequest
     {
+        /// <summary>
+        /// The value of the variable.
+        /// </summary>
         public object value;
 
         #region Primitives
@@ -166,18 +186,39 @@ namespace SpatialSys.UnitySDK
         #endregion
     }
 
+    /// <summary>
+    /// Request to check if a variable exists in the data store.
+    /// </summary>
+    [DocumentationCategory("User World Data Store Service")]
     public class DataStoreHasVariableRequest : DataStoreOperationRequest
     {
+        /// <summary>
+        /// Whether the variable exists or not.
+        /// </summary>
         public bool hasVariable;
     }
 
+    /// <summary>
+    /// Request to check if the data store has any variables.
+    /// </summary>
+    [DocumentationCategory("User World Data Store Service")]
     public class DataStoreHasAnyVariableRequest : DataStoreOperationRequest
     {
+        /// <summary>
+        /// Whether the data store has any variables or not.
+        /// </summary>
         public bool hasAnyVariable;
     }
 
+    /// <summary>
+    /// Request to dump all variables in the data store as a JSON string.
+    /// </summary>
+    [DocumentationCategory("User World Data Store Service")]
     public class DataStoreDumpVariablesRequest : DataStoreOperationRequest
     {
+        /// <summary>
+        /// The current contents of the data store as a JSON string.
+        /// </summary>
         public string json;
     }
 }

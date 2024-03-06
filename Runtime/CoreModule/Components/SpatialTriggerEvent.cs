@@ -6,6 +6,7 @@ using UnityEngine.Serialization;
 
 namespace SpatialSys.UnitySDK
 {
+    [DocumentationCategory("Spatial Components")]
     [RequireComponent(typeof(Collider))]
     public class SpatialTriggerEvent : SpatialComponentBase
     {

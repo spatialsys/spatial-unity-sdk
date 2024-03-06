@@ -1,9 +1,10 @@
 namespace SpatialSys.UnitySDK
 {
+    [DocumentationCategory("Marketplace Service")]
     public interface IMarketplaceService
     {
         /// <summary>
-        /// Triggered when an item is purchased by the local user
+        /// Triggered when an item is purchased by the local user.
         /// </summary>
         event OnItemPurchasedDelegate onItemPurchased;
         public delegate void OnItemPurchasedDelegate(ItemPurchasedEventArgs args);
@@ -19,6 +20,7 @@ namespace SpatialSys.UnitySDK
         PurchaseItemRequest PurchaseItem(string itemID, ulong amount = 1, bool silent = false);
     }
 
+    [DocumentationCategory("Marketplace Service")]
     public class PurchaseItemRequest : SpatialAsyncOperation
     {
         public string itemID;
@@ -26,6 +28,7 @@ namespace SpatialSys.UnitySDK
         public bool succeeded;
     }
 
+    [DocumentationCategory("Marketplace Service")]
     public struct ItemPurchasedEventArgs
     {
         public string itemID;

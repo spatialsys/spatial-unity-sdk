@@ -5,6 +5,8 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Handles Visual Effects on the spatial platform
     /// </summary>
+    /// <example><code source="Services/VFXServiceExamples.cs" region="CreateFloatingText" lang="csharp"/></example>
+    [DocumentationCategory("VFX Service")]
     public interface IVFXService
     {
         /// <summary>
@@ -19,6 +21,7 @@ namespace SpatialSys.UnitySDK
         /// <param name="scaleCurve">Animation curve for scaling</param>
         /// <param name="alphaCurve">Animation curve for alpha</param>
         /// <param name="lifetime">Time to keep text visible</param>
+        /// <example><code source="Services/VFXServiceExamples.cs" region="CreateFloatingText" lang="csharp"/></example>
         void CreateFloatingText(string text, FloatingTextAnimStyle style, Vector3 position, Vector3 force, Color color, bool gravity = false, AnimationCurve scaleCurve = null, AnimationCurve alphaCurve = null, float lifetime = 1);
     }
 }

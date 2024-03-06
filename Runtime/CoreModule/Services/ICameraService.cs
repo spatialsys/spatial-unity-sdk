@@ -18,6 +18,7 @@ namespace SpatialSys.UnitySDK
     /// Most properties and methods implement the corresponding member from Unity's <c>Camera</c> class.
     /// </para>
     /// </remarks>
+    [DocumentationCategory("Camera Service")]
     public interface ICameraService
     {
         /// <summary>

@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
+    [DocumentationCategory("Spatial Components")]
     [DisallowMultipleComponent]
     public class SpatialQuest : SpatialComponentBase
     {

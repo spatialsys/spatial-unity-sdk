@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
+    [DocumentationCategory("Spatial Components")]
     [RequireComponent(typeof(Animator))]
     [DisallowMultipleComponent]
     public class SpatialSyncedAnimator : SpatialComponentBase

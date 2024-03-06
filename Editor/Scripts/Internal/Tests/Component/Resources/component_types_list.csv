@@ -85,3 +85,11 @@ UnityEngine.UI.ScrollRect,Y,Y,N,N,N,Y,N,N,N,N
 UnityEngine.UI.Selectable,Y,Y,N,N,N,Y,N,N,N,N
 UnityEngine.UI.ToggleGroup,Y,Y,N,N,N,Y,N,N,N,N
 UnityEngine.Video.VideoPlayer,Y,Y,N,N,N,Y,N,N,N,N
+Cinemachine.CinemachineVirtualCameraBase,Y,Y,N,N,N,N,Y,N,N,N
+Cinemachine.CinemachinePipeline,Y,Y,N,N,N,N,Y,N,N,N
+Cinemachine.CinemachineComponentBase,Y,Y,N,N,N,N,Y,N,N,N
+Cinemachine.CinemachinePathBase,Y,Y,N,N,N,N,Y,N,N,N
+Cinemachine.CinemachineDollyCart,Y,Y,N,N,N,N,Y,N,N,N
+Cinemachine.CinemachineTargetGroup,Y,Y,N,N,N,N,Y,N,N,N
+Cinemachine.CinemachineImpulseSource,Y,Y,N,N,N,N,Y,N,N,N
+Cinemachine.CinemachineIndependentImpulseListener,Y,Y,N,N,N,N,Y,N,N,N

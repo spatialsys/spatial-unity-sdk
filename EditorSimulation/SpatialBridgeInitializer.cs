@@ -12,6 +12,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize()
         {
+#if !SPATIAL_UNITYSDK_INTERNAL
             SpatialBridge.actorService = new EditorActorService();
             SpatialBridge.adService = new EditorAdService();
             SpatialBridge.audioService = new EditorAudioService();
@@ -30,6 +31,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
             SpatialBridge.userWorldDataStoreService = new EditorUserWorldDataStoreService();
             SpatialBridge.vfxService = new EditorVFXService();
             SpatialBridge.eventService = new EditorEventService();
+#endif
         }
     }
 }

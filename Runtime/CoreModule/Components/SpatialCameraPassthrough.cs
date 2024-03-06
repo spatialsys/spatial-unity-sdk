@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
+    [DocumentationCategory("Spatial Components")]
     public class SpatialCameraPassthrough : SpatialComponentBase
     {
         public override string prettyName => "Camera Passthrough";

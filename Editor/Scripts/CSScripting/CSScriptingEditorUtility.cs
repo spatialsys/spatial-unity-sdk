@@ -116,6 +116,19 @@ namespace SpatialSys.UnitySDK.Editor
                     File.Copy(dllPath, OUTPUT_ASSET_PATH, true);
                     AssetDatabase.ImportAsset(OUTPUT_ASSET_PATH);
                     AssetDatabase.Refresh();
+
+                    (string[] bannedAPIs, string[] softBannedAPIs) = AssemblyBannedAPIAnalyzer.GetBannedAPIs(File.ReadAllBytes(dllPath));
+
+                    if (softBannedAPIs.Length > 0)
+                    {
+                        Debug.LogWarning($"Soon to be banned APIs found:\n{string.Join('\n', softBannedAPIs)}");
+                    }
+
+                    if (bannedAPIs.Length > 0)
+                    {
+                        Debug.LogError($"Failed to compile C# assembly; Banned APIs found:\n{string.Join('\n', bannedAPIs)}");
+                        return false;
+                    }
                     return true;
                 }
                 else

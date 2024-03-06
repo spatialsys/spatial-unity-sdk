@@ -6,6 +6,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Type of ad to show.
     /// </summary>
+    [DocumentationCategory("Ad Service")]
     public enum SpatialAdType
     {
         /// <summary>
@@ -25,16 +26,20 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Service to handle ads integration
     /// </summary>
+    /// <example><code source="Services/AdServiceExamples.cs" region="WatchAd"/></example>
+    [DocumentationCategory("Ad Service")]
     public interface IAdService
     {
         /// <summary>
         /// Returns true if the platform supports ads.
         /// </summary>
+        /// <example><code source="Services/AdServiceExamples.cs" region="WatchAd"/></example>
         bool isSupported { get; }
 
         /// <summary>
         /// Request an ad to show up.
         /// </summary>
+        /// <example><code source="Services/AdServiceExamples.cs" region="WatchAd"/></example>
         /// <param name="adType">Type of ad to show.</param>
         /// <returns>Ad Request async operation.</returns>
         AdRequest RequestAd(SpatialAdType adType);
@@ -43,6 +48,8 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Operation to request an ad to show up
     /// </summary>
+    /// <example><code source="Services/AdServiceExamples.cs" region="WatchAd"/></example>
+    [DocumentationCategory("Ad Service")]
     public class AdRequest : SpatialAsyncOperation
     {
         private event Action<SpatialAsyncOperation> _startedCallback;

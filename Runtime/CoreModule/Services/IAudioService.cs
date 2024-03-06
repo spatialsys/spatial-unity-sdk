@@ -6,6 +6,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Service for playing audio.
     /// </summary>
+    [DocumentationCategory("Audio Service")]
     public interface IAudioService
     {
         /// <summary>

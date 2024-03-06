@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
+    [DocumentationCategory("VFX Service")]
     public enum FloatingTextAnimStyle
     {
         Simple = 0,

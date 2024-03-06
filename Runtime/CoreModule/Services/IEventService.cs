@@ -11,6 +11,7 @@ namespace SpatialSys.UnitySDK
     /// Spatial limits the ability to directly subscribe to C# events, UnityEvents, and to register callback functions.
     /// However, this is still possible using the utility methods in this service.
     /// </remarks>
+    [DocumentationCategory("Event Service")]
     public interface IEventService
     {
         /// <summary>

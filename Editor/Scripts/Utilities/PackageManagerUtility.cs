@@ -37,7 +37,7 @@ namespace SpatialSys.UnitySDK.Editor
                 return _updateCheckPromise;
 
             _updateCheckPromise = new Promise<bool>();
-            _searchRequest = Client.Search(PACKAGE_NAME);
+            _searchRequest = UnityEditor.PackageManager.Client.Search(PACKAGE_NAME);
             EditorApplication.update += HandleSearchRequestCompletion;
             return _updateCheckPromise;
         }
@@ -91,7 +91,7 @@ namespace SpatialSys.UnitySDK.Editor
                     if (updateAvailable)
                     {
                         // Upgrade to latest version
-                        _updateRequest = Client.Add($"{PACKAGE_NAME}@{_fetchedPackageInfo.versions.latest}");
+                        _updateRequest = UnityEditor.PackageManager.Client.Add($"{PACKAGE_NAME}@{_fetchedPackageInfo.versions.latest}");
                         EditorApplication.update += HandleUpdateRequestCompletion;
                     }
                     else

@@ -7,6 +7,8 @@ namespace SpatialSys.UnitySDK
     /// This service provides access to all the networking functionality in Spatial: connectivity, server management,
     /// matchmaking, remove events (RPCs/Messaging), etc.
     /// </summary>
+    /// <example><code source="Services/NetworkingServiceExamples.cs" region="ServerProps"/></example>
+    [DocumentationCategory("Networking Service")]
     public interface INetworkingService
     {
         /// <summary>
@@ -18,6 +20,7 @@ namespace SpatialSys.UnitySDK
         /// The connection status to the current server. Most networking service functionality can only be performed
         /// if fully connected. This state is useful to be able to communicate connection status to the user.
         /// </summary>
+        /// <example><code source="Services/NetworkingServiceExamples.cs" region="LobbyGameplay"/></example>
         ServerConnectionStatus connectionStatus { get; }
 
         /// <summary>
@@ -104,6 +107,7 @@ namespace SpatialSys.UnitySDK
         /// <summary>
         /// Event that triggers when the server connection status changes
         /// </summary>
+        /// <example><code source="Services/NetworkingServiceExamples.cs" region="LobbyGameplay"/></example>
         event OnServerConnectionStatusChangedDelegate onConnectionStatusChanged;
         public delegate void OnServerConnectionStatusChangedDelegate(ServerConnectionStatus status);
 
@@ -148,6 +152,7 @@ namespace SpatialSys.UnitySDK
         /// <remarks>
         /// Supported types: string, int, bool
         /// </remarks>
+        /// <example><code source="Services/NetworkingServiceExamples.cs" region="LobbyGameplay"/></example>
         IReadOnlyDictionary<string, object> GetServerProperties();
 
         /// <summary>
@@ -202,14 +207,31 @@ namespace SpatialSys.UnitySDK
         /// <param name="maxParticipants">Find a server that matches this maxParticipants count; 0 means "any" and will default to the settings set for the space if no match was found</param>
         /// <param name="serverProperties">Specify the properties that you want to match for</param>
         /// <param name="serverPropertiesToMatch">Specify which propeties from "serverProperties" that should be used for matchmaking.</param>
+        /// <example><code source="Services/NetworkingServiceExamples.cs" region="LobbyGameplay"/></example>
         void TeleportToBestMatchServer(int maxParticipants = 0, IReadOnlyCollection<KeyValuePair<string, object>> serverProperties = null, IReadOnlyCollection<string> serverPropertiesToMatch = null);
     }
 
+    /// <summary>
+    /// The connection status to the current server
+    /// </summary>
+    [DocumentationCategory("Networking Service")]
     public enum ServerConnectionStatus
     {
+        /// <summary>
+        /// Not connected to any server
+        /// </summary>
         Disconnected = 0,
+        /// <summary>
+        /// Currently connecting to a server
+        /// </summary>
         Connecting = 1,
+        /// <summary>
+        /// Connected to a server
+        /// </summary>
         Connected = 2,
+        /// <summary>
+        /// Currently disconnecting from a server
+        /// </summary>
         Disconnecting = 3,
     }
 
@@ -220,6 +242,7 @@ namespace SpatialSys.UnitySDK
     /// Quaternion, Color, Color32, Vector4, DateTime
     /// </summary>
     /// <example><code source="Services/NetworkingServiceExamples.cs" region="RPCExample"/></example>
+    [DocumentationCategory("Networking Service")]
     public interface INetworkingRemoteEventsService
     {
         /// <summary>
@@ -248,10 +271,23 @@ namespace SpatialSys.UnitySDK
         void RaiseEvent(IReadOnlyCollection<int> targetActors, byte eventID, params object[] args);
     }
 
+    /// <summary>
+    /// Arguments for the `onEvent` callback in <see cref="INetworkingRemoteEventsService"/>
+    /// </summary>
+    [DocumentationCategory("Networking Service")]
     public struct NetworkingRemoteEventArgs
     {
+        /// <summary>
+        /// The actor number of the sender of the event
+        /// </summary>
         public int senderActor;
+        /// <summary>
+        /// The event ID
+        /// </summary>
         public byte eventID;
+        /// <summary>
+        /// The event arguments
+        /// </summary>
         public object[] eventArgs;
     }
 }

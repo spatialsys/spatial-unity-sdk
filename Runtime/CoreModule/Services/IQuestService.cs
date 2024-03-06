@@ -7,6 +7,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Service for managing Quests on the space.
     /// </summary>
+    [DocumentationCategory("Quest Service")]
     public interface IQuestService
     {
         /// <summary>
@@ -47,6 +48,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Basic interface Quest component
     /// </summary>
+    [DocumentationCategory("Quest Service")]
     public interface IQuest
     {
         /// <summary>
@@ -191,6 +193,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Interface that represents a task for a ISpatialQuest.
     /// </summary>
+    [DocumentationCategory("Quest Service")]
     public interface IQuestTask
     {
         /// <summary>
@@ -280,6 +283,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// The status of the quest.
     /// </summary>
+    [DocumentationCategory("Quest Service")]
     public enum QuestStatus
     {
         /// <summary>
@@ -301,6 +305,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// The type of task.
     /// </summary>
+    [DocumentationCategory("Quest Service")]
     public enum QuestTaskType
     {
         /// <summary>
@@ -319,6 +324,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Interface that represents a reward for a ISpatialQuest.
     /// </summary>
+    [DocumentationCategory("Quest Service")]
     public interface IReward
     {
         /// <summary>
@@ -340,6 +346,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// The type of reward.
     /// </summary>
+    [DocumentationCategory("Quest Service")]
     public enum RewardType
     {
         /// <summary>

@@ -5,6 +5,7 @@ using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK
 {
+    [DocumentationCategory("Spatial Components")]
     [AddComponentMenu("")]//hide from add component menu.
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Variables))]

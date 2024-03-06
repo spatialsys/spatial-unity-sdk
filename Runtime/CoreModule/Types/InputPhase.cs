@@ -3,6 +3,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Phase of the input event.
     /// </summary>
+    [DocumentationCategory("Input Service")]
     public enum InputPhase
     {
         /// <summary>

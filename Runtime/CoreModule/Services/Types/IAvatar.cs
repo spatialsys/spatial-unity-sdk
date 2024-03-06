@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
+    [DocumentationCategory("Actor Service")]
     public interface IAvatar : IReadOnlyAvatar
     {
         /// <summary>
@@ -203,11 +204,13 @@ namespace SpatialSys.UnitySDK
         /// </param>
         /// <param name="immediately">Play the emote immidiately, without any transitions. Ignored when assetType is <see cref="AssetType.BackpackItem"/></param>
         /// <param name="loop">Loop the animation until it is stopped. Ignored when assetType is <see cref="AssetType.BackpackItem"/></param>
+        /// <example><code source="Services/ActorExamples.cs" region="PlayEmote" lang="csharp"/></example>
         void PlayEmote(AssetType assetType, string assetID, bool immediately = false, bool loop = false);
 
         /// <summary>
         /// Stop the current emote on the avatar that was started with <see cref="PlayEmote"/>
         /// </summary>
+        /// <example><code source="Services/ActorExamples.cs" region="PlayEmote" lang="csharp"/></example>
         void StopEmote();
 
         /// <summary>
@@ -221,11 +224,13 @@ namespace SpatialSys.UnitySDK
         /// - <see cref="AssetType.Package"/>: The packageSKU found in Spatial Studio or Unity
         /// - <see cref="AssetType.EmbeddedAsset"/>: The assetID specified in the <see cref="UnitySDK.Editor.SpaceConfig"/> in Unity Editor
         /// </param>
+        /// <example><code source="Services/ActorExamples.cs" region="SetAvatarBody" lang="csharp"/></example>
         void SetAvatarBody(AssetType assetType, string assetID);
 
         /// <summary>
         /// Reset the avatar body asset to what the user has set in their profile if it was overridden with <see cref="SetAvatarBody"/>.
         /// </summary>
+        /// <example><code source="Services/ActorExamples.cs" region="SetAvatarBody" lang="csharp"/></example>
         void ResetAvatarBody();
 
         /// <summary>
@@ -244,6 +249,7 @@ namespace SpatialSys.UnitySDK
         /// existing attachments? Used when <paramref name="equip"/> is set to true
         /// </param>
         /// <param name="optionalTag">A string tag that can be used to reference some attachments. Used by <see cref="ClearAttachmentsByTag"/></param>
+        /// <example><code source="Services/ActorExamples.cs" region="EquipAttachment" lang="csharp"/></example>
         EquipAttachmentRequest EquipAttachment(AssetType assetType, string assetID, bool equip = true, bool clearOccupiedPrimarySlot = true, string optionalTag = null);
 
         /// <summary>
@@ -257,6 +263,7 @@ namespace SpatialSys.UnitySDK
         /// This does not affect the user's profile avatar, just the attachments that were equipped in this session.
         /// </summary>
         /// <param name="slot">The slot to clear</param>
+        /// <example><code source="Services/ActorExamples.cs" region="EquipAttachment" lang="csharp"/></example>
         void ClearAttachmentSlot(SpatialAvatarAttachment.Slot slot);
 
         /// <summary>
@@ -270,9 +277,11 @@ namespace SpatialSys.UnitySDK
         /// Is the attachment currently equipped?
         /// </summary>
         /// <param name="assetID">This can be itemID, packageSKU or embeddedAssetID</param>
+        /// <example><code source="Services/ActorExamples.cs" region="EquipAttachment" lang="csharp"/></example>
         bool IsAttachmentEquipped(string assetID);
     }
 
+    [DocumentationCategory("Actor Service")]
     public class EquipAttachmentRequest : SpatialAsyncOperation
     {
         public bool succeeded;

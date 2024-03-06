@@ -5,6 +5,7 @@ using UnityEngine;
 namespace SpatialSys.UnitySDK
 {
     [CreateAssetMenu(fileName = "NewMovementMaterial", menuName = "Spatial/MovementMaterial", order = 2)]
+    [DocumentationCategory("Scriptable Objects")]
     public class SpatialMovementMaterial : SpatialScriptableObjectBase
     {
         public override string prettyName => "Movement Material";
