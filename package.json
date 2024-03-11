@@ -8,7 +8,7 @@
     "com.unity.nuget.mono-cecil": "1.11.4"
   },
   "displayName": "Spatial Unity SDK",
-  "version": "1.19.0",
+  "version": "1.20.0",
   "unity": "2021.3",
   "description": "This package allows creators to build 3D spaces using the Unity editor and publish them to Spatial",
   "keywords": [
