@@ -17,6 +17,16 @@ namespace SpatialSys.UnitySDK
         bool isBodyLoaded { get; }
 
         /// <summary>
+        /// Whether the avatar is visible in the scene.
+        /// </summary>
+        bool visibleLocally { get; set; }
+
+        /// <summary>
+        /// Whether the avatar is visible in the scene to other remote users.
+        /// </summary>
+        bool visibleRemotely { get; }
+
+        /// <summary>
         /// The display name shown in the nametag above the avatar's head.
         /// </summary>
         string displayName { get; }

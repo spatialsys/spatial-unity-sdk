@@ -1,0 +1,58 @@
+VisualElement {
+}
+
+.BG {
+    background-color: var(--unity-colors-default-text);
+}
+
+.Container {
+    background-color: var(--unity-colors-tab-background);
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+.Hoz {
+    flex-direction: row;
+    align-items: center;
+}
+
+.H1 {
+    font-size: var(--unity-metrics-default-font_very_big_size);
+    -unity-font-style: bold;
+}
+
+.Section {
+    margin-bottom: 24px;
+}
+
+.H2 {
+    -unity-font-style: bold;
+    font-size: var(--unity-metrics-default-font_big_size);
+}
+
+.TextBottomMargin {
+    margin-bottom: 4px;
+}
+
+.Link {
+    color: var(--unity-colors-link-text);
+}
+
+.Link:hover {
+    color: rgb(97, 201, 255);
+}
+
+:root {
+    flex-shrink: 1;
+    align-items: flex-start;
+}
+
+.IconColor {
+    -unity-background-image-tint-color: var(--unity-colors-warning-text);
+}
+
+.WarningColor {
+    color: var(--unity-colors-warning-text);
+}

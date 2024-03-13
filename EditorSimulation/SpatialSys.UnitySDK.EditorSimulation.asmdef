@@ -4,7 +4,8 @@
     "references": [
         "SpatialSys.UnitySDK",
         "Unity.VisualScripting.Core",
-        "SpatialSys.UnitySDK.Editor"
+        "SpatialSys.UnitySDK.Editor",
+        "Unity.RenderPipelines.Universal.Runtime"
     ],
     "includePlatforms": [
         "Editor"

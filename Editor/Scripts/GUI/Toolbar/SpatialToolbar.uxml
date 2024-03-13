@@ -1,0 +1,18 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="project://database/Packages/io.spatial.unitysdk/Editor/Scripts/GUI/Toolbar/SpatialToolbarStyle.uss?fileID=7433441132597879392&amp;guid=df0e2d56ecc454494a842b073d712970&amp;type=3#SpatialToolbarStyle" />
+    <ui:VisualElement name="Container" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; justify-content: space-around;">
+        <uie:ToolbarSpacer />
+        <uie:ToolbarButton display-tooltip-when-elided="true" name="HelpButton" class="ButtonSpacing HelpButton" style="flex-direction: row; align-items: center; justify-content: space-around;">
+            <ui:VisualElement style="background-image: url(&apos;project://database/Packages/io.spatial.unitysdk/Editor/Textures/GUI/SpatialLogoSmall.png?fileID=2800000&amp;guid=1bb1e35af9bce44f2bb845a92dba8056&amp;type=3#SpatialLogoSmall&apos;); width: 14px; height: 14px; -unity-background-image-tint-color: rgba(0, 255, 119, 0.85); margin-right: 4px;" />
+            <ui:Label text="Help" display-tooltip-when-elided="true" />
+        </uie:ToolbarButton>
+        <uie:ToolbarSpacer style="width: 8px;" />
+        <ui:IMGUIContainer name="IMGUI" style="flex-direction: row; flex-grow: 1;" />
+        <ui:VisualElement style="flex-grow: 1; flex-shrink: 0;" />
+        <uie:ToolbarButton display-tooltip-when-elided="true" name="PlaymodeWarning" tooltip="Spatial does not fully support testing spaces in-editor. Click to read more about the differences between testing in editor vs sandbox." class="ButtonSpacing PlaymodeWarning" style="flex-direction: row; align-items: center; justify-content: space-around; overflow: visible; visibility: visible; flex-grow: 0; flex-shrink: 0; display: none;">
+            <ui:VisualElement class="WarningIcon" style="background-image: url(&apos;project://database/Packages/io.spatial.unitysdk/Editor/Textures/GUI/icon_warningLarge.png?fileID=2800000&amp;guid=46041aba597134349a62275ed84e7d65&amp;type=3#icon_warningLarge&apos;); width: 12px; height: 12px; display: flex; margin-right: 4px;" />
+            <ui:Label text="Limited Editor Simulation" display-tooltip-when-elided="true" enable-rich-text="false" />
+            <ui:VisualElement class="WarningIcon" style="background-image: url(&apos;project://database/Packages/io.spatial.unitysdk/Editor/Textures/GUI/icon_warningLarge.png?fileID=2800000&amp;guid=46041aba597134349a62275ed84e7d65&amp;type=3#icon_warningLarge&apos;); width: 12px; height: 12px; display: flex; margin-right: 0; margin-left: 4px;" />
+        </uie:ToolbarButton>
+    </ui:VisualElement>
+</ui:UXML>

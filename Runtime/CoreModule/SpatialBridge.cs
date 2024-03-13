@@ -98,6 +98,11 @@ namespace SpatialSys.UnitySDK
         /// </summary>
         public static IVFXService vfxService;
 
+        /// <summary>
+        /// A service for handling Graphics settings.
+        /// </summary>
+        public static IGraphicsService graphicsService;
+
         #region Internal services
 
         /// <summary>

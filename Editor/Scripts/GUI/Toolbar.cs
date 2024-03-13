@@ -1,8 +1,10 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEditor;
 using UnityEditor.SceneManagement;
-using UnityToolbarExtender;
+using UnityEngine.UIElements;
+using System.Reflection;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -11,21 +13,89 @@ namespace SpatialSys.UnitySDK.Editor
     {
         private const string SANDBOX_TARGET_BUILD_PLATFORM_KEY = "SpatialSDK_TargetBuildPlatform";
         private static bool styleInitialized;
-        private static Texture2D _helpTextTexture;
         private static Texture2D _helpButtonTexture;
         private static Texture2D _helpButtonHoveredTexture;
 
         private static GUIStyle _helpButtonStyle;
 
+        static Button playmodeWarning;
+        static ScriptableObject m_currentToolbar;
+        static VisualElement toolbarRoot;
+        static VisualElement toolbarElement;
+        static Type m_toolbarType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.Toolbar");
+
         static Toolbar()
         {
-            ToolbarExtender.RightToolbarGUI.Add(OnToolbarGUI);
             styleInitialized = false;
+            EditorApplication.update -= OnUpdate;
+            EditorApplication.update += OnUpdate;
+        }
+
+        private static void OnUpdate()
+        {
+#if !SPATIAL_UNITYSDK_INTERNAL
+            if (playmodeWarning != null)
+            {
+                playmodeWarning.style.display = EditorApplication.isPlaying ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+#endif
+
+            // Catches a bug where our toolbar gets lost when changing OS resolution while unity is open.
+            bool missingParent = toolbarRoot == null || toolbarRoot.parent == null || toolbarRoot.parent.parent == null || toolbarRoot.parent.parent.parent == null || toolbarRoot.parent.parent.parent.parent == null;
+
+            // Relying on the fact that toolbar is ScriptableObject and gets deleted when layout changes 
+            if (m_currentToolbar == null || toolbarElement == null || missingParent)
+            {
+                // Find toolbar
+                var toolbars = Resources.FindObjectsOfTypeAll(m_toolbarType);
+                m_currentToolbar = toolbars.Length > 0 ? (ScriptableObject)toolbars[0] : null;
+                if (m_currentToolbar != null)
+                {
+                    var root = m_currentToolbar.GetType().GetField("m_Root", BindingFlags.NonPublic | BindingFlags.Instance);
+                    var rawRoot = root.GetValue(m_currentToolbar);
+                    VisualElement mRoot = rawRoot as VisualElement;
+                    var toolbarZone = mRoot.Q("ToolbarZoneRightAlign");
+
+                    var uiAsset = EditorUtility.LoadAssetFromPackagePath<VisualTreeAsset>("Editor/Scripts/GUI/Toolbar/SpatialToolbar.uxml");
+                    VisualElement ui = uiAsset.Instantiate();
+                    toolbarElement = ui;
+                    toolbarRoot = toolbarZone;
+                    toolbarZone.Add(ui);
+                    ui.Q<IMGUIContainer>("IMGUI").onGUIHandler = () => OnToolbarGUI();
+
+                    playmodeWarning = ui.Q<Button>("PlaymodeWarning");
+
+                    playmodeWarning.clicked += () => {
+                        PlaymodePopup.InitWindow(false);
+                    };
+
+                    ui.Q<Button>("HelpButton").clicked += () => {
+                        GenericMenu menu = new GenericMenu();
+                        // The separator with text is styles identically to Items on windows so we don't use them there. On Mac they look nice.
+                        void AddSeparator(string header)
+                        {
+                            menu.AddSeparator("");
+                            if (Application.platform == RuntimePlatform.OSXEditor)
+                                menu.AddSeparator(header);
+                        }
+
+                        AddSeparator("Read Docs & Tutorials");
+                        menu.AddItem(new GUIContent("Documentation"), false, () => Application.OpenURL("https://docs.spatial.io/"));
+                        menu.AddItem(new GUIContent("Scripting API"), false, () => Application.OpenURL("https://cs.spatial.io/reference"));
+
+                        AddSeparator("Ask for Help");
+                        menu.AddItem(new GUIContent("Help and Discussion Forum"), false, () => Application.OpenURL("https://github.com/spatialsys/spatial-unity-sdk/discussions"));
+
+                        AddSeparator("Ask the Community");
+                        menu.AddItem(new GUIContent("Community Discord"), false, () => Application.OpenURL("https://discord.gg/spatial"));
+                        menu.ShowAsContext();
+                    };
+                }
+            }
         }
 
         private static void InitStyle()
         {
-            _helpTextTexture = SpatialGUIUtility.LoadGUITexture("GUI/HelpText.png");
             _helpButtonTexture = SpatialGUIUtility.LoadGUITexture("GUI/HelpButtonTexture.png");
             _helpButtonHoveredTexture = SpatialGUIUtility.LoadGUITexture("GUI/HelpButtonTextureSelected.png");
 
@@ -57,6 +127,7 @@ namespace SpatialSys.UnitySDK.Editor
                 styleInitialized = true;
                 InitStyle();
             }
+            GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 
             GUI.color = Color.white * 0.75f;
@@ -131,33 +202,8 @@ namespace SpatialSys.UnitySDK.Editor
                 SpatialSDKConfigWindow.OpenWindow(SpatialSDKConfigWindow.CONFIG_TAB_NAME);
             }
 
-            GUILayout.Space(8);
-
-            if (GUILayout.Button(new GUIContent(_helpTextTexture), _helpButtonStyle))
-            {
-                GenericMenu menu = new GenericMenu();
-                // The separator with text is styles identically to Items on windows so we don't use them there. On Mac they look nice.
-                void AddSeparator(string header)
-                {
-                    menu.AddSeparator("");
-                    if (Application.platform == RuntimePlatform.OSXEditor)
-                        menu.AddSeparator(header);
-                }
-
-                AddSeparator("Read Docs & Tutorials");
-                menu.AddItem(new GUIContent("Documentation"), false, () => Application.OpenURL("https://docs.spatial.io/"));
-                menu.AddItem(new GUIContent("Scripting API"), false, () => Application.OpenURL("https://cs.spatial.io/api/"));
-
-                AddSeparator("Ask for Help");
-                menu.AddItem(new GUIContent("Help and Discussion Forum"), false, () => Application.OpenURL("https://github.com/spatialsys/spatial-unity-sdk/discussions"));
-
-                AddSeparator("Ask the Community");
-                menu.AddItem(new GUIContent("Community Discord"), false, () => Application.OpenURL("https://discord.gg/spatial"));
-                menu.ShowAsContext();
-            }
-
             GUI.color = Color.white;
-            GUILayout.Space(8);
+            GUILayout.EndHorizontal();
         }
 
         private static string GetTestButtonErrorString()

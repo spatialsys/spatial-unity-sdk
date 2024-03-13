@@ -7,6 +7,11 @@ namespace SpatialSys.UnitySDK
     public interface IAvatar : IReadOnlyAvatar
     {
         /// <summary>
+        /// Whether the avatar is visible to others in the scene.
+        /// </summary>
+        new bool visibleRemotely { get; set; }
+
+        /// <summary>
         /// An optional subtext shown in the nametag above the avatar head.
         /// </summary>
         new string nametagSubtext { get; set; }

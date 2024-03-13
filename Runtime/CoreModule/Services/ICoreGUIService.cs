@@ -56,6 +56,13 @@ namespace SpatialSys.UnitySDK
         void CloseAllCoreGUI();
 
         /// <summary>
+        /// Enables or Disables mobile controls GUI.
+        /// If disabled, this will hide the default controls GUI on mobile devices.
+        /// </summary>
+        /// <example><code source="Services/CoreGUIServiceExamples.cs" region="SetMobileControlsGUIEnabled"/></example>
+        void SetMobileControlsGUIEnabled(SpatialMobileControlsGUITypeFlags guis, bool enabled);
+
+        /// <summary>
         /// Display a toast message to the user. This is a basic text based nofification.
         /// This can be called every 500ms. If called more frequently, the messages will be ignored.
         /// </summary>
@@ -164,6 +171,18 @@ namespace SpatialSys.UnitySDK
         /// its previous open state.
         /// </summary>
         Open = 1 << 1,
+    }
+
+    [Flags]
+    [DocumentationCategory("Core Gui Service")]
+    public enum SpatialMobileControlsGUITypeFlags
+    {
+        None = 0,
+
+        AvatarMoveControls = 1 << 0,
+        AvatarJumpButton = 1 << 1,
+
+        All = ~None,
     }
 
     [DocumentationCategory("Core Gui Service")]

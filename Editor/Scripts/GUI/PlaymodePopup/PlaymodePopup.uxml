@@ -1,0 +1,32 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="project://database/Packages/io.spatial.unitysdk/Editor/Scripts/GUI/PlaymodePopup/PlaymodePopupStyles.uss?fileID=7433441132597879392&amp;guid=7c3ff2e81ffcd4dad8828b0c4d0d4fdc&amp;type=3#PlaymodePopupStyles" />
+    <ui:VisualElement name="BG" class="BG" style="padding-left: 2px; padding-right: 2px; padding-top: 2px; padding-bottom: 2px; width: auto; overflow: hidden; align-items: flex-start;">
+        <ui:VisualElement name="Container" class="Container" style="flex-grow: 0; padding-left: 14px; padding-right: 14px; padding-top: 14px; padding-bottom: 14px; align-items: stretch;">
+            <ui:VisualElement name="TitleGroup" class="Section">
+                <ui:VisualElement name="Title" class="Hoz" style="flex-grow: 0; align-items: flex-start;">
+                    <ui:VisualElement class="IconColor" style="background-image: url(&apos;project://database/Packages/io.spatial.unitysdk/Editor/Textures/GUI/icon_warningLarge.png?fileID=2800000&amp;guid=46041aba597134349a62275ed84e7d65&amp;type=3#icon_warningLarge&apos;); width: 24px; height: 24px; margin-right: 8px;" />
+                    <ui:Label text="Limited Unity Editor Simulation" display-tooltip-when-elided="true" class="H1 TextBottomMargin WarningColor" />
+                    <ui:VisualElement class="IconColor" style="background-image: url(&apos;project://database/Packages/io.spatial.unitysdk/Editor/Textures/GUI/icon_warningLarge.png?fileID=2800000&amp;guid=46041aba597134349a62275ed84e7d65&amp;type=3#icon_warningLarge&apos;); width: 24px; height: 24px; margin-right: 0; margin-left: 8px;" />
+                </ui:VisualElement>
+                <ui:Label text="Spatial does not support testing spaces in-editor." display-tooltip-when-elided="true" class="TextBottomMargin" style="-unity-font-style: bold; flex-wrap: wrap; flex-shrink: 1;" />
+                <ui:Label text="Instead, most testing should be done using the Spatial Sandbox." display-tooltip-when-elided="true" class="TextBottomMargin" style="-unity-font-style: normal; flex-wrap: wrap; flex-shrink: 1;" />
+                <ui:Label text="&lt;u&gt;Click here to see the differences between Editor and Sanbox" display-tooltip-when-elided="true" name="EditorDiffLink" class="Link TextBottomMargin" style="font-size: 12px;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="HowToGroup" class="Section">
+                <ui:VisualElement name="Title" class="Hoz" style="flex-grow: 0;">
+                    <ui:Label text="How To Test Your Space In Sandbox" display-tooltip-when-elided="true" class="H2 TextBottomMargin" />
+                </ui:VisualElement>
+                <ui:Label text="1. Create a Spatial Package for your space." display-tooltip-when-elided="true" class="TextBottomMargin" />
+                <ui:Label text="&lt;u&gt;Click here to view a tutorial on creating your first package" display-tooltip-when-elided="true" name="PackageTutorialLink" class="Link TextBottomMargin" style="font-size: 12px;" />
+                <ui:VisualElement class="Hoz">
+                    <ui:Label text="2. Upload your space to the Sandbox using" display-tooltip-when-elided="true" />
+                    <ui:Button text="▶ Test Active Scene" display-tooltip-when-elided="true" focusable="false" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="ConfirmationGroup" class="Hoz" style="justify-content: flex-start;">
+                <ui:Button text="Got It" display-tooltip-when-elided="true" name="GotItButton" style="height: 32px; width: 128px;" />
+                <ui:Toggle label="Don&apos;t Show Message Again" name="DontShowToggle" style="flex-direction: row-reverse;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -14,6 +14,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         public void SetCoreGUIEnabled(SpatialCoreGUITypeFlags guis, bool enabled) { }
         public SpatialCoreGUIState GetCoreGUIState(SpatialCoreGUIType guiType) => SpatialCoreGUIState.None;
         public void CloseAllCoreGUI() { }
+        public void SetMobileControlsGUIEnabled(SpatialMobileControlsGUITypeFlags guis, bool enabled) { }
         public void DisplayToastMessage(string message, float duration = 4f) { }
     }
     

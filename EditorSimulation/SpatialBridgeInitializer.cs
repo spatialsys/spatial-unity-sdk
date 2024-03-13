@@ -30,6 +30,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
             SpatialBridge.spatialComponentService = new EditorSpatialComponentService();
             SpatialBridge.userWorldDataStoreService = new EditorUserWorldDataStoreService();
             SpatialBridge.vfxService = new EditorVFXService();
+            SpatialBridge.graphicsService = new EditorGraphicsService();
             SpatialBridge.eventService = new EditorEventService();
 #endif
         }

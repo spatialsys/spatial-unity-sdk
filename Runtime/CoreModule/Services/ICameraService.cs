@@ -117,7 +117,7 @@ namespace SpatialSys.UnitySDK
         /// Apply a high frequency shake to the player camera and all virtual cameras. Good for short, low to high intensity impacts.
         /// </summary>
         /// <remarks>
-        /// Equivalent to <code>Shake(Vector3.down * force)</code>
+        /// Equivalent to <c>Shake(Vector3.down * force)</c>
         /// </remarks>
         void Shake(float force);
 
@@ -131,7 +131,7 @@ namespace SpatialSys.UnitySDK
         /// Makes the camera feel <c>dazed</c> or off balance.
         /// </summary>
         /// <remarks>
-        /// Equivalent to <code>Wobble(Vector3.down * force)</code>
+        /// Equivalent to <c>Wobble(Vector3.down * force)</c>
         /// </remarks>
         void Wobble(float force);
 

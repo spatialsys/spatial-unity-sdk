@@ -1,0 +1,52 @@
+.HelpButton {
+    border-left-color: rgba(0, 255, 119, 0.7);
+    border-right-color: rgba(0, 255, 119, 0.7);
+    border-top-color: rgba(0, 255, 119, 0.7);
+    border-bottom-color: rgba(0, 255, 119, 0.7);
+    background-color: rgb(0, 0, 0);
+    color: rgba(0, 255, 119, 0.7);
+    -unity-font-style: bold;
+    -unity-text-align: middle-left;
+}
+
+.ButtonSpacing {
+    padding-left: 8px;
+    padding-right: 8px;
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+.HelpButton:hover {
+    background-color: rgb(0, 38, 18);
+}
+
+.IconColor {
+    -unity-background-image-tint-color: var(--unity-colors-default-text);
+}
+
+.PlaymodeWarning {
+    border-left-color: var(--unity-colors-default-text);
+    border-right-color: var(--unity-colors-default-text);
+    border-top-color: var(--unity-colors-default-text);
+    border-bottom-color: var(--unity-colors-default-text);
+    -unity-font-style: bold;
+    -unity-text-align: middle-left;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+}
+
+:root {
+    flex-grow: 1;
+}
+
+.PlaymodeWarningTEMP:hover {
+    background-color: rgb(56, 43, 0);
+}
+
+.WarningIcon {
+    -unity-background-image-tint-color: var(--unity-colors-default-text);
+}

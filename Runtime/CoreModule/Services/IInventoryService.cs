@@ -81,7 +81,7 @@ namespace SpatialSys.UnitySDK
     public interface IInventoryItem
     {
         /// <summary>
-        /// Item ID. This can be found on Spatial Studio (https://spatial.io/studio)
+        /// Item ID. This can be found on <see href="https://www.spatial.io/studio">Spatial Studio</see>
         /// </summary>
         string itemID { get; }
 

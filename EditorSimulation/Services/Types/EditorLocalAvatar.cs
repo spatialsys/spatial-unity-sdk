@@ -6,6 +6,8 @@ namespace SpatialSys.UnitySDK.EditorSimulation
     public class EditorLocalAvatar : IAvatar
     {
         public bool isBodyLoaded { get; }
+        public bool visibleLocally { get; set; } = true;
+        public bool visibleRemotely { get; set; } = true;
         public string displayName { get; } = "Editor Local Avatar";
         public string nametagSubtext { get; set; }
         public float nametagBarValue { get; set; }
@@ -59,7 +61,8 @@ namespace SpatialSys.UnitySDK.EditorSimulation
 
         public EquipAttachmentRequest EquipAttachment(AssetType assetType, string assetID, bool equip = true, bool clearOccupiedPrimarySlot = true, string optionalTag = null)
         {
-            EquipAttachmentRequest request = new() {
+            EquipAttachmentRequest request = new()
+            {
                 succeeded = false,
             };
             request.InvokeCompletionEvent();

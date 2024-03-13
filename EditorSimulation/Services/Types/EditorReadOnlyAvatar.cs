@@ -6,6 +6,8 @@ namespace SpatialSys.UnitySDK.EditorSimulation
     public class EditorReadOnlyAvatar : IReadOnlyAvatar
     {
         public bool isBodyLoaded => false;
+        public bool visibleLocally { get; set; }
+        public bool visibleRemotely => true;
 
         public string displayName => string.Empty;
         public string nametagSubtext => string.Empty;
