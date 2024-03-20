@@ -78,14 +78,18 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
-        public static bool CompileAssembly(AssemblyDefinitionAsset assemblyDefinition, string sku, bool allowExceptions = false)
+        public static bool CompileAssembly(AssemblyDefinitionAsset assemblyDefinition, string sku, bool allowExceptions = false, bool enforceName = true)
         {
-            string assemblyName = GetAssemblyNameForSKU(sku);
+            string assemblyName = assemblyDefinition.name;
 
-            if (!ValidateCustomAssemblyName(assemblyDefinition, sku))
+            if (enforceName)
             {
-                Debug.LogError($"Failed to compile c# assembly: Assembly name must be {assemblyName}; Did you forget to call EnforceCustomAssemblyName");
-                return false;
+                assemblyName = GetAssemblyNameForSKU(sku);
+                if (!ValidateCustomAssemblyName(assemblyDefinition, sku))
+                {
+                    Debug.LogError($"Failed to compile c# assembly: Assembly name must be {assemblyName}; Did you forget to call EnforceCustomAssemblyName");
+                    return false;
+                }
             }
 
             // Compile

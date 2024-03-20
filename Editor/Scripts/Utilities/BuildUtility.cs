@@ -278,18 +278,15 @@ namespace SpatialSys.UnitySDK.Editor
                 // Restore config file to previous values if necessary.
                 EditorUtility.RestoreAssetFromBackup(ProjectConfig.activePackageConfig);
                 EditorUtility.RestoreAssetFromBackup(ProjectConfig.instance);
-
-                if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig && spaceConfig.csharpAssembly != null)
-                    EditorUtility.RestoreAssetFromBackup(spaceConfig.csharpAssembly);
             }
 
+            // don't enforce name, keep it as the source asset and let the build machine do it
+            if (!CompileAssemblyIfExists(enforceName: false))
+                throw new System.Exception("Failed to compile custom c# scripts");
 
             return CheckValidationPromise(SpatialValidator.RunTestsOnPackage(ValidationRunContext.PublishingPackage))
                 .Then(() => {
                     ProcessAndSavePackageAssets();
-
-                    if (!CompileAssemblyIfExists())
-                        return Promise.Rejected(new System.Exception("Failed to compile custom c# scripts"));
 
                     // Auto-assign necessary bundle names
                     // This gets done on the build machines too, but we also want to do it here just in case there's an issue
@@ -576,15 +573,17 @@ namespace SpatialSys.UnitySDK.Editor
             AssetDatabase.Refresh();
         }
 
-        private static bool CompileAssemblyIfExists()
+        private static bool CompileAssemblyIfExists(bool enforceName = true)
         {
             if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig && spaceConfig.csharpAssembly != null)
             {
                 // Create backup because we're going to modify the assembly name
                 EditorUtility.CreateAssetBackup(spaceConfig.csharpAssembly);
-                CSScriptingEditorUtility.EnforceCustomAssemblyName(spaceConfig.csharpAssembly, null);
 
-                return CSScriptingEditorUtility.CompileAssembly(spaceConfig.csharpAssembly, null, true);
+                if (enforceName)
+                    CSScriptingEditorUtility.EnforceCustomAssemblyName(spaceConfig.csharpAssembly, null);
+
+                return CSScriptingEditorUtility.CompileAssembly(spaceConfig.csharpAssembly, null, true, enforceName);
             }
 
             return true;
