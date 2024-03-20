@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
-    [DocumentationCategory("Spatial Components")]
+    [DocumentationCategory("Components")]
     public class SpatialAvatarAnimation : SpatialPackageAsset
     {
         public override string prettyName => "Avatar Animation";

@@ -11,7 +11,7 @@ namespace SpatialSys.UnitySDK
     /// <remarks>
     /// <code source="Services/DataStoreExamples.cs" region="DataStoreMainExample" lang="csharp"></code>
     /// </remarks>
-    [DocumentationCategory("User World Data Store Service")]
+    [DocumentationCategory("Services/User World Data Store Service")]
     public interface IUserWorldDataStoreService
     {
         /// <summary>
@@ -74,7 +74,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Operation to be performed on the data store.
     /// </summary>
-    [DocumentationCategory("User World Data Store Service")]
+    [DocumentationCategory("Services/User World Data Store Service")]
     public class DataStoreOperationRequest : SpatialAsyncOperation
     {
         /// <summary>
@@ -90,7 +90,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Request to get a variable from the data store.
     /// </summary>
-    [DocumentationCategory("User World Data Store Service")]
+    [DocumentationCategory("Services/User World Data Store Service")]
     public class DataStoreGetVariableRequest : DataStoreOperationRequest
     {
         /// <summary>
@@ -189,7 +189,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Request to check if a variable exists in the data store.
     /// </summary>
-    [DocumentationCategory("User World Data Store Service")]
+    [DocumentationCategory("Services/User World Data Store Service")]
     public class DataStoreHasVariableRequest : DataStoreOperationRequest
     {
         /// <summary>
@@ -201,7 +201,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Request to check if the data store has any variables.
     /// </summary>
-    [DocumentationCategory("User World Data Store Service")]
+    [DocumentationCategory("Services/User World Data Store Service")]
     public class DataStoreHasAnyVariableRequest : DataStoreOperationRequest
     {
         /// <summary>
@@ -213,7 +213,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Request to dump all variables in the data store as a JSON string.
     /// </summary>
-    [DocumentationCategory("User World Data Store Service")]
+    [DocumentationCategory("Services/User World Data Store Service")]
     public class DataStoreDumpVariablesRequest : DataStoreOperationRequest
     {
         /// <summary>

@@ -8,7 +8,7 @@ namespace SpatialSys.UnitySDK
     /// matchmaking, remove events (RPCs/Messaging), etc.
     /// </summary>
     /// <example><code source="Services/NetworkingServiceExamples.cs" region="ServerProps"/></example>
-    [DocumentationCategory("Networking Service")]
+    [DocumentationCategory("Services/Networking Service")]
     public interface INetworkingService
     {
         /// <summary>
@@ -214,7 +214,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// The connection status to the current server
     /// </summary>
-    [DocumentationCategory("Networking Service")]
+    [DocumentationCategory("Services/Networking Service")]
     public enum ServerConnectionStatus
     {
         /// <summary>
@@ -242,7 +242,7 @@ namespace SpatialSys.UnitySDK
     /// Quaternion, Color, Color32, Vector4, DateTime
     /// </summary>
     /// <example><code source="Services/NetworkingServiceExamples.cs" region="RPCExample"/></example>
-    [DocumentationCategory("Networking Service")]
+    [DocumentationCategory("Services/Networking Service")]
     public interface INetworkingRemoteEventsService
     {
         /// <summary>
@@ -274,7 +274,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Arguments for the `onEvent` callback in <see cref="INetworkingRemoteEventsService"/>
     /// </summary>
-    [DocumentationCategory("Networking Service")]
+    [DocumentationCategory("Services/Networking Service")]
     public struct NetworkingRemoteEventArgs
     {
         /// <summary>

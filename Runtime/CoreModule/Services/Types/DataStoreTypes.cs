@@ -4,7 +4,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Response code for data store operations.
     /// </summary>
-    [DocumentationCategory("User World Data Store Service")]
+    [DocumentationCategory("Services/User World Data Store Service")]
     public enum DataStoreResponseCode
     {
         /// <summary>

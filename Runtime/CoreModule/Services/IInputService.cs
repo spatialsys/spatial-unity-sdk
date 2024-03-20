@@ -9,7 +9,7 @@ namespace SpatialSys.UnitySDK
     /// <see cref="StartVehicleInputCapture"/>, or <see cref="StartCompleteCustomInputCapture"/>.
     /// These methods will start capturing input and calling the listener methods when an overriden input event occurs.
     /// </remarks>
-    [DocumentationCategory("Input Service")]
+    [DocumentationCategory("Services/Input Service")]
     public interface IInputService
     {
         /// <summary>
@@ -56,7 +56,7 @@ namespace SpatialSys.UnitySDK
         void ReleaseInputCapture(IInputActionsListener listener);
     }
 
-    [DocumentationCategory("Input Service")]
+    [DocumentationCategory("Services/Input Service")]
     public enum InputCaptureType
     {
         None,
@@ -68,7 +68,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Interface for listening to input capture events.
     /// </summary>
-    [DocumentationCategory("Input Service")]
+    [DocumentationCategory("Services/Input Service")]
     public interface IInputActionsListener
     {
         /// <summary>
@@ -86,7 +86,7 @@ namespace SpatialSys.UnitySDK
     /// Interface for listening to avatar input capture events. Only events overriden with <see cref="IInputService.StartAvatarInputCapture"/>
     /// will be triggered.
     /// </summary>
-    [DocumentationCategory("Input Service")]
+    [DocumentationCategory("Services/Input Service")]
     public interface IAvatarInputActionsListener : IInputActionsListener
     {
         /// <summary>
@@ -125,7 +125,7 @@ namespace SpatialSys.UnitySDK
     /// Interface for listening to vehicle input capture events. Only events overriden with <see cref="IInputService.StartVehicleInputCapture"/>
     /// will be triggered.
     /// </summary>
-    [DocumentationCategory("Input Service")]
+    [DocumentationCategory("Services/Input Service")]
     public interface IVehicleInputActionsListener : IInputActionsListener
     {
         /// <summary>

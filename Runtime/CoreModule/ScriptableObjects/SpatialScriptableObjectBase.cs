@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
+    [DocumentationCategory("Scriptable Objects")]
     public abstract class SpatialScriptableObjectBase : ScriptableObject
     {
         // these values show up in the black inspector block

@@ -4,7 +4,7 @@ namespace SpatialSys.UnitySDK
     /// Service to handle badges
     /// </summary>
     /// <example><code source="Services/BadgeServiceExamples.cs" region="RewardBadge" lang="csharp"/></example>
-    [DocumentationCategory("Badge Service")]
+    [DocumentationCategory("Services/Badge Service")]
     public interface IBadgeService
     {
         /// <summary>

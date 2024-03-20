@@ -278,14 +278,18 @@ namespace SpatialSys.UnitySDK.Editor
                 // Restore config file to previous values if necessary.
                 EditorUtility.RestoreAssetFromBackup(ProjectConfig.activePackageConfig);
                 EditorUtility.RestoreAssetFromBackup(ProjectConfig.instance);
+
+                if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig && spaceConfig.csharpAssembly != null)
+                    EditorUtility.RestoreAssetFromBackup(spaceConfig.csharpAssembly);
             }
 
-            if (!CompileAssemblyIfExists())
-                return Promise.Rejected(new System.Exception("Failed to compile custom c# scripts"));
 
             return CheckValidationPromise(SpatialValidator.RunTestsOnPackage(ValidationRunContext.PublishingPackage))
                 .Then(() => {
                     ProcessAndSavePackageAssets();
+
+                    if (!CompileAssemblyIfExists())
+                        return Promise.Rejected(new System.Exception("Failed to compile custom c# scripts"));
 
                     // Auto-assign necessary bundle names
                     // This gets done on the build machines too, but we also want to do it here just in case there's an issue
@@ -580,7 +584,7 @@ namespace SpatialSys.UnitySDK.Editor
                 EditorUtility.CreateAssetBackup(spaceConfig.csharpAssembly);
                 CSScriptingEditorUtility.EnforceCustomAssemblyName(spaceConfig.csharpAssembly, null);
 
-                return CSScriptingEditorUtility.CompileAssembly(spaceConfig.csharpAssembly, null);
+                return CSScriptingEditorUtility.CompileAssembly(spaceConfig.csharpAssembly, null, true);
             }
 
             return true;

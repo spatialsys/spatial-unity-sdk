@@ -9,7 +9,7 @@ using UnityEditor;
 
 namespace SpatialSys.UnitySDK
 {
-    [DocumentationCategory("Spatial Components")]
+    [DocumentationCategory("Components")]
     [DisallowMultipleComponent]
     public class SpatialSyncedObject : SpatialComponentBase
     {

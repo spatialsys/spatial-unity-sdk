@@ -6,7 +6,7 @@ namespace SpatialSys.UnitySDK
     /// Handles Visual Effects on the spatial platform
     /// </summary>
     /// <example><code source="Services/VFXServiceExamples.cs" region="CreateFloatingText" lang="csharp"/></example>
-    [DocumentationCategory("VFX Service")]
+    [DocumentationCategory("Services/VFX Service")]
     public interface IVFXService
     {
         /// <summary>

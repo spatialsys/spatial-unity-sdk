@@ -8,7 +8,7 @@ namespace SpatialSys.UnitySDK
     /// Service for interacting with actors and users in the space.
     /// </summary>
     /// <remarks>Actor Service</remarks>
-    [DocumentationCategory("Actor Service")]
+    [DocumentationCategory("Services/Actor Service")]
     public interface IActorService
     {
         /// <summary>
@@ -83,7 +83,7 @@ namespace SpatialSys.UnitySDK
     /// An actor in the space. This represents a user who has joined the server instance.
     /// </summary>
     /// <example><code source="Services/ActorExamples.cs" region="GetActorData" lang="csharp"/></example>
-    [DocumentationCategory("Actor Service")]
+    [DocumentationCategory("Services/Actor Service")]
     public interface IActor
     {
         /// <summary>
@@ -190,7 +190,7 @@ namespace SpatialSys.UnitySDK
     /// The local actor (user on the current machine).
     /// </summary>
     /// <example><code source="Services/ActorExamples.cs" region="GetActorData" lang="csharp"/></example>
-    [DocumentationCategory("Actor Service")]
+    [DocumentationCategory("Services/Actor Service")]
     public interface ILocalActor : IActor
     {
         /// <summary>
@@ -211,7 +211,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Arguments for the <see cref="IActorService.onActorJoined"/> event.
     /// </summary>
-    [DocumentationCategory("Actor Service")]
+    [DocumentationCategory("Services/Actor Service")]
     public struct ActorJoinedEventArgs
     {
         public int actorNumber;
@@ -227,7 +227,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Arguments for the <see cref="IActorService.onActorLeft"/> event.
     /// </summary>
-    [DocumentationCategory("Actor Service")]
+    [DocumentationCategory("Services/Actor Service")]
     public struct ActorLeftEventArgs
     {
         public int actorNumber;
@@ -237,7 +237,7 @@ namespace SpatialSys.UnitySDK
     /// Arguments for the <see cref="IActor.onCustomPropertiesChanged"/> event.
     /// </summary>
     /// <example><code source="Services/ActorExamples.cs" region="Custom Properties" lang="csharp"/></example>
-    [DocumentationCategory("Actor Service")]
+    [DocumentationCategory("Services/Actor Service")]
     public struct ActorCustomPropertiesChangedEventArgs
     {
         /// <summary>
@@ -257,7 +257,7 @@ namespace SpatialSys.UnitySDK
     /// The result of a request to get an actor's profile picture.
     /// </summary>
     /// <example><code source="Services/ActorExamples.cs" region="GetProfilePicture" lang="csharp"/></example>
-    [DocumentationCategory("Actor Service")]
+    [DocumentationCategory("Services/Actor Service")]
     public class ActorProfilePictureRequest : SpatialAsyncOperation
     {
         /// <summary>

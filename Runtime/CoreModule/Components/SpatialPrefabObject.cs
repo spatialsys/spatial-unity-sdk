@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
-    [DocumentationCategory("Spatial Components")]
+    [DocumentationCategory("Components")]
     public class SpatialPrefabObject : SpatialPackageAsset
     {
         public override string prettyName => "Prefab Object";

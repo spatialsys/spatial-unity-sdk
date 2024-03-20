@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
-    [DocumentationCategory("Spatial Components")]
+    [DocumentationCategory("Components")]
     public class SpatialProjectorSurface : SpatialComponentBase
     {
         public const int LATEST_VERSION = 1;

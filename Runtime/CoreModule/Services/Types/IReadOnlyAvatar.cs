@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
-    [DocumentationCategory("Actor Service")]
+    [DocumentationCategory("Services/Actor Service")]
     public interface IReadOnlyAvatar
     {
         /// <summary>

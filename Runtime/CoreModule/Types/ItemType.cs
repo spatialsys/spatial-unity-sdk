@@ -1,7 +1,7 @@
 
 namespace SpatialSys.UnitySDK
 {
-    [DocumentationCategory("Inventory Service")]
+    [DocumentationCategory("Services/Inventory Service")]
     public enum ItemType
     {
         Avatar,

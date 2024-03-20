@@ -5,7 +5,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Service for handling all UI related functionality.
     /// </summary>
-    [DocumentationCategory("Core Gui Service")]
+    [DocumentationCategory("Services/Core GUI Service")]
     public interface ICoreGUIService
     {
         /// <summary>
@@ -71,7 +71,7 @@ namespace SpatialSys.UnitySDK
         void DisplayToastMessage(string message, float duration = 4f);
     }
 
-    [DocumentationCategory("Core Gui Service")]
+    [DocumentationCategory("Services/Core GUI Service")]
     public interface ICoreGUIShopService
     {
         /// <summary>
@@ -108,7 +108,7 @@ namespace SpatialSys.UnitySDK
         void SetItemVisibility(string itemID, bool visible);
     }
 
-    [DocumentationCategory("Core Gui Service")]
+    [DocumentationCategory("Services/Core GUI Service")]
     public enum SpatialCoreGUIType
     {
         None = 0,
@@ -140,7 +140,7 @@ namespace SpatialSys.UnitySDK
     }
 
     [Flags]
-    [DocumentationCategory("Core Gui Service")]
+    [DocumentationCategory("Services/Core GUI Service")]
     public enum SpatialCoreGUITypeFlags
     {
         None = 0,
@@ -155,7 +155,7 @@ namespace SpatialSys.UnitySDK
     }
 
     [Flags]
-    [DocumentationCategory("Core Gui Service")]
+    [DocumentationCategory("Services/Core GUI Service")]
     public enum SpatialCoreGUIState
     {
         None = 0,
@@ -174,7 +174,7 @@ namespace SpatialSys.UnitySDK
     }
 
     [Flags]
-    [DocumentationCategory("Core Gui Service")]
+    [DocumentationCategory("Services/Core GUI Service")]
     public enum SpatialMobileControlsGUITypeFlags
     {
         None = 0,
@@ -185,7 +185,7 @@ namespace SpatialSys.UnitySDK
         All = ~None,
     }
 
-    [DocumentationCategory("Core Gui Service")]
+    [DocumentationCategory("Services/Core GUI Service")]
     public static class CoreGUIUtility
     {
         public static SpatialCoreGUITypeFlags ToFlag(this SpatialCoreGUIType guiType)

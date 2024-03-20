@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
-    [DocumentationCategory("Actor Service")]
+    [DocumentationCategory("Services/Actor Service")]
     public interface IAvatar : IReadOnlyAvatar
     {
         /// <summary>
@@ -286,7 +286,7 @@ namespace SpatialSys.UnitySDK
         bool IsAttachmentEquipped(string assetID);
     }
 
-    [DocumentationCategory("Actor Service")]
+    [DocumentationCategory("Services/Actor Service")]
     public class EquipAttachmentRequest : SpatialAsyncOperation
     {
         public bool succeeded;

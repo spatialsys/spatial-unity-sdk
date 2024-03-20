@@ -1,6 +1,6 @@
 namespace SpatialSys.UnitySDK
 {
-    [DocumentationCategory("Marketplace Service")]
+    [DocumentationCategory("Services/Marketplace Service")]
     public interface IMarketplaceService
     {
         /// <summary>
@@ -20,7 +20,7 @@ namespace SpatialSys.UnitySDK
         PurchaseItemRequest PurchaseItem(string itemID, ulong amount = 1, bool silent = false);
     }
 
-    [DocumentationCategory("Marketplace Service")]
+    [DocumentationCategory("Services/Marketplace Service")]
     public class PurchaseItemRequest : SpatialAsyncOperation
     {
         public string itemID;
@@ -28,7 +28,7 @@ namespace SpatialSys.UnitySDK
         public bool succeeded;
     }
 
-    [DocumentationCategory("Marketplace Service")]
+    [DocumentationCategory("Services/Marketplace Service")]
     public struct ItemPurchasedEventArgs
     {
         public string itemID;

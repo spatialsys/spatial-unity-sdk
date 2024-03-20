@@ -4,7 +4,7 @@ namespace SpatialSys.UnitySDK
 {
     [Flags]
     [Obsolete("Use SpatialCoreGUITypeFlags instead")]
-    [DocumentationCategory("Core GUI Service")]
+    [DocumentationCategory("Services/Core GUI Service")]
     public enum SpatialSystemGUIType
     {
         None = 0,

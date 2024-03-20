@@ -1,6 +1,6 @@
 namespace SpatialSys.UnitySDK
 {
-    [DocumentationCategory("Spatial Components")]
+    [DocumentationCategory("Components")]
     public class SpatialEntrancePoint : SpatialComponentBase
     {
         public override string prettyName => "Entrance Point";

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
-    [DocumentationCategory("Spatial Components")]
+    [DocumentationCategory("Components")]
     [DisallowMultipleComponent]
     public class SpatialVirtualCamera : SpatialComponentBase
     {

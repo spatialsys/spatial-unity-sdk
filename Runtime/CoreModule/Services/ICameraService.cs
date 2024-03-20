@@ -18,7 +18,7 @@ namespace SpatialSys.UnitySDK
     /// Most properties and methods implement the corresponding member from Unity's <c>Camera</c> class.
     /// </para>
     /// </remarks>
-    [DocumentationCategory("Camera Service")]
+    [DocumentationCategory("Services/Camera Service")]
     public interface ICameraService
     {
         /// <summary>
@@ -318,10 +318,11 @@ namespace SpatialSys.UnitySDK
         #endregion
     }
 
+    [DocumentationCategory("Services/Camera Service")]
     public enum SpatialCameraMode
     {
         /// <summary>
-        /// The default player / local actor camera
+        /// The default player / local actor camera.
         /// </summary>
         Actor = 0,
 
@@ -331,15 +332,20 @@ namespace SpatialSys.UnitySDK
         Vehicle = 1
     }
 
+    /// <summary>
+    /// The method of rotation for the actor camera with respect to player inputs.
+    /// How should the camera be controlled?
+    /// </summary>
+    [DocumentationCategory("Services/Camera Service")]
     public enum SpatialCameraRotationMode
     {
         /// <summary>
-        /// Automatic rotation as player moves
+        /// Automatic rotation as player moves.
         /// </summary>
         AutoRotate = 0,
 
         /// <summary>
-        /// Left mouse button or touch rotation
+        /// Left mouse button or touch rotation.
         /// </summary>
         DragToRotate = 2,
 
@@ -352,7 +358,7 @@ namespace SpatialSys.UnitySDK
         PointerLock_Locked = 1,
 
         /// <summary>
-        /// Cursor is unlocked, but next non-ui click returns to PointerLock
+        /// Cursor is unlocked, but next non-ui click returns to PointerLock.
         /// </summary>
         PointerLock_Unlocked = 3,
     }

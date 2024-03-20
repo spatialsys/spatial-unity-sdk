@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 
 namespace SpatialSys.UnitySDK
 {
-    [DocumentationCategory("Spatial Components")]
+    [DocumentationCategory("Components")]
     public class SpatialThumbnailCamera : SpatialComponentBase
     {
         public override string prettyName => "Thumbnail Camera";

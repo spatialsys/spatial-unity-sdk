@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
-    [DocumentationCategory("Spatial Components")]
+    [DocumentationCategory("Components")]
     public class SpatialEmptyFrame : SpatialComponentBase
     {
         public override string prettyName => "Empty Frame";

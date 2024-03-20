@@ -78,7 +78,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
-        public static bool CompileAssembly(AssemblyDefinitionAsset assemblyDefinition, string sku)
+        public static bool CompileAssembly(AssemblyDefinitionAsset assemblyDefinition, string sku, bool allowExceptions = false)
         {
             string assemblyName = GetAssemblyNameForSKU(sku);
 
@@ -117,7 +117,7 @@ namespace SpatialSys.UnitySDK.Editor
                     AssetDatabase.ImportAsset(OUTPUT_ASSET_PATH);
                     AssetDatabase.Refresh();
 
-                    (string[] bannedAPIs, string[] softBannedAPIs) = AssemblyBannedAPIAnalyzer.GetBannedAPIs(File.ReadAllBytes(dllPath));
+                    (string[] bannedAPIs, string[] softBannedAPIs) = AssemblyBannedAPIAnalyzer.GetBannedAPIs(File.ReadAllBytes(dllPath), Application.dataPath, allowExceptions);
 
                     if (softBannedAPIs.Length > 0)
                     {

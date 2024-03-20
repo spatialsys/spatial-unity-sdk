@@ -8,7 +8,7 @@ namespace SpatialSys.UnitySDK
     /// This currently simply logs errors to the console, but in the future we may provide a service that logs to a
     /// remote server which can be viewed by the developer.
     /// </summary>
-    [DocumentationCategory("Logging Service")]
+    [DocumentationCategory("Services/Logging Service")]
     public interface ILoggingService
     {
         // Future

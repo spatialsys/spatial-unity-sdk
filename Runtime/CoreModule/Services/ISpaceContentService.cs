@@ -6,7 +6,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Service for interacting with Spatial scene objects (synced objects, prefab objcets, anvatar attachments and synced animators).
     /// </summary>
-    [DocumentationCategory("Space Content Service")]
+    [DocumentationCategory("Services/Space Content Service")]
     public interface ISpaceContentService
     {
         #region Scene

@@ -5,7 +5,7 @@ namespace SpatialSys.UnitySDK
     /// Service for interacting with the current space.
     /// </summary>
     /// <example><code source="Services/SpaceServiceExamples.cs" region="SandboxLog" lang="csharp"/></example>
-    [DocumentationCategory("Space Service")]
+    [DocumentationCategory("Services/Space Service")]
     public interface ISpaceService
     {
         /// <summary>

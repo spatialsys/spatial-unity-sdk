@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
-    [DocumentationCategory("Spatial Components")]
+    [DocumentationCategory("Components")]
     [RequireComponent(typeof(Collider))]
     public class SpatialAvatarTeleporter : SpatialComponentBase
     {
