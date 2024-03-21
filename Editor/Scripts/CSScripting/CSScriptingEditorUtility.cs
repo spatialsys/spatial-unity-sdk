@@ -80,7 +80,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         public static bool CompileAssembly(AssemblyDefinitionAsset assemblyDefinition, string sku, bool allowExceptions = false, bool enforceName = true)
         {
-            string assemblyName = assemblyDefinition.name;
+            string assemblyName = GetAssemblyName(assemblyDefinition);
 
             if (enforceName)
             {
