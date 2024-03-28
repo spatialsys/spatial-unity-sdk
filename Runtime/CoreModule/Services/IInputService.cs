@@ -54,6 +54,14 @@ namespace SpatialSys.UnitySDK
         /// </summary>
         /// <param name="listener">Listener to release</param>
         void ReleaseInputCapture(IInputActionsListener listener);
+
+        /// <summary>
+        /// Activates vibration with the given frequency, amplitude and duration. (VR and mobile only)
+        /// </summary>
+        /// <param name="frequency">(VR only) The vibration frequency, between 0 and 1. Lower values are smoother, higher values are sharper.</param>
+        /// <param name="amplitude">(VR only) The vibration intensity, between 0 and 1</param>
+        /// <param name="duration">(VR only) The duration of the vibration in seconds</param>
+        void PlayVibration(float frequency, float amplitude, float duration);
     }
 
     [DocumentationCategory("Services/Input Service")]

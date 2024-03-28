@@ -142,5 +142,10 @@ namespace SpatialSys.UnitySDK.EditorSimulation
             listener.OnInputCaptureStopped(_inputCaptureType);
             onInputCaptureStopped?.Invoke(listener, _inputCaptureType);
         }
+
+        public void PlayVibration(float frequency, float amplitude, float duration)
+        {
+            // Can't play vibrations in editor
+        }
     }
 }

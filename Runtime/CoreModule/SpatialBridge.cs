@@ -109,6 +109,7 @@ namespace SpatialSys.UnitySDK
         /// Used to initialize Spatial components in the Unity SDK. This is an internal type and should not be used by developers,
         /// only on spatial components themselves.
         /// </summary>
+        /// <exclude />
         public static Internal.ISpatialComponentService spatialComponentService;
 
         #endregion
