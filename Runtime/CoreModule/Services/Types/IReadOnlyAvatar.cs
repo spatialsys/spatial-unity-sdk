@@ -82,13 +82,13 @@ namespace SpatialSys.UnitySDK
         /// This can be used to "deconstruct" anything that was created in the <see cref="onAvatarLoadComplete"/> event.
         /// <see cref="isBodyLoaded"/> will be set to false after this event is triggered.
         /// </summary>
-        /// <example><code source="Services/ActorExamples.cs" region="GetAvatarBoneTransform" lang="csharp"/></example>
         event Action onAvatarBeforeUnload;
 
         /// <summary>
         /// Get the transform of a bone in the avatar's body.
         /// </summary>
         /// <returns>The transform of the bone if it can be found. Returns null if <see cref="isBodyLoaded"/> is false</returns>
+        /// <example><code source="Services/ActorExamples.cs" region="GetAvatarBoneTransform" lang="csharp"/></example>
         Transform GetAvatarBoneTransform(HumanBodyBones humanBone);
     }
 }

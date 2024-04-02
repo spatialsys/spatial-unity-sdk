@@ -5,7 +5,7 @@ using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK
 {
-    [DocumentationCategory("Components")]
+    [DocumentationCategory("Core/Components")]
     [AddComponentMenu("")]//hide from add component menu.
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Variables))]
@@ -16,7 +16,7 @@ namespace SpatialSys.UnitySDK
         public override string documentationURL => null;
 
         [System.Serializable]
-        [DocumentationCategory("Components")]
+        [DocumentationCategory("Core/Components")]
         public class Data
         {
             [HideInInspector]

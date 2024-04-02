@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using ShadowResolution = UnityEngine.Rendering.Universal.ShadowResolution;
 
@@ -10,6 +12,11 @@ namespace SpatialSys.UnitySDK
     [DocumentationCategory("Services/Graphics Service")]
     public interface IGraphicsService
     {
+        /// <summary>
+        /// Event called when the main camera starts rendering. (RenderPipelineManager.beginCameraRendering)
+        /// </summary>
+        event Action<ScriptableRenderContext, CameraType> beginMainCameraRendering;
+
         // Rendering
         /// <summary>
         /// If enabled the pipeline will generate camera's depth that can be bound in shaders as <c>_CameraDepthTexture</c>.

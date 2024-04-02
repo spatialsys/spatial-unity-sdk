@@ -175,6 +175,12 @@ namespace SpatialSys.UnitySDK
         // of useful camera properties and functions.
 
         /// <summary>
+        /// Returns a copy of the main camera. This is useful for creating a new camera with the same properties and transform as the main camera.
+        /// <para><see href="https://docs.unity3d.com/ScriptReference/Camera.CopyFrom.html">Unity docs</see></para>
+        /// </summary>
+        void CopyFromMainCamera(Camera camera);
+
+        /// <summary>
         /// Matrix that transforms from camera space to world space (Read Only).
         /// <para><see href="https://docs.unity3d.com/ScriptReference/Camera-cameraToWorldMatrix.html">Unity docs</see></para>
         /// </summary>
@@ -205,6 +211,11 @@ namespace SpatialSys.UnitySDK
         int scaledPixelWidth { get; }
 
         /// <summary>
+        /// Main camera rect (Read Only).
+        /// </summary>
+        Rect rect { get; }
+
+        /// <summary>
         /// Get the world-space speed of the camera (Read Only).
         /// <para><see href="https://docs.unity3d.com/ScriptReference/Camera-velocity.html">Unity docs</see></para>
         /// </summary>
@@ -215,6 +226,24 @@ namespace SpatialSys.UnitySDK
         /// <para><see href="https://docs.unity3d.com/ScriptReference/Camera-worldToCameraMatrix.html">Unity docs</see></para>
         /// </summary>
         Matrix4x4 worldToCameraMatrix { get; }
+
+        /// <summary>
+        /// Gets the projection matrix of the camera. (Read Only).
+        /// <para><see href="https://docs.unity3d.com/ScriptReference/Camera-projectionMatrix.html">Unity docs</see></para>
+        /// </summary>
+        Matrix4x4 projectionMatrix { get; }
+
+        /// <summary>
+        /// Gets the left or right view matrix of a specific stereoscopic eye. (Read Only).
+        /// <para><see href="https://docs.unity3d.com/ScriptReference/Camera.GetStereoViewMatrix.html">Unity docs</see></para>
+        /// </summary>
+        Matrix4x4 GetStereoViewMatrix(Camera.StereoscopicEye eye);
+
+        /// <summary>
+        /// Gets the projection matrix of a specific left or right stereoscopic eye. (Read Only).
+        /// <para><see href="https://docs.unity3d.com/ScriptReference/Camera.GetStereoProjectionMatrix.html">Unity docs</see></para>
+        /// </summary>
+        Matrix4x4 GetStereoProjectionMatrix(Camera.StereoscopicEye eye);
 
         /// <summary>
         /// Given viewport coordinates, calculates the view space vectors pointing to the four frustum corners at the specified camera depth.

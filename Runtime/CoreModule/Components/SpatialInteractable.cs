@@ -4,7 +4,7 @@ using UnityEngine.Serialization;
 
 namespace SpatialSys.UnitySDK
 {
-    [DocumentationCategory("Components")]
+    [DocumentationCategory("Core/Components")]
     public class SpatialInteractable : SpatialComponentBase
     {
         public enum IconType

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
-    [DocumentationCategory("Components")]
+    [DocumentationCategory("Core/Components")]
     [DisallowMultipleComponent]
     public class SpatialQuest : SpatialComponentBase
     {
@@ -43,7 +43,7 @@ namespace SpatialSys.UnitySDK
         public SpatialEvent onResetEvent;
 
         [Serializable]
-        [DocumentationCategory("Components")]
+        [DocumentationCategory("Core/Components")]
         public class Reward
         {
             public RewardType type;
@@ -52,7 +52,7 @@ namespace SpatialSys.UnitySDK
         }
 
         [Serializable]
-        [DocumentationCategory("Components")]
+        [DocumentationCategory("Core/Components")]
         public class Task
         {
             [HideInInspector]

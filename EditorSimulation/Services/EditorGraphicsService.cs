@@ -1,3 +1,4 @@
+using System;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -12,6 +13,35 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         UniversalRenderPipelineAsset pipelineAsset => GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
         FieldInfo opaqueDownsamplingFieldInfo = typeof(UniversalRenderPipelineAsset).GetField("m_OpaqueDownsampling", BindingFlags.Instance | BindingFlags.NonPublic);
         FieldInfo mainLightShadowmapResolutionFieldInfo = typeof(UniversalRenderPipelineAsset).GetField("m_MainLightShadowmapResolution", BindingFlags.Instance | BindingFlags.NonPublic);
+        Action<ScriptableRenderContext, CameraType> onBeginMainCameraRendering;
+        void OnBeginCameraRendering(ScriptableRenderContext context, Camera camera)
+        {
+            if (camera == Camera.main)
+            {
+                onBeginMainCameraRendering?.Invoke(context, camera.cameraType);
+            }
+        }
+
+        // RenderPipelineManager
+        public event Action<ScriptableRenderContext, CameraType> beginMainCameraRendering
+        {
+            add
+            {
+                if (onBeginMainCameraRendering == null)
+                {
+                    RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
+                }
+                onBeginMainCameraRendering += value;
+            }
+            remove
+            {
+                onBeginMainCameraRendering -= value;
+                if (onBeginMainCameraRendering == null)
+                {
+                    RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
+                }
+            }
+        }
 
         // Rendering
         public bool supportsCameraDepthTexture

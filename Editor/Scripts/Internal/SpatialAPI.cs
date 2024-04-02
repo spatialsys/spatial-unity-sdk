@@ -40,6 +40,32 @@ namespace SpatialSys.UnitySDK.Editor
         }
 
         //------------------------------------------------
+        // GET FEATURE FLAGS
+        //------------------------------------------------
+
+        public static IPromise<GetFeatureFlagsResponse> GetFeatureFlags()
+        {
+            RequestHelper request = CreateRequest();
+            request.Uri = $"{API_ORIGIN}/feature-flags/v1";
+
+            IPromise<GetFeatureFlagsResponse> resp = RestClient.Get<GetFeatureFlagsResponse>(request);
+            resp.Catch(HandleRequestException);
+            return resp;
+        }
+
+        [Serializable]
+        public struct GetFeatureFlagsResponse
+        {
+            public FeatureFlags featureFlags;
+        }
+
+        [Serializable]
+        public struct FeatureFlags
+        {
+            public bool universalAuraPublishing;
+        }
+
+        //------------------------------------------------
         // UPLOAD TO SANDBOX
         //------------------------------------------------
 

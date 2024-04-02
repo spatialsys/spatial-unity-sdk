@@ -5,7 +5,7 @@ using UnityEngine;
 namespace SpatialSys.UnitySDK
 {
     [RequireComponent(typeof(Collider))]
-    [DocumentationCategory("Components")]
+    [DocumentationCategory("Core/Components")]
     public class SpatialMovementMaterialSurface : SpatialComponentBase
     {
         public override string prettyName => "Movement Material Surface";

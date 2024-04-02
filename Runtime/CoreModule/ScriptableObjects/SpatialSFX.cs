@@ -9,7 +9,7 @@ namespace SpatialSys.UnitySDK
 {
     [CreateAssetMenu(fileName = "newSFX", menuName = "Spatial/SFX", order = 1)]
     [TypeIcon(typeof(SFXIcon))]
-    [DocumentationCategory("Scriptable Objects")]
+    [DocumentationCategory("Core/Scriptable Objects")]
     public class SpatialSFX : SpatialScriptableObjectBase
     {
         public override string prettyName => "Spatial SFX";

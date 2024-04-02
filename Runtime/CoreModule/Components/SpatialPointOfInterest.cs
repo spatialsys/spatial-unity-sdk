@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
-    [DocumentationCategory("Components")]
+    [DocumentationCategory("Core/Components")]
     public class SpatialPointOfInterest : SpatialComponentBase
     {
         private const float SPRITE_WIDTH = 200; // Based on PointOfView setting in Spatial

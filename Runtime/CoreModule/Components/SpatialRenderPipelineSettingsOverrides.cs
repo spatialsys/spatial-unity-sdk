@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
-    [DocumentationCategory("Components")]
+    [DocumentationCategory("Core/Components")]
     [DisallowMultipleComponent]
     public class SpatialRenderPipelineSettingsOverrides : SpatialComponentBase
     {

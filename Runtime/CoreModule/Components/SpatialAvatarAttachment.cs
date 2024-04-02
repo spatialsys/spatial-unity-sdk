@@ -4,10 +4,10 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
-    [DocumentationCategory("Components")]
+    [DocumentationCategory("Core/Components")]
     public class SpatialAvatarAttachment : SpatialPackageAsset
     {
-        [DocumentationCategory("Components")]
+        [DocumentationCategory("Core/Components")]
         public enum Slot
         {
             None = 0,
@@ -30,7 +30,7 @@ namespace SpatialSys.UnitySDK
         }
 
         [Flags]
-        [DocumentationCategory("Components")]
+        [DocumentationCategory("Core/Components")]
         public enum SlotMask
         {
             None = 0,
@@ -52,7 +52,7 @@ namespace SpatialSys.UnitySDK
             Pet = 1 << 7,
         }
 
-        [DocumentationCategory("Components")]
+        [DocumentationCategory("Core/Components")]
         public enum Category
         {
             [Tooltip("The primary slot type will be used as the category when applicable")]
@@ -69,7 +69,7 @@ namespace SpatialSys.UnitySDK
             Pet = 5,
         }
 
-        [DocumentationCategory("Components")]
+        [DocumentationCategory("Core/Components")]
         public enum AttachmentAnimatorType
         {
             None = 0,
@@ -207,7 +207,7 @@ namespace SpatialSys.UnitySDK
 #endif
     }
 
-    [DocumentationCategory("Components")]
+    [DocumentationCategory("Core/Components")]
     public static class SpatialAvatarAttachmentSlotMaskExtensions
     {
         public static SpatialAvatarAttachment.SlotMask ToSlotMask(this SpatialAvatarAttachment.Slot slot)
@@ -217,7 +217,7 @@ namespace SpatialSys.UnitySDK
     }
 
     [System.Serializable]
-    [DocumentationCategory("Components")]
+    [DocumentationCategory("Core/Components")]
     public class SpatialAttachmentAvatarAnimSettings
     {
         public AttachmentAvatarAnimConfig idle;

@@ -4,7 +4,7 @@ using UnityEngine;
 namespace SpatialSys.UnitySDK
 {
     [RequireComponent(typeof(Animator))]
-    [DocumentationCategory("Components")]
+    [DocumentationCategory("Core/Components")]
     public class SpatialAvatar : SpatialPackageAsset
     {
         public const float DEFAULT_CHARACTER_CONTROLLER_HEIGHT = 1.8f;
@@ -105,7 +105,7 @@ namespace SpatialSys.UnitySDK
 #endif
     }
 
-    [DocumentationCategory("Components")]
+    [DocumentationCategory("Core/Components")]
     public enum SpatialAvatarDefaultAnimSetType
     {
         Unset = 0,
@@ -114,7 +114,7 @@ namespace SpatialSys.UnitySDK
     }
 
     [System.Serializable]
-    [DocumentationCategory("Components")]
+    [DocumentationCategory("Core/Components")]
     public class SpatialAvatarAnimOverrides
     {
         public AnimationClip idle;
@@ -216,7 +216,7 @@ namespace SpatialSys.UnitySDK
     /// <summary>
     /// Defines all the animation clips that are part of the avatar animation controller
     /// </summary>
-    [DocumentationCategory("Components")]
+    [DocumentationCategory("Core/Components")]
     public enum AvatarAnimationClipType
     {
         Idle,

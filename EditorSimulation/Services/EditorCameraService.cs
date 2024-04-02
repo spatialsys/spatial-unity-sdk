@@ -46,13 +46,28 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         }
 
         // Additional properties and methods using UnityEngine.Camera.main
+        public void CopyFromMainCamera(Camera camera)
+        {
+            if (Camera.main != null)
+            {
+                camera.CopyFrom(Camera.main);
+            }
+            else if (UnityEditor.SceneView.currentDrawingSceneView != null)
+            {
+                camera.CopyFrom(UnityEditor.SceneView.currentDrawingSceneView.camera);
+            }
+        }
         public Matrix4x4 cameraToWorldMatrix => Camera.main.cameraToWorldMatrix;
         public int pixelHeight => Camera.main.pixelHeight;
         public int pixelWidth => Camera.main.pixelWidth;
         public int scaledPixelHeight => Camera.main.scaledPixelHeight;
         public int scaledPixelWidth => Camera.main.scaledPixelWidth;
+        public Rect rect => Camera.main.rect;
         public Vector3 velocity => Camera.main.velocity;
         public Matrix4x4 worldToCameraMatrix => Camera.main.worldToCameraMatrix;
+        public Matrix4x4 projectionMatrix => Camera.main.projectionMatrix;
+        public Matrix4x4 GetStereoViewMatrix(Camera.StereoscopicEye eye) => Camera.main.GetStereoViewMatrix(eye);
+        public Matrix4x4 GetStereoProjectionMatrix(Camera.StereoscopicEye eye) => Camera.main.GetStereoProjectionMatrix(eye);
 
         public void CalculateFrustumCorners(Rect viewport, float z, Camera.MonoOrStereoscopicEye eye, Vector3[] outCorners)
         {

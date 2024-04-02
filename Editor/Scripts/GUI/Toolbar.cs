@@ -28,17 +28,17 @@ namespace SpatialSys.UnitySDK.Editor
         {
             styleInitialized = false;
             EditorApplication.update -= OnUpdate;
+
+            // Disable toolbar in certain environments
+#if !SPATIAL_UNITYSDK_INTERNAL
             EditorApplication.update += OnUpdate;
+#endif
         }
 
         private static void OnUpdate()
         {
-#if !SPATIAL_UNITYSDK_INTERNAL
             if (playmodeWarning != null)
-            {
                 playmodeWarning.style.display = EditorApplication.isPlaying ? DisplayStyle.Flex : DisplayStyle.None;
-            }
-#endif
 
             // Catches a bug where our toolbar gets lost when changing OS resolution while unity is open.
             bool missingParent = toolbarRoot == null || toolbarRoot.parent == null || toolbarRoot.parent.parent == null || toolbarRoot.parent.parent.parent == null || toolbarRoot.parent.parent.parent.parent == null;
