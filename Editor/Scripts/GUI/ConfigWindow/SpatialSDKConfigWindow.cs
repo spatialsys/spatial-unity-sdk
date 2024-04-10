@@ -419,6 +419,9 @@ namespace SpatialSys.UnitySDK.Editor
 
         private void OnActivePackageDropdownValueChanged(ChangeEvent<string> evt)
         {
+            if (!ProjectConfig.hasPackages)
+                return;
+
             var dropdownField = evt.target as DropdownField;
             int index = dropdownField.choices.IndexOf(evt.newValue);
             ProjectConfig.activePackageIndex = index;
@@ -488,6 +491,8 @@ namespace SpatialSys.UnitySDK.Editor
                 block.style.display = !AuthUtility.isAuthenticated && !AuthUtility.isAuthenticating ? DisplayStyle.Flex : DisplayStyle.None;
             });
             rootVisualElement.Q("loggingInBlock").style.display = AuthUtility.isAuthenticating ? DisplayStyle.Flex : DisplayStyle.None;
+
+            _publishPackageButton.SetEnabled(AuthUtility.isAuthenticated);
 
             if (AuthUtility.isAuthenticated)
             {

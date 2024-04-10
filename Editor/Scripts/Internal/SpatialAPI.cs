@@ -47,6 +47,8 @@ namespace SpatialSys.UnitySDK.Editor
         {
             RequestHelper request = CreateRequest();
             request.Uri = $"{API_ORIGIN}/feature-flags/v1";
+            request.Retries = 1;
+            request.RetrySecondsDelay = 1f;
 
             IPromise<GetFeatureFlagsResponse> resp = RestClient.Get<GetFeatureFlagsResponse>(request);
             resp.Catch(HandleRequestException);

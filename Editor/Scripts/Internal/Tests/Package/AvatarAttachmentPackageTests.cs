@@ -20,6 +20,15 @@ namespace SpatialSys.UnitySDK.Editor
         {
             if (SpatialValidator.runContext == ValidationRunContext.PublishingPackage && config.validatorUsageContext != PackageConfig.Scope.World)
             {
+                // Allow publishing universal auras only if flag is enabled.
+                if (SpatialFeatureFlags.currentFlags.universalAuraPublishing &&
+                    config.validatorUsageContext == PackageConfig.Scope.Universal &&
+                    config.prefab != null &&
+                    config.prefab.primarySlot == SpatialAvatarAttachment.Slot.Aura)
+                {
+                    return;
+                }
+
                 SpatialValidator.AddResponse(
                     new SpatialTestResponse(
                         config,

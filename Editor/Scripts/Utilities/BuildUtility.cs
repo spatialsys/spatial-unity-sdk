@@ -44,20 +44,6 @@ namespace SpatialSys.UnitySDK.Editor
             // Must save open scenes for sandbox and publishing space-based packages.
             OnBeforeBuild(saveOpenScenes: true);
 
-            IPromise<SpatialValidationSummary> validationPromise;
-            if (ProjectConfig.activePackageConfig.isSpaceBasedPackage)
-            {
-                // Make sure the active package is set to the one that contains the active scene
-                SceneAsset currentScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
-                ProjectConfig.SetActivePackageBySourceAsset(currentScene);
-
-                validationPromise = SpatialValidator.RunTestsOnActiveScene(ValidationRunContext.UploadingToSandbox);
-            }
-            else
-            {
-                validationPromise = SpatialValidator.RunTestsOnPackage(ValidationRunContext.UploadingToSandbox);
-            }
-
             void RestoreAssetBackups()
             {
                 // Restore config file to previous values, if any has changed.
@@ -68,7 +54,25 @@ namespace SpatialSys.UnitySDK.Editor
                     EditorUtility.RestoreAssetFromBackup(spaceConfig.csharpAssembly);
             }
 
-            return CheckValidationPromise(validationPromise)
+            // Refetch feature flags immediately and block until response, since some validation steps depend on them.
+            return SpatialFeatureFlags.Refetch()
+                .Then(() => {
+                    IPromise<SpatialValidationSummary> validationPromise;
+                    if (ProjectConfig.activePackageConfig.isSpaceBasedPackage)
+                    {
+                        // Make sure the active package is set to the one that contains the active scene
+                        SceneAsset currentScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
+                        ProjectConfig.SetActivePackageBySourceAsset(currentScene);
+
+                        validationPromise = SpatialValidator.RunTestsOnActiveScene(ValidationRunContext.UploadingToSandbox);
+                    }
+                    else
+                    {
+                        validationPromise = SpatialValidator.RunTestsOnPackage(ValidationRunContext.UploadingToSandbox);
+                    }
+
+                    return CheckValidationPromise(validationPromise);
+                })
                 .Then(() => {
                     ProcessAndSavePackageAssets();
 
@@ -284,7 +288,8 @@ namespace SpatialSys.UnitySDK.Editor
             if (!CompileAssemblyIfExists(enforceName: false))
                 throw new System.Exception("Failed to compile custom c# scripts");
 
-            return CheckValidationPromise(SpatialValidator.RunTestsOnPackage(ValidationRunContext.PublishingPackage))
+            return SpatialFeatureFlags.Refetch()
+                .Then(() => CheckValidationPromise(SpatialValidator.RunTestsOnPackage(ValidationRunContext.PublishingPackage)))
                 .Then(() => {
                     ProcessAndSavePackageAssets();
 
@@ -309,9 +314,7 @@ namespace SpatialSys.UnitySDK.Editor
 
                     return createWorldPromise;
                 })
-                .Then(() => {
-                    return SpatialAPI.CreateOrUpdatePackage(ProjectConfig.activePackageConfig.sku, ProjectConfig.activePackageConfig.packageType);
-                })
+                .Then(() => SpatialAPI.CreateOrUpdatePackage(ProjectConfig.activePackageConfig.sku, ProjectConfig.activePackageConfig.packageType))
                 .Then(resp => {
                     PackageConfig config = ProjectConfig.activePackageConfig;
                     if (config.sku != resp.sku)

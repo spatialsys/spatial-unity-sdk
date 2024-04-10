@@ -38,7 +38,7 @@
     padding-top: 4px;
 }
 
-.tabButton:hover {
+.tabButton:hover:enabled {
     transition-property: translate;
     transition-duration: 0.2s;
     transition-timing-function: ease-out-back;
@@ -123,13 +123,13 @@
     transition-timing-function: ease-out-back;
 }
 
-.blockButton:hover {
+.blockButton:hover:enabled {
     transition-duration: 0.2s;
     transition-timing-function: ease-out-back;
     scale: 1.1 1.1;
 }
 
-.blockButton:active {
+.blockButton:active:enabled {
     transition-duration: 0.2s;
     transition-timing-function: ease-out-back;
     scale: 1.05 1.05;

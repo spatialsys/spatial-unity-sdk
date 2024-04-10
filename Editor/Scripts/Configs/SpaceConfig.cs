@@ -16,7 +16,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         // "Space Name" would be derived from PackageConfig.packageName
         public SceneAsset scene = null;
-        [Tooltip("The C# assembly that contains the code for this space. C# Scripting is currenly in preview, and only works if you have been granted access to the preview")]
+        [Tooltip("The C# assembly that contains the code for this space. Currently there's a limit of one assembly per space due to technical reasons.")]
         public AssemblyDefinitionAsset csharpAssembly = null;
         [Tooltip("Embedded packages are packages that are bundled together with this space. This is useful if you want to have custom avatars, avatar animations, avatar attachments and prefabs that are specific to this space, but don't want to publish them as separate packages. Note that embedding packages will increase the download size and load time of your space.")]
         public EmbeddedPackageAsset[] embeddedPackageAssets = new EmbeddedPackageAsset[0];
