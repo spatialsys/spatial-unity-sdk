@@ -18,7 +18,17 @@ namespace SpatialSys.UnitySDK.Editor
 
         private const string ACTIVE_PACKAGE_INDEX_PREFS_KEY = "Spatial_ActivePackageIndex";
 
-        public static ProjectConfig instance => AssetDatabase.LoadAssetAtPath<ProjectConfig>(ASSET_PATH);
+        private static ProjectConfig _cachedInstance;
+        public static ProjectConfig instance
+        {
+            get
+            {
+                if (_cachedInstance == null)
+                    _cachedInstance = AssetDatabase.LoadAssetAtPath<ProjectConfig>(ASSET_PATH);
+                return _cachedInstance;
+            }
+        }
+
         public static string defaultWorldID
         {
             get => instance?._defaultWorldID;

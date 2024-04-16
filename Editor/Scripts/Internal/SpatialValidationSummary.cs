@@ -12,6 +12,7 @@ namespace SpatialSys.UnitySDK.Editor
         public PackageConfig targetPackage;
         public SpatialTestResponse[] warnings;
         public SpatialTestResponse[] errors;
+        public SpatialTestResponse[] tips;
 
         public Result result
         {

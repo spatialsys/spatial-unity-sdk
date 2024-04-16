@@ -143,6 +143,8 @@ namespace SpatialSys.UnitySDK.EditorSimulation
             onInputCaptureStopped?.Invoke(listener, _inputCaptureType);
         }
 
+        public void SetEmoteBindingsEnabled(bool enabled) { }
+
         public void PlayVibration(float frequency, float amplitude, float duration)
         {
             // Can't play vibrations in editor

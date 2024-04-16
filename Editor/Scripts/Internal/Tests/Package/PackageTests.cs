@@ -24,6 +24,11 @@ namespace SpatialSys.UnitySDK.Editor
         });
         public static readonly HashSet<string> THUMBNAIL_TEXTURE_FORMATS = new HashSet<string>(new string[] { ".png", ".jpg", ".jpeg" });
 
+        static HashSet<TextureFormat> compressedTextureFormats = new HashSet<TextureFormat>() {
+                TextureFormat.DXT5Crunched, TextureFormat.DXT1Crunched,
+                TextureFormat.DXT5, TextureFormat.DXT1
+            };
+
         private static string[] GetPackageDependencies(PackageConfig config)
         {
             return AssetDatabase.GetDependencies(AssetDatabase.GetAssetPath(config))
@@ -363,6 +368,98 @@ namespace SpatialSys.UnitySDK.Editor
                         )
                     );
                 }
+            }
+        }
+
+        [PackageTest]
+        public static void CheckDependenciesForCompressionIssues(PackageConfig config)
+        {
+            // don't run if asset processing is disabled
+            if (EditorPrefs.HasKey("DisableAssetProcessing") && EditorPrefs.GetBool("DisableAssetProcessing"))
+                return;
+
+            HashSet<Texture> thumbnails = new() { config.thumbnail };
+
+            if (config is SpaceTemplateConfig spaceTemplateConfig)
+            {
+                foreach (var variant in spaceTemplateConfig.variants)
+                {
+                    thumbnails.Add(variant.thumbnail);
+                    thumbnails.Add(variant.miniThumbnail);
+                }
+            }
+
+            List<Tuple<string, Texture>> uncompressedTextures = new List<Tuple<string, Texture>>();
+            List<Tuple<string, TextureFormat>> suboptimalCompressionTextures = new List<Tuple<string, TextureFormat>>();
+
+            void ValidateCompression(string texturePath, Texture texture)
+            {
+                // textures with dimensions that aren't a multiple of 4 can't be compressed using DXT for web
+                if (texture.height % 4 != 0 || texture.width % 4 != 0)
+                {
+                    uncompressedTextures.Add(new Tuple<string, Texture>(texturePath, texture));
+                    return; // return early since we don't want uncompressed texture appearing in suboptimal compression list
+                }
+
+                // only check texture format on webgl
+                if (texture is Texture2D tex2d && EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL)
+                {
+                    if (!compressedTextureFormats.Contains(tex2d.format))
+                    {
+                        suboptimalCompressionTextures.Add(new Tuple<string, TextureFormat>(texturePath, tex2d.format));
+                    }
+                }
+            }
+
+            foreach (string path in GetPackageDependencies(config))
+            {
+                // ensure path exists and isn't a built-in texture or a .asset extension (like fonts, which shouldn't be compressed)
+                if (string.IsNullOrEmpty(path) || path == "Resources/unity_builtin_extra" || Path.GetExtension(path) == ".asset")
+                    continue;
+
+                UnityEngine.Object obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+                if (obj is Texture)
+                {
+                    Texture tex = obj as Texture;
+                    // don't check compression if texture is a thumbnail - those need to be uncompressed
+                    if (thumbnails.Contains(tex))
+                        continue;
+
+                    ValidateCompression(path, tex);
+                }
+            }
+
+            if (uncompressedTextures.Count > 0)
+            {
+                SpatialValidator.AddResponse(new SpatialTestResponse(
+                    null,
+                    TestResponseType.Tip,
+                    $"Package {config.packageName} has uncompressed textures.",
+                    "Textures with dimensions that are not divisible by 4 cannot be compressed using DXT1/DXT5 for WebGL. \n"
+                        + "Textures with dimensions not divisible by 4: \n - " + string.Join("\n - ", uncompressedTextures.Take(100).Select(m => $"{m.Item1} - {m.Item2.width}x{m.Item2.height}"))
+                ));
+            }
+            if (suboptimalCompressionTextures.Count > 0)
+            {
+                SpatialTestResponse resp = new SpatialTestResponse(
+                    null,
+                    TestResponseType.Tip,
+                    $"Package {config.packageName} has textures compressed using a suboptimal format.",
+                    "Use DXT1/DXT5 on web for smaller package size and quicker load times. \n"
+                        + "Textures with suboptimal formats:\n - " + string.Join("\n - ", suboptimalCompressionTextures.Take(100).Select(m => $"{m.Item1} - {m.Item2}"))
+                );
+
+                resp.SetAutoFix(false, "Set compression format to DXT1/DXT5",
+                    (target) => {
+                        foreach (string assetPath in suboptimalCompressionTextures.Select(tuple => tuple.Item1))
+                        {
+                            TextureImporter textureImporter = (TextureImporter)TextureImporter.GetAtPath(assetPath);
+                            AssetImportUtility.TextureImportProcess(textureImporter, assetPath, true);
+                            AssetDatabase.ImportAsset(assetPath);
+                        }
+                    }
+                );
+                SpatialValidator.AddResponse(resp);
             }
         }
     }

@@ -23,7 +23,7 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 var resp = new SpatialTestResponse(
                     terrain,
-                    TestResponseType.Warning,
+                    TestResponseType.Tip,
                     "Terrain has very high resolution heightmap",
                     "Consider reducing the heightmap resolution of your terrain to 2048 or less"
                 );

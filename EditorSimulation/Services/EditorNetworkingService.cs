@@ -29,6 +29,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         public event INetworkingService.OnServerConnectionStatusChangedDelegate onConnectionStatusChanged;
         public event INetworkingService.OnSpaceParticipantCountChangedDelegate onSpaceParticipantCountChanged;
         public event INetworkingService.OnServerParticipantCountChangedDelegate onServerParticipantCountChanged;
+        public event INetworkingService.OnMasterClientChangedDelegate onMasterClientChanged;
 
         public void SetServerOpen(bool open) => isServerOpen = open;
         public void SetServerVisible(bool visible) => isServerVisible = visible;

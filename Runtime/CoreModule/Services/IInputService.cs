@@ -56,6 +56,11 @@ namespace SpatialSys.UnitySDK
         void ReleaseInputCapture(IInputActionsListener listener);
 
         /// <summary>
+        /// Enable/disable being able to play emotes from keyboard keys or controller button bindings. Enabled by default.
+        /// </summary>
+        void SetEmoteBindingsEnabled(bool enabled);
+
+        /// <summary>
         /// Activates vibration with the given frequency, amplitude and duration. (VR and mobile only)
         /// </summary>
         /// <param name="frequency">(VR only) The vibration frequency, between 0 and 1. Lower values are smoother, higher values are sharper.</param>

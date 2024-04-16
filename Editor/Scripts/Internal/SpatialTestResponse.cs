@@ -8,6 +8,7 @@ namespace SpatialSys.UnitySDK.Editor
     {
         Fail,
         Warning, // won't block you from publishing, but indicates something is probably set up wrong.
+        Tip, // optional performance-related improvements 
     }
 
     public class SpatialTestResponse

@@ -89,6 +89,11 @@
     color: rgb(101, 84, 0);
 }
 
+.block_blue {
+    background-color: rgba(86, 191, 255, 0.1);
+    color: rgb(86, 191, 255);
+}
+
 .blockButton {
     flex-shrink: 1;
     background-color: rgb(255, 255, 255);
@@ -145,6 +150,10 @@
 
 .blockButton_yellow {
     background-color: rgb(255, 234, 128);
+}
+
+.blockButton_blue {
+    background-color: rgb(86,191,255);
 }
 
 .blockButton_small {

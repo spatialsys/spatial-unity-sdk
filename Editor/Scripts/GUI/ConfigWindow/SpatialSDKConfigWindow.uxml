@@ -113,7 +113,10 @@
                         <ui:Button text="Copy" display-tooltip-when-elided="true" name="skuCopyButton" style="margin-right: 0; margin-top: 0; margin-bottom: 0;" />
                     </ui:VisualElement>
                     <ui:VisualElement name="spaceConfig" style="margin-top: 10px;">
-                        <uie:PropertyField binding-path="scene" label="Scene" name="scene" />
+                        <ui:VisualElement style="flex-direction: row;">
+                            <uie:PropertyField binding-path="scene" label="Scene" name="scene" style="flex-grow: 1;" />
+                            <ui:Button text="Create New Scene" display-tooltip-when-elided="true" name="createDefaultSceneButton" tooltip="Create a new scene asset with all the Spatial essentials already set up." focusable="false" style="flex-shrink: 1; flex-grow: 0;" />
+                        </ui:VisualElement>
                         <uie:PropertyField binding-path="thumbnail" label="Thumbnail" name="thumbnail" />
                         <uie:PropertyField binding-path="csharpAssembly" label="C# Assembly" name="csharpAssembly" />
                         <uie:PropertyField binding-path="embeddedPackageAssets" label="Embedded Packages" name="embeddedPackageAssets" />

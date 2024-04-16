@@ -127,6 +127,14 @@ namespace SpatialSys.UnitySDK
         public delegate void OnServerParticipantCountChangedDelegate(int count);
 
         /// <summary>
+        /// Event that triggers when the master client changes to a different actor.
+        /// This will also get triggered after a reconnect or server change; You may reconnect or switch to a new server,
+        /// where the master client actor is the same as before, but the associated user is different.
+        /// </summary>
+        event OnMasterClientChangedDelegate onMasterClientChanged;
+        public delegate void OnMasterClientChangedDelegate(int actorNumber);
+
+        /// <summary>
         /// Set the current server open state. This is only allowed if connection state is "Connected".
         /// This option is only available if the server instancing feature is enabled for the current space.
         /// </summary>

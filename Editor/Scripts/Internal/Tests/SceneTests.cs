@@ -207,7 +207,7 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 SpatialValidator.AddResponse(new SpatialTestResponse(
                     null,
-                    TestResponseType.Warning,
+                    TestResponseType.Tip,
                     $"Scene {scene.name} has a lot of high density mesh colliders ({response.meshColliderVerts}/{PerformanceResponse.MAX_SUGGESTED_COLLIDER_VERTS}).",
                     "You should try to use primitives or low density meshes for colliders where possible. "
                         + "High density collision geometry will impact the performance of your space.\n"
@@ -219,7 +219,7 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 SpatialValidator.AddResponse(new SpatialTestResponse(
                     null,
-                    TestResponseType.Warning,
+                    TestResponseType.Tip,
                     $"Scene {scene.name} has too many vertices.",
                     "The scene has too many high detail models. It is recommended that you stay within the suggested limits or your asset may not perform well on all platforms.\n"
                         + "Here's a list of all objects with high vertex counts:\n - " + string.Join("\n - ", response.meshVertCounts.Take(100).Select(m => $"{m.Item2} - {m.Item1}"))
@@ -230,7 +230,7 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 SpatialValidator.AddResponse(new SpatialTestResponse(
                     null,
-                    TestResponseType.Warning,
+                    TestResponseType.Tip,
                     $"Scene {scene.name} has many unique materials.",
                     $"It is encouraged for scenes to limit unique materials to around {PerformanceResponse.MAX_SUGGESTED_UNIQUE_MATERIALS}. "
                         + "The more unique materials you have, the less likely it is that your asset will perform well on all platforms. "
@@ -242,7 +242,7 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 SpatialValidator.AddResponse(new SpatialTestResponse(
                     null,
-                    TestResponseType.Warning,
+                    TestResponseType.Tip,
                     $"Scene {scene.name} has too many shared textures.",
                     $"Space Templates are limited to {PerformanceResponse.MAX_SUGGESTED_SHARED_TEXTURE_MB} MB of shared textures. "
                         + "High memory usage can cause application crashes on lower end devices. It is highly recommended that you stay within the suggested limits. "
@@ -255,7 +255,7 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 SpatialValidator.AddResponse(new SpatialTestResponse(
                     null,
-                    TestResponseType.Warning,
+                    TestResponseType.Tip,
                     $"The audio clips in scene {scene.name} are using too much memory. ",
                     $"It is recommended that you limit your scene to {PerformanceResponse.MAX_SUGGESTED_AUDIO_MB} MB of audio memory. "
                         + "Converting audio files to .ogg and mono can help reduce its size."

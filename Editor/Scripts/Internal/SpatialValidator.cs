@@ -332,6 +332,9 @@ namespace SpatialSys.UnitySDK.Editor
 
         private static SpatialValidationSummary CreateValidationSummary(PackageConfig targetPackage)
         {
+            SpatialTestResponse[] tips = allResponses
+                .Where(resp => resp.responseType == TestResponseType.Tip)
+                .ToArray();
             SpatialTestResponse[] warnings = allResponses
                 .Where(resp => resp.responseType == TestResponseType.Warning)
                 .ToArray();
@@ -342,7 +345,8 @@ namespace SpatialSys.UnitySDK.Editor
             return new SpatialValidationSummary() {
                 targetPackage = targetPackage,
                 warnings = warnings,
-                errors = errors
+                errors = errors,
+                tips = tips
             };
         }
     }
