@@ -649,7 +649,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
             else if (_errorIssues.Count > 0)
             {
-                _issuesCountTitle.text = "<color=#FF4343>" + _errorIssues.Count.ToString() + " Error(s)</color> <color=#FFEA80>" + _warningIssues.Count.ToString() + " Warning(s)</color> <color=#56BFFF>" + _tipIssues.Count.ToString() + " Tip(s)</color>";
+                _issuesCountTitle.text = "<color=#FF4343>" + _errorIssues.Count.ToString() + " Error(s)</color> <color=#FFEA80>" + _warningIssues.Count.ToString() + " Warning(s)</color> <color=#219CEB>" + _tipIssues.Count.ToString() + " Tip(s)</color>";
                 _issuesCountDescription.text = "You can't upload your package to the sandbox or publish until the errors are resolved.";
                 _issuesCountBlock.AddToClassList("block_red");
                 _issuesRefreshButton.AddToClassList("blockButton_red");
@@ -657,7 +657,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
             else if (_warningIssues.Count > 0)
             {
-                _issuesCountTitle.text = "<color=#FFEA80>" + _warningIssues.Count.ToString() + " Warning(s)</color> <color=#56BFFF>" + _tipIssues.Count.ToString() + " Tip(s)</color>";
+                _issuesCountTitle.text = "<color=#FFEA80>" + _warningIssues.Count.ToString() + " Warning(s)</color> <color=#219CEB>" + _tipIssues.Count.ToString() + " Tip(s)</color>";
                 _issuesCountDescription.text = "Warnings will not prevent you from publishing, but you should still look to resolve them as your package may not work as expected.";
                 _issuesCountBlock.AddToClassList("block_yellow");
                 _issuesRefreshButton.AddToClassList("blockButton_yellow");
@@ -665,7 +665,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
             else
             {
-                _issuesCountTitle.text = "<color=#56BFFF>" + _tipIssues.Count.ToString() + " Tip(s)</color>";
+                _issuesCountTitle.text = "<color=#219CEB>" + _tipIssues.Count.ToString() + " Tip(s)</color>";
                 _issuesCountDescription.text = "Tips are optional improvements to increase the performance of your space.";
                 _issuesCountBlock.AddToClassList("block_blue");
                 _issuesRefreshButton.AddToClassList("blockButton_blue");

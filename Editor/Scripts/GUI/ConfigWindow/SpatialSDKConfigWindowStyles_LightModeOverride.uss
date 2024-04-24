@@ -90,8 +90,8 @@
 }
 
 .block_blue {
-    background-color: rgba(86, 191, 255, 0.1);
-    color: rgb(86, 191, 255);
+    background-color: rgba(33, 156, 235, 0.1);
+    color: rgb(33, 156, 235);
 }
 
 .blockButton {
@@ -153,7 +153,7 @@
 }
 
 .blockButton_blue {
-    background-color: rgb(86,191,255);
+    background-color: rgb(33, 156, 235);
 }
 
 .blockButton_small {
