@@ -7,6 +7,7 @@ using UnityEditor.UIElements;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UIElements;
+using System.IO;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -179,9 +180,18 @@ namespace SpatialSys.UnitySDK.Editor
             createDefaultSceneButton.clicked += () => {
                 if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig)
                 {
+                    string path = UnityEditor.EditorUtility.SaveFilePanelInProject(
+                        "Create New Scene",
+                        "NewSpatialScene",
+                        "unity",
+                        "Select a location to save the new scene file."
+                    );
+                    if (string.IsNullOrEmpty(path))
+                        return;
+
                     EditorSceneManager.SaveOpenScenes();
                     string scenePath = $"{PackageManagerUtility.PACKAGE_DIRECTORY_PATH}/Editor/Assets/DefaultSceneAssets/DefaultToolkitScene.unity";
-                    string targetPath = AssetDatabase.GenerateUniqueAssetPath("Assets/NewSpatialScene.unity");
+                    string targetPath = AssetDatabase.GenerateUniqueAssetPath(path);
                     AssetDatabase.CopyAsset(scenePath, targetPath);
                     EditorSceneManager.OpenScene(targetPath, OpenSceneMode.Single);
                     spaceConfig.scene = AssetDatabase.LoadAssetAtPath<SceneAsset>(targetPath);
@@ -199,6 +209,77 @@ namespace SpatialSys.UnitySDK.Editor
                 else
                 {
                     createDefaultSceneButton.style.display = DisplayStyle.None;
+                }
+            });
+
+            //create a new assembly at a specified folder and assign UnitySDK and TMP as references
+            Button createAssemblyButton = root.Q<Button>("createAssemblyButton");
+            createAssemblyButton.clicked += () => {
+                if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig)
+                {
+                    string path = UnityEditor.EditorUtility.SaveFilePanelInProject(
+                        "Create New Assembly Definition",
+                        "NewAssembly",
+                        "asmdef",
+                        "Select a location to save the new assembly definition file."
+                    );
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        //Only 1 asmdef is allowed per folder. Check this ourselves to give a better error message.
+                        string folderPath = Path.GetDirectoryName(path);
+                        foreach (var file in Directory.GetFiles(folderPath))
+                        {
+                            if (file.EndsWith(".asmdef"))
+                            {
+                                UnityEditor.EditorUtility.DisplayDialog("Invalid Assembly Location", "Only one assembly definition file is allowed per folder. Select a different folder or use the existing assembly definition.", "OK");
+                                return;
+                            }
+                        }
+                        string assemblyName = Path.GetFileNameWithoutExtension(path);
+                        string assemblyNameLower = assemblyName.ToLower();
+
+                        //check loaded assemblies for name match. This will prevent using "SpatialSys..." or "mscorlib" etc as a name.
+                        foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
+                        {
+                            if (assembly.GetName().Name.ToLower() == assemblyNameLower)
+                            {
+                                UnityEditor.EditorUtility.DisplayDialog("Invalid Assembly Name", "An assembly with the same name already exists. Select a different name for the assembly definition.", "OK");
+                                return;
+                            }
+                        }
+
+                        // check asmdef files inside the project. This catches matching assembly names that don't have scripts loaded.
+                        foreach (var file in Directory.GetFiles(Application.dataPath, "*.asmdef", SearchOption.AllDirectories))
+                        {
+                            string fileName = Path.GetFileNameWithoutExtension(file);
+                            string fileContents = File.ReadAllText(file);
+                            if (fileName.ToLower() == assemblyNameLower || fileContents.Contains($"\"name\": \"{assemblyName}\""))
+                            {
+                                UnityEditor.EditorUtility.DisplayDialog("Invalid Assembly Name", "An assembly definition with the same name already exists. Select a different name for the assembly definition.", "OK");
+                                return;
+                            }
+                        }
+
+                        // Create an assembly definition with the Spatial SDK and TMP referenced.
+                        string fileData = $"{{\n\t\"name\": \"{assemblyName}\",\n\t\"references\": [\n\t\t\"SpatialSys.UnitySDK\",\n\t\t\"Unity.TextMeshPro\"\n\t],\n\t\"includePlatforms\": [],\n\t\"excludePlatforms\": [],\n\t\"allowUnsafeCode\": false,\n\t\"overrideReferences\": false,\n\t\"precompiledReferences\": [],\n\t\"autoReferenced\": true,\n\t\"defineConstraints\": [],\n\t\"versionDefines\": [],\n\t\"noEngineReferences\": false\n}}";
+                        // Assembly definition's are plain text json files.
+                        File.WriteAllText(path, fileData);
+                        AssetDatabase.Refresh();
+                        spaceConfig.csharpAssembly = AssetDatabase.LoadAssetAtPath<UnityEditorInternal.AssemblyDefinitionAsset>(path);
+                        UnityEditor.EditorUtility.SetDirty(spaceConfig);
+                    }
+                }
+            };
+
+            // Show / hide the `create new assembly` button if the assembly field is empty
+            root.Q<PropertyField>("csharpAssembly").RegisterValueChangeCallback(evt => {
+                if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig && spaceConfig.csharpAssembly == null)
+                {
+                    createAssemblyButton.style.display = DisplayStyle.Flex;
+                }
+                else
+                {
+                    createAssemblyButton.style.display = DisplayStyle.None;
                 }
             });
 

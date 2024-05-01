@@ -118,7 +118,10 @@
                             <ui:Button text="Create New Scene" display-tooltip-when-elided="true" name="createDefaultSceneButton" tooltip="Create a new scene asset with all the Spatial essentials already set up." focusable="false" style="flex-shrink: 1; flex-grow: 0;" />
                         </ui:VisualElement>
                         <uie:PropertyField binding-path="thumbnail" label="Thumbnail" name="thumbnail" />
-                        <uie:PropertyField binding-path="csharpAssembly" label="C# Assembly" name="csharpAssembly" />
+                        <ui:VisualElement style="flex-direction: row;">
+                            <uie:PropertyField binding-path="csharpAssembly" label="C# Assembly" name="csharpAssembly" style="flex-grow: 1;" />
+                            <ui:Button text="Create New Assembly" display-tooltip-when-elided="true" name="createAssemblyButton" tooltip="Create a new assembly definition with the SpatialSDK assembly referenced." focusable="false" style="flex-shrink: 1; flex-grow: 0;" />
+                        </ui:VisualElement>
                         <uie:PropertyField binding-path="embeddedPackageAssets" label="Embedded Packages" name="embeddedPackageAssets" />
                         <ui:Label text="Settings" display-tooltip-when-elided="true" name="settingsLabel" style="-unity-font-style: bold; margin-top: 15px; margin-bottom: 4px;" />
                         <ui:VisualElement name="settingsContainer" style="padding-left: 5px;">
