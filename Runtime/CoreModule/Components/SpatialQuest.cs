@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using SpatialSys.UnitySDK.Internal;
 using UnityEngine;
@@ -74,30 +75,25 @@ namespace SpatialSys.UnitySDK
             UpgradeDataIfNecessary();
 
             // Check if a new instance or a duplicate was just made
-            if (id == 0 || (Event.current != null && Event.current.type == EventType.ExecuteCommand && Event.current.commandName == "Duplicate"))
+            if (id == 0 || (Event.current != null && Event.current.type == EventType.ExecuteCommand && (Event.current.commandName == "Duplicate" || Event.current.commandName == "Paste")))
             {
                 id = FindObjectsOfType<SpatialQuest>(includeInactive: true).Select(quest => quest.id).Max() + 1;
             }
 
-            // If a new task is added, unity will essentially duplicate the last item in the array so we need to clear it
-            if (tasks.Length >= 2)
+            // Assign unique IDs to tasks if they don't have one or if it's repeated
+            List<uint> ids = new List<uint>();
+            for (var i = 0; i < tasks.Length; i++)
             {
-                // Check if a duplicate was just made
-                Task beforeLastTask = tasks[tasks.Length - 2];
-                Task lastTask = tasks[tasks.Length - 1];
-                if (beforeLastTask.id == lastTask.id)
+                if (tasks[i].id == 0 || ids.Contains(tasks[i].id))
                 {
-                    var newTask = new Task();
-                    newTask.name = $"Task {tasks.Length}";
-                    tasks[tasks.Length - 1] = newTask;
-                }
-            }
+                    tasks[i].id = tasks.Select(task => task.id).Max() + 1;
 
-            // Assign unique IDs to tasks if they don't have one
-            foreach (Task task in tasks)
-            {
-                if (task.id == 0)
-                    task.id = tasks.Select(task => task.id).Max() + 1;
+                    // If the name is empty or repeated, assign a default name
+                    if (string.IsNullOrEmpty(tasks[i].name) || (i > 0 && tasks[i].name == tasks[i - 1].name))
+                        tasks[i].name = $"Task {i + 1}";
+                }
+
+                ids.Add(tasks[i].id);
             }
         }
 

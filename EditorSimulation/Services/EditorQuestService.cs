@@ -49,11 +49,15 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         public IQuest currentQuest => currentQuestID != 0 ? quests[currentQuestID] : null;
 
         public event IQuestService.QuestDelegate onCurrentQuestChanged;
+        public event IQuestService.QuestDelegate onQuestAdded;
+        public event IQuestService.QuestDelegate onQuestRemoved;
 
         public IQuest CreateQuest(string name, string description, bool startAutomatically, bool saveUserProgress, bool tasksAreOrdered, bool celebrateOnComplete)
         {
             EditorQuest quest = new EditorQuest(CreateQuestID(), name, description, saveUserProgress, tasksAreOrdered, celebrateOnComplete);
             _quests.Add(quest.id, quest);
+
+            onQuestAdded?.Invoke(quest);
 
             return quest;
         }

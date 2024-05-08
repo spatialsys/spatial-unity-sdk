@@ -30,6 +30,16 @@ namespace SpatialSys.UnitySDK
         /// </summary>
         event QuestDelegate onCurrentQuestChanged;
 
+        /// <summary>
+        /// Event called when a quest is added.
+        /// </summary>
+        event QuestDelegate onQuestAdded;
+
+        /// <summary>
+        /// Event called when a quest is removed.
+        /// </summary>
+        event QuestDelegate onQuestRemoved;
+
         public delegate void QuestDelegate(IQuest quest);
 
         /// <summary>
@@ -116,6 +126,13 @@ namespace SpatialSys.UnitySDK
         /// Event called when this quest is reset.
         /// </summary>
         event Action onReset;
+
+        /// <summary>
+        /// Event called when a task is added to the quest.
+        /// </summary>
+        event QuestTaskDelegate onTaskAdded;
+
+        public delegate void QuestTaskDelegate(IQuestTask task);
 
         /// <summary>
         /// Adds a task to the task list

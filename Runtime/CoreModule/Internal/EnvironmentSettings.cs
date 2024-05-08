@@ -28,6 +28,12 @@ namespace SpatialSys.UnitySDK.Internal
         [Tooltip("When defined all colliders without a movement material surface will use this movement material.")]
         public SpatialMovementMaterial defaultMovementMaterial = null;
 
+        [Header("XR")]
+        public XRCameraMode initialXRCameraMode = XRCameraMode.Default;
+        public bool allowPlayerToSwitchXRCameraMode = true;
+        public bool virtualizeMouseClickInXR = true;
+
+        [Header("Avatar Control")]
         public AvatarControlSettings avatarControlSettings = AvatarControlSettings.Default;
 
         // Default values set below should be set to be backwards compatible: these values are loaded in packages using old SDK version that don't have these settings available.

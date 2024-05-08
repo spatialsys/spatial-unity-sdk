@@ -151,9 +151,18 @@ namespace SpatialSys.UnitySDK
         bool isTalking { get; }
 
         /// <summary>
-        /// The avatar for this actor. This will be null if the actor does not have an avatar in the scene
+        /// The avatar for this actor. This will be null if the actor does not have an avatar in the scene.
+        /// The actor's avatar can change over time, so you should not cache this reference.
         /// </summary>
         IReadOnlyAvatar avatar { get; }
+
+        /// <summary>
+        /// Returns true if the actor has an assigned avatar. This is the same as checking if <see cref="avatar"/> is
+        /// not null and not disposed.
+        /// This is provided as backwards compatibility with <see cref="ILocalActor.avatar"/> where the avatar is never
+        /// null, but can be disposed.
+        /// </summary>
+        bool hasAvatar { get; }
 
         /// <summary>
         /// A dictionary of custom properties for the actor. These properties are synchronized across all clients.
@@ -194,8 +203,13 @@ namespace SpatialSys.UnitySDK
     public interface ILocalActor : IActor
     {
         /// <summary>
-        /// The avatar for the local actor (the local user). This will never be null, even if the avatar for the local
-        /// user was hidden or disabled.
+        /// The avatar for the local actor (the local user).
+        ///
+        /// This will never be null, even if the avatar for the local user was hidden or disabled. However, if
+        /// <see cref="IActor.hasAvatar"/> is false, all calls to avatar methods and properties will be no-ops.
+        ///
+        /// Unlike <see cref="IActor.avatar"/>, this reference will always point to the current avatar for the local
+        /// actor, even if the assigned avatar changes.
         /// </summary>
         new IAvatar avatar { get; }
 
@@ -206,6 +220,11 @@ namespace SpatialSys.UnitySDK
         /// </summary>
         /// <example><code source="Services/ActorExamples.cs" region="Custom Properties" lang="csharp"/></example>
         void SetCustomProperty(string name, object value);
+
+        /// <summary>
+        /// Remove a custom property for this actor.
+        /// </summary>
+        bool RemoveCustomProperty(string name);
     }
 
     /// <summary>

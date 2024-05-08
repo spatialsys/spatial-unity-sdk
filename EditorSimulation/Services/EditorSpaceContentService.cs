@@ -12,6 +12,10 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         #region Scene
         public bool isSceneInitialized => true;
 
+        public IReadOnlyDictionary<int, IReadOnlySpaceObject> allObjects => new Dictionary<int, IReadOnlySpaceObject>();
+        public IReadOnlyDictionary<int, IReadOnlyAvatar> avatars => new Dictionary<int, IReadOnlyAvatar>();
+        public IReadOnlyDictionary<int, IReadOnlyPrefabObject> prefabs => new Dictionary<int, IReadOnlyPrefabObject>();
+
         public event Action onSceneInitialized
         {
             add { value?.Invoke(); }
@@ -27,6 +31,56 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         public event ISpaceContentService.OnSyncedObjectOwnerChangedDelegate onSyncedObjectOwnerChanged;
 
         public event ISpaceContentService.OnSyncedObjectVariableChangedDelegate onSyncedObjectVariableChanged;
+        public event Action<IReadOnlySpaceObject> onObjectSpawned;
+        public event Action<IReadOnlySpaceObject> onObjectDestroyed;
+
+        public SpawnSpaceObjectRequest SpawnSpaceObject()
+        {
+            SpawnSpaceObjectRequest request = new()
+            {
+                succeeded = false
+            };
+            request.InvokeCompletionEvent();
+            return request;
+        }
+
+        public SpawnSpaceObjectRequest SpawnSpaceObject(Vector3 position, Quaternion rotation)
+        {
+            SpawnSpaceObjectRequest request = new();
+            request.succeeded = false;
+            request.InvokeCompletionEvent();
+            return request;
+        }
+
+        public DestroySpaceObjectRequest DestroySpaceObject(int objectID)
+        {
+            DestroySpaceObjectRequest request = new();
+            request.succeeded = false;
+            request.InvokeCompletionEvent();
+            return request;
+        }
+
+        public SpaceObjectOwnershipTransferRequest TakeOwnership(int objectID)
+        {
+            SpaceObjectOwnershipTransferRequest request = new();
+            request.succeeded = false;
+            request.InvokeCompletionEvent();
+            return request;
+        }
+
+        public SpawnAvatarRequest SpawnAvatar(AssetType assetType, string assetID, Vector3 position, Quaternion rotation, string displayName)
+        {
+            SpawnAvatarRequest request = new();
+            request.succeeded = false;
+            request.InvokeCompletionEvent();
+            return request;
+        }
+
+        public bool TryGetSpaceObjectID(GameObject gameObject, out int objectID)
+        {
+            objectID = 0;
+            return false;
+        }
 
         public bool TakeoverSyncedObjectOwnership(SpatialSyncedObject syncedObject)
         {
@@ -114,8 +168,11 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         #endregion
 
         #region Prefab Objects
-        public void SpawnPrefabObject(AssetType assetType, string assetID, Vector3 position, Quaternion rotation)
+        public SpawnPrefabObjectRequest SpawnPrefabObject(AssetType assetType, string assetID, Vector3 position, Quaternion rotation)
         {
+            SpawnPrefabObjectRequest request = new() {
+                succeeded = false
+            };
             switch (assetType)
             {
                 case AssetType.Package:
@@ -130,6 +187,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
                         {
                             var go = GameObject.Instantiate(prefabObject, position, rotation);
                             go.name = prefabObject.name;
+                            request.succeeded = true;
                         }
                         else
                         {
@@ -147,6 +205,8 @@ namespace SpatialSys.UnitySDK.EditorSimulation
                     SpatialBridge.loggingService.LogError($"{nameof(SpawnPrefabObject)}: Unsupported asset type {assetType}");
                     break;
             }
+            request.InvokeCompletionEvent();
+            return request;
         }
         #endregion
     }

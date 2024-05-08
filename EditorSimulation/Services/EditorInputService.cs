@@ -31,20 +31,25 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         private VehicleInputFlags _vehicleFlags = VehicleInputFlags.None;
         private InputCaptureType _inputCaptureType = InputCaptureType.None;
 
+        private IAvatar avatar => SpatialBridge.actorService.localActor.avatar;
+
         public EditorInputService()
         {
             GameObject g = new GameObject();
             g.name = "[Spatial SDK] Input Service";
             var inputHelper = g.AddComponent<EditorInputServiceHelper>();
             inputHelper.service = this;
+
+            var avatar = SpatialBridge.actorService.localActor.avatar;
         }
 
         public void Update()
         {
             if (_currentInputCaptureListener == null)
-                return;
-
-            if (_currentInputCaptureListener is IAvatarInputActionsListener avatarListener)
+            {
+                UpdateDefaultInputCapture();
+            }
+            else if (_currentInputCaptureListener is IAvatarInputActionsListener avatarListener)
             {
                 UpdateAvatarInputCapture(avatarListener);
             }
@@ -52,12 +57,86 @@ namespace SpatialSys.UnitySDK.EditorSimulation
             {
                 UpdateVehicleInputCapture(vehicleListener);
             }
+        }
 
+        private void UpdateDefaultInputCapture()
+        {
+            UpdateDefaultMovement();
+            UpdateDefaultJump();
+        }
+
+        private void UpdateDefaultMovement()
+        {
+            avatar.Move(new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")), Input.GetKey(KeyCode.LeftShift));
+        }
+
+        private void UpdateDefaultJump()
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                avatar.Jump();
+            }
         }
 
         private void UpdateAvatarInputCapture(IAvatarInputActionsListener avatarListener)
         {
-            // TOOD: Implement
+            // Movement
+            if ((_avatarFlags & AvatarInputOverrideFlags.Movement) != 0)
+            {
+                Vector2 moveInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+                if (moveInput != Vector2.zero)
+                {
+                    avatarListener.OnAvatarMoveInput(InputPhase.OnHold, moveInput);
+                }
+            }
+            else
+            {
+                UpdateDefaultMovement();
+            }
+
+            // Jumping
+            if (CheckInputKey(KeyCode.Space, out InputPhase phase))
+            {
+                avatarListener.OnAvatarJumpInput(phase);
+            }
+            else
+            {
+                UpdateDefaultJump();
+            }
+
+            // Sprinting
+            if (CheckInputKey(KeyCode.LeftShift, out phase))
+            {
+                avatarListener.OnAvatarSprintInput(phase);
+            }
+
+            // Action button
+            if (CheckInputKey(KeyCode.F, out phase))
+            {
+                avatarListener.OnAvatarActionInput(phase);
+            }
+        }
+
+        private bool CheckInputKey(KeyCode key, out InputPhase phase)
+        {
+            if (Input.GetKeyDown(key))
+            {
+                phase = InputPhase.OnPressed;
+                return true;
+            }
+            else if (Input.GetKey(key))
+            {
+                phase = InputPhase.OnHold;
+                return true;
+            }
+            else if (Input.GetKeyUp(key))
+            {
+                phase = InputPhase.OnReleased;
+                return true;
+            }
+            phase = InputPhase.OnReleased;
+
+            return false;
         }
 
         private void UpdateVehicleInputCapture(IVehicleInputActionsListener vehicleListener)

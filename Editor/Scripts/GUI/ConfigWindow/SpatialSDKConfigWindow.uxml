@@ -56,7 +56,7 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement name="config" style="display: flex;">
+            <ui:VisualElement name="config" style="display: none;">
                 <ui:VisualElement name="configNull" class="block_white block_red block_base">
                     <ui:Label text="Config file not found" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
                     <ui:Label text="Unable to locate a config in this project. Click the button below to get started!" display-tooltip-when-elided="true" name="Text" class="blockText" />
@@ -154,7 +154,7 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement name="issues" style="display: none; flex-grow: 1; flex-shrink: 0; height: 100%;">
+            <ui:VisualElement name="issues" style="display: flex; flex-grow: 1; flex-shrink: 0; height: 100%;">
                 <ui:VisualElement name="issuesActivePackage" class="block_white block_base">
                     <ui:Label text="Testing Configuration" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
                     <ui:Label text="Select a package to test for below" display-tooltip-when-elided="true" name="Text" class="blockText" style="margin-bottom: 8px;" />
@@ -172,12 +172,14 @@
                     <ui:ScrollView name="issuesScroll" style="height: auto; min-height: 0; max-height: 250px;" />
                 </ui:VisualElement>
                 <ui:VisualElement name="selectedIssueBlock" class="block_white block_red block_base">
-                    <ui:Label text="Error Name" display-tooltip-when-elided="true" name="title" class="blockTitle" />
-                    <ui:Label text="Error description" display-tooltip-when-elided="true" name="description" class="blockText" style="font-size: 14px; white-space: normal;" />
-                    <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: none;">
-                        <ui:Button text="Refresh" display-tooltip-when-elided="true" name="refreshButton" class="blockButton blockButton_red" />
-                        <ui:VisualElement name="Filler" style="flex-grow: 1;" />
-                    </ui:VisualElement>
+                    <ui:ScrollView style="height: auto; max-height: 250px;">
+                        <ui:Label text="Error Name" display-tooltip-when-elided="true" name="title" class="blockTitle" />
+                        <ui:Label text="Error description" display-tooltip-when-elided="true" name="description" class="blockText" style="font-size: 14px; white-space: normal;" />
+                        <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: none;">
+                            <ui:Button text="Refresh" display-tooltip-when-elided="true" name="refreshButton" class="blockButton blockButton_red" />
+                            <ui:VisualElement name="Filler" style="flex-grow: 1;" />
+                        </ui:VisualElement>
+                    </ui:ScrollView>
                 </ui:VisualElement>
                 <ui:VisualElement name="autoFixBlock" class="block_white block_base block_green">
                     <ui:Label text="Auto Fix Available" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
@@ -206,14 +208,31 @@
             </ui:VisualElement>
             <ui:VisualElement name="utilities" style="align-items: center; display: none;">
                 <ui:VisualElement name="OptimizationBlock" class="block_white block_base">
-                    <ui:Label text="Optimization" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
-                    <ui:Label text="By optimizing the compression settings of textures, models and audio assets, you can effectively decrease the loading time of rooms and minimize the risk of app crashes." display-tooltip-when-elided="true" name="Text" class="blockText" />
+                    <ui:Label text="Project Optimization" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
+                    <ui:Label display-tooltip-when-elided="true" name="Text" text="Optimize all assets and resources by executing all tools below." class="blockText" style="-unity-paragraph-spacing: 32px;" />
+                    <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: flex; margin-bottom: 10px;">
+                        <ui:Button text="Optimize All" display-tooltip-when-elided="true" name="optimizeAll" class="blockButton" style="margin-right: 12px;" />
+                        <ui:VisualElement name="Filler" style="flex-grow: 1;" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement name="OptimizeAssets" class="block_white block_base">
+                    <ui:Label text="Optimize Assets" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
+                    <ui:Label text="By optimizing the compression settings of textures, models and audio assets, you can effectively decrease the loading time of rooms and minimize the risk of app crashes." display-tooltip-when-elided="true" name="Text" class="blockText" style="-unity-paragraph-spacing: 32px;" />
                     <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: flex; margin-bottom: 10px;">
                         <ui:Button text="Optimize Assets" display-tooltip-when-elided="true" name="optimizeAssets" class="blockButton" style="margin-right: 12px;" />
                         <ui:Button text="Optimize Assets (Folder)" display-tooltip-when-elided="true" name="optimizeAssetsFolder" class="blockButton" />
                         <ui:VisualElement name="Filler" style="flex-grow: 1;" />
                     </ui:VisualElement>
                     <ui:Toggle label="Disable Asset Processing (Not Recommended)" value="false" tooltip="Spatial Creator Toolkit optimizes assets by applying import settings that you may not want. Enabling this checkbox will turn off the automatic processing." name="disableAssetProcessing" style="display: flex;" />
+                </ui:VisualElement>
+                <ui:VisualElement name="OptimizeTextures" class="block_white block_base">
+                    <ui:Label text="Texture Optimizer" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
+                    <ui:Label text="Convert textures to JPG for non-transparent textures or PNG for transparent textures to reduce the package size.\nThis helps keep the package size under our 500 MB limit." display-tooltip-when-elided="true" name="Text" class="blockText" style="-unity-paragraph-spacing: 32px;" />
+                    <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: flex; margin-bottom: 10px;">
+                        <ui:Button text="Optimize Textures" display-tooltip-when-elided="true" name="optimizeTextures" class="blockButton" style="margin-right: 12px;" />
+                        <ui:Button text="Textures Optimizer (Window)" display-tooltip-when-elided="true" name="optimizeTexturesWindow" class="blockButton" />
+                        <ui:VisualElement name="Filler" style="flex-grow: 1;" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="help" style="align-items: center; display: none;">

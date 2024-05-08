@@ -1,9 +1,30 @@
 using UnityEngine;
+using System.Linq;
 
 namespace SpatialSys.UnitySDK.EditorSimulation
 {
     public class EditorCameraService : ICameraService
     {
+        private CameraFollow _cameraFollow;
+
+        public EditorCameraService()
+        {
+            GameObject g = new GameObject();
+            g.name = "[Spatial SDK] Main Camera";
+            g.tag = "MainCamera";
+            var camera = g.AddComponent<Camera>();
+
+            _cameraFollow = g.AddComponent<CameraFollow>();
+            _cameraFollow.camera = camera;
+            _cameraFollow.target = (SpatialBridge.actorService.localActor.avatar as EditorLocalAvatar).transform;
+            _cameraFollow.offset = new Vector3(0, 1.6f, -4.5f);
+            _cameraFollow.lookAtOffset = new Vector3(0, 1.5f, 0);
+        }
+
+        //----------------------------------------------------------------------------------------------------
+        // ICameraService implementation
+        //----------------------------------------------------------------------------------------------------
+
         public Vector3 position => Camera.main.transform.position;
         public Quaternion rotation => Camera.main.transform.rotation;
         public Vector3 forward => Camera.main.transform.forward;
@@ -18,6 +39,9 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         public float minZoomDistance { get; set; } = 0f;
         public float maxZoomDistance { get; set; } = 10f;
         public SpatialCameraRotationMode rotationMode { get; set; } = SpatialCameraRotationMode.AutoRotate;
+
+        public XRCameraMode xrCameraMode { get; set; } = XRCameraMode.FirstPerson;
+        public bool allowPlayerToSwitchXRCameraMode { get; set; } = true;
 
         // Camera Shake
         public float shakeAmplitude { get; set; }
@@ -38,11 +62,13 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         public void SetTargetOverride(Transform target, SpatialCameraMode cameraMode)
         {
             targetOverride = target;
+            _cameraFollow.target = targetOverride;
         }
 
         public void ClearTargetOverride()
         {
             targetOverride = null;
+            _cameraFollow.target = (SpatialBridge.actorService.localActor.avatar as EditorLocalAvatar).transform;
         }
 
         // Additional properties and methods using UnityEngine.Camera.main
@@ -88,5 +114,6 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         public Vector3 WorldToViewportPoint(Vector3 pos) => Camera.main.WorldToViewportPoint(pos);
         public Vector3 WorldToViewportPoint(Vector3 pos, Camera.MonoOrStereoscopicEye eye) => Camera.main.WorldToViewportPoint(pos, eye);
         public Plane[] CalculateFrustumPlanes() => GeometryUtility.CalculateFrustumPlanes(Camera.main);
+        public void SetXRCameraMode(XRCameraMode cameraMode) {}
     }
 }

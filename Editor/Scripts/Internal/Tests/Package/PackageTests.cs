@@ -81,17 +81,30 @@ namespace SpatialSys.UnitySDK.Editor
                     .Take(100)
                     .Select(d => $"{d.Item2.Length / 1024 / 1024f:0.000}MB - {d.Item1}");
 
-                SpatialValidator.AddResponse(
-                    new SpatialTestResponse(
-                        null,
-                        SpatialValidator.runContext == ValidationRunContext.UploadingToSandbox ? TestResponseType.Warning : TestResponseType.Fail,
-                        "Package is too large to publish to Spatial",
-                        $"The package is {totalSize / 1024f / 1024f:0.00}MB, but the maximum size is {maxPackageSize / 1024 / 1024}MB. " +
-                        "The size of the package is equal to the raw file size of all your assets which get uploaded to Spatial. Import settings will not change this. " +
-                        "Sometimes, texture and audio source assets can be very large on disk, and it can help to downscale them or re-export them in a different format." +
-                        $"\nHere's a list of the largest assets:\n - {string.Join("\n - ", orderedDependencies)}"
-                    )
+                SpatialTestResponse resp = new SpatialTestResponse(
+                    null,
+                    SpatialValidator.runContext == ValidationRunContext.UploadingToSandbox ? TestResponseType.Warning : TestResponseType.Fail,
+                    "Package is too large to publish to Spatial",
+                    $"The package is {totalSize / 1024f / 1024f:0.00}MB, but the maximum size is {maxPackageSize / 1024 / 1024}MB. " +
+                    "The size of the package is equal to the raw file size of all your assets which get uploaded to Spatial. Import settings will not change this. " +
+                    "Sometimes, texture and audio source assets can be very large on disk, and it can help to downscale them or re-export them in a different format." +
+                    $"\nHere's a list of the largest assets:\n - {string.Join("\n - ", orderedDependencies)}"
                 );
+
+                resp.SetAutoFix(false, "Optimize associated textures",
+                    (target) => {
+                        List<Texture2D> textures = new List<Texture2D>();
+                        foreach (var dep in dependencies)
+                        {
+                            if (AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(dep) is Texture2D texture)
+                            {
+                                textures.Add(texture);
+                            }
+                        }
+                        TextureOptimizer.OptimizeTextures(textures);
+                    }
+                );
+                SpatialValidator.AddResponse(resp);
             }
         }
 
@@ -389,7 +402,7 @@ namespace SpatialSys.UnitySDK.Editor
                 }
             }
 
-            List<Tuple<string, Texture>> uncompressedTextures = new List<Tuple<string, Texture>>();
+            List<Tuple<string, Texture>> nonCompressableTextures = new List<Tuple<string, Texture>>();
             List<Tuple<string, TextureFormat>> suboptimalCompressionTextures = new List<Tuple<string, TextureFormat>>();
 
             void ValidateCompression(string texturePath, Texture texture)
@@ -397,7 +410,7 @@ namespace SpatialSys.UnitySDK.Editor
                 // textures with dimensions that aren't a multiple of 4 can't be compressed using DXT for web
                 if (texture.height % 4 != 0 || texture.width % 4 != 0)
                 {
-                    uncompressedTextures.Add(new Tuple<string, Texture>(texturePath, texture));
+                    nonCompressableTextures.Add(new Tuple<string, Texture>(texturePath, texture));
                     return; // return early since we don't want uncompressed texture appearing in suboptimal compression list
                 }
 
@@ -429,16 +442,24 @@ namespace SpatialSys.UnitySDK.Editor
                 }
             }
 
-            if (uncompressedTextures.Count > 0)
+            if (nonCompressableTextures.Count > 0)
             {
-                SpatialValidator.AddResponse(new SpatialTestResponse(
+                SpatialTestResponse resp = new SpatialTestResponse(
                     null,
                     TestResponseType.Tip,
-                    $"Package {config.packageName} has uncompressed textures.",
+                    $"Package {config.packageName} has non compress-able texture.",
                     "Textures with dimensions that are not divisible by 4 cannot be compressed using DXT1/DXT5 for WebGL. \n"
-                        + "Textures with dimensions not divisible by 4: \n - " + string.Join("\n - ", uncompressedTextures.Take(100).Select(m => $"{m.Item1} - {m.Item2.width}x{m.Item2.height}"))
-                ));
+                        + "Textures with dimensions not divisible by 4: \n - " + string.Join("\n - ", nonCompressableTextures.Take(100).Select(m => $"{m.Item1} - {m.Item2.width}x{m.Item2.height}"))
+                );
+
+                resp.SetAutoFix(false, "Resize textures to multiples of 4",
+                    (target) => {
+                        TextureOptimizer.OptimizeTextures(nonCompressableTextures.Select(t => t.Item2 as Texture2D).ToList(), resize: false, saveOriginals: false, resizeToMultipleOfFour: true);
+                    }
+                );
+                SpatialValidator.AddResponse(resp);
             }
+
             if (suboptimalCompressionTextures.Count > 0)
             {
                 SpatialTestResponse resp = new SpatialTestResponse(

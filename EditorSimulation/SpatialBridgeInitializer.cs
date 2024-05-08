@@ -1,12 +1,8 @@
 using UnityEngine;
+using SpatialSys.UnitySDK.VisualScripting;
 
 namespace SpatialSys.UnitySDK.EditorSimulation
 {
-    // Helper class used to run coroutines in the editor. By placing this class on a shared file, Unity
-    // doesn't detect this file as an 'Editor' file and lets us attach it to a GameObject.
-    public class CoroutineRunner : MonoBehaviour
-    {
-    }
     public static class SpatialBridgeInitializer
     {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -32,6 +28,9 @@ namespace SpatialSys.UnitySDK.EditorSimulation
             SpatialBridge.vfxService = new EditorVFXService();
             SpatialBridge.graphicsService = new EditorGraphicsService();
             SpatialBridge.eventService = new EditorEventService();
+
+
+            new GameObject("[Spatial SDK] Visual Scripting Manager").AddComponent<UnitySDKVisualScriptingManager>();
 #endif
         }
     }

@@ -137,6 +137,11 @@ namespace SpatialSys.UnitySDK
         /// The GUI for the quest system, showing the current quest and progress
         /// </summary>
         QuestSystem = 5,
+
+        /// <summary>
+        /// The GUI for the emote system, showing the list of available emotes.
+        /// </summary>
+        Emote = 6,
     }
 
     [Flags]
@@ -150,6 +155,7 @@ namespace SpatialSys.UnitySDK
         Backpack = 1 << 2,
         Shop = 1 << 3,
         QuestSystem = 1 << 4,
+        Emote = 1 << 5,
 
         All = ~None,
     }

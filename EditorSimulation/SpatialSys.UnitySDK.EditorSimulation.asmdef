@@ -6,7 +6,8 @@
         "SpatialSys.UnitySDK.Editor",
         "Unity.VisualScripting.Core",
         "Unity.RenderPipelines.Universal.Runtime",
-        "SimpleJSONSim"
+        "SimpleJSONSim",
+        "SpatialSys.UnitySDK.VisualScripting"
     ],
     "includePlatforms": [
         "Editor"

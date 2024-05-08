@@ -377,6 +377,20 @@ namespace SpatialSys.UnitySDK.Editor
             root.Q<Button>("selectObjectButton").clicked += OpenSelectedIssueGameObject;
 
             // Utilities
+            root.Q<Button>("optimizeAll").clicked += () => {
+                bool confirmedDialog = UnityEditor.EditorUtility.DisplayDialog(
+                    title: "Backup Required",
+                    message: "Please backup your project before proceeding. This operation will modify your project's assets.\nThis operation may take a while. Do you want to continue?",
+                    ok: "Proceed",
+                    cancel: "Cancel"
+                );
+
+                if (confirmedDialog)
+                {
+                    AssetImportUtility.OptimizeAllAssetsImmediate();
+                    TextureOptimizer.OptimizeAllTexturedInProjectImmediate();
+                }
+            };
             root.Q<Button>("optimizeAssets").clicked += () => {
                 AssetImportUtility.OptimizeAllAssets();
             };
@@ -387,6 +401,12 @@ namespace SpatialSys.UnitySDK.Editor
             root.Q<Toggle>("disableAssetProcessing").RegisterValueChangedCallback(evt => {
                 EditorPrefs.SetBool("DisableAssetProcessing", evt.newValue);
             });
+            root.Q<Button>("optimizeTextures").clicked += () => {
+                TextureOptimizer.OptimizeAllTexturesInProject();
+            };
+            root.Q<Button>("optimizeTexturesWindow").clicked += () => {
+                TextureOptimizer.OpenTextureOptimizerWindow();
+            };
 
             // Help
             root.Q<Button>("gotoDocumentation").clicked += () => Application.OpenURL(PackageManagerUtility.documentationUrl);

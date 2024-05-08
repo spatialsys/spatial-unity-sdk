@@ -40,7 +40,7 @@ namespace SpatialSys.UnitySDK.Editor
 
     public class AssetImportUtility
     {
-        [MenuItem("Spatial SDK/Utilities/Optimize Assets")]
+        [MenuItem("Spatial SDK/Utilities/Optimize Assets", priority = 1500)]
         public static void OptimizeAllAssets()
         {
             bool confirmedDialog = UnityEditor.EditorUtility.DisplayDialog(
@@ -56,7 +56,12 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
-        [MenuItem("Spatial SDK/Utilities/Optimize Assets (Folder)")]
+        public static void OptimizeAllAssetsImmediate()
+        {
+            ReimportAssets("Assets");
+        }
+
+        [MenuItem("Spatial SDK/Utilities/Optimize Assets (Folder)", priority = 1500)]
         public static void OptimizeAssetsInFolder()
         {
             string path = UnityEditor.EditorUtility.OpenFolderPanel("Select Folder", "", "");

@@ -66,6 +66,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         public event Action onPreviouslyCompleted;
 #pragma warning restore 0067
         public event Action onReset;
+        public event IQuest.QuestTaskDelegate onTaskAdded;
 
         public IQuestTask AddTask(string name, QuestTaskType type, int progressSteps, GameObject[] taskMarkers)
         {
@@ -77,6 +78,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
             EditorQuestTask task = new EditorQuestTask(id, name, type, progressSteps, taskMarkers);
             task.onCompleted += HandleTaskCompleted;
             _tasks.Add(task);
+            onTaskAdded?.Invoke(task);
             return task;
         }
 

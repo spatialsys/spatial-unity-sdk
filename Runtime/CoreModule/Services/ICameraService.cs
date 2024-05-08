@@ -84,6 +84,17 @@ namespace SpatialSys.UnitySDK
         SpatialCameraRotationMode rotationMode { get; set; }
 
         /// <summary>
+        /// The camera mode for players using an XR headset
+        /// Note that this changing this will not have effect while a virtual camera is currently rendering
+        /// </summary>
+        XRCameraMode xrCameraMode { get; set; }
+
+        /// <summary>
+        /// Allows a player in XR to switch between first person and third person modes
+        /// </summary>
+        bool allowPlayerToSwitchXRCameraMode { get; set; }
+
+        /// <summary>
         /// The intensity of camera shakes.
         /// </summary>
         float shakeAmplitude { get; set; }
@@ -391,4 +402,29 @@ namespace SpatialSys.UnitySDK
         /// </summary>
         PointerLock_Unlocked = 3,
     }
+
+    /// <summary>
+    /// The camera's point of view for a player in an XR headset
+    /// </summary>
+    [DocumentationCategory("Services/Camera Service")]
+    public enum XRCameraMode
+    {
+        /// <summary>
+        /// This will maintain the currently set mode if player controlled switching modes is allowed
+        /// Otherwise, defaults to first person
+        /// </summary>
+        Default = 0,
+
+        /// <summary>
+        /// Player embodies their avatar
+        /// The avatar's head and hand movements map to the player's own physical movements
+        /// </summary>
+        FirstPerson = 1,
+
+        /// <summary>
+        /// Player's point of view is placed behind their avatar
+        /// The avatar's head and hand movements do not map to the player's own physical movements
+        /// </summary>
+        ThirdPerson = 2
+    };
 }

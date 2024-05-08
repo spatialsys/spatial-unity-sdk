@@ -4,20 +4,20 @@ using UnityEngine;
 namespace SpatialSys.UnitySDK
 {
     [DocumentationCategory("Services/Actor Service")]
-    public interface IAvatar : IReadOnlyAvatar
+    public interface IAvatar : IReadOnlyAvatar, ISpaceObjectComponent
     {
         /// <summary>
-        /// Whether the avatar is visible to others in the scene.
+        /// Whether the avatar is visible in the scene to other remote users.
         /// </summary>
         new bool visibleRemotely { get; set; }
 
         /// <summary>
-        /// An optional subtext shown in the nametag above the avatar head.
+        /// An optional subtext shown in the nametag above the avatar's head.
         /// </summary>
         new string nametagSubtext { get; set; }
 
         /// <summary>
-        /// Optional nametag bar value shown in the nametag above the avatar head.
+        /// Optional nametag bar value shown in the nametag above the avatar's head.
         /// </summary>
         new float nametagBarValue { get; set; }
 
@@ -35,6 +35,7 @@ namespace SpatialSys.UnitySDK
 
         /// <summary>
         /// The orientation of the avatar's visual representation in the scene.
+        /// Currently this is always locked to Y-up.
         /// </summary>
         /// <returns>The current visual orientation of the avatar</returns>
         new Quaternion rotation { get; set; }
@@ -46,106 +47,74 @@ namespace SpatialSys.UnitySDK
         new Vector3 velocity { get; set; }
 
         /// <summary>
-        /// Whether the avatar is currently grounded (the feet are touching the ground)
-        /// </summary>
-        bool isGrounded { get; }
-
-        /// <summary>
         /// Contribution of how much ground friction to apply to the character. A higher value will give the avatar
         /// more grip resulting in higher acceleration. This does not affect the avatar's maximum movement speed.
         /// Values should be between 0 and 1.
         /// </summary>
-        float groundFriction { get; set; }
+        new float groundFriction { get; set; }
 
         /// <summary>
         /// The walking speed of the avatar in meters per second.
         /// </summary>
-        float walkSpeed { get; set; }
+        new float walkSpeed { get; set; }
 
         /// <summary>
         /// The running speed of the avatar in meters per second.
         /// </summary>
-        float runSpeed { get; set; }
+        new float runSpeed { get; set; }
 
         /// <summary>
         /// The height in meters that the avatar can jump
         /// </summary>
-        float jumpHeight { get; set; }
+        new float jumpHeight { get; set; }
 
         /// <summary>
         /// Maximum number of times that the avatar can jump in a row before touching the ground.
         /// </summary>
-        int maxJumpCount { get; set; }
+        new int maxJumpCount { get; set; }
 
         /// <summary>
         /// How much control the player has over the character while in the air.
         /// A value of 0 means no control, 1 means full control.
         /// </summary>
-        float airControl { get; set; }
+        new float airControl { get; set; }
 
         /// <summary>
         /// When enabled, jump is higher depending on how long jump button is held down.
         /// Currently variable jump height may result in a slightly higher <see cref="jumpHeight"/>
         /// </summary>
-        bool useVariableHeightJump { get; set; }
+        new bool useVariableHeightJump { get; set; }
 
         /// <summary>
         /// Multiplier on top of the default gravity settings for the space just for the local avatar.
         /// </summary>
-        float gravityMultiplier { get; set; }
+        new float gravityMultiplier { get; set; }
 
         /// <summary>
         /// Multiplier on top of the default gravity settings for the space just for the local avatar while falling.
         /// This stacks on top of <see cref="gravityMultiplier"/>. This is useful for making the avatar fall faster
         /// than they jump.
         /// </summary>
-        float fallingGravityMultiplier { get; set; }
-
-        /// <summary>
-        /// Is ragdoll physics currently active for the avatar?
-        /// </summary>
-        bool ragdollPhysicsActive { get; }
+        new float fallingGravityMultiplier { get; set; }
 
         /// <summary>
         /// The current velocity of the avatar's ragdoll body.
         /// </summary>
-        Vector3 ragdollVelocity { get; set; }
-
-        /// <summary>
-        /// Event that is triggered when the avatar's collider hits another collider.
-        /// </summary>
-        event OnColliderHitDelegate onColliderHit;
-        public delegate void OnColliderHitDelegate(ControllerColliderHit hit, Vector3 avatarVelocity);
-
-        /// <summary>
-        /// Event that is triggered when the avatar's grounded state changes (<see cref="isGrounded"/>)
-        /// </summary>
-        event OnIsGroundedChangedDelegate onIsGroundedChanged;
-        public delegate void OnIsGroundedChangedDelegate(bool isGrounded);
-
-        /// <summary>
-        /// Event that is triggered when the avatar starts to jump
-        /// </summary>
-        event OnJumpDelegate onJump;
-        public delegate void OnJumpDelegate(bool isGrounded);
-
-        /// <summary>
-        /// Event that is triggered when the avatar lands on the ground
-        /// </summary>
-        event Action onLanded;
-
-        /// <summary>
-        /// Event that is triggered when an emote avatar animation is started.
-        /// Note that this doesn't trigger immediately when <see cref="PlayEmote"/> is called, but when the animation
-        /// is loaded (asynchronously) and started.
-        /// </summary>
-        event Action onEmote;
+        new Vector3 ragdollVelocity { get; set; }
 
         /// <summary>
         /// Event that is triggered when an avatar attachment is equipped or unequipped.
+        /// Note that the game object for the attachment may not exist yet when this event is triggered. This is because
+        /// the attachment is loaded asynchronously (its asset bundle may need to be downloaded first).
         /// </summary>
         event OnAttachmentEquippedChangedDelegate onAttachmentEquippedChanged;
         public delegate void OnAttachmentEquippedChangedDelegate(string assetID, bool equipped);
+
+        /// <summary>
+        /// Respawn the avatar at a valid entrance point or seat in the space.
+        /// If avatar is currently ragdolling, this will also reset the ragdoll state.
+        /// </summary>
+        void Respawn();
 
         /// <summary>
         /// Teleport the avatar to a new position and rotation.
@@ -155,10 +124,19 @@ namespace SpatialSys.UnitySDK
 
         /// <summary>
         /// Move the avatar in the direction of the input vector.
+        /// <remarks>This function should only be used for player input. For AI movement, use <see cref="SetDestination"/> instead.</remarks>
         /// </summary>
         /// <param name="input">Input vector ranging -1 to +1 on x and y</param>
         /// <param name="sprint">Uses <see cref="runSpeed"/> instead of <see cref="walkSpeed"/></param>
         void Move(Vector2 input, bool sprint = false);
+
+        /// <summary>
+        /// Order the avatar to move to a destination using a navmesh if available. If there is no navmesh, the avatar
+        /// will move directly to the destination in a straight line.
+        /// </summary>
+        /// <param name="destination">The target position, the closest position on the navmesh or ground will be chosen.</param>
+        /// <param name="sprint">Should the avatar run or walk to the desination</param>
+        void SetDestination(Vector3 destination, bool sprint = false);
 
         /// <summary>
         /// Add a force to the avatar's rigidbody. This is different from ragdoll force, and just affects the avatar's
