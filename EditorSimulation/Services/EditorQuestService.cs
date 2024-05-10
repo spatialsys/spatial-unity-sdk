@@ -50,7 +50,10 @@ namespace SpatialSys.UnitySDK.EditorSimulation
 
         public event IQuestService.QuestDelegate onCurrentQuestChanged;
         public event IQuestService.QuestDelegate onQuestAdded;
+
+#pragma warning disable 0067 // Disable "event is never used" warning
         public event IQuestService.QuestDelegate onQuestRemoved;
+#pragma warning restore 0067
 
         public IQuest CreateQuest(string name, string description, bool startAutomatically, bool saveUserProgress, bool tasksAreOrdered, bool celebrateOnComplete)
         {

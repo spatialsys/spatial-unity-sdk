@@ -1,5 +1,5 @@
 using UnityEngine;
-using System.Linq;
+using UnityEngine.Rendering.Universal;
 
 namespace SpatialSys.UnitySDK.EditorSimulation
 {
@@ -9,6 +9,10 @@ namespace SpatialSys.UnitySDK.EditorSimulation
 
         public EditorCameraService()
         {
+            // Delete all cameras that are not render textures
+            ProcessCameras(GameObject.FindObjectsOfType<Camera>(true));
+
+            // Create a new main camera
             GameObject g = new GameObject();
             g.name = "[Spatial SDK] Main Camera";
             g.tag = "MainCamera";
@@ -21,6 +25,22 @@ namespace SpatialSys.UnitySDK.EditorSimulation
             _cameraFollow.lookAtOffset = new Vector3(0, 1.5f, 0);
         }
 
+
+        private static void ProcessCameras(Camera[] cameras)
+        {
+            // Delete non render texture cameras
+            foreach (Camera camera in cameras)
+            {
+                if (camera.targetTexture == null)
+                {
+                    if (camera.TryGetComponent(out UniversalAdditionalCameraData extraData))
+                    {
+                        GameObject.DestroyImmediate(extraData);
+                    }
+                    GameObject.DestroyImmediate(camera);
+                }
+            }
+        }
         //----------------------------------------------------------------------------------------------------
         // ICameraService implementation
         //----------------------------------------------------------------------------------------------------
@@ -114,6 +134,6 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         public Vector3 WorldToViewportPoint(Vector3 pos) => Camera.main.WorldToViewportPoint(pos);
         public Vector3 WorldToViewportPoint(Vector3 pos, Camera.MonoOrStereoscopicEye eye) => Camera.main.WorldToViewportPoint(pos, eye);
         public Plane[] CalculateFrustumPlanes() => GeometryUtility.CalculateFrustumPlanes(Camera.main);
-        public void SetXRCameraMode(XRCameraMode cameraMode) {}
+        public void SetXRCameraMode(XRCameraMode cameraMode) { }
     }
 }

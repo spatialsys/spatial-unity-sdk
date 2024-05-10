@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using SpatialSys.UnitySDK.Internal;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 namespace SpatialSys.UnitySDK.EditorSimulation
 {
@@ -45,8 +46,19 @@ namespace SpatialSys.UnitySDK.EditorSimulation
 
         public Action InitializeVirtualCamera(SpatialVirtualCamera virtualCamera)
         {
+            var camera = virtualCamera.gameObject.AddComponent<Camera>();
+
+            camera.depth = virtualCamera.priority;
+            camera.fieldOfView = virtualCamera.fieldOfView;
+            camera.nearClipPlane = virtualCamera.nearClipPlane;
+            camera.farClipPlane = virtualCamera.farClipPlane;
+
             void UpdateProperties()
             {
+                camera.depth = virtualCamera.priority;
+                camera.fieldOfView = virtualCamera.fieldOfView;
+                camera.nearClipPlane = virtualCamera.nearClipPlane;
+                camera.farClipPlane = virtualCamera.farClipPlane;
             }
             return UpdateProperties;
         }

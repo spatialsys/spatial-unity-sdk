@@ -14,12 +14,6 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         public float smoothSpeed = 0.125f;
         public Quaternion cameraRotation = Quaternion.identity;
 
-        private void Start()
-        {
-            var depth = FindObjectsOfType<Camera>().Max(c => c.depth);
-            camera.depth = depth + 1;
-        }
-
         private void Update()
         {
             // Check for mouse drag

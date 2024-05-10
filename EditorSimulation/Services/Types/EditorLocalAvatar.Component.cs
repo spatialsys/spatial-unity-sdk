@@ -29,7 +29,11 @@ namespace SpatialSys.UnitySDK.EditorSimulation
 
         private bool _forceJump;
         private int _jumpCount = 0;
+
+#pragma warning disable 0414 // Disable "is assigned but its value is never used" warning
         private bool _isJumping;
+#pragma warning restore 0414
+
         private bool _triggerJump; // jump event triggered externally
         private bool _lastJumpWasTriggered;
         private bool _jumpButtonPressed; // jump button is pressed
@@ -419,12 +423,13 @@ namespace SpatialSys.UnitySDK.EditorSimulation
 
         public event Action onAvatarLoadComplete;
         public event Action onAvatarBeforeUnload;
-        public event IAvatar.OnRespawnedDelegate onRespawned;
+
         public event IAvatar.OnColliderHitDelegate onColliderHit;
         public event IAvatar.OnIsGroundedChangedDelegate onIsGroundedChanged;
         public event Action onLanded;
         public event IAvatar.OnJumpDelegate onJump;
 #pragma warning disable 0067 // Disable "event is never used" warning
+        public event IAvatar.OnRespawnedDelegate onRespawned;
         public event Action onEmote;
         public event IAvatar.OnAttachmentEquippedChangedDelegate onAttachmentEquippedChanged;
 #pragma warning restore 0067

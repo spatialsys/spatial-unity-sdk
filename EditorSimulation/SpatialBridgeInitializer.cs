@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using SpatialSys.UnitySDK.VisualScripting;
 
 namespace SpatialSys.UnitySDK.EditorSimulation
@@ -29,8 +30,15 @@ namespace SpatialSys.UnitySDK.EditorSimulation
             SpatialBridge.graphicsService = new EditorGraphicsService();
             SpatialBridge.eventService = new EditorEventService();
 
-
             new GameObject("[Spatial SDK] Visual Scripting Manager").AddComponent<UnitySDKVisualScriptingManager>();
+
+            // Create event system
+            if (GameObject.FindObjectsOfType<EventSystem>().Length == 0)
+            {
+                var input = new GameObject("[Spatial SDK] Event System");
+                input.AddComponent<EventSystem>();
+                input.AddComponent<StandaloneInputModule>();
+            }
 #endif
         }
     }

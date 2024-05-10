@@ -16,6 +16,20 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         {
             string jsonState = LoadStateFromFile(ProjectConfig.defaultWorldID);
             _dataStoreState = DataStoreState.FromJSON(jsonState);
+
+            EditorApplication.playModeStateChanged += HandlePlayModeStateChanged;
+        }
+
+        private void HandlePlayModeStateChanged(PlayModeStateChange state)
+        {
+            if (state == PlayModeStateChange.ExitingPlayMode)
+            {
+                if (_dataStoreState.HasAnyVariable())
+                {
+                    SaveStateToFile(ProjectConfig.defaultWorldID, _dataStoreState);
+                }
+                EditorApplication.playModeStateChanged -= HandlePlayModeStateChanged;
+            }
         }
 
         //--------------------------------------------------------------------------------------------------------------
@@ -96,8 +110,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
 
         public DataStoreGetVariableRequest GetVariable(string key, object defaultValue)
         {
-            DataStoreGetVariableRequest request = new()
-            {
+            DataStoreGetVariableRequest request = new() {
                 responseCode = DataStoreResponseCode.Ok,
                 succeeded = true,
                 value = defaultValue,
@@ -132,8 +145,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
 
         public DataStoreOperationRequest SetVariable(string key, object value)
         {
-            DataStoreOperationRequest request = new()
-            {
+            DataStoreOperationRequest request = new() {
                 responseCode = DataStoreResponseCode.Ok,
                 succeeded = true
             };
@@ -150,7 +162,6 @@ namespace SpatialSys.UnitySDK.EditorSimulation
                 try
                 {
                     _dataStoreState.SetVariable(key, value);
-                    SaveStateToFile(ProjectConfig.defaultWorldID, _dataStoreState);
                 }
                 catch (DataStoreException e)
                 {
@@ -166,8 +177,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
 
         public DataStoreOperationRequest DeleteVariable(string key)
         {
-            DataStoreOperationRequest request = new()
-            {
+            DataStoreOperationRequest request = new() {
                 responseCode = DataStoreResponseCode.Ok,
                 succeeded = true
             };
@@ -184,7 +194,6 @@ namespace SpatialSys.UnitySDK.EditorSimulation
                 try
                 {
                     _dataStoreState.DeleteVariable(key);
-                    SaveStateToFile(ProjectConfig.defaultWorldID, _dataStoreState);
                 }
                 catch (DataStoreException e)
                 {
@@ -200,8 +209,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
 
         public DataStoreHasVariableRequest HasVariable(string key)
         {
-            DataStoreHasVariableRequest request = new()
-            {
+            DataStoreHasVariableRequest request = new() {
                 responseCode = DataStoreResponseCode.Ok,
                 succeeded = true,
             };
@@ -221,8 +229,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
 
         public DataStoreHasAnyVariableRequest HasAnyVariable()
         {
-            DataStoreHasAnyVariableRequest request = new()
-            {
+            DataStoreHasAnyVariableRequest request = new() {
                 responseCode = DataStoreResponseCode.Ok,
                 succeeded = true,
                 hasAnyVariable = _dataStoreState.HasAnyVariable()
@@ -236,8 +243,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
             _dataStoreState.Clear();
             ClearStateFromFile(ProjectConfig.defaultWorldID);
 
-            DataStoreOperationRequest request = new()
-            {
+            DataStoreOperationRequest request = new() {
                 responseCode = DataStoreResponseCode.Ok,
             };
             request.InvokeCompletionEvent();
@@ -246,8 +252,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
 
         public DataStoreDumpVariablesRequest DumpVariablesAsJSON()
         {
-            DataStoreDumpVariablesRequest request = new()
-            {
+            DataStoreDumpVariablesRequest request = new() {
                 responseCode = DataStoreResponseCode.Ok,
                 json = _dataStoreState.ToJSON().ToString(),
             };
