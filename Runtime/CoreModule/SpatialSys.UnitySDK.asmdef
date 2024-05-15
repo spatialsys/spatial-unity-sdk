@@ -5,7 +5,8 @@
         "Unity.RenderPipelines.Core.Runtime",
         "Unity.VisualScripting.Core",
         "Unity.VisualScripting.Flow",
-        "Unity.RenderPipelines.Universal.Runtime"
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

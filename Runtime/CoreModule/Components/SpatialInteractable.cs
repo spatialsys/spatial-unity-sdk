@@ -1,6 +1,7 @@
 using SpatialSys.UnitySDK.Internal;
 using UnityEngine;
 using UnityEngine.Serialization;
+using TMPro;
 
 namespace SpatialSys.UnitySDK
 {
@@ -30,6 +31,9 @@ namespace SpatialSys.UnitySDK
         public override string documentationURL => "https://docs.spatial.io/interactable";
 
         public string interactText = "Interact";
+
+        public FontOverride textFontOverride;
+
         public IconType iconType;
         [HideInInspector]
         public Sprite icon;

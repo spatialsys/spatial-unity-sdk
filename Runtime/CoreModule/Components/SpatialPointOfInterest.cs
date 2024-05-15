@@ -1,5 +1,6 @@
 using SpatialSys.UnitySDK.Internal;
 using UnityEngine;
+using TMPro;
 
 namespace SpatialSys.UnitySDK
 {
@@ -15,6 +16,9 @@ namespace SpatialSys.UnitySDK
         public string title = "Point of interest";
         [TextArea(4, 10)]
         public string description;
+
+        public FontOverride titleFontOverride;
+        public FontOverride descriptionFontOverride;
 
         public Color backgroundColor = new Color(0.0f, 0.0f, 0.0f, 0.4f);
         public Color foregroundColor = new Color(1.0f, 1.0f, 1.0f, 1.0f);
