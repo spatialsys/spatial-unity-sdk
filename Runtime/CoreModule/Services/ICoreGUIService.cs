@@ -156,6 +156,7 @@ namespace SpatialSys.UnitySDK
         Shop = 1 << 3,
         QuestSystem = 1 << 4,
         Emote = 1 << 5,
+        UniversalShop = 1 << 6,
 
         All = ~None,
     }

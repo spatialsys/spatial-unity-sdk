@@ -21,12 +21,18 @@ namespace SpatialSys.UnitySDK
         public bool syncTransform = true;
         public bool syncRigidbody = false;
         public bool saveWithSpace = false;
-        public bool destroyOnCreatorDisconnect = false;
 
-        [HideInInspector, SerializeField]
+        [Tooltip("If checked, the object will be destroyed when the creator or the object disconnects.")]
+        public bool destroyOnCreatorDisconnect = false;
+        [Tooltip("If checked, the object will be destroyed when the current owner disconnects.")]
+        public bool destroyOnOwnerDisconnect = false;
+        [Tooltip("If checked, the owner will be fixed to the master client.")]
+        public bool isMasterClientObject = false;
+
+        [SerializeField]
         private string assetID; // unity prefab asset ID
 
-        [HideInInspector, SerializeField]
+        [SerializeField]
         private string instanceID;
 
         public string AssetID => assetID;

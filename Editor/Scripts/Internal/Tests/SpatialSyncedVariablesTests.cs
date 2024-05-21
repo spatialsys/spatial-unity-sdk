@@ -62,6 +62,28 @@ namespace SpatialSys.UnitySDK.Editor
                     ));
                 }
             }
+
+            // Check that all variables have unique ids
+            if (target.version > 0)
+            {
+                HashSet<byte> ids = new HashSet<byte>();
+                foreach (var variable in target.variableSettings)
+                {
+                    if (ids.Contains(variable.id))
+                    {
+                        SpatialValidator.AddResponse(new SpatialTestResponse(
+                            target,
+                            TestResponseType.Fail,
+                            $"Synced Variables contains duplicate variable id: {variable.id} for variable {variable.name}",
+                            "For synced variables to be valid, each variable must have a unique id. You can fix this by toggling the synced/notsynced button, which will generate a new id."
+                        ));
+                    }
+                    else
+                    {
+                        ids.Add(variable.id);
+                    }
+                }
+            }
         }
     }
 }

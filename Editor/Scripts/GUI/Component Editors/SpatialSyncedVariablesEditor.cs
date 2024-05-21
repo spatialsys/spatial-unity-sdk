@@ -138,11 +138,13 @@ namespace SpatialSys.UnitySDK.Editor
                         EditorGUILayout.BeginHorizontal();
 
                         EditorGUI.BeginDisabledGroup(true);
+                        string id = $"ID: {(syncedVariableData == null ? "-" : syncedVariableData.id)}";
+                        GUILayout.Button(id, new GUILayoutOption[] { GUILayout.Width(40) });
                         GUILayout.Button(variableType.HumanName(), new GUILayoutOption[] { GUILayout.Width(100) });
                         EditorGUILayout.TextField(variable.name, new GUILayoutOption[] { GUILayout.MinWidth(60) });
                         EditorGUI.EndDisabledGroup();
-                        bool newIsSynced = isSynced;
 
+                        bool newIsSynced = isSynced;
                         if (GUILayout.Button(isSynced ? "Synced" : "Not Synced", isSynced ? _syncedStyle : _unsyncedStyle, new GUILayoutOption[] { GUILayout.Width(100) }))
                         {
                             newIsSynced = !isSynced;
@@ -180,6 +182,7 @@ namespace SpatialSys.UnitySDK.Editor
                         {
                             Undo.RecordObject(syncedVariables, $"Sync {variable.name}");
                             syncedVariables.variableSettings.Add(new SpatialSyncedVariables.Data() {
+                                id = syncedVariables.GenerateUniqueVariableID(),
                                 name = variable.name,
                                 declaration = variable,
                             });

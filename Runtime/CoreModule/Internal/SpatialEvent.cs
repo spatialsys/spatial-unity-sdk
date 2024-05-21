@@ -31,7 +31,7 @@ namespace SpatialSys.UnitySDK.Internal
         public QuestEvent questEvent;
         public Action runtimeEvent;
 
-        public bool hasUnityEvent => unityEvent?.GetPersistentEventCount() > 0;
+        public bool hasUnityEvent => unityEvent != null;
         public bool hasAnimatorEvent => animatorEvent?.events?.Count > 0;
         public bool hasQuestEvent => questEvent?.events?.Count > 0;
 

@@ -12,7 +12,9 @@ namespace SpatialSys.UnitySDK.Editor
         private SerializedProperty _syncTransformProp;
         private SerializedProperty _syncRigidbodyProp;
         private SerializedProperty _saveWithSpaceProp;
-        private SerializedProperty _destroyOnDisconnectProp;
+        private SerializedProperty _destroyOnCreatorDisconnectProp;
+        private SerializedProperty _destroyOnOwnerDisconnectProp;
+        private SerializedProperty _isMasterClientObjectProp;
         private GameObject _targetGameObject;
 
         private void InitializePropertiesIfNecessary()
@@ -25,7 +27,9 @@ namespace SpatialSys.UnitySDK.Editor
             _syncTransformProp = serializedObject.FindProperty(nameof(SpatialSyncedObject.syncTransform));
             _syncRigidbodyProp = serializedObject.FindProperty(nameof(SpatialSyncedObject.syncRigidbody));
             _saveWithSpaceProp = serializedObject.FindProperty(nameof(SpatialSyncedObject.saveWithSpace));
-            _destroyOnDisconnectProp = serializedObject.FindProperty(nameof(SpatialSyncedObject.destroyOnCreatorDisconnect));
+            _destroyOnCreatorDisconnectProp = serializedObject.FindProperty(nameof(SpatialSyncedObject.destroyOnCreatorDisconnect));
+            _destroyOnOwnerDisconnectProp = serializedObject.FindProperty(nameof(SpatialSyncedObject.destroyOnOwnerDisconnect));
+            _isMasterClientObjectProp = serializedObject.FindProperty(nameof(SpatialSyncedObject.isMasterClientObject));
         }
 
         private void OnEnable()
@@ -84,22 +88,25 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 EditorGUILayout.PropertyField(_syncRigidbodyProp);
             }
-            
+
             EditorGUILayout.PropertyField(_saveWithSpaceProp);
 
-            bool enableDestroyOnDisconnect = (syncedObject.gameObject.scene.name == null || !syncedObject.gameObject.scene.name.Equals(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name));
-            // if we enabled save with space, then don't also allow destroy on disconnect
-            enableDestroyOnDisconnect &= !syncedObject.saveWithSpace;
+            bool isOnPrefab = (syncedObject.gameObject.scene.name == null || !syncedObject.gameObject.scene.name.Equals(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name));
 
-            if (!enableDestroyOnDisconnect)
+            // These can only be enabled in specific cases: if it's a prefab or if saveWithSpace is false
+            bool destroyOnDisconnectAllowed = !Application.isPlaying && isOnPrefab && !syncedObject.saveWithSpace;
+            if (!destroyOnDisconnectAllowed)
             {
-                GUI.enabled = enableDestroyOnDisconnect;
+                GUI.enabled = destroyOnDisconnectAllowed;
                 syncedObject.destroyOnCreatorDisconnect = false;
+                syncedObject.destroyOnOwnerDisconnect = false;
             }
 
             //we are a prefab. Show the destroy option
-            EditorGUILayout.PropertyField(_destroyOnDisconnectProp);
+            EditorGUILayout.PropertyField(_destroyOnCreatorDisconnectProp);
+            EditorGUILayout.PropertyField(_destroyOnOwnerDisconnectProp);
             GUI.enabled = true;
+            EditorGUILayout.PropertyField(_isMasterClientObjectProp);
 
             GUILayout.Space(8);
 
@@ -118,6 +125,7 @@ namespace SpatialSys.UnitySDK.Editor
                 if (GUILayout.Button("Add Synced Variables", new GUILayoutOption[] { GUILayout.Height(32) }))
                 {
                     syncedObject.gameObject.AddComponent<SpatialSyncedVariables>();
+                    UnityEditor.EditorUtility.SetDirty(syncedObject.gameObject);
                 }
             }
         }
