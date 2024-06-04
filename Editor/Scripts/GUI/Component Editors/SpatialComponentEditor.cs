@@ -35,6 +35,8 @@ namespace SpatialSys.UnitySDK.Editor
         private string _tooltip;
         private string _documentationURL;
         private bool _isExperimental;
+        private bool _isObsolete;
+        private string _obsoleteMessage;
 
         private void InitializeIfNecessary(UnityEngine.Object target)
         {
@@ -49,6 +51,8 @@ namespace SpatialSys.UnitySDK.Editor
                 _tooltip = component.tooltip;
                 _documentationURL = component.documentationURL;
                 _isExperimental = component.isExperimental;
+                _isObsolete = component.isObsolete;
+                _obsoleteMessage = component.obsoleteMessage;
             }
             else if (target is SpatialScriptableObjectBase scriptableObject)
             {
@@ -63,6 +67,7 @@ namespace SpatialSys.UnitySDK.Editor
                 _tooltip = "";
                 _documentationURL = "";
                 _isExperimental = false;
+                _isObsolete = false;
             }
 
             GUIContent c = EditorGUIUtility.ObjectContent(target, target.GetType());
@@ -201,7 +206,11 @@ namespace SpatialSys.UnitySDK.Editor
                 GUILayout.Space(-5);// account for texture corners
                 // * Subtitle
                 GUILayout.BeginVertical(_subAreaStyle);
-                if (_isExperimental)
+                if (_isObsolete)
+                {
+                    GUILayout.Label($"Obsolete: {_obsoleteMessage}", _warningStyle);
+                }
+                else if (_isExperimental)
                 {
                     GUILayout.Label("Experimental Feature", _warningStyle);
                 }

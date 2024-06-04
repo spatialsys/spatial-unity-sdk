@@ -4,7 +4,7 @@ using UnityEngine;
 namespace SpatialSys.UnitySDK
 {
     [DocumentationCategory("Core/Components")]
-    public class SpatialPrefabObject : SpatialPackageAsset
+    public class SpatialPrefabObject : SpatialPackageAsset, ISpatialComponentWithOwner
     {
         public override string prettyName => "Prefab Object";
         public override string tooltip => "This component is used to define a custom prefab object for Spatial";

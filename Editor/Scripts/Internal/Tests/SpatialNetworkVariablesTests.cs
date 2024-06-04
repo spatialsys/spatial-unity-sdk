@@ -7,10 +7,10 @@ using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.Editor
 {
-    public class SpatialSyncedVariablesTests
+    public class SpatialNetworkVariablesTests
     {
-        [ComponentTest(typeof(SpatialSyncedVariables))]
-        public static void CheckSyncedVariablesValidity(SpatialSyncedVariables target)
+        [ComponentTest(typeof(SpatialNetworkVariables))]
+        public static void CheckNetworkVariablesValidity(SpatialNetworkVariables target)
         {
             Variables variables = target.GetComponent<Variables>();
 
@@ -18,15 +18,15 @@ namespace SpatialSys.UnitySDK.Editor
 
             if (target.variableSettings.Count != matchingDeclarations.Length)
             {
-                SpatialSyncedVariables.Data[] nonExisting = target.variableSettings.Where(x => !variables.declarations.Any(y => y.name == x.name)).ToArray();
+                SpatialNetworkVariables.Data[] nonExisting = target.variableSettings.Where(x => !variables.declarations.Any(y => y.name == x.name)).ToArray();
 
                 if (nonExisting.Length > 0)
                 {
                     SpatialValidator.AddResponse(new SpatialTestResponse(
                         target,
                         TestResponseType.Fail,
-                        $"Synced Variables contains undefined variable: {nonExisting[0].name}",
-                        "For synced variables to be valid, it must have matching variables defined in the `Variables` component."
+                        $"Network Variables contains undefined variable: {nonExisting[0].name}",
+                        "For network variables to be valid, it must have matching variables defined in the `Variables` component."
                     ));
                 }
             }
@@ -38,27 +38,20 @@ namespace SpatialSys.UnitySDK.Editor
                     SpatialValidator.AddResponse(new SpatialTestResponse(
                         target,
                         TestResponseType.Fail,
-                        $"Synced Variables contains null variable declaration: {declaration.name}",
-                        "For synced variables to be valid, it must be a bool, int, float, string, Vector2, or Vector3."
+                        $"Network Variables contains null variable declaration: {declaration.name}",
+                        "For network variables to be valid, it must be a `bool`, `byte`, `int`, `float`, `double`, `long`, `string`, `Vector2`, `Vector3`, `Color32`, `int[]` (AotList)."
                     ));
                     continue;
                 }
 
                 Type type = Type.GetType(declaration.typeHandle.Identification);
-                bool invalidType = type != typeof(bool) &&
-                    type != typeof(int) &&
-                    type != typeof(float) &&
-                    type != typeof(string) &&
-                    type != typeof(Vector2) &&
-                    type != typeof(Vector3);
-
-                if (invalidType)
+                if (!SpatialNetworkVariablesEditor.IsSyncable(declaration))
                 {
                     SpatialValidator.AddResponse(new SpatialTestResponse(
                         target,
                         TestResponseType.Fail,
-                        $"Synced Variables contains invalid variable type: {type.Name}",
-                        "For synced variables to be valid, it must be a bool, int, float, string, Vector2, or Vector3."
+                        $"Network Variables contains invalid variable type: {type.Name}",
+                        "For network variables to be valid, it must be a `bool`, `byte`, `int`, `float`, `double`, `long`, `string`, `Vector2`, `Vector3`, `Color32`, `int[]` (AotList)."
                     ));
                 }
             }
@@ -74,8 +67,8 @@ namespace SpatialSys.UnitySDK.Editor
                         SpatialValidator.AddResponse(new SpatialTestResponse(
                             target,
                             TestResponseType.Fail,
-                            $"Synced Variables contains duplicate variable id: {variable.id} for variable {variable.name}",
-                            "For synced variables to be valid, each variable must have a unique id. You can fix this by toggling the synced/notsynced button, which will generate a new id."
+                            $"Network Variables contains duplicate variable id: {variable.id} for variable {variable.name}",
+                            "For network variables to be valid, each variable must have a unique id. You can fix this by toggling the synced/notsynced button, which will generate a new id."
                         ));
                     }
                     else

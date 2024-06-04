@@ -11,6 +11,7 @@ SpatialSys.UnitySDK.SpatialEnvironmentSettingsOverrides,Y,Y,N,N,N,N,N,N,N,N
 SpatialSys.UnitySDK.SpatialRenderPipelineSettingsOverrides,Y,Y,N,N,N,N,N,N,N,N
 SpatialSys.UnitySDK.SpatialInteractable,Y,Y,N,N,N,Y,N,N,N,N
 SpatialSys.UnitySDK.SpatialMovementMaterialSurface,Y,Y,N,N,N,Y,N,N,N,N
+SpatialSys.UnitySDK.SpatialNetworkObject,Y,Y,N,N,N,N,N,N,N,N
 SpatialSys.UnitySDK.SpatialPackageAsset,Y,Y,N,N,N,N,N,N,N,N
 SpatialSys.UnitySDK.SpatialPointOfInterest,Y,Y,N,N,N,Y,N,N,N,N
 SpatialSys.UnitySDK.SpatialPrefabObject,Y,Y,N,N,N,Y,N,N,N,N
@@ -19,7 +20,7 @@ SpatialSys.UnitySDK.SpatialQuest,Y,Y,N,N,N,N,N,N,N,N
 SpatialSys.UnitySDK.SpatialSeatHotspot,Y,Y,N,N,N,Y,N,N,N,N
 SpatialSys.UnitySDK.SpatialSyncedAnimator,Y,Y,N,N,N,N,N,N,N,N
 SpatialSys.UnitySDK.SpatialSyncedObject,Y,Y,N,N,N,Y,N,N,N,N
-SpatialSys.UnitySDK.SpatialSyncedVariables,Y,Y,N,N,N,Y,N,N,N,N
+SpatialSys.UnitySDK.SpatialNetworkVariables,Y,Y,N,N,N,Y,N,N,N,N
 SpatialSys.UnitySDK.SpatialThumbnailCamera,Y,Y,N,N,N,N,N,N,N,N
 SpatialSys.UnitySDK.SpatialTriggerEvent,Y,Y,N,N,N,Y,N,N,N,N
 SpatialSys.UnitySDK.SpatialVirtualCamera,Y,Y,N,N,N,N,N,N,N,N

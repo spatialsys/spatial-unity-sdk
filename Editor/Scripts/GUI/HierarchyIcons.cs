@@ -10,7 +10,8 @@ namespace SpatialSys.UnitySDK.Editor
     {
         // add your components and the associated icons here
         static Dictionary<Type, GUIContent> typeIcons = new Dictionary<Type, GUIContent>() {
-            { typeof(SpatialSyncedObject), new GUIContent(SpatialGUIUtility.LoadGUITexture("Icons/icon_sync.png"),"Synced Object") },
+            { typeof(SpatialSyncedObject), new GUIContent(SpatialGUIUtility.LoadGUITexture("Icons/icon_sync.png"), "Synced Object") },
+            { typeof(SpatialNetworkObject), new GUIContent(SpatialGUIUtility.LoadGUITexture("Icons/icon_sync.png"), "Network Object") },
         };
 
         // cached game object information

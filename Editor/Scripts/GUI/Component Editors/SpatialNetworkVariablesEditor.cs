@@ -7,8 +7,8 @@ using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.Editor
 {
-    [CustomEditor(typeof(SpatialSyncedVariables))]
-    public class SpatialSyncedVariablesEditor : UnityEditor.Editor
+    [CustomEditor(typeof(SpatialNetworkVariables))]
+    public class SpatialNetworkVariablesEditor : UnityEditor.Editor
     {
         private bool _initialized;
         private Texture2D _backgroundTexture;
@@ -20,15 +20,17 @@ namespace SpatialSys.UnitySDK.Editor
         private GUIStyle _helpButtonStyle;
         private GUIStyle _syncedStyle;
         private GUIStyle _unsyncedStyle;
+        private bool _saveWithSceneSupported;
 
         private static readonly string[] _excludedProperties = new string[] { "m_Script" };
 
         void OnEnable()
         {
-            var variables = target as SpatialSyncedVariables;
+            var variables = target as SpatialNetworkVariables;
             if (variables != null)
             {
                 variables.hideFlags = HideFlags.HideInInspector;
+                _saveWithSceneSupported = variables.GetComponent<SpatialSyncedObject>() != null;
             }
         }
 
@@ -91,7 +93,7 @@ namespace SpatialSys.UnitySDK.Editor
         public override void OnInspectorGUI()
         {
             InitializeIfNecessary();
-            var syncedVariables = target as SpatialSyncedVariables;
+            var networkVariables = target as SpatialNetworkVariables;
             serializedObject.Update();
 
 
@@ -99,19 +101,19 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(syncedVariables.prettyName, _titleStyle);
-                    if (!string.IsNullOrEmpty(syncedVariables.documentationURL))
+                    GUILayout.Label(networkVariables.prettyName, _titleStyle);
+                    if (!string.IsNullOrEmpty(networkVariables.documentationURL))
                     {
                         GUILayout.Space(4);
                         if (GUILayout.Button(_docsLinkTexture, _helpButtonStyle))
                         {
-                            Application.OpenURL(syncedVariables.documentationURL);
+                            Application.OpenURL(networkVariables.documentationURL);
                         }
                     }
                 }
                 GUILayout.EndHorizontal();
                 GUILayout.Space(6);
-                GUILayout.Label(syncedVariables.tooltip, _subTitleStyle);
+                GUILayout.Label(networkVariables.tooltip, _subTitleStyle);
             }
             GUILayout.EndVertical();
 
@@ -119,7 +121,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             serializedObject.ApplyModifiedProperties();
 
-            if (syncedVariables.TryGetComponent(out Variables variables))
+            if (networkVariables.TryGetComponent(out Variables variables))
             {
                 bool hasSomeVariables = false;
                 foreach (VariableDeclaration variable in variables.declarations)
@@ -129,16 +131,16 @@ namespace SpatialSys.UnitySDK.Editor
                         continue;
                     }
                     Type variableType = Type.GetType(variable.typeHandle.Identification);
-                    if (TypeIsSyncable(variableType))
+                    if (IsSyncable(variable))
                     {
                         hasSomeVariables = true;
-                        SpatialSyncedVariables.Data syncedVariableData = syncedVariables.variableSettings.Find(x => x.name == variable.name);
-                        bool isSynced = syncedVariableData != null;
+                        SpatialNetworkVariables.Data networkVariableData = networkVariables.variableSettings.Find(x => x.name == variable.name);
+                        bool isSynced = networkVariableData != null;
 
                         EditorGUILayout.BeginHorizontal();
 
                         EditorGUI.BeginDisabledGroup(true);
-                        string id = $"ID: {(syncedVariableData == null ? "-" : syncedVariableData.id)}";
+                        string id = $"ID: {(networkVariableData == null ? "-" : networkVariableData.id)}";
                         GUILayout.Button(id, new GUILayoutOption[] { GUILayout.Width(40) });
                         GUILayout.Button(variableType.HumanName(), new GUILayoutOption[] { GUILayout.Width(100) });
                         EditorGUILayout.TextField(variable.name, new GUILayoutOption[] { GUILayout.MinWidth(60) });
@@ -155,20 +157,23 @@ namespace SpatialSys.UnitySDK.Editor
                             EditorGUI.BeginDisabledGroup(true);
                         }
 
-                        bool newSaveWithScene = EditorGUILayout.ToggleLeft
-                        (
-                            new GUIContent("Save with Space", "When checked the value will remain consistant across sessions even when nobody is present in a space. If unchecked the value will reset once the space is empty."),
-                            isSynced ? syncedVariableData.saveWithSpace : false,
-                            new GUILayoutOption[] { GUILayout.Width(115) }
-                        );
+                        bool newSaveWithScene = false;
+                        if (_saveWithSceneSupported)
+                        {
+                            EditorGUILayout.ToggleLeft(
+                                new GUIContent("Save with Space", "When checked the value will remain consistant across sessions even when nobody is present in a space. If unchecked the value will reset once the space is empty."),
+                                isSynced ? networkVariableData.saveWithSpace : false,
+                                new GUILayoutOption[] { GUILayout.Width(115) }
+                            );
+                        }
 
                         if (isSynced)
                         {
-                            if (newSaveWithScene != syncedVariableData.saveWithSpace)
+                            if (_saveWithSceneSupported && newSaveWithScene != networkVariableData.saveWithSpace)
                             {
-                                Undo.RecordObject(syncedVariables, $"Save {variable.name} With Space");
-                                syncedVariableData.saveWithSpace = newSaveWithScene;
-                                UnityEditor.EditorUtility.SetDirty(syncedVariables);
+                                Undo.RecordObject(networkVariables, $"Save {variable.name} With Space");
+                                networkVariableData.saveWithSpace = newSaveWithScene;
+                                UnityEditor.EditorUtility.SetDirty(networkVariables);
                             }
                         }
                         else
@@ -180,20 +185,20 @@ namespace SpatialSys.UnitySDK.Editor
 
                         if (newIsSynced && !isSynced)
                         {
-                            Undo.RecordObject(syncedVariables, $"Sync {variable.name}");
-                            syncedVariables.variableSettings.Add(new SpatialSyncedVariables.Data() {
-                                id = syncedVariables.GenerateUniqueVariableID(),
+                            Undo.RecordObject(networkVariables, $"Sync {variable.name}");
+                            networkVariables.variableSettings.Add(new SpatialNetworkVariables.Data() {
+                                id = networkVariables.GenerateUniqueVariableID(),
                                 name = variable.name,
                                 declaration = variable,
                             });
-                            UnityEditor.EditorUtility.SetDirty(syncedVariables);
+                            UnityEditor.EditorUtility.SetDirty(networkVariables);
                         }
 
                         if (!newIsSynced && isSynced)
                         {
-                            Undo.RecordObject(syncedVariables, $"Don't Sync {variable.name}");
-                            syncedVariables.variableSettings.Remove(syncedVariableData);
-                            UnityEditor.EditorUtility.SetDirty(syncedVariables);
+                            Undo.RecordObject(networkVariables, $"Don't Sync {variable.name}");
+                            networkVariables.variableSettings.Remove(networkVariableData);
+                            UnityEditor.EditorUtility.SetDirty(networkVariables);
                         }
                     }
                 }
@@ -207,15 +212,15 @@ namespace SpatialSys.UnitySDK.Editor
                 }
 
                 // search through VariableSettings for any that are no longer valid
-                List<SpatialSyncedVariables.Data> toRemove = new List<SpatialSyncedVariables.Data>();
-                foreach (SpatialSyncedVariables.Data variableSetting in syncedVariables.variableSettings)
+                List<SpatialNetworkVariables.Data> toRemove = new List<SpatialNetworkVariables.Data>();
+                foreach (SpatialNetworkVariables.Data variableSetting in networkVariables.variableSettings)
                 {
                     if (string.IsNullOrEmpty(variableSetting.name) || !variables.declarations.IsDefined(variableSetting.name))
                     {
                         toRemove.Add(variableSetting);
                         continue;
                     }
-                    if (!TypeIsSyncable(Type.GetType(variables.declarations.GetDeclaration(variableSetting.name).typeHandle.Identification)))
+                    if (!IsSyncable(variables.declarations.GetDeclaration(variableSetting.name)))
                     {
                         toRemove.Add(variableSetting);
                     }
@@ -225,11 +230,11 @@ namespace SpatialSys.UnitySDK.Editor
                 {
                     GUILayout.Space(8);
                     SpatialGUIUtility.HelpBox(
-                        "Previously declared synced variables are no longer valid.",
+                        "Previously declared network variables are no longer valid.",
                         "You probably renamed or changed the type of a variable. No worries! Feel free to clear these if this was not a mistake.",
                         SpatialGUIUtility.HelpSectionType.Warning);
                     GUILayout.Space(4);
-                    foreach (SpatialSyncedVariables.Data variableSetting in toRemove)
+                    foreach (SpatialNetworkVariables.Data variableSetting in toRemove)
                     {
                         EditorGUILayout.BeginHorizontal();
                         EditorGUI.BeginDisabledGroup(true);
@@ -241,9 +246,9 @@ namespace SpatialSys.UnitySDK.Editor
                     GUILayout.Space(8);
                     if (GUILayout.Button("Clear Invalid Variables"))
                     {
-                        foreach (SpatialSyncedVariables.Data remove in toRemove)
+                        foreach (SpatialNetworkVariables.Data remove in toRemove)
                         {
-                            syncedVariables.variableSettings.Remove(remove);
+                            networkVariables.variableSettings.Remove(remove);
                         }
                     }
                 }
@@ -254,19 +259,15 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
-        private bool TypeIsSyncable(Type type)
+        public static bool IsSyncable(VariableDeclaration variable)
         {
-            if (
-                type == typeof(bool) ||
-                type == typeof(int) ||
-                type == typeof(float) ||
-                type == typeof(string) ||
-                type == typeof(Vector2) ||
-                type == typeof(Vector3))
-            {
+            Type variableType = Type.GetType(variable.typeHandle.Identification);
+
+            // For visual scripting, there is no Color32 type, so we need to check for Color
+            if (variableType == typeof(Color))
                 return true;
-            }
-            return false;
+
+            return INetworkVariable.CURRENTLY_SUPPORTED_TYPES.Contains(variableType);
         }
     }
 }

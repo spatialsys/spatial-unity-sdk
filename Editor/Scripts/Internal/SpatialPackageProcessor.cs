@@ -12,7 +12,7 @@ namespace SpatialSys.UnitySDK.Editor
 {
     public static class SpatialPackageProcessor
     {
-        [PostProcessSceneAttribute(0)]
+        [PostProcessSceneAttribute(1)]
         public static void OnPostprocessScene()
         {
             SceneAsset activeSceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(SceneManager.GetActiveScene().path);
@@ -101,6 +101,29 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 data.embeddedPackageAssets = new EmbeddedPackageAsset[spaceConfig2.embeddedPackageAssets.Length];
                 Array.Copy(spaceConfig2.embeddedPackageAssets, data.embeddedPackageAssets, spaceConfig2.embeddedPackageAssets.Length);
+            }
+
+            // Network object references
+            if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig3)
+            {
+                List<SpatialNetworkObjectReferenceData> nwObjectRefs = new List<SpatialNetworkObjectReferenceData>();
+                if (spaceConfig3.networkPrefabs != null && spaceConfig3.networkPrefabs.Length > 0)
+                    nwObjectRefs.AddRange(spaceConfig3.networkPrefabs);
+
+                // Include all root network objects in the scene
+                SpatialNetworkObject[] sceneNetworkObjects = GameObject.FindObjectsOfType<SpatialNetworkObject>(includeInactive: true);
+                foreach (SpatialNetworkObject networkObject in sceneNetworkObjects)
+                {
+                    if (networkObject.rootObject == null)
+                    {
+                        SpatialNetworkObjectReferenceData refData = new SpatialNetworkObjectReferenceData();
+                        refData.referenceType = NetworkPrefabReferenceType.SceneEmbedded;
+                        refData.networkObject = networkObject;
+                        nwObjectRefs.Add(refData);
+                    }
+                }
+
+                data.networkObjectReferences = nwObjectRefs.ToArray();
             }
         }
 

@@ -60,15 +60,18 @@ namespace SpatialSys.UnitySDK.VisualScripting
             SpatialBridge.questService.onQuestRemoved += HandleQuestRemoved;
 
             SpatialBridge.spaceContentService.onSceneInitialized += OnSceneInitializedNode.TriggerEvent;
-            SpatialBridge.spaceContentService.onSyncedObjectInitialized += SpatialSyncedObjectEventOnObjectInitialized.TriggerEvent;
-            SpatialBridge.spaceContentService.onSyncedObjectOwnerChanged += SpatialSyncedObjectEventOnOwnerChanged.TriggerEvent;
-            SpatialBridge.spaceContentService.onSyncedObjectVariableChanged += SpatialSyncedVariablesOnVariableChanged.TriggerEvent;
 
             SpatialBridge.spaceService.onSpaceLiked += OnSpaceLovedNode.TriggerEvent;
 
             SpatialBridge.spatialComponentService.onInitializeInteractable += HandleOnInitializeInteractable;
             SpatialBridge.spatialComponentService.onInitializePointOfInterest += HandleOnInitializePointOfInterest;
             SpatialBridge.spatialComponentService.onInitializeTriggerEvent += HandleOnInitializeTriggerEvent;
+            SpatialBridge.spatialComponentService.onNetworkObjectOwnerChanged += NetworkObject_OnOwnerChangedNode.TriggerEvent;
+            SpatialBridge.spatialComponentService.onNetworkObjectSpawned += NetworkObject_OnSpawnedNode.TriggerEvent;
+            SpatialBridge.spatialComponentService.onNetworkObjectDespawned += NetworkObject_OnDespawnedNode.TriggerEvent;
+            SpatialBridge.spatialComponentService.onNetworkVariableChanged += SpatialSyncedVariablesOnVariableChanged.TriggerEvent;
+            SpatialBridge.spatialComponentService.onSyncedObjectInitialized += SpatialSyncedObjectEventOnObjectInitialized.TriggerEvent;
+            SpatialBridge.spatialComponentService.onSyncedObjectOwnerChanged += SpatialSyncedObjectEventOnOwnerChanged.TriggerEvent;
         }
 
         private void OnDestroy()
@@ -124,9 +127,6 @@ namespace SpatialSys.UnitySDK.VisualScripting
             if (SpatialBridge.spaceContentService != null)
             {
                 SpatialBridge.spaceContentService.onSceneInitialized -= OnSceneInitializedNode.TriggerEvent;
-                SpatialBridge.spaceContentService.onSyncedObjectInitialized -= SpatialSyncedObjectEventOnObjectInitialized.TriggerEvent;
-                SpatialBridge.spaceContentService.onSyncedObjectOwnerChanged -= SpatialSyncedObjectEventOnOwnerChanged.TriggerEvent;
-                SpatialBridge.spaceContentService.onSyncedObjectVariableChanged -= SpatialSyncedVariablesOnVariableChanged.TriggerEvent;
             }
 
             if (SpatialBridge.spaceService != null)
@@ -139,6 +139,12 @@ namespace SpatialSys.UnitySDK.VisualScripting
                 SpatialBridge.spatialComponentService.onInitializeInteractable -= HandleOnInitializeInteractable;
                 SpatialBridge.spatialComponentService.onInitializePointOfInterest -= HandleOnInitializePointOfInterest;
                 SpatialBridge.spatialComponentService.onInitializeTriggerEvent -= HandleOnInitializeTriggerEvent;
+                SpatialBridge.spatialComponentService.onNetworkObjectOwnerChanged -= NetworkObject_OnOwnerChangedNode.TriggerEvent;
+                SpatialBridge.spatialComponentService.onNetworkObjectSpawned -= NetworkObject_OnSpawnedNode.TriggerEvent;
+                SpatialBridge.spatialComponentService.onNetworkObjectDespawned -= NetworkObject_OnDespawnedNode.TriggerEvent;
+                SpatialBridge.spatialComponentService.onNetworkVariableChanged -= SpatialSyncedVariablesOnVariableChanged.TriggerEvent;
+                SpatialBridge.spatialComponentService.onSyncedObjectInitialized -= SpatialSyncedObjectEventOnObjectInitialized.TriggerEvent;
+                SpatialBridge.spatialComponentService.onSyncedObjectOwnerChanged -= SpatialSyncedObjectEventOnOwnerChanged.TriggerEvent;
             }
 
             foreach (var q in _questActions.Values)

@@ -436,6 +436,9 @@ namespace SpatialSys.UnitySDK.Editor
                 dependencies.UnionWith(csharpScriptPaths);
             }
 
+            // Manually add
+            dependencies.Add(NetworkPrefabTable.ASSET_PATH);
+
             // Export all referenced assets from active package as a unity package
             // NOTE: Intentionally not including the ProjectConfig since that includes all packages in this project
             AssetDatabase.ExportPackage(dependencies.ToArray(), outputPath);

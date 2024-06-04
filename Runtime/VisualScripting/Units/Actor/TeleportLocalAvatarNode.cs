@@ -4,6 +4,31 @@ using Unity.VisualScripting;
 namespace SpatialSys.UnitySDK.VisualScripting
 {
     [UnitCategory("Spatial\\Actor")]
+    [UnitTitle("Local Actor: Respawn Avatar")]
+    [UnitSurtitle("Local Actor")]
+    [UnitShortTitle("Respawn Avatar")]
+    [TypeIcon(typeof(SpatialComponentBase))]
+    public class RespawnLocalAvatarNode : Unit
+    {
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlInput inputTrigger { get; private set; }
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlOutput outputTrigger { get; private set; }
+
+        protected override void Definition()
+        {
+            inputTrigger = ControlInput(nameof(inputTrigger), (f) => {
+                SpatialBridge.actorService.localActor.avatar.Respawn();
+                return outputTrigger;
+            });
+            outputTrigger = ControlOutput(nameof(outputTrigger));
+            Succession(inputTrigger, outputTrigger);
+        }
+    }
+
+    [UnitCategory("Spatial\\Actor")]
     [UnitTitle("Local Actor: Teleport Avatar")]
     [UnitSurtitle("Local Actor")]
     [UnitShortTitle("Teleport Avatar")]

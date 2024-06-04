@@ -7,7 +7,7 @@ namespace SpatialSys.UnitySDK
     [DocumentationCategory("Core/Components")]
     [RequireComponent(typeof(Animator))]
     [DisallowMultipleComponent]
-    public class SpatialSyncedAnimator : SpatialComponentBase
+    public class SpatialSyncedAnimator : SpatialComponentBase, ISpatialComponentWithOwner
     {
         public override string prettyName => "Synced Animator";
         public override string tooltip => "The animator on this gameobject will have its parameters and triggers synced with all connected users";
@@ -27,7 +27,7 @@ namespace SpatialSys.UnitySDK
         /// <param name="value">Value to set.</param>
         public void SetParameter(string parameterName, object value)
         {
-            SpatialBridge.spaceContentService.SetSyncedAnimatorParameter(this, parameterName, value);
+            SpatialBridge.spatialComponentService.SetSyncedAnimatorParameter(this, parameterName, value);
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace SpatialSys.UnitySDK
         /// <param name="triggerName">Name of the trigger</param>
         public void SetTrigger(string triggerName)
         {
-            SpatialBridge.spaceContentService.SetSyncedAnimatorTrigger(this, triggerName);
+            SpatialBridge.spatialComponentService.SetSyncedAnimatorTrigger(this, triggerName);
         }
     }
 }

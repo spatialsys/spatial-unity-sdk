@@ -16,6 +16,11 @@ namespace SpatialSys.UnitySDK
         int objectID { get; }
 
         /// <summary>
+        /// Space object behavior flags.
+        /// </summary>
+        SpaceObjectFlags flags { get; }
+
+        /// <summary>
         /// The actorNumber of the actor that created the space object.
         /// </summary>
         int creatorActorNumber { get; }
@@ -29,6 +34,12 @@ namespace SpatialSys.UnitySDK
         /// Whether the space object is owned by the local actor (localActorNumber == ownerActorNumber).
         /// </summary>
         bool isMine { get; }
+
+        /// <summary>
+        /// Whether the local actor owns the object or has control over it in the case where the object isn't owned
+        /// by anyone. (isMine || (hasNoOwner && isMasterClient))
+        /// </summary>
+        bool hasControl { get; }
 
         /// <summary>
         /// Whether the space object has been disposed. This will be true if the object has been destroyed.
@@ -138,12 +149,19 @@ namespace SpatialSys.UnitySDK
         new Vector3 scale { get; set; }
 
         /// <summary>
+        /// Same as <see cref="SetVariable{T}(byte, T)"/> but with an object type. Provided for convenience.
+        /// </summary>
+        void SetVariable(byte id, object value);
+
+        /// <summary>
         /// Set the value of, or create a variable on the space object. Requires the local actor to have ownership of the object.
         /// Note that depending on the context, setting a variable may not be instantaneous but it will always be performed in the same frame.
         /// </summary>
         /// <param name="id">The id of the variable to set or create. It is recommended to use an enum of type byte to define variables.</param>
-        /// <param name="value">The value of the variable (supported types: int, bool, float, Vector2, Vector3, string)</param>
-        void SetVariable(byte id, object value);
+        /// <param name="value">
+        /// The value of the variable (supported types: int, bool, float, Vector2, Vector3, string, Color32, byte, double, long, int[])
+        /// </param>
+        void SetVariable<T>(byte id, T value);
 
         /// <summary>
         /// Remove a variable from the space object. Requires the local actor to have ownership of the object.
@@ -151,6 +169,28 @@ namespace SpatialSys.UnitySDK
         /// </summary>
         /// <param name="id">The id of the variable to remove</param>
         void RemoveVariable(byte id);
+    }
+
+    [System.Flags]
+    public enum SpaceObjectFlags
+    {
+        None = 0,
+        /// <summary>
+        /// Flag indicating that the object should always be owned by the master client.
+        /// </summary>
+        MasterClientObject = 1 << 0,
+        /// <summary>
+        /// Flag indicating that the object should be destroyed when the owner leaves the space.
+        /// </summary>
+        DestroyWhenOwnerLeaves = 1 << 1,
+        /// <summary>
+        /// Flag indicating that the object should be destroyed when the creator of the object leaves the space.
+        /// </summary>
+        DestroyWhenCreatorLeaves = 1 << 2,
+        /// <summary>
+        /// Flag indicating that the object can be transferred to another client.
+        /// </summary>
+        AllowOwnershipTransfer = 1 << 3,
     }
 
     /// <summary>
@@ -178,6 +218,11 @@ namespace SpatialSys.UnitySDK
         /// The space object is a Spatial prefab.
         /// </summary>
         PrefabObject = 3,
+
+        /// <summary>
+        /// The space object represents an network object embedded in a scene or spawned at runtime.
+        /// </summary>
+        NetworkObject = 4,
     }
 
     /// <summary>

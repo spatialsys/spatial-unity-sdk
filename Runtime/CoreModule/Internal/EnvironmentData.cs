@@ -32,6 +32,7 @@ namespace SpatialSys.UnitySDK
         public SpatialEvent[] spatialEvents;
 
         public EmbeddedPackageAsset[] embeddedPackageAssets;
+        public SpatialNetworkObjectReferenceData[] networkObjectReferences;
 
         private Dictionary<string, SpatialPackageAsset> _embeddedPackageAssetsLookup;
         public bool TryGetEmbeddedPackageAsset(string id, out SpatialPackageAsset asset)
@@ -53,5 +54,28 @@ namespace SpatialSys.UnitySDK
     {
         public string id;
         public SpatialPackageAsset asset;
+    }
+
+    [InternalType]
+    [System.Serializable]
+    public class SpatialNetworkObjectReferenceData
+    {
+        public NetworkPrefabReferenceType referenceType;
+
+        // If NetworkPrefabReferenceType.SceneEmbedded: direct reference to the instance
+        // If NetworkPrefabReferenceType.Prefab: reference to the prefab
+        public SpatialNetworkObject networkObject;
+
+        // If NetworkPrefabReferenceType.Addressable
+        // public AssetReferenceGameObject networkObjectAdressable;
+    }
+
+    [InternalType]
+    public enum NetworkPrefabReferenceType
+    {
+        None = 0,
+        SceneEmbedded = 1,
+        Prefab = 2,
+        // Addressable = 3,
     }
 }

@@ -3,43 +3,32 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using SpatialSys.UnitySDK.Editor;
+using SpatialSys.UnitySDK.Internal;
 
 namespace SpatialSys.UnitySDK.EditorSimulation
 {
 #pragma warning disable 67 // Disable unused event warning
     public class EditorSpaceContentService : ISpaceContentService
     {
-        #region Scene
         public bool isSceneInitialized => true;
 
         public IReadOnlyDictionary<int, IReadOnlySpaceObject> allObjects => new Dictionary<int, IReadOnlySpaceObject>();
         public IReadOnlyDictionary<int, IReadOnlyAvatar> avatars => new Dictionary<int, IReadOnlyAvatar>();
         public IReadOnlyDictionary<int, IReadOnlyPrefabObject> prefabs => new Dictionary<int, IReadOnlyPrefabObject>();
+        public IReadOnlyDictionary<int, SpatialNetworkObject> networkObjects => new Dictionary<int, SpatialNetworkObject>();
 
         public event Action onSceneInitialized
         {
             add { value?.Invoke(); }
             remove { }
         }
-
-        #endregion
-
-        #region Synced Objects
-
-        public event ISpaceContentService.OnSyncedObjectInitializedDelegate onSyncedObjectInitialized;
-
-        public event ISpaceContentService.OnSyncedObjectOwnerChangedDelegate onSyncedObjectOwnerChanged;
-
-        public event ISpaceContentService.OnSyncedObjectVariableChangedDelegate onSyncedObjectVariableChanged;
         public event Action<IReadOnlySpaceObject> onObjectSpawned;
         public event Action<IReadOnlySpaceObject> onObjectDestroyed;
 
         public SpawnSpaceObjectRequest SpawnSpaceObject()
         {
-            SpawnSpaceObjectRequest request = new()
-            {
-                succeeded = false
-            };
+            SpawnSpaceObjectRequest request = new();
+            request.succeeded = false;
             request.InvokeCompletionEvent();
             return request;
         }
@@ -68,6 +57,25 @@ namespace SpatialSys.UnitySDK.EditorSimulation
             return request;
         }
 
+        public bool ReleaseOwnership(int objectID)
+        {
+            return false;
+        }
+
+        public bool TryFindNetworkObject(int objectID, out SpatialNetworkObject networkObject)
+        {
+            networkObject = null;
+            return false;
+        }
+
+        public SpawnNetworkObjectRequest SpawnNetworkObject(SpatialNetworkObject prefab, Vector3? position = null, Quaternion? rotation = null)
+        {
+            SpawnNetworkObjectRequest request = new();
+            request.succeeded = false;
+            request.InvokeCompletionEvent();
+            return request;
+        }
+
         public SpawnAvatarRequest SpawnAvatar(AssetType assetType, string assetID, Vector3 position, Quaternion rotation, string displayName)
         {
             SpawnAvatarRequest request = new();
@@ -82,92 +90,11 @@ namespace SpatialSys.UnitySDK.EditorSimulation
             return false;
         }
 
-        public bool TakeoverSyncedObjectOwnership(SpatialSyncedObject syncedObject)
-        {
-            return syncedObject != null;
-        }
-
-        public SpatialSyncedObject GetSyncedObjectByID(int id)
-        {
-            return GameObject.FindObjectsOfType<SpatialSyncedObject>().FirstOrDefault(x => x.GetInstanceID() == id);
-        }
-
-        public bool GetSyncedObjectIsSynced(SpatialSyncedObject syncedObject)
-        {
-            return syncedObject != null;
-        }
-
-        public int GetSyncedObjectID(SpatialSyncedObject syncedObject)
-        {
-            return syncedObject.GetInstanceID();
-        }
-
-        public int GetSyncedObjectOwner(SpatialSyncedObject syncedObject)
+        public int GetOwnerActor(ISpatialComponentWithOwner component)
         {
             return SpatialBridge.actorService.localActorNumber;
         }
 
-        public bool GetSyncedObjectHasControl(SpatialSyncedObject syncedObject)
-        {
-            return syncedObject != null;
-        }
-
-        public bool GetSyncedObjectIsLocallyOwned(SpatialSyncedObject syncedObject)
-        {
-            return syncedObject != null;
-        }
-
-        #endregion
-
-        #region SyncedAnimator
-
-        public void SetSyncedAnimatorParameter(SpatialSyncedAnimator syncedAnimator, string parameterName, object value)
-        {
-            if (syncedAnimator == null)
-            {
-                return;
-            }
-
-            if (value is bool)
-            {
-                syncedAnimator.animator.SetBool(parameterName, (bool)value);
-            }
-            else if (value is int)
-            {
-                syncedAnimator.animator.SetInteger(parameterName, (int)value);
-            }
-            else if (value is float)
-            {
-                syncedAnimator.animator.SetFloat(parameterName, (float)value);
-            }
-            else
-            {
-                SpatialBridge.loggingService.LogError($"SetSyncedAnimatorParameter: Unsupported parameter type {value.GetType()}");
-            }
-        }
-
-        public void SetSyncedAnimatorTrigger(SpatialSyncedAnimator syncedAnimator, string triggerName)
-        {
-            if (syncedAnimator == null)
-            {
-                return;
-            }
-
-            syncedAnimator.animator.SetTrigger(triggerName);
-        }
-
-        #endregion
-
-        #region Avatar Attachments
-
-        public int GetOwnerActor(SpatialComponentBase component)
-        {
-            return SpatialBridge.actorService.localActorNumber;
-        }
-
-        #endregion
-
-        #region Prefab Objects
         public SpawnPrefabObjectRequest SpawnPrefabObject(AssetType assetType, string assetID, Vector3 position, Quaternion rotation)
         {
             SpawnPrefabObjectRequest request = new() {
@@ -208,6 +135,34 @@ namespace SpatialSys.UnitySDK.EditorSimulation
             request.InvokeCompletionEvent();
             return request;
         }
-        #endregion
+
+        //--------------------------------------------------------------------------------------------------------------
+        // Public API - OBSOLETE
+        //--------------------------------------------------------------------------------------------------------------
+
+        public event ISpatialComponentService.OnSyncedObjectInitializedDelegate onSyncedObjectInitialized
+        {
+            add => SpatialBridge.spatialComponentService.onSyncedObjectInitialized += value;
+            remove => SpatialBridge.spatialComponentService.onSyncedObjectInitialized -= value;
+        }
+        public event ISpatialComponentService.OnSyncedObjectOwnerChangedDelegate onSyncedObjectOwnerChanged
+        {
+            add => SpatialBridge.spatialComponentService.onSyncedObjectOwnerChanged += value;
+            remove => SpatialBridge.spatialComponentService.onSyncedObjectOwnerChanged -= value;
+        }
+        public event ISpatialComponentService.OnNetworkVariableChangedDelegate onSyncedObjectVariableChanged
+        {
+            add => SpatialBridge.spatialComponentService.onNetworkVariableChanged += value;
+            remove => SpatialBridge.spatialComponentService.onNetworkVariableChanged -= value;
+        }
+        public bool TakeoverSyncedObjectOwnership(SpatialSyncedObject syncedObject) => SpatialBridge.spatialComponentService.TakeoverSyncedObjectOwnership(syncedObject);
+        public SpatialSyncedObject GetSyncedObjectByID(int id) => SpatialBridge.spatialComponentService.GetSyncedObjectByID(id);
+        public bool GetSyncedObjectIsSynced(SpatialSyncedObject syncedObject) => SpatialBridge.spatialComponentService.GetSyncedObjectIsSynced(syncedObject);
+        public int GetSyncedObjectID(SpatialSyncedObject syncedObject) => SpatialBridge.spatialComponentService.GetSyncedObjectID(syncedObject);
+        public int GetSyncedObjectOwner(SpatialSyncedObject syncedObject) => SpatialBridge.spatialComponentService.GetSyncedObjectOwner(syncedObject);
+        public bool GetSyncedObjectHasControl(SpatialSyncedObject syncedObject) => SpatialBridge.spatialComponentService.GetSyncedObjectHasControl(syncedObject);
+        public bool GetSyncedObjectIsLocallyOwned(SpatialSyncedObject syncedObject) => SpatialBridge.spatialComponentService.GetSyncedObjectIsLocallyOwned(syncedObject);
+        public void SetSyncedAnimatorParameter(SpatialSyncedAnimator syncedAnimator, string parameterName, object value) => SpatialBridge.spatialComponentService.SetSyncedAnimatorParameter(syncedAnimator, parameterName, value);
+        public void SetSyncedAnimatorTrigger(SpatialSyncedAnimator syncedAnimator, string triggerName) => SpatialBridge.spatialComponentService.SetSyncedAnimatorTrigger(syncedAnimator, triggerName);
     }
 }

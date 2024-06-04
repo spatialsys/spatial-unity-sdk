@@ -51,16 +51,17 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 if (_targetGameObject != null)
                 {
-                    // Check target object really doesn't have a SpatialSyncedObject
-                    if (_targetGameObject.TryGetComponent<SpatialSyncedObject>(out SpatialSyncedObject obj))
-                    {
+                    // Maybe we upgraded?
+                    if (_targetGameObject.TryGetComponent<SpatialNetworkObject>(out SpatialNetworkObject _))
                         return;
-                    }
-                    // Delete any hidden SpatialSyncedVariables components when synced object component is deleted in the editor
-                    if (_targetGameObject.TryGetComponent<SpatialSyncedVariables>(out SpatialSyncedVariables variables))
-                    {
+
+                    // Check target object really doesn't have a SpatialSyncedObject
+                    if (_targetGameObject.TryGetComponent<SpatialSyncedObject>(out SpatialSyncedObject _))
+                        return;
+
+                    // Delete any hidden SpatialNetworkVariables components when synced object component is deleted in the editor
+                    if (_targetGameObject.TryGetComponent<SpatialNetworkVariables>(out SpatialNetworkVariables variables))
                         DestroyImmediate(variables);
-                    }
                 }
             }
         }
@@ -76,7 +77,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
 
             EditorGUILayout.PropertyField(_syncTransformProp);
-            
+
             if (syncedObject.GetComponent<Rigidbody>() == null)
             {
                 GUI.enabled = false;
@@ -93,39 +94,52 @@ namespace SpatialSys.UnitySDK.Editor
 
             bool isOnPrefab = (syncedObject.gameObject.scene.name == null || !syncedObject.gameObject.scene.name.Equals(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name));
 
-            // These can only be enabled in specific cases: if it's a prefab or if saveWithSpace is false
-            bool destroyOnDisconnectAllowed = !Application.isPlaying && isOnPrefab && !syncedObject.saveWithSpace;
+            EditorGUILayout.PropertyField(_isMasterClientObjectProp);
+
+            // These can only be enabled in specific cases
+            bool destroyOnDisconnectAllowed = isOnPrefab && !syncedObject.saveWithSpace && !syncedObject.isMasterClientObject;
             if (!destroyOnDisconnectAllowed)
             {
                 GUI.enabled = destroyOnDisconnectAllowed;
-                syncedObject.destroyOnCreatorDisconnect = false;
-                syncedObject.destroyOnOwnerDisconnect = false;
+                if (!Application.isPlaying)
+                {
+                    syncedObject.destroyOnCreatorDisconnect = false;
+                    syncedObject.destroyOnOwnerDisconnect = false;
+                }
             }
 
             //we are a prefab. Show the destroy option
             EditorGUILayout.PropertyField(_destroyOnCreatorDisconnectProp);
             EditorGUILayout.PropertyField(_destroyOnOwnerDisconnectProp);
             GUI.enabled = true;
-            EditorGUILayout.PropertyField(_isMasterClientObjectProp);
 
             GUILayout.Space(8);
 
-            //Embed the synced variables inspector
-            if (syncedObject.TryGetComponent(out SpatialSyncedVariables syncedVariables))
+            //Embed the network variables inspector
+            if (syncedObject.TryGetComponent(out SpatialNetworkVariables networkVariables))
             {
-                if (_variablesEditor == null || _variablesEditor.target != syncedVariables)
+                if (_variablesEditor == null || _variablesEditor.target != networkVariables)
                 {
-                    _variablesEditor = UnityEditor.Editor.CreateEditor(syncedVariables);
+                    _variablesEditor = UnityEditor.Editor.CreateEditor(networkVariables);
                 }
                 _variablesEditor.OnInspectorGUI();
             }
             else
             {
-                //No synced Variables
-                if (GUILayout.Button("Add Synced Variables", new GUILayoutOption[] { GUILayout.Height(32) }))
+                //No network Variables
+                if (GUILayout.Button("Add Network Variables", new GUILayoutOption[] { GUILayout.Height(32) }))
                 {
-                    syncedObject.gameObject.AddComponent<SpatialSyncedVariables>();
+                    syncedObject.gameObject.AddComponent<SpatialNetworkVariables>();
                     UnityEditor.EditorUtility.SetDirty(syncedObject.gameObject);
+                }
+            }
+
+            // Upgrade to Spatial Network Object
+            if (!syncedObject.saveWithSpace) // saveWithSpace not supported by network object
+            {
+                if (GUILayout.Button("Convert to Spatial Network Object", new GUILayoutOption[] { GUILayout.Height(32) }))
+                {
+                    syncedObject.ConvertToNetworkObject();
                 }
             }
         }

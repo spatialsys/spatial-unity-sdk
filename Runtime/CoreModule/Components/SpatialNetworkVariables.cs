@@ -1,7 +1,9 @@
+using SpatialSys.UnitySDK.Internal;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using Unity.VisualScripting;
+using UnityEngine;
 
 namespace SpatialSys.UnitySDK
 {
@@ -9,10 +11,11 @@ namespace SpatialSys.UnitySDK
     [AddComponentMenu("")]//hide from add component menu.
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Variables))]
-    public class SpatialSyncedVariables : SpatialComponentBase
+    public class SpatialNetworkVariables : SpatialComponentBase
     {
-        public override string prettyName => "Synced Variables";
-        public override string tooltip => "Define which Visual Scripting Variables should be synced across clients.\nOnly bool, int, float, string, Vector2, and Vector3 types can be synced.";
+        public override string prettyName => "Network Variables";
+        public override string tooltip => "Define which Visual Scripting Variables should be synchronized across clients.\n" +
+                                          "Supported types: int, bool, float, Vector2, Vector3, string, Color32, byte, double, long.";
         public override string documentationURL => null;
 
         private const int LATEST_VERSION = 1;
@@ -73,4 +76,9 @@ namespace SpatialSys.UnitySDK
             return id;
         }
     }
+
+    // For backwards compatibility
+    [InternalType]
+    [Obsolete("Use SpatialNetworkVariables instead.")]
+    public class SpatialSyncedVariables : SpatialNetworkVariables { }
 }

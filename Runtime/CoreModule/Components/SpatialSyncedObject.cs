@@ -11,12 +11,12 @@ namespace SpatialSys.UnitySDK
 {
     [DocumentationCategory("Core/Components")]
     [DisallowMultipleComponent]
-    public class SpatialSyncedObject : SpatialComponentBase
+    public class SpatialSyncedObject : SpatialComponentBase, ISpatialComponentWithOwner
     {
         public override string prettyName => "Synced Object";
         public override string tooltip => "Used to create objects at runtime that are synced across clients.";
         public override string documentationURL => "https://docs.spatial.io/components/synced-object";
-        public override bool isExperimental => true;
+        public override string obsoleteMessage => "This component has been deprecated. Use Spatial Network Object instead.";
 
         public bool syncTransform = true;
         public bool syncRigidbody = false;
@@ -52,26 +52,26 @@ namespace SpatialSys.UnitySDK
         {
             if (_onInitialized != null && _onInitialized.GetInvocationList().Length > 0)
             {
-                SpatialBridge.spaceContentService.onSyncedObjectInitialized += HandleSyncedObjectInitialized;
+                SpatialBridge.spatialComponentService.onSyncedObjectInitialized += HandleSyncedObjectInitialized;
                 _handlingInit = true;
             }
             if (_onOwnerChanged != null && _onOwnerChanged.GetInvocationList().Length > 0)
             {
-                SpatialBridge.spaceContentService.onSyncedObjectOwnerChanged += HandleSyncedObjectOwnerChanged;
+                SpatialBridge.spatialComponentService.onSyncedObjectOwnerChanged += HandleSyncedObjectOwnerChanged;
                 _handlingOwnerChange = true;
             }
             if (_onVariableChanged != null && _onVariableChanged.GetInvocationList().Length > 0)
             {
-                SpatialBridge.spaceContentService.onSyncedObjectVariableChanged += HandleSyncedObjectVariableChanged;
+                SpatialBridge.spatialComponentService.onNetworkVariableChanged += HandleSyncedObjectVariableChanged;
                 _handlingVariableChange = true;
             }
         }
 
         private void OnDisable()
         {
-            SpatialBridge.spaceContentService.onSyncedObjectInitialized -= HandleSyncedObjectInitialized;
-            SpatialBridge.spaceContentService.onSyncedObjectOwnerChanged -= HandleSyncedObjectOwnerChanged;
-            SpatialBridge.spaceContentService.onSyncedObjectVariableChanged -= HandleSyncedObjectVariableChanged;
+            SpatialBridge.spatialComponentService.onSyncedObjectInitialized -= HandleSyncedObjectInitialized;
+            SpatialBridge.spatialComponentService.onSyncedObjectOwnerChanged -= HandleSyncedObjectOwnerChanged;
+            SpatialBridge.spatialComponentService.onNetworkVariableChanged -= HandleSyncedObjectVariableChanged;
         }
 
         //------------------------------------------------------------------------------------------------------------
@@ -94,9 +94,9 @@ namespace SpatialSys.UnitySDK
             }
         }
 
-        private void HandleSyncedObjectVariableChanged(SpatialSyncedVariables syncedVariables, string variableName, object newValue)
+        private void HandleSyncedObjectVariableChanged(SpatialNetworkVariables networkVariables, string variableName, object newValue)
         {
-            if (syncedVariables.gameObject == gameObject)
+            if (networkVariables.gameObject == gameObject)
             {
                 _onVariableChanged?.Invoke(variableName, newValue);
             }
@@ -109,27 +109,27 @@ namespace SpatialSys.UnitySDK
         /// <summary>
         /// Does this synced object have control?
         /// </summary>
-        public bool hasControl => SpatialBridge.spaceContentService.GetSyncedObjectHasControl(this);
+        public bool hasControl => SpatialBridge.spatialComponentService.GetSyncedObjectHasControl(this);
 
         /// <summary>
         /// Is this synced object locally owned?
         /// </summary>
-        public bool isLocallyOwned => SpatialBridge.spaceContentService.GetSyncedObjectIsLocallyOwned(this);
+        public bool isLocallyOwned => SpatialBridge.spatialComponentService.GetSyncedObjectIsLocallyOwned(this);
 
         /// <summary>
         /// Is this synced object synced across clients?
         /// </summary>
-        public bool isSynced => SpatialBridge.spaceContentService.GetSyncedObjectIsSynced(this);
+        public bool isSynced => SpatialBridge.spatialComponentService.GetSyncedObjectIsSynced(this);
 
         /// <summary>
         /// The ID of this synced object.
         /// </summary>
-        public int syncedObjectID => SpatialBridge.spaceContentService.GetSyncedObjectID(this);
+        public int syncedObjectID => SpatialBridge.spatialComponentService.GetSyncedObjectID(this);
 
         /// <summary>
         /// The actor ID of the owner of this synced object.
         /// </summary>
-        public int ownerActorID => SpatialBridge.spaceContentService.GetSyncedObjectOwner(this);
+        public int ownerActorID => SpatialBridge.spatialComponentService.GetSyncedObjectOwner(this);
 
         /// <summary>
         /// Called when this synced object is initialized.
@@ -141,7 +141,7 @@ namespace SpatialSys.UnitySDK
                 _onInitialized += value;
                 if (!_handlingInit)
                 {
-                    SpatialBridge.spaceContentService.onSyncedObjectInitialized += HandleSyncedObjectInitialized;
+                    SpatialBridge.spatialComponentService.onSyncedObjectInitialized += HandleSyncedObjectInitialized;
                     _handlingInit = true;
                 }
             }
@@ -150,7 +150,7 @@ namespace SpatialSys.UnitySDK
                 _onInitialized -= value;
                 if (_onInitialized.GetInvocationList().Length == 0)
                 {
-                    SpatialBridge.spaceContentService.onSyncedObjectInitialized -= HandleSyncedObjectInitialized;
+                    SpatialBridge.spatialComponentService.onSyncedObjectInitialized -= HandleSyncedObjectInitialized;
                     _handlingInit = false;
                 }
             }
@@ -166,7 +166,7 @@ namespace SpatialSys.UnitySDK
                 _onOwnerChanged += value;
                 if (!_handlingOwnerChange)
                 {
-                    SpatialBridge.spaceContentService.onSyncedObjectOwnerChanged += HandleSyncedObjectOwnerChanged;
+                    SpatialBridge.spatialComponentService.onSyncedObjectOwnerChanged += HandleSyncedObjectOwnerChanged;
                     _handlingOwnerChange = true;
                 }
             }
@@ -175,14 +175,14 @@ namespace SpatialSys.UnitySDK
                 _onOwnerChanged -= value;
                 if (_onOwnerChanged.GetInvocationList().Length == 0)
                 {
-                    SpatialBridge.spaceContentService.onSyncedObjectOwnerChanged -= HandleSyncedObjectOwnerChanged;
+                    SpatialBridge.spatialComponentService.onSyncedObjectOwnerChanged -= HandleSyncedObjectOwnerChanged;
                     _handlingOwnerChange = false;
                 }
             }
         }
 
         /// <summary>
-        /// Called when a synced variable on this synced object changes.
+        /// Called when a network variable on this synced object changes.
         /// </summary>
         public event OnVariableChangedDelegate onVariableChanged
         {
@@ -191,7 +191,7 @@ namespace SpatialSys.UnitySDK
                 _onVariableChanged += value;
                 if (!_handlingVariableChange)
                 {
-                    SpatialBridge.spaceContentService.onSyncedObjectVariableChanged += HandleSyncedObjectVariableChanged;
+                    SpatialBridge.spatialComponentService.onNetworkVariableChanged += HandleSyncedObjectVariableChanged;
                     _handlingVariableChange = true;
                 }
             }
@@ -200,7 +200,7 @@ namespace SpatialSys.UnitySDK
                 _onVariableChanged -= value;
                 if (_onVariableChanged.GetInvocationList().Length == 0)
                 {
-                    SpatialBridge.spaceContentService.onSyncedObjectVariableChanged -= HandleSyncedObjectVariableChanged;
+                    SpatialBridge.spatialComponentService.onNetworkVariableChanged -= HandleSyncedObjectVariableChanged;
                     _handlingVariableChange = false;
                 }
             }
@@ -212,14 +212,39 @@ namespace SpatialSys.UnitySDK
         /// <returns>True if takeover was successful.</returns>
         public bool TakeoverOwnership()
         {
-            return SpatialBridge.spaceContentService.TakeoverSyncedObjectOwnership(this);
+            return SpatialBridge.spatialComponentService.TakeoverSyncedObjectOwnership(this);
         }
 
 #if UNITY_EDITOR
-        [ContextMenu("Remove Synced Variables")]
-        private void RemoveSyncedVariables()
+        public void ConvertToNetworkObject()
         {
-            if (TryGetComponent(out SpatialSyncedVariables variables))
+            SpatialNetworkObject networkObject = gameObject.AddComponent<SpatialNetworkObject>();
+
+            networkObject.objectFlags = SpaceObjectFlags.None;
+            networkObject.objectFlags |= (isMasterClientObject) ? SpaceObjectFlags.MasterClientObject : SpaceObjectFlags.AllowOwnershipTransfer;
+            if (!isMasterClientObject)
+            {
+                if (destroyOnCreatorDisconnect)
+                    networkObject.objectFlags |= SpaceObjectFlags.DestroyWhenCreatorLeaves;
+                if (destroyOnOwnerDisconnect)
+                    networkObject.objectFlags |= SpaceObjectFlags.DestroyWhenOwnerLeaves;
+            }
+
+            if (syncTransform)
+                networkObject.syncFlags |= NetworkObjectSyncFlags.Position | NetworkObjectSyncFlags.Rotation | NetworkObjectSyncFlags.Scale;
+            if (syncRigidbody)
+                networkObject.syncFlags |= NetworkObjectSyncFlags.Rigidbody;
+
+            Undo.RegisterCreatedObjectUndo(networkObject, "Convert to Network Object");
+            Undo.DestroyObjectImmediate(this);
+            DestroyImmediate(this);
+            UnityEditor.EditorUtility.SetDirty(networkObject.gameObject);
+        }
+
+        [ContextMenu("Remove Network Variables")]
+        private void RemoveNetworkVariables()
+        {
+            if (TryGetComponent(out SpatialNetworkVariables variables))
             {
                 DestroyImmediate(variables);
             }

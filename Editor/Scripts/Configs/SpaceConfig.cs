@@ -20,6 +20,8 @@ namespace SpatialSys.UnitySDK.Editor
         public AssemblyDefinitionAsset csharpAssembly = null;
         [Tooltip("Embedded packages are packages that are bundled together with this space. This is useful if you want to have custom avatars, avatar animations, avatar attachments and prefabs that are specific to this space, but don't want to publish them as separate packages. Note that embedding packages will increase the download size and load time of your space.")]
         public EmbeddedPackageAsset[] embeddedPackageAssets = new EmbeddedPackageAsset[0];
+        [Tooltip("Reference to prefabs that contain one or more SpatialNetworkObject components, which can be spawned in this space and replicated to all other clients.")]
+        public SpatialNetworkObjectReferenceData[] networkPrefabs = new SpatialNetworkObjectReferenceData[0];
 
         [Space(10)]
         public SpaceSettings settings;
@@ -44,6 +46,12 @@ namespace SpatialSys.UnitySDK.Editor
                     if (embeddedAsset?.asset != null)
                         yield return embeddedAsset.asset;
                 }
+
+                foreach (SpatialNetworkObjectReferenceData refData in networkPrefabs)
+                {
+                    if (refData.referenceType == NetworkPrefabReferenceType.Prefab && refData.networkObject != null)
+                        yield return refData.networkObject;
+                }
             }
         }
 
@@ -60,6 +68,13 @@ namespace SpatialSys.UnitySDK.Editor
         private void OnValidate()
         {
             UpgradeDataIfNecessary();
+
+            foreach (SpatialNetworkObjectReferenceData refData in networkPrefabs)
+            {
+                bool isPrefabAsset = refData.networkObject != null && refData.networkObject.gameObject.scene.name == null;
+                if (isPrefabAsset && refData.referenceType != NetworkPrefabReferenceType.Prefab)
+                    refData.referenceType = NetworkPrefabReferenceType.Prefab;
+            }
         }
 
         public void UpgradeDataIfNecessary()

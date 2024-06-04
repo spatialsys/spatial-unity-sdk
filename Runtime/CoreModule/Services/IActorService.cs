@@ -217,6 +217,7 @@ namespace SpatialSys.UnitySDK
         /// Set a custom property for this actor. These properties are synchronized across all clients.
         /// An actor's properties are only cleared if they leave the space. Teleporting between servers of the same
         /// space will not clear the properties.
+        /// Supported types: int, bool, float, Vector2, Vector3, string, Color32, byte, double, long, int[]
         /// </summary>
         /// <example><code source="Services/ActorExamples.cs" region="Custom Properties" lang="csharp"/></example>
         void SetCustomProperty(string name, object value);

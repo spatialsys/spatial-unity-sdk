@@ -5,7 +5,7 @@ using UnityEngine;
 namespace SpatialSys.UnitySDK
 {
     [DocumentationCategory("Core/Components")]
-    public class SpatialAvatarAttachment : SpatialPackageAsset
+    public class SpatialAvatarAttachment : SpatialPackageAsset, ISpatialComponentWithOwner
     {
         [DocumentationCategory("Core/Components")]
         public enum Slot

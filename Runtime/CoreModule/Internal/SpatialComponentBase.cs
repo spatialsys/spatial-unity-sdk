@@ -4,6 +4,9 @@ using UnityEngine;
 namespace SpatialSys.UnitySDK
 {
     [InternalType]
+    public interface ISpatialComponentWithOwner { }
+
+    [InternalType]
     public abstract class SpatialComponentBase : MonoBehaviour
     {
         // these values show up in the black inspector block
@@ -13,6 +16,9 @@ namespace SpatialSys.UnitySDK
 
         // used to mark components that will likely have breaking changes in the future
         public virtual bool isExperimental => false;
+
+        public bool isObsolete => !string.IsNullOrEmpty(obsoleteMessage);
+        public virtual string obsoleteMessage => null;
 
         protected virtual bool _limitOnePerScene => false;
 

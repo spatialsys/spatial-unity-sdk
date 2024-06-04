@@ -105,6 +105,63 @@ namespace SpatialSys.UnitySDK.Editor
         }
 
         [PackageTest(PackageType.Space)]
+        public static void ValidateNetworkPrefabs(SpaceConfig config)
+        {
+            // All networkPrefabs must have unique IDs
+            bool hasMissingReferences = false;
+            HashSet<int> ids = new();
+            foreach (SpatialNetworkObjectReferenceData networkPrefabRefData in config.networkPrefabs)
+            {
+                if (networkPrefabRefData.referenceType == NetworkPrefabReferenceType.Prefab)
+                {
+                    if (networkPrefabRefData.networkObject == null)
+                    {
+                        hasMissingReferences = true;
+                        continue;
+                    }
+
+                    if (ids.Contains(networkPrefabRefData.networkObject.networkPrefabGuid))
+                    {
+                        SpatialTestResponse resp = new(
+                            config,
+                            TestResponseType.Fail,
+                            "Network prefab GUID conflict",
+                            $"There are multiple network prefabs with the same GUID ({networkPrefabRefData.networkObject.networkPrefabGuid}) assigned to the SpaceConfig"
+                        );
+                        resp.SetAutoFix(isSafe: true, "Remove duplicates from the networkPrefabs list", configObj => {
+                            List<SpatialNetworkObjectReferenceData> uniqueNetworkPrefabs = new();
+                            HashSet<int> uniqueIDs = new();
+                            foreach (SpatialNetworkObjectReferenceData refData in config.networkPrefabs)
+                            {
+                                if (uniqueIDs.Contains(refData.networkObject.networkPrefabGuid))
+                                    continue;
+                                uniqueIDs.Add(refData.networkObject.networkPrefabGuid);
+                                uniqueNetworkPrefabs.Add(refData);
+                            }
+                            config.networkPrefabs = uniqueNetworkPrefabs.ToArray();
+                        });
+                        SpatialValidator.AddResponse(resp);
+                        continue;
+                    }
+                    ids.Add(networkPrefabRefData.networkObject.networkPrefabGuid);
+                }
+                else
+                {
+                    SpatialValidator.AddResponse(
+                        new SpatialTestResponse(config, TestResponseType.Warning, "Only Prefab reference types are supported in SpaceConfig networkPrefabs")
+                    );
+                }
+            }
+
+            if (hasMissingReferences)
+            {
+                SpatialValidator.AddResponse(
+                    new SpatialTestResponse(config, TestResponseType.Warning, "There are missing network prefabs in the SpaceConfig")
+                );
+            }
+        }
+
+        [PackageTest(PackageType.Space)]
         public static void EnsureCapacityDoesNotExceedMaximum(SpaceConfig config)
         {
             if (config.settings.serverCapacitySetting != ServerCapacitySetting.Custom)

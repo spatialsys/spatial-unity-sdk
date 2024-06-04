@@ -5,7 +5,7 @@ namespace SpatialSys.UnitySDK
 {
     [RequireComponent(typeof(Animator))]
     [DocumentationCategory("Core/Components")]
-    public class SpatialAvatar : SpatialPackageAsset
+    public class SpatialAvatar : SpatialPackageAsset, ISpatialComponentWithOwner
     {
         public const float DEFAULT_CHARACTER_CONTROLLER_HEIGHT = 1.8f;
         public const float DEFAULT_CHARACTER_CONTROLLER_RADIUS = 0.28f;
