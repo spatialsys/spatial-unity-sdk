@@ -21,7 +21,7 @@ namespace SpatialSys.UnitySDK.Editor
             string asmDefAssetPath = AssetDatabase.GetAssetPath(assemblyDefinition);
             string asmDefOriginal = File.ReadAllText(asmDefAssetPath);
             string assemblyName = GetAssemblyNameForSKU(sku);
-            string asmDefModified = Regex.Replace(asmDefOriginal, "\"name\":\\s*\".*?\",", $"\"name\": \"{assemblyName}\",");
+            string asmDefModified = Regex.Replace(asmDefOriginal, "\"name\":\\s*\".*?\"", $"\"name\": \"{assemblyName}\"");
             File.WriteAllText(asmDefAssetPath, asmDefModified);
             AssetDatabase.ImportAsset(asmDefAssetPath);
         }

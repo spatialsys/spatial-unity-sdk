@@ -160,7 +160,7 @@ namespace SpatialSys.UnitySDK.Editor
                         bool newSaveWithScene = false;
                         if (_saveWithSceneSupported)
                         {
-                            EditorGUILayout.ToggleLeft(
+                            newSaveWithScene = EditorGUILayout.ToggleLeft(
                                 new GUIContent("Save with Space", "When checked the value will remain consistant across sessions even when nobody is present in a space. If unchecked the value will reset once the space is empty."),
                                 isSynced ? networkVariableData.saveWithSpace : false,
                                 new GUILayoutOption[] { GUILayout.Width(115) }

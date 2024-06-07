@@ -81,6 +81,11 @@ namespace SpatialSys.UnitySDK
             SpatialBridge.spaceContentService.ReleaseOwnership(objectID);
         }
 
+        public void TransferOwnership(int actorNumber)
+        {
+            SpatialBridge.spaceContentService.TransferOwnership(objectID, actorNumber);
+        }
+
         public static bool TryFindObject(int objectID, out SpatialNetworkObject obj)
         {
             return SpatialBridge.spaceContentService.TryFindNetworkObject(objectID, out obj);
@@ -227,9 +232,9 @@ namespace SpatialSys.UnitySDK
     }
 
     /// <summary>
-    /// This component allows you to define custom behaviour for a network object.
+    /// This component allows you to define custom behaviour for a network object. It must always be accompanied by a
+    /// <see cref="SpatialNetworkObject"/> component on the same GameObject or on one of its parents.
     /// </summary>
-    [RequireComponent(typeof(SpatialNetworkObject))]
     public abstract class SpatialNetworkBehaviour : MonoBehaviour
     {
         public int objectID => networkObject?.objectID ?? 0;

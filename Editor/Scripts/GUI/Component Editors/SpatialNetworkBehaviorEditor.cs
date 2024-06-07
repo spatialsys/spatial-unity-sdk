@@ -13,11 +13,19 @@ namespace SpatialSys.UnitySDK.Editor
         private GUIStyle _areaStyle;
         private GUIStyle _logoStyle;
         private GUIStyle _titleStyle;
+        private SpatialNetworkObject _associatedNetworkObject;
 
         private void InitializeIfNecessary(UnityEngine.Object target)
         {
             if (_initialized)
                 return;
+
+            _initialized = true;
+
+            // GetComponentInParent does not search the current GameObject when viewing a root level prefab GameObject in inspector
+            _associatedNetworkObject = (target as Component).GetComponent<SpatialNetworkObject>();
+            if (_associatedNetworkObject == null)
+                _associatedNetworkObject = (target as Component).GetComponentInParent<SpatialNetworkObject>();
 
             _iconTexture = SpatialGUIUtility.LoadGUITexture("Icons/icon_syncedObject.png");
 
@@ -77,6 +85,11 @@ namespace SpatialSys.UnitySDK.Editor
 
             GUILayout.Space(-4);// Right Margin hack
             GUILayout.EndHorizontal();
+
+            if (_associatedNetworkObject == null)
+            {
+                EditorGUILayout.HelpBox("All network behaviours must either have a Spatial Network Object on the same GameObject or on one of its parents.", MessageType.Warning);
+            }
 
             DrawDefaultInspector();
         }

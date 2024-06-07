@@ -57,6 +57,14 @@ namespace SpatialSys.UnitySDK.EditorSimulation
             return request;
         }
 
+        public SpaceObjectOwnershipTransferRequest TransferOwnership(int objectID, int actorNumber)
+        {
+            SpaceObjectOwnershipTransferRequest request = new();
+            request.succeeded = false;
+            request.InvokeCompletionEvent();
+            return request;
+        }
+
         public bool ReleaseOwnership(int objectID)
         {
             return false;

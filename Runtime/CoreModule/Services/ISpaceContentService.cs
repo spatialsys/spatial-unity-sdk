@@ -80,6 +80,19 @@ namespace SpatialSys.UnitySDK
         SpaceObjectOwnershipTransferRequest TakeOwnership(int objectID);
 
         /// <summary>
+        /// Transfer the ownership of an object to another actor. This will only succeed if the local actor is the owner
+        /// or <see cref="IReadOnlySpaceObject.hasControl"/> of the object.
+        /// This will fail if:
+        /// - The object doesn't exist
+        /// - The new owner actor is invalid
+        /// - <see cref="IReadOnlySpaceObject.flags"/> has <see cref="SpaceObjectFlags.AllowOwnershipTransfer"/> disabled
+        /// - If the object is flagged as a <see cref="SpaceObjectFlags.MasterClientObject"/>
+        /// </summary>
+        /// <param name="objectID">The space object to transfer ownership of</param>
+        /// <param name="newOwnerActor">The actor ID of the new owner</param>
+        SpaceObjectOwnershipTransferRequest TransferOwnership(int objectID, int newOwnerActor);
+
+        /// <summary>
         /// If the local actor is currently the owner of the object, this will release the ownership of the object
         /// and set the owner to 0. This will not destroy the object, but it will make it available for other actors
         /// to take ownership of.
