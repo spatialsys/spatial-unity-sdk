@@ -81,7 +81,7 @@ namespace SpatialSys.UnitySDK
 
         public override string prettyName => "Avatar Attachment";
         public override string tooltip => "This component is used to define an object that can be attached or equipped by an avatar";
-        public override string documentationURL => "https://docs.spatial.io/avatar-attachment";
+        public override string documentationURL => "https://toolkit.spatial.io/docs/packages/avatar-attachment";
 
         private const int LATEST_VERSION = 2;
         [HideInInspector]

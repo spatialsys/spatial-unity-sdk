@@ -11,7 +11,7 @@ namespace SpatialSys.UnitySDK
 
         public override string prettyName => "Point Of Interest";
         public override string tooltip => "A location marker that will display additional information when approaching it";
-        public override string documentationURL => "https://docs.spatial.io/components/point-of-interest";
+        public override string documentationURL => "https://toolkit.spatial.io/docs/components/point-of-interest";
         [TextArea(1, 10)]
         public string title = "Point of interest";
         [TextArea(4, 10)]

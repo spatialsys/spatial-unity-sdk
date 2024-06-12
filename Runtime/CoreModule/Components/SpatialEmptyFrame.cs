@@ -9,7 +9,7 @@ namespace SpatialSys.UnitySDK
     {
         public override string prettyName => "Empty Frame";
         public override string tooltip => "Use to specify a location where an empty frame will be created when the space is opened in spatial.";
-        public override string documentationURL => "https://docs.spatial.io/components/empty-frame";
+        public override string documentationURL => "https://toolkit.spatial.io/docs/components/empty-frame";
 
         public float size = 1f;
 

@@ -98,7 +98,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
             return false;
         }
 
-        public int GetOwnerActor(ISpatialComponentWithOwner component)
+        public int GetOwner(ISpatialComponentWithOwner component)
         {
             return SpatialBridge.actorService.localActorNumber;
         }
@@ -148,21 +148,23 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         // Public API - OBSOLETE
         //--------------------------------------------------------------------------------------------------------------
 
-        public event ISpatialComponentService.OnSyncedObjectInitializedDelegate onSyncedObjectInitialized
+        #pragma warning disable 0618 // Disable obsolete warning
+        public event ISpaceContentService.OnSyncedObjectInitializedDelegate onSyncedObjectInitialized
         {
-            add => SpatialBridge.spatialComponentService.onSyncedObjectInitialized += value;
-            remove => SpatialBridge.spatialComponentService.onSyncedObjectInitialized -= value;
+            add { }
+            remove { }
         }
-        public event ISpatialComponentService.OnSyncedObjectOwnerChangedDelegate onSyncedObjectOwnerChanged
+        public event ISpaceContentService.OnSyncedObjectOwnerChangedDelegate onSyncedObjectOwnerChanged
         {
-            add => SpatialBridge.spatialComponentService.onSyncedObjectOwnerChanged += value;
-            remove => SpatialBridge.spatialComponentService.onSyncedObjectOwnerChanged -= value;
+            add { }
+            remove { }
         }
-        public event ISpatialComponentService.OnNetworkVariableChangedDelegate onSyncedObjectVariableChanged
+        public event ISpaceContentService.OnSyncedObjectVariableChangedDelegate onSyncedObjectVariableChanged
         {
-            add => SpatialBridge.spatialComponentService.onNetworkVariableChanged += value;
-            remove => SpatialBridge.spatialComponentService.onNetworkVariableChanged -= value;
+            add { }
+            remove { }
         }
+        #pragma warning restore 0618 // Restore obsolete warning
         public bool TakeoverSyncedObjectOwnership(SpatialSyncedObject syncedObject) => SpatialBridge.spatialComponentService.TakeoverSyncedObjectOwnership(syncedObject);
         public SpatialSyncedObject GetSyncedObjectByID(int id) => SpatialBridge.spatialComponentService.GetSyncedObjectByID(id);
         public bool GetSyncedObjectIsSynced(SpatialSyncedObject syncedObject) => SpatialBridge.spatialComponentService.GetSyncedObjectIsSynced(syncedObject);
@@ -170,6 +172,9 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         public int GetSyncedObjectOwner(SpatialSyncedObject syncedObject) => SpatialBridge.spatialComponentService.GetSyncedObjectOwner(syncedObject);
         public bool GetSyncedObjectHasControl(SpatialSyncedObject syncedObject) => SpatialBridge.spatialComponentService.GetSyncedObjectHasControl(syncedObject);
         public bool GetSyncedObjectIsLocallyOwned(SpatialSyncedObject syncedObject) => SpatialBridge.spatialComponentService.GetSyncedObjectIsLocallyOwned(syncedObject);
+
+        public int GetOwnerActor(SpatialComponentBase component) => SpatialBridge.actorService.localActorNumber;
+
         public void SetSyncedAnimatorParameter(SpatialSyncedAnimator syncedAnimator, string parameterName, object value) => SpatialBridge.spatialComponentService.SetSyncedAnimatorParameter(syncedAnimator, parameterName, value);
         public void SetSyncedAnimatorTrigger(SpatialSyncedAnimator syncedAnimator, string triggerName) => SpatialBridge.spatialComponentService.SetSyncedAnimatorTrigger(syncedAnimator, triggerName);
     }

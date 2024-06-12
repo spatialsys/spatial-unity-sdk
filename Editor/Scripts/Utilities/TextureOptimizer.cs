@@ -168,7 +168,7 @@ public class TextureOptimizer : EditorWindow
         GUILayout.Label("Convert selected textures to JPG for non-transparent textures or PNG for transparent textures to reduce the package size. This helps keep the package size under our 500 MB limit.", EditorStyles.wordWrappedLabel);
         if (EditorGUILayout.LinkButton("Documentation"))
         {
-            Application.OpenURL("https://docs.spatial.io/texture-optimizer");
+            Application.OpenURL("https://toolkit.spatial.io/docs/texture-optimizer");
         }
         GUILayout.Space(10f);
 

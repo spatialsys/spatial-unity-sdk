@@ -10,7 +10,7 @@ namespace SpatialSys.UnitySDK
     {
         public override string prettyName => "Movement Material Surface";
         public override string tooltip => $"Apply a movement material to this collider to define how avatars interact with this surface.";
-        public override string documentationURL => "https://docs.spatial.io/movement-materials";
+        public override string documentationURL => "https://toolkit.spatial.io/docs/components/movement-materials";
         public override bool isExperimental => false;
 
         public SpatialMovementMaterial movementMaterial;

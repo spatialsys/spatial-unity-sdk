@@ -35,7 +35,7 @@ namespace SpatialSys.UnitySDK
     {
         public override string prettyName => "Spatial Network Object";
         public override string tooltip => "Represents a single synchronized entity in the session";
-        public override string documentationURL => null;
+        public override string documentationURL => "https://toolkit.spatial.io/docs/multiplayer/network-object";
 
         public SpaceObjectFlags objectFlags = SpaceObjectFlags.AllowOwnershipTransfer | SpaceObjectFlags.DestroyWhenOwnerLeaves;
         public NetworkObjectSyncFlags syncFlags;
@@ -390,7 +390,7 @@ namespace SpatialSys.UnitySDK
     public struct NetworkObjectVariablesChangedEventArgs
     {
         /// <summary>
-        /// Variables that were changed.
+        /// Variables that were changed, with the key being the variable ID and the value being the new value.
         /// This dictionary reference is re-pooled and re-used between events, so you should not cache it.
         /// </summary>
         public IReadOnlyDictionary<byte, object> changedVariables;

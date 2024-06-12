@@ -57,13 +57,9 @@ namespace SpatialSys.UnitySDK.Editor
             _instance.forceFocused = false;
 
             var uxml = EditorUtility.LoadAssetFromPackagePath<VisualTreeAsset>("Editor/Scripts/GUI/PlaymodePopup/PlaymodePopup.uxml");
-            VisualElement ui = uxml.Instantiate();//
+            VisualElement ui = uxml.Instantiate();
             ui.Q<Label>("PackageTutorialLink").AddManipulator(new Clickable(() => {
-                Application.OpenURL("https://docs.spatial.io/project-configuration");
-            }));
-
-            ui.Q<Label>("EditorDiffLink").AddManipulator(new Clickable(() => {
-                Application.OpenURL("https://docs.spatial.io/testing-in-unity-vs-sandbox");
+                Application.OpenURL("https://toolkit.spatial.io/docs/packages");
             }));
 
             Toggle toggle = ui.Q<Toggle>("DontShowToggle");

@@ -162,25 +162,48 @@ namespace SpatialSys.UnitySDK
         /// </summary>
         /// <param name="component">Spatial component (eg. SpatialAvatarAttachment)</param>
         /// <returns>Owner actor of spatial component</returns>
-        public int GetOwnerActor(ISpatialComponentWithOwner component);
+        int GetOwner(ISpatialComponentWithOwner component);
 
         #region Obsolete
 
         // Synced Objects
+        /// <exclude />
         const string OBSOLETE_MESSAGE = "This will be removed soon. Use SpatialNetworkObject instead.";
-        [Obsolete(OBSOLETE_MESSAGE)] event ISpatialComponentService.OnSyncedObjectInitializedDelegate onSyncedObjectInitialized;
-        [Obsolete(OBSOLETE_MESSAGE)] event ISpatialComponentService.OnSyncedObjectOwnerChangedDelegate onSyncedObjectOwnerChanged;
-        [Obsolete(OBSOLETE_MESSAGE)] event ISpatialComponentService.OnNetworkVariableChangedDelegate onSyncedObjectVariableChanged;
+        /// <exclude />
+        [Obsolete(OBSOLETE_MESSAGE)] event OnSyncedObjectInitializedDelegate onSyncedObjectInitialized;
+        /// <exclude />
+        [Obsolete(OBSOLETE_MESSAGE)] public delegate void OnSyncedObjectInitializedDelegate(SpatialSyncedObject syncedObject);
+        /// <exclude />
+        [Obsolete(OBSOLETE_MESSAGE)] event OnSyncedObjectOwnerChangedDelegate onSyncedObjectOwnerChanged;
+        /// <exclude />
+        [Obsolete(OBSOLETE_MESSAGE)] public delegate void OnSyncedObjectOwnerChangedDelegate(SpatialSyncedObject syncedObject, int newOwnerActor);
+        /// <exclude />
+        [Obsolete(OBSOLETE_MESSAGE)] event OnSyncedObjectVariableChangedDelegate onSyncedObjectVariableChanged;
+        /// <exclude />
+        [Obsolete(OBSOLETE_MESSAGE)] public delegate void OnSyncedObjectVariableChangedDelegate(SpatialSyncedVariables syncedVariables, string variableName, object newValue);
+        /// <exclude />
         [Obsolete(OBSOLETE_MESSAGE)] bool TakeoverSyncedObjectOwnership(SpatialSyncedObject syncedObject);
+        /// <exclude />
         [Obsolete(OBSOLETE_MESSAGE)] SpatialSyncedObject GetSyncedObjectByID(int id);
+        /// <exclude />
         [Obsolete(OBSOLETE_MESSAGE)] bool GetSyncedObjectIsSynced(SpatialSyncedObject syncedObject);
+        /// <exclude />
         [Obsolete(OBSOLETE_MESSAGE)] int GetSyncedObjectID(SpatialSyncedObject syncedObject);
+        /// <exclude />
         [Obsolete(OBSOLETE_MESSAGE)] int GetSyncedObjectOwner(SpatialSyncedObject syncedObject);
+        /// <exclude />
         [Obsolete(OBSOLETE_MESSAGE)] bool GetSyncedObjectHasControl(SpatialSyncedObject syncedObject);
+        /// <exclude />
         [Obsolete(OBSOLETE_MESSAGE)] bool GetSyncedObjectIsLocallyOwned(SpatialSyncedObject syncedObject);
 
+        /// <exclude />
+        [Obsolete("Use GetOwner(ISpatialComponentWithOwner component) instead.")]
+        int GetOwnerActor(SpatialComponentBase component);
+
         // SyncedAnimator
+        /// <exclude />
         [Obsolete(OBSOLETE_MESSAGE)] void SetSyncedAnimatorParameter(SpatialSyncedAnimator syncedAnimator, string parameterName, object value);
+        /// <exclude />
         [Obsolete(OBSOLETE_MESSAGE)] void SetSyncedAnimatorTrigger(SpatialSyncedAnimator syncedAnimator, string triggerName);
 
         #endregion

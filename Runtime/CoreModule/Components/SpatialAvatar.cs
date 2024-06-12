@@ -12,7 +12,7 @@ namespace SpatialSys.UnitySDK
 
         public override string prettyName => "Custom Avatar";
         public override string tooltip => "This component is used to define a custom avatar for Spatial";
-        public override string documentationURL => "https://docs.spatial.io/components/custom-avatars";
+        public override string documentationURL => "https://toolkit.spatial.io/docs/packages/avatar";
 
         [Tooltip("The default animation set to use for this avatar. The difference is usually the walk and sitting animations.")]
         public SpatialAvatarDefaultAnimSetType defaultAnimSetType;

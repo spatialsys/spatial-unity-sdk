@@ -80,7 +80,7 @@ namespace SpatialSys.UnitySDK.Editor
                         }
 
                         AddSeparator("Read Docs & Tutorials");
-                        menu.AddItem(new GUIContent("Documentation"), false, () => Application.OpenURL("https://docs.spatial.io/"));
+                        menu.AddItem(new GUIContent("Documentation"), false, () => Application.OpenURL("https://toolkit.spatial.io/"));
                         menu.AddItem(new GUIContent("Scripting API"), false, () => Application.OpenURL("https://cs.spatial.io/reference"));
 
                         AddSeparator("Ask for Help");

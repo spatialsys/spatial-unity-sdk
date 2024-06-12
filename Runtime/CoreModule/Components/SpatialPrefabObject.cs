@@ -8,7 +8,7 @@ namespace SpatialSys.UnitySDK
     {
         public override string prettyName => "Prefab Object";
         public override string tooltip => "This component is used to define a custom prefab object for Spatial";
-        public override string documentationURL => "https://docs.spatial.io/components/custom-prefab-objects";
+        public override string documentationURL => "https://toolkit.spatial.io/docs/packages/prefab-object";
 
         [HideInInspector] public SpatialSeatHotspot[] seats;
         [HideInInspector] public SpatialTriggerEvent[] triggerEvents;

@@ -22,7 +22,7 @@ namespace SpatialSys.UnitySDK
         
     • <b>QuestEvents</b> can be used to update the state of a quest. Quests are created by adding the Quest component to any gameObject in the scene. Quest events are not synced.";
 
-        public override string documentationURL => "https://docs.spatial.io/components/trigger-event";
+        public override string documentationURL => "https://toolkit.spatial.io/docs/components/trigger-event";
         public override bool isExperimental => false;
 
         public enum ListenFor

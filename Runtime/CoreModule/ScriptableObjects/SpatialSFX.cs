@@ -14,7 +14,7 @@ namespace SpatialSys.UnitySDK
     {
         public override string prettyName => "Spatial SFX";
         public override string tooltip => "Define a reusable and randomized sound effect.";
-        public override string documentationURL => "https://docs.spatial.io/spatial-sfx";
+        public override string documentationURL => "https://toolkit.spatial.io/docs/components/spatial-sfx";
         public override bool isExperimental => false;
 
         [SerializeField]

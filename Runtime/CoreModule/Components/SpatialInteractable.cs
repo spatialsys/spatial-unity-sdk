@@ -28,7 +28,7 @@ namespace SpatialSys.UnitySDK
 
         public override string prettyName => "Interactable";
         public override string tooltip => "An object that users can interact with to trigger an event";
-        public override string documentationURL => "https://docs.spatial.io/interactable";
+        public override string documentationURL => "https://toolkit.spatial.io/docs/components/interactable";
 
         public string interactText = "Interact";
 

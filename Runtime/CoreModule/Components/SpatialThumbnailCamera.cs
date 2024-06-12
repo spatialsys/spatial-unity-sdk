@@ -10,8 +10,7 @@ namespace SpatialSys.UnitySDK
     {
         public override string prettyName => "Thumbnail Camera";
         public override string tooltip => "Use to specify the location in which live thumbnails are captured for your space. These are the thumbnails you will see in your spaces list or on the Spatial homepage.";
-
-        public override string documentationURL => "https://docs.spatial.io/thumbnail-camera";
+        public override string documentationURL => null;
 
         [HideInInspector]
         public float fieldOfView;// set during scene process

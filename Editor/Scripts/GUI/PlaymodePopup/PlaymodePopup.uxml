@@ -10,7 +10,6 @@
                 </ui:VisualElement>
                 <ui:Label text="Spatial does not support testing spaces in-editor." display-tooltip-when-elided="true" class="TextBottomMargin" style="-unity-font-style: bold; flex-wrap: wrap; flex-shrink: 1;" />
                 <ui:Label text="Instead, most testing should be done using the Spatial Sandbox." display-tooltip-when-elided="true" class="TextBottomMargin" style="-unity-font-style: normal; flex-wrap: wrap; flex-shrink: 1;" />
-                <ui:Label text="&lt;u&gt;Click here to see the differences between Editor and Sanbox" display-tooltip-when-elided="true" name="EditorDiffLink" class="Link TextBottomMargin" style="font-size: 12px;" />
             </ui:VisualElement>
             <ui:VisualElement name="HowToGroup" class="Section">
                 <ui:VisualElement name="Title" class="Hoz" style="flex-grow: 0;">

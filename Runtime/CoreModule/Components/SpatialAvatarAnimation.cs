@@ -7,7 +7,7 @@ namespace SpatialSys.UnitySDK
     {
         public override string prettyName => "Avatar Animation";
         public override string tooltip => "This component is used to define a custom avatar animation for Spatial";
-        public override string documentationURL => "https://docs.spatial.io/components/custom-avatar-animations";
+        public override string documentationURL => "https://toolkit.spatial.io/docs/packages/avatar-animation";
 
         public Animator animator => GetComponent<Animator>();
 

@@ -10,7 +10,7 @@ namespace SpatialSys.UnitySDK
         public override string prettyName => "Environment Settings Overrides";
         public override string tooltip => "Use to override environment settings.";
 
-        public override string documentationURL => "https://docs.spatial.io/components/environment-settings-overrides";
+        public override string documentationURL => "https://toolkit.spatial.io/docs/components/environment-settings-overrides";
 
         protected override bool _limitOnePerScene => true;
 

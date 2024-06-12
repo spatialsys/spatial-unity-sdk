@@ -11,7 +11,7 @@ namespace SpatialSys.UnitySDK
     {
         public override string prettyName => "Virtual Camera";
         public override string tooltip => "Defines a camera that will override the default spatial camera. If multiple virtual cameras are present the camera with the highest priority will be chosen.";
-        public override string documentationURL => "https://docs.spatial.io/virtual-camera";
+        public override string documentationURL => "https://toolkit.spatial.io/docs/controlling-the-camera";
 
         [SerializeField]
         private int _priority;

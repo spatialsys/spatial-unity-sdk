@@ -15,7 +15,7 @@ namespace SpatialSys.UnitySDK
     {
         public override string prettyName => "Network Variables";
         public override string tooltip => "Define which Visual Scripting Variables should be synchronized across clients.\n" +
-                                          "Supported types: int, bool, float, Vector2, Vector3, string, Color32, byte, double, long.";
+                                          "Supported types: int, bool, float, Vector2, Vector3, string, byte, double, long.";
         public override string documentationURL => null;
 
         private const int LATEST_VERSION = 1;

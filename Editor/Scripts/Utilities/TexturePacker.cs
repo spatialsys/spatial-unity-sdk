@@ -97,7 +97,7 @@ public class TexturePacker : EditorWindow
         GUILayout.Label("Combine multiple textures into a single texture.", EditorStyles.label);
         if (EditorGUILayout.LinkButton("Documentation"))
         {
-            Application.OpenURL("https://docs.spatial.io/texture-packer");
+            Application.OpenURL("https://toolkit.spatial.io/docs/texture-packer");
         }
         GUILayout.Space(10f);
 

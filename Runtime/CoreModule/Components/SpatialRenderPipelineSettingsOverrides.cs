@@ -10,7 +10,7 @@ namespace SpatialSys.UnitySDK
         public override string prettyName => "RenderPipeline Settings Overrides";
         public override string tooltip => "Use to override render pipeline settings.";
 
-        public override string documentationURL => "https://docs.spatial.io/renderpipeline-settings-overrides";
+        public override string documentationURL => "https://toolkit.spatial.io/docs/components/render-pipeline-settings-overrides";
 
         protected override bool _limitOnePerScene => true;
 

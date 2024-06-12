@@ -13,7 +13,7 @@ namespace SpatialSys.UnitySDK
 @"Define the audio, visual, and physics properties of how avatars interact with a surface. 
 
 Can be applied to a collider using the <b>Movement Material Surface</b> component.";
-        public override string documentationURL => "https://docs.spatial.io/movement-materials";
+        public override string documentationURL => "https://toolkit.spatial.io/docs/components/movement-materials";
         public override bool isExperimental => false;
 
         public bool splitRunAndWalk = false;

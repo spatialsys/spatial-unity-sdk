@@ -24,7 +24,7 @@ VisualElement {
 }
 
 .Section {
-    margin-bottom: 24px;
+    margin-bottom: 16px;
 }
 
 .H2 {

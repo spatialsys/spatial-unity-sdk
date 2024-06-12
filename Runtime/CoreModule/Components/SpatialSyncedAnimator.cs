@@ -11,7 +11,7 @@ namespace SpatialSys.UnitySDK
     {
         public override string prettyName => "Synced Animator";
         public override string tooltip => "The animator on this gameobject will have its parameters and triggers synced with all connected users";
-        public override string documentationURL => "https://docs.spatial.io/components/synced-animator";
+        public override string documentationURL => "https://toolkit.spatial.io/docs/multiplayer/synced-animator";
 
         public override bool isExperimental => true;
 

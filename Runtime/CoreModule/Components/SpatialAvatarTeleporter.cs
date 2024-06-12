@@ -10,7 +10,7 @@ namespace SpatialSys.UnitySDK
     {
         public override string prettyName => "Avatar Teleporter";
         public override string tooltip => "When an avatar enters the trigger area teleport them to the target location.";
-        public override string documentationURL => "https://docs.spatial.io/avatar-teleporter";
+        public override string documentationURL => "https://toolkit.spatial.io/docs/components/avatar-teleporter";
 
         public Transform targetLocation;
 

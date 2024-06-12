@@ -12,8 +12,8 @@ namespace SpatialSys.UnitySDK.Editor
     public static class SpatialGameObjectCollisionHeader
     {
         private const string LAYER_WARNING_KEY = "SpatialSDK_LayerWarning";
-        private const string COLLISION_HELP_DOCS = "https://docs.spatial.io/custom-collision";
-        private const string TAGS_HELP_DOCS = "https://docs.spatial.io/custom-collision#80061bf481e6466e82b37a143f9b4a82";
+        private const string COLLISION_HELP_DOCS = "https://toolkit.spatial.io/docs/managing-collisions";
+        private const string TAGS_HELP_DOCS = "https://toolkit.spatial.io/docs/managing-collisions#tags-are-not-supported";
 
         private static bool _initialized;
         private static Texture2D _backgroundTexture;

@@ -8,7 +8,7 @@ namespace SpatialSys.UnitySDK
     {
         public override string prettyName => "Climbable";
         public override string tooltip => "Allows an avatar to climb this object";
-        public override string documentationURL => "https://docs.spatial.io/climbable";
+        public override string documentationURL => "https://toolkit.spatial.io/docs/components/climbable";
         public override bool isExperimental => true;
         private void Start()
         {
