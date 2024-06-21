@@ -131,7 +131,7 @@
 .blockButton:hover:enabled {
     transition-duration: 0.2s;
     transition-timing-function: ease-out-back;
-    scale: 1.1 1.1;
+    scale: 1.05 1.05;
 }
 
 .blockButton:active:enabled {

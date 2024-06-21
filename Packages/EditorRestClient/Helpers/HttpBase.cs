@@ -31,15 +31,24 @@ namespace Proyecto26
                     }
                     else
                     {
-                        options.ProgressCallback(0);
+                        float reportedProgress = 0f;
+                        options.ProgressCallback(0f);
 
                         while (!sendRequest.isDone)
                         {
-                            options.ProgressCallback(sendRequest.progress);
+                            // Unity web request progress goes from 0 to 0.5 for data download/upload progress. Remap from 0 to 1.
+                            float remappedProgress = Mathf.Min(sendRequest.progress * 2f, 1f);
+                            // Only invoke progress callback if changed at least 0.1% and strictly increasing.
+                            if (remappedProgress - reportedProgress >= 0.001f)
+                            {
+                                options.ProgressCallback(remappedProgress);
+                                reportedProgress = remappedProgress;
+                            }
                             yield return null;
                         }
 
-                        options.ProgressCallback(1);
+                        if (reportedProgress < 1f)
+                            options.ProgressCallback(1f);
                     }
                     var response = request.CreateWebResponse();
                     if (request.IsValidRequest(options))

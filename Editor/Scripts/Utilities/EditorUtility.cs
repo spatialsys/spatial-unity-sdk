@@ -52,6 +52,18 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
+        private static MethodInfo _getImportedAssetImportDependenciesAsGUIDs;
+        private static MethodInfo _getSourceAssetImportDependenciesAsGUIDs;
+
+        static EditorUtility()
+        {
+            // Get references to internal AssetDatabase methods
+            // string[] AssetDatabase.GetSourceAssetImportDependenciesAsGUIDs(string path)
+            // string[] AssetDatabase.GetImportedAssetImportDependenciesAsGUIDs(string path)
+            _getImportedAssetImportDependenciesAsGUIDs = typeof(AssetDatabase).GetMethod("GetImportedAssetImportDependenciesAsGUIDs", BindingFlags.NonPublic | BindingFlags.Static);
+            _getSourceAssetImportDependenciesAsGUIDs = typeof(AssetDatabase).GetMethod("GetSourceAssetImportDependenciesAsGUIDs", BindingFlags.NonPublic | BindingFlags.Static);
+        }
+
         public static bool TryGetDateTimeFromEditorPrefs(string key, out DateTime result)
         {
             string dateTicks = EditorPrefs.GetString(key, defaultValue: null);
@@ -236,6 +248,22 @@ namespace SpatialSys.UnitySDK.Editor
             return text;
         }
 
+        /// <summary>
+        /// Replaces the middle part of the string with ellipsis if it exceeds max length.
+        /// </summary>
+        public static string TruncateFromMiddle(string text, int maxLength)
+        {
+            // Max length includes the ellipsis when truncating, so clamp value to avoid index out of range.
+            maxLength = Mathf.Max(7, maxLength);
+            if (text.Length <= maxLength)
+                return text;
+
+            // Get start and end index of the middle segment to remove.
+            int startIndex = (maxLength / 2) - 2;
+            int endIndex = startIndex + text.Length - maxLength + 5;
+            return text.Substring(0, startIndex) + "[...]" + text.Substring(endIndex);
+        }
+
         public static string FormatNumber(this int num)
         {
             // Add comma-separators (e.g. 1,000,000)
@@ -406,6 +434,31 @@ namespace SpatialSys.UnitySDK.Editor
             AssetDatabase.ImportAsset(origPath, ImportAssetOptions.ForceSynchronousImport);
 
             DeleteAssetBackup(asset);
+        }
+
+        /// <summary>
+        /// Gets all paths to the asset's dependencies and attempts to add them to an existing HashSet
+        /// GetDependencies doesn't include all "import time" dependencies, so we need to manually add them
+        /// See: https://forum.unity.com/threads/discrepancy-between-assetdatabase-getdependencies-and-results-of-exportpackage.1295025/
+        /// </summary>
+        public static void UnionWithAssetDependenciesPaths(HashSet<string> assetPaths, UnityEngine.Object asset)
+        {
+            if (asset == null)
+                return;
+
+            string[] dependencies = AssetDatabase.GetDependencies(AssetDatabase.GetAssetPath(asset));
+            assetPaths.UnionWith(dependencies);
+
+            foreach (string dep in dependencies)
+            {
+                string[] importTimeDependencies = _getImportedAssetImportDependenciesAsGUIDs.Invoke(null, new object[] { dep }) as string[];
+                if (importTimeDependencies.Length > 0)
+                    assetPaths.UnionWith(importTimeDependencies.Select(d => AssetDatabase.GUIDToAssetPath(d)));
+
+                string[] sourceAssetImportTimeDependencies = _getSourceAssetImportDependenciesAsGUIDs.Invoke(null, new object[] { dep }) as string[];
+                if (sourceAssetImportTimeDependencies.Length > 0)
+                    assetPaths.UnionWith(sourceAssetImportTimeDependencies.Select(d => AssetDatabase.GUIDToAssetPath(d)));
+            }
         }
 
         /// <summary>

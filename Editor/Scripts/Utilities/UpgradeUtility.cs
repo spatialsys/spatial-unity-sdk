@@ -90,10 +90,6 @@ namespace SpatialSys.UnitySDK.Editor
             if (UnityEditor.EditorUtility.DisplayDialog("Upgrade to latest version?", "A new version of the Spatial SDK is available. Would you like to upgrade now?", "Yes", "No"))
             {
                 PackageManagerUtility.UpdateToLatest()
-                    .Then(updatePerformed => {
-                        if (updatePerformed)
-                            UnityEditor.EditorUtility.DisplayDialog("Upgrade successful", "The Spatial SDK has been upgraded to the latest version.", "OK");
-                    })
                     .Catch(err => {
                         Debug.LogException(err);
                         UnityEditor.EditorUtility.DisplayDialog("Upgrade failed", "Failed to upgrade to latest version of the Spatial SDK. Please try again later.", "OK");
@@ -104,11 +100,12 @@ namespace SpatialSys.UnitySDK.Editor
 
         /// <summary>
         /// UpgradeToLatest, but specific messaging for when the upgrade is required for test or publish
+        /// Returns a promise that resolves to true if package upgrade was performed, otherwise false.
         /// </summary>
-        public static IPromise PerformUpgradeIfNecessaryForTestOrPublish()
+        public static IPromise<bool> PerformUpgradeBeforeBuildIfNecessary()
         {
 #if SPATIAL_UNITYSDK_DISABLE_UPGRADE_CHECK || SPATIAL_UNITYSDK_INTERNAL
-            return Promise.Resolved();
+            return Promise<bool>.Resolved(false);
 #else
             return CheckForUpgrade()
                 .Then(updateAvailable => {
@@ -130,10 +127,6 @@ namespace SpatialSys.UnitySDK.Editor
                     }
 
                     return Promise<bool>.Resolved(false);
-                })
-                .Then(updatePerformed => {
-                    if (updatePerformed)
-                        UnityEditor.EditorUtility.DisplayDialog("Upgrade successful", "The Spatial SDK has been upgraded to the latest version.", "OK");
                 })
                 .Catch(err => {
                     if (err is RSG.PromiseCancelledException)

@@ -192,7 +192,7 @@
                 </ui:VisualElement>
                 <ui:VisualElement name="selectObjectBlock" class="block_white block_base">
                     <ui:Label text="Target Object" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
-                    <ui:Label text="name of taget here" display-tooltip-when-elided="true" name="targetObjectName" class="blockText" />
+                    <ui:Label text="Target Name" display-tooltip-when-elided="true" name="targetObjectName" class="blockText" />
                     <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: flex;">
                         <ui:Button text="Select" display-tooltip-when-elided="true" name="selectObjectButton" class="blockButton" />
                         <ui:VisualElement name="Filler" style="flex-grow: 1;" />
@@ -208,10 +208,18 @@
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="utilities" style="align-items: center; display: none;">
+                <ui:VisualElement name="AddressablesBlock" class="block_white block_base">
+                    <ui:Label text="Addressables" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
+                    <ui:Label display-tooltip-when-elided="true" name="Text" text="All utilities related to Unity&apos;s Addressables package" class="blockText" style="-unity-paragraph-spacing: 32px;" />
+                    <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: flex;">
+                        <ui:Button text="Initialize for Project" name="initAddressables" tooltip="Initializes Addressable configuration assets for project-wide use. This will enable building Addressables when uploading to sandbox or publishing your package." class="blockButton" style="margin-right: 12px;" />
+                        <ui:VisualElement name="Filler" style="flex-grow: 1;" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
                 <ui:VisualElement name="OptimizationBlock" class="block_white block_base">
                     <ui:Label text="Project Optimization" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
                     <ui:Label display-tooltip-when-elided="true" name="Text" text="Optimize all assets and resources by executing all tools below." class="blockText" style="-unity-paragraph-spacing: 32px;" />
-                    <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: flex; margin-bottom: 10px;">
+                    <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: flex;">
                         <ui:Button text="Optimize All" display-tooltip-when-elided="true" name="optimizeAll" class="blockButton" style="margin-right: 12px;" />
                         <ui:VisualElement name="Filler" style="flex-grow: 1;" />
                     </ui:VisualElement>
@@ -229,7 +237,7 @@
                 <ui:VisualElement name="OptimizeTextures" class="block_white block_base">
                     <ui:Label text="Texture Optimizer" display-tooltip-when-elided="true" name="Header" class="blockTitle" />
                     <ui:Label text="Convert textures to JPG for non-transparent textures or PNG for transparent textures to reduce the package size.\nThis helps keep the package size under our 500 MB limit." display-tooltip-when-elided="true" name="Text" class="blockText" style="-unity-paragraph-spacing: 32px;" />
-                    <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: flex; margin-bottom: 10px;">
+                    <ui:VisualElement name="ButtonGroup" style="flex-direction: row; min-height: auto; min-width: auto; margin-top: 10px; display: flex;">
                         <ui:Button text="Optimize Textures" display-tooltip-when-elided="true" name="optimizeTextures" class="blockButton" style="margin-right: 12px;" />
                         <ui:Button text="Textures Optimizer (Window)" display-tooltip-when-elided="true" name="optimizeTexturesWindow" class="blockButton" />
                         <ui:VisualElement name="Filler" style="flex-grow: 1;" />

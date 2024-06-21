@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using SpatialSys.UnitySDK.Internal;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -33,6 +32,9 @@ namespace SpatialSys.UnitySDK.Editor
         public override Scope validatorUsageContext => Scope.World;
 
         public override bool allowTransparentThumbnails => false;
+
+        // Addressables API can only be accessed through C# scripting.
+        public override bool supportsAddressables => csharpAssembly != null;
 
         public override IEnumerable<Object> assets
         {

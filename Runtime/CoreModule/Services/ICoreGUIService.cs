@@ -71,6 +71,10 @@ namespace SpatialSys.UnitySDK
         void DisplayToastMessage(string message, float duration = 4f);
     }
 
+    /// <summary>
+    /// Interface for world-shop specific functionality.
+    /// This only controls the world shop GUI, not the universal shop GUI.
+    /// </summary>
     [DocumentationCategory("Services/Core GUI Service")]
     public interface ICoreGUIShopService
     {
@@ -128,10 +132,14 @@ namespace SpatialSys.UnitySDK
         /// </summary>
         Backpack = 3,
 
-        /// <summary>
-        /// The in-space shop GUI.
-        /// </summary>
+        /// <exclude />
+        [Obsolete("Use WorldShop instead")]
         Shop = 4,
+
+        /// <summary>
+        /// The in-space shop GUI
+        /// </summary>
+        WorldShop = 4,
 
         /// <summary>
         /// The GUI for the quest system, showing the current quest and progress
@@ -142,6 +150,11 @@ namespace SpatialSys.UnitySDK
         /// The GUI for the emote system, showing the list of available emotes.
         /// </summary>
         Emote = 6,
+
+        /// <summary>
+        /// The universal shop GUI. This shop is for items that can be used in all spaces on the platform.
+        /// </summary>
+        UniversalShop = 7,
     }
 
     [Flags]
@@ -153,7 +166,12 @@ namespace SpatialSys.UnitySDK
         ParticipantsList = 1 << 0,
         Chat = 1 << 1,
         Backpack = 1 << 2,
+
+        [Obsolete("Use WorldShop instead")]
+        /// <exclude />
         Shop = 1 << 3,
+        WorldShop = 1 << 3,
+
         QuestSystem = 1 << 4,
         Emote = 1 << 5,
         UniversalShop = 1 << 6,

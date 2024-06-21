@@ -14,7 +14,7 @@ namespace SpatialSys.UnitySDK.Editor
             BuildTarget.Android,
         };
 
-        [MenuItem("Spatial SDK/Utilities/Compilation Test for Multiple Platforms")]
+        [MenuItem("Spatial SDK/Utilities/Compilation Test for Multiple Platforms", priority = 0)]
         public static void CompileOnAllPlatforms()
         {
             BuildTarget originalTarget = EditorUserBuildSettings.activeBuildTarget;

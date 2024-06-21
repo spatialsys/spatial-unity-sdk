@@ -133,8 +133,8 @@ namespace SpatialSys.UnitySDK.Editor
             GUI.color = Color.white * 0.75f;
             GUI.contentColor = Color.white * 1.15f;
 
-            string cannotTestReason = GetTestButtonErrorString();
-            using (new EditorGUI.DisabledScope(disabled: !string.IsNullOrEmpty(cannotTestReason)))
+            string disabledReason = GetBuildDisabledReason();
+            using (new EditorGUI.DisabledScope(disabled: !string.IsNullOrEmpty(disabledReason)))
             {
                 PackageConfig activeConfig = ProjectConfig.activePackageConfig;
                 string buttonText, buttonTooltipText;
@@ -162,33 +162,25 @@ namespace SpatialSys.UnitySDK.Editor
 
                 if (GUILayout.Button(new GUIContent(
                         $"▶️ {buttonText}",
-                        !string.IsNullOrEmpty(cannotTestReason) ? cannotTestReason : buttonTooltipText
+                        !string.IsNullOrEmpty(disabledReason) ? disabledReason : buttonTooltipText
                     )))
                 {
-                    UpgradeUtility.PerformUpgradeIfNecessaryForTestOrPublish()
-                        .Then(() => {
-                            BuildTarget target = BuildTarget.WebGL;
-                            switch (_selectedTarget)
-                            {
-                                case 1:
-                                    target = BuildTarget.iOS; // iOS bundle can be run on OSX
-                                    break;
-                                case 2:
-                                    target = BuildTarget.Android;
-                                    break;
-                                case 3:
-                                    target = BuildTarget.StandaloneWindows;
-                                    break;
-                            }
-                            return BuildUtility.BuildAndUploadForSandbox(target);
-                        })
-                        .Catch(exc => {
-                            if (exc is RSG.PromiseCancelledException)
-                                return;
+                    BuildTarget target = BuildTarget.WebGL;
+                    switch (_selectedTarget)
+                    {
+                        case 1:
+                            target = BuildTarget.iOS; // iOS bundle can be run on OSX
+                            break;
+                        case 2:
+                            target = BuildTarget.Android;
+                            break;
+                        case 3:
+                            target = BuildTarget.StandaloneWindows64;
+                            break;
+                    }
 
-                            UnityEditor.EditorUtility.DisplayDialog("Sandbox Error", $"An unexpected error occurred while preparing your package for the sandbox.\n\n{exc.Message}", "OK");
-                            Debug.LogException(exc);
-                        });
+                    BuildUtility.BuildAndUploadForSandbox(target)
+                        .Catch(ex => Debug.LogException(ex)); // Catch all other unhandled exceptions
                 }
             }
 
@@ -206,17 +198,11 @@ namespace SpatialSys.UnitySDK.Editor
             GUILayout.EndHorizontal();
         }
 
-        private static string GetTestButtonErrorString()
+        private static string GetBuildDisabledReason()
         {
             if (!EditorUtility.isUsingSupportedUnityVersion)
                 return $"Unity version must be between {EditorUtility.MIN_UNITY_VERSION_STR} and {EditorUtility.MAX_UNITY_VERSION_STR} to test in Spatial (currently using {Application.unityVersion})";
-            if (EditorApplication.isPlayingOrWillChangePlaymode)
-                return "Feature disabled while in play mode";
-            if (ProjectConfig.activePackageConfig == null)
-                return "There is no active package selected. You can create and select a package through the configuration window.";
-            if (!AuthUtility.isAuthenticated)
-                return "Must be logged into a Spatial account";
-            return null;
+            return BuildUtility.GetBuildDisabledReason();
         }
     }
 }

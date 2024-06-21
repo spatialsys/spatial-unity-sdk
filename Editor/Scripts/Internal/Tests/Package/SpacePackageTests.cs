@@ -1,5 +1,7 @@
 using System.Collections.Generic;
-using SpatialSys.UnitySDK.Internal;
+using UnityEditor.AddressableAssets;
+using UnityEditor.AddressableAssets.Settings;
+using UnityEditor.AddressableAssets.Settings.GroupSchemas;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -158,6 +160,44 @@ namespace SpatialSys.UnitySDK.Editor
                 SpatialValidator.AddResponse(
                     new SpatialTestResponse(config, TestResponseType.Warning, "There are missing network prefabs in the SpaceConfig")
                 );
+            }
+        }
+
+        [PackageTest(PackageType.Space)]
+        public static void ValidateNoAddressableScenesBuilt(SpaceConfig config)
+        {
+            if (!AddressablesUtility.isActiveInProject || !config.supportsAddressables)
+                return;
+
+            // Verify that there are no addressable scenes referenced.
+            AddressableAssetSettings addressableSettings = AddressableAssetSettingsDefaultObject.Settings;
+
+            foreach (AddressableAssetGroup group in addressableSettings.groups)
+            {
+                if (group == null)
+                    continue;
+
+                // Skip validation on any bundles that won't be included in the build.
+                BundledAssetGroupSchema schema = group.GetSchema<BundledAssetGroupSchema>();
+                if (schema == null || !schema.IncludeInBuild)
+                    continue;
+
+                List<AddressableAssetEntry> sceneEntries = new();
+                foreach (AddressableAssetEntry entry in group.entries)
+                {
+                    if (entry.MainAsset == null)
+                        continue;
+
+                    if (entry.IsScene)
+                    {
+                        SpatialValidator.AddResponse(new SpatialTestResponse(
+                            entry.MainAsset,
+                            TestResponseType.Fail,
+                            $"Scene '{entry.MainAsset.name}' from group '{group.Name}' cannot be marked as an Addressable",
+                            $"Loading scenes via Addressables is not supported yet. Either remove the scene entry or disable 'Include in Build' in '{group.Name}'."
+                        ));
+                    }
+                }
             }
         }
 

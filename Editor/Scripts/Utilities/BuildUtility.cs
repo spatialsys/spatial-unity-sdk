@@ -1,61 +1,37 @@
+using Proyecto26;
+using RSG;
+using SpatialSys.UnitySDK.Internal;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using RSG;
+using Unity.EditorCoroutines.Editor;
 using UnityEditor;
 using UnityEditor.Build.Pipeline;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Build.Pipeline;
-using Unity.EditorCoroutines.Editor;
-using SpatialSys.UnitySDK.Internal;
 
 namespace SpatialSys.UnitySDK.Editor
 {
     public static class BuildUtility
     {
         private const string SAVED_PROJECT_SETTINGS_ASSET_PATH = "Assets/Spatial/SavedProjectSettings.asset";
+        public const string SANDBOX_ADDRESSABLES_BUILD_PATH = "Library/AssetBundles/Sandbox";
         public const string BUILD_DIR = "Exports";
         public static readonly string PACKAGE_EXPORT_PATH = Path.Combine(BUILD_DIR, "spaces.unitypackage");
         public static readonly string[] INVALID_BUNDLE_NAME_CHARS = new string[] { " ", "_", ".", ",", "(", ")", "[", "]", "{", "}", "!", "@", "#", "$", "%", "^", "&", "*", "+", "=", "|", "\\", "/", "?", "<", ">", "`", "~", "'", "\"", ":", ";", "\n", "\t" };
         public static int MAX_SANDBOX_BUNDLE_SIZE = 1000 * 1024 * 1024; // 1 GB; It's higher than the package size limit because we want to allow people to mess around more in the sandbox
         public static int MAX_PACKAGE_SIZE = 500 * 1024 * 1024; // 500 MB
 
-        private static float _lastUploadProgress;
-        private static float _uploadStartTime;
-
-        private static MethodInfo _getImportedAssetImportDependenciesAsGUIDs;
-        private static MethodInfo _getSourceAssetImportDependenciesAsGUIDs;
-
-        static BuildUtility()
-        {
-            // Get references to internal AssetDatabase methods
-            // string[] AssetDatabase.GetSourceAssetImportDependenciesAsGUIDs(string path)
-            // string[] AssetDatabase.GetImportedAssetImportDependenciesAsGUIDs(string path)
-            _getImportedAssetImportDependenciesAsGUIDs = typeof(AssetDatabase).GetMethod("GetImportedAssetImportDependenciesAsGUIDs", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-            _getSourceAssetImportDependenciesAsGUIDs = typeof(AssetDatabase).GetMethod("GetSourceAssetImportDependenciesAsGUIDs", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-        }
-
         public static IPromise BuildAndUploadForSandbox(BuildTarget target = BuildTarget.WebGL)
         {
-            // Must save open scenes for sandbox and publishing space-based packages.
-            OnBeforeBuild(saveOpenScenes: true);
-
-            void RestoreAssetBackups()
-            {
-                // Restore config file to previous values, if any has changed.
-                EditorUtility.RestoreAssetFromBackup(ProjectConfig.activePackageConfig);
-                EditorUtility.RestoreAssetFromBackup(ProjectConfig.instance);
-
-                if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig && spaceConfig.csharpAssembly != null)
-                    EditorUtility.RestoreAssetFromBackup(spaceConfig.csharpAssembly);
-            }
-
-            // Refetch feature flags immediately and block until response, since some validation steps depend on them.
-            return SpatialFeatureFlags.Refetch()
+            return UpgradeUtility.PerformUpgradeBeforeBuildIfNecessary()
+                // Refetch feature flags, since some validation steps may depend on them.
+                .Then(upgradePerformed => SpatialFeatureFlags.Refetch())
+                // Must save open scenes for sandbox.
+                .Then(() => OnBeforeBuild(saveOpenScenes: true))
                 .Then(() => {
                     IPromise<SpatialValidationSummary> validationPromise;
                     if (ProjectConfig.activePackageConfig.isSpaceBasedPackage)
@@ -88,9 +64,13 @@ namespace SpatialSys.UnitySDK.Editor
                         return Promise.Rejected(new System.Exception($"Platform module for {target} is not installed, which is required for testing in sandbox"));
                     EditorUserBuildSettings.SwitchActiveBuildTarget(BuildPipeline.GetBuildTargetGroup(target), target);
 
-                    // Compile custom c# dlls
+                    // Compile custom C# dlls
                     if (!CompileAssemblyIfExists())
-                        return Promise.Rejected(new System.Exception("Failed to compile custom c# scripts"));
+                        return Promise.Rejected(new System.Exception("Failed to compile custom C# scripts"));
+
+                    // Build addressables before the main bundle
+                    if (!AddressablesUtility.BuildAddressablesIfNecessary(SANDBOX_ADDRESSABLES_BUILD_PATH, useBrotliCompression: false))
+                        return Promise.Rejected(new System.Exception("Failed to build Addressables"));
 
                     // Auto-assign necessary bundle names
                     AssignBundleNamesToPackageAssets();
@@ -117,27 +97,22 @@ namespace SpatialSys.UnitySDK.Editor
                     RestoreAssetBackups();
 
                     Promise uploadPromise = new();
-                    EditorCoroutineUtility.StartCoroutineOwnerless(UploadSandboxAssetBundlesCoroutine(uploadPromise, ProjectConfig.activePackageConfig, bundleDir));
-                    uploadPromise
-                        .Then(() => {
-                            bool openBrowser = target == BuildTarget.WebGL;
-                            if (openBrowser)
-                            {
-                                EditorUtility.OpenSandboxInBrowser();
-                            }
-                            else
-                            {
-                                UnityEditor.EditorUtility.DisplayDialog("Sandbox content uploaded successfully", "", "OK");
-                            }
-                        })
-                        .Catch(exc => {
-                            (string exceptionMessage, Action callback) = GetExceptionMessageAndCallback(exc);
-                            if (UnityEditor.EditorUtility.DisplayDialog("Sandbox upload failed", exceptionMessage, "OK"))
-                                callback?.Invoke();
-                            Debug.LogError($"Sandbox upload failed: {exc}");
-                        });
+                    EditorCoroutineUtility.StartCoroutineOwnerless(UploadSandboxFilesCoroutine(uploadPromise, ProjectConfig.activePackageConfig, bundleDir));
+                    return (IPromise)uploadPromise;
+                })
+                .Then(() => {
+                    bool openBrowser = target == BuildTarget.WebGL;
+                    if (openBrowser)
+                        EditorUtility.OpenSandboxInBrowser();
+                })
+                .Catch(exc => {
+                    if (exc is RSG.PromiseCancelledException)
+                        return;
 
-                    return uploadPromise;
+                    Debug.LogException(exc);
+                    (string exceptionMessage, Action onCloseDialog) = GetExceptionMessageAndCallback(exc);
+                    if (UnityEditor.EditorUtility.DisplayDialog("Upload to sandbox failed", $"An error occurred while uploading to your sandbox.\n\n{exceptionMessage}", "OK"))
+                        onCloseDialog?.Invoke();
                 })
                 .Finally(() => {
                     RestoreAssetBackups();
@@ -146,16 +121,10 @@ namespace SpatialSys.UnitySDK.Editor
                 });
         }
 
-        private static IEnumerator UploadSandboxAssetBundlesCoroutine(Promise promise, PackageConfig packageConfig, string bundleDir)
+        private static IEnumerator UploadSandboxFilesCoroutine(Promise promise, PackageConfig packageConfig, string bundleDir)
         {
-            void Reject(Exception ex)
-            {
-                UnityEditor.EditorUtility.ClearProgressBar();
-                promise.Reject(ex);
-            }
-
             // Get main bundle name
-            string mainBundleName;
+            string mainBundleName = packageConfig.bundleName;
             if (packageConfig is SpaceTemplateConfig spaceTemplateConfig)
             {
                 // Get the variant config for the current scene
@@ -163,19 +132,16 @@ namespace SpatialSys.UnitySDK.Editor
                 SpaceTemplateConfig.Variant spaceTemplateVariant = spaceTemplateConfig.variants.FirstOrDefault(v => v.scene == currentSceneAsset);
                 if (spaceTemplateVariant == null)
                 {
-                    Reject(new Exception("The current scene isn't one that is assigned to a variant in the package configuration"));
+                    promise.Reject(new Exception("The current scene isn't one that is assigned to a variant in the package configuration"));
                     yield break;
                 }
 
                 mainBundleName = spaceTemplateVariant.bundleName;
             }
-            else
-            {
-                mainBundleName = packageConfig.bundleName;
-            }
+
             if (string.IsNullOrEmpty(mainBundleName))
             {
-                Reject(new Exception("Unable to retrieve the asset bundle name from the prefab. Make sure an asset is assigned in the package configuration."));
+                promise.Reject(new Exception("Unable to retrieve the asset bundle name from the prefab. Make sure an asset is assigned in the package configuration."));
                 yield break;
             }
 
@@ -186,68 +152,57 @@ namespace SpatialSys.UnitySDK.Editor
 
             // Get upload URLS for each bundle
             bool requestFinalized = false;
-            bool succeeded = false;
             SpatialAPI.UploadSandboxBundleResponse sandboxUploadResponse = null;
-            SpatialAPI.UploadSandboxBundle(packageConfig, additionalBundles.ToArray())
-                .Then(resp => {
-                    sandboxUploadResponse = resp;
-                    succeeded = true;
-                })
-                .Catch(ex => Reject(ex))
+            SpatialAPI.UploadSandboxBundle(packageConfig, addressablesEnabled: AddressablesUtility.hasBuiltAddressables, additionalBundles.ToArray())
+                .Then(resp => sandboxUploadResponse = resp)
+                .Catch(ex => promise.Reject(ex))
                 .Finally(() => requestFinalized = true);
 
             // Wait for completion
             while (!requestFinalized)
                 yield return null;
-            if (!succeeded)
+            if (sandboxUploadResponse == null)
                 yield break;
 
-            // Build a list of all bundles to upload (name, upload url)
-            List<(string, string)> allBundleUploads = new() { (mainBundleName, sandboxUploadResponse.url) };
+            FileUploader fileUploader = new();
+            fileUploader.progressBarTitleOverride = "Uploading sandbox assets";
+
+            fileUploader.EnqueueWebRequest(Path.Combine(bundleDir, mainBundleName), sandboxUploadResponse.url, SpatialAPI.UploadFile, maxFileSizeBytes: MAX_SANDBOX_BUNDLE_SIZE);
             for (int i = 0; i < additionalBundles.Count; i++)
             {
-                string fullBundleName = GetBundleNameForPackageAsset(packageConfig.packageName, additionalBundles[i]);
-                allBundleUploads.Add((fullBundleName, sandboxUploadResponse.additionalBundleUrls[i]));
+                string bundleName = GetBundleNameForPackageAsset(packageConfig.packageName, additionalBundles[i]);
+                fileUploader.EnqueueWebRequest(Path.Combine(bundleDir, bundleName), sandboxUploadResponse.additionalBundleUrls[i], SpatialAPI.UploadFile, maxFileSizeBytes: MAX_SANDBOX_BUNDLE_SIZE);
             }
 
-            // Upload each bundle file
-            _lastUploadProgress = -1f;
-            _uploadStartTime = Time.realtimeSinceStartup;
-            UpdateSandboxUploadProgressBar(0, 0, 0f);
-            for (int i = 0; i < allBundleUploads.Count; i++)
+            if (AddressablesUtility.hasBuiltAddressables)
             {
-                string bundleName = allBundleUploads[i].Item1;
-                string bundleUploadURL = allBundleUploads[i].Item2;
-                string bundlePath = Path.Combine(bundleDir, bundleName);
-                if (!File.Exists(bundlePath))
+                if (!Directory.Exists(SANDBOX_ADDRESSABLES_BUILD_PATH))
                 {
-                    Reject(new Exception($"Built asset bundle `{bundlePath}` was not found on disk"));
+                    promise.Reject(new IOException($"Unable to locate addressables build path: {SANDBOX_ADDRESSABLES_BUILD_PATH}"));
                     yield break;
                 }
 
-                long bundleSize = new FileInfo(bundlePath).Length;
-                if (bundleSize > MAX_SANDBOX_BUNDLE_SIZE)
+                string catalogJSONPath = Path.Combine(SANDBOX_ADDRESSABLES_BUILD_PATH, $"catalog_{AddressablesUtility.CATALOG_FILE_SUFFIX}.json");
+                fileUploader.EnqueueWebRequest(catalogJSONPath, SpatialAPI.GetUploadSandboxAddressableAssetURL("catalog"), SpatialAPI.UploadSandboxAddressableAsset, maxFileSizeBytes: 10 * 1024 * 1024);
+                string catalogHashPath = Path.ChangeExtension(catalogJSONPath, ".hash");
+                fileUploader.EnqueueWebRequest(catalogHashPath, SpatialAPI.GetUploadSandboxAddressableAssetURL("catalog-hash"), SpatialAPI.UploadSandboxAddressableAsset, maxFileSizeBytes: 32);
+
+                foreach (string bundlePath in Directory.GetFiles(SANDBOX_ADDRESSABLES_BUILD_PATH, "*.bundle", SearchOption.TopDirectoryOnly))
                 {
-                    Reject(new Exception($"Asset bundle `{bundleName}` is too large ({bundleSize / 1024 / 1024}MB). The maximum size is {MAX_SANDBOX_BUNDLE_SIZE / 1024 / 1024}MB"));
-                    yield break;
+                    string uploadURL = SpatialAPI.GetUploadSandboxAddressableAssetURL(Path.GetFileName(bundlePath));
+                    fileUploader.EnqueueWebRequest(bundlePath, uploadURL, SpatialAPI.UploadSandboxAddressableAsset, maxFileSizeBytes: 10 * 1024 * 1024);
                 }
-
-                requestFinalized = false;
-                succeeded = false;
-                byte[] bundleBytes = File.ReadAllBytes(bundlePath);
-                SpatialAPI.UploadFile(useSpatialHeaders: false, bundleUploadURL, bundleBytes, UpdateSandboxUploadProgressBar)
-                    .Then(resp => succeeded = true)
-                    .Catch(ex => Reject(ex))
-                    .Finally(() => requestFinalized = true);
-
-                // Wait for completion
-                while (!requestFinalized)
-                    yield return null;
-                if (!succeeded)
-                    yield break;
             }
 
-            // Done!
+            // Start uploading all files sequentially and wait for completion.
+            yield return fileUploader;
+
+            if (fileUploader.exception != null)
+            {
+                promise.Reject(fileUploader.exception);
+                yield break;
+            }
+
             promise.Resolve();
         }
 
@@ -267,28 +222,19 @@ namespace SpatialSys.UnitySDK.Editor
             });
         }
 
-        private static void UpdateSandboxUploadProgressBar(long transferred, long total, float progress)
+        public static IPromise BuildAndPublishPackage()
         {
-            UpdateUploadProgressBar("Uploading sandbox asset bundle", transferred, total, progress);
-        }
+            return UpgradeUtility.PerformUpgradeBeforeBuildIfNecessary()
+                // Refetch feature flags, since some validation steps may depend on them.
+                .Then(upgradePerformed => SpatialFeatureFlags.Refetch())
+                // Must save open scenes when publishing space-based packages.
+                .Then(() => {
+                    OnBeforeBuild(saveOpenScenes: ProjectConfig.activePackageConfig.isSpaceBasedPackage);
 
-        public static IPromise PackageForPublishing()
-        {
-            // Must save open scenes for sandbox and publishing space-based packages.
-            OnBeforeBuild(saveOpenScenes: ProjectConfig.activePackageConfig.isSpaceBasedPackage);
-
-            void RestoreAssetBackups()
-            {
-                // Restore config file to previous values if necessary.
-                EditorUtility.RestoreAssetFromBackup(ProjectConfig.activePackageConfig);
-                EditorUtility.RestoreAssetFromBackup(ProjectConfig.instance);
-            }
-
-            // don't enforce name, keep it as the source asset and let the build machine do it
-            if (!CompileAssemblyIfExists(enforceName: false))
-                throw new System.Exception("Failed to compile custom c# scripts");
-
-            return SpatialFeatureFlags.Refetch()
+                    // Don't enforce name, let the build machine do it
+                    if (!CompileAssemblyIfExists(enforceName: false))
+                        throw new System.Exception("Failed to compile custom C# scripts");
+                })
                 .Then(() => CheckValidationPromise(SpatialValidator.RunTestsOnPackage(ValidationRunContext.PublishingPackage)))
                 .Then(() => {
                     ProcessAndSavePackageAssets();
@@ -337,56 +283,31 @@ namespace SpatialSys.UnitySDK.Editor
                     // Export all scenes and dependencies as a package
                     if (!Directory.Exists(BUILD_DIR))
                         Directory.CreateDirectory(BUILD_DIR);
-                    PackageProject(PACKAGE_EXPORT_PATH);
+                    PackageProject();
 
                     // We've created the package, we don't need to wait for the upload to finish before we restore the backups
                     RestoreAssetBackups();
 
-                    _lastUploadProgress = -1f;
-                    UpdatePackageUploadProgressBar(0, 0, 0f);
-
-                    _uploadStartTime = Time.realtimeSinceStartup;
-                    byte[] packageBytes = File.ReadAllBytes(PACKAGE_EXPORT_PATH);
-                    SpatialAPI.UploadPackage(resp.sku, resp.version, packageBytes, UpdatePackageUploadProgressBar)
-                        .Then(resp => {
-                            UnityEditor.EditorUtility.DisplayDialog(
-                                "Upload complete!",
-                                "Your package was successfully uploaded and we've started processing it.\n\n" +
-                                "This may take as little as 15 minutes to process, depending on our backlog and your package complexity. If any unexpected errors occur, we aim to address the issue within 24 hours.\n\n" +
-                                "You will receive an email notification once the package has been published.",
-                                "OK"
-                            );
-                        })
-                        .Catch(exc => {
-                            (string exceptionMessage, Action callback) = GetExceptionMessageAndCallback(exc);
-                            if (UnityEditor.EditorUtility.DisplayDialog("Package upload network error", exceptionMessage, "OK"))
-                                callback?.Invoke();
-                        })
-                        .Finally(() => UnityEditor.EditorUtility.ClearProgressBar());
+                    Promise uploadPromise = new();
+                    EditorCoroutineUtility.StartCoroutineOwnerless(UploadPackageCoroutine(uploadPromise, resp.sku, resp.version));
+                    return (IPromise)uploadPromise;
+                })
+                .Then(() => {
+                    UnityEditor.EditorUtility.DisplayDialog(
+                        "Upload complete!",
+                        "Your package was successfully uploaded and we've started processing it.\n\n" +
+                        "This may take as little as 15 minutes to process, depending on our backlog and your package complexity. If any unexpected errors occur, we aim to address the issue within 24 hours.\n\n" +
+                        "You will receive an email notification once the package has been published.",
+                        "OK"
+                    );
                 })
                 .Catch(exc => {
-                    UnityEditor.EditorUtility.ClearProgressBar();
-                    (string bodyMessage, Action onCloseDialog) = GetExceptionMessageAndCallback(exc);
-
-                    if (exc is Proyecto26.RequestException ex && SpatialAPI.TryGetSingleError(ex.Response, out SpatialAPI.ErrorResponse.Error error))
-                    {
-                        switch (error.code)
-                        {
-                            case "USER_PROFILE_NOT_FOUND":
-                                bodyMessage = $"Unable to locate your Spatial account. Follow steps to re-authenticate in the Spatial portal.";
-                                onCloseDialog = MenuItems.OpenAccount;
-                                break;
-                            case "NOT_OWNER_OF_PACKAGE":
-                                bodyMessage = "The package you are trying to upload is owned by another user. Only the user that initially published the package can update it.";
-                                break;
-                            default:
-                                bodyMessage = $"Publishing failed with the following error: {ex.Response}";
-                                break;
-                        }
-                    }
+                    if (exc is RSG.PromiseCancelledException)
+                        return;
 
                     Debug.LogException(exc);
-                    if (UnityEditor.EditorUtility.DisplayDialog("Publishing failed", bodyMessage, "OK"))
+                    (string exceptionMessage, Action onCloseDialog) = GetExceptionMessageAndCallback(exc);
+                    if (UnityEditor.EditorUtility.DisplayDialog("Publishing package failed", $"An error occurred while publishing your package.\n\n{exceptionMessage}", "OK"))
                     {
                         onCloseDialog?.Invoke();
                     }
@@ -397,80 +318,66 @@ namespace SpatialSys.UnitySDK.Editor
                 });
         }
 
-        public static void PackageProject(string outputPath)
+        private static IEnumerator UploadPackageCoroutine(Promise promise, string sku, int version)
+        {
+            FileUploader fileUploader = new();
+            fileUploader.progressBarTitleOverride = "Uploading package";
+            fileUploader.EnqueueWebRequest(PACKAGE_EXPORT_PATH, SpatialAPI.GetUploadPackageURL(sku, version), SpatialAPI.UploadPackage, maxFileSizeBytes: MAX_PACKAGE_SIZE);
+            yield return fileUploader;
+
+            if (fileUploader.exception != null)
+            {
+                promise.Reject(fileUploader.exception);
+                yield break;
+            }
+
+            promise.Resolve();
+        }
+
+        private static void PackageProject()
         {
             // TODO: we can also exclude dependencies from packages that are included in the builder project by default
-            HashSet<string> dependencies = AssetDatabase.GetDependencies(AssetDatabase.GetAssetPath(ProjectConfig.activePackageConfig)).ToHashSet();
-
-            // GetDependencies doesn't include all "import time" dependencies, so we need to manually add them
-            // See: https://forum.unity.com/threads/discrepancy-between-assetdatabase-getdependencies-and-results-of-exportpackage.1295025/
-            foreach (string dep in dependencies.ToArray())
-            {
-                string[] importTimeDependencies = _getImportedAssetImportDependenciesAsGUIDs.Invoke(null, new object[] { dep }) as string[];
-                if (importTimeDependencies.Length > 0)
-                    dependencies.UnionWith(importTimeDependencies.Select(d => AssetDatabase.GUIDToAssetPath(d)));
-
-                string[] sourceAssetImportTimeDependencies = _getSourceAssetImportDependenciesAsGUIDs.Invoke(null, new object[] { dep }) as string[];
-                if (sourceAssetImportTimeDependencies.Length > 0)
-                    dependencies.UnionWith(sourceAssetImportTimeDependencies.Select(d => AssetDatabase.GUIDToAssetPath(d)));
-            }
+            HashSet<string> assetPaths = new();
+            EditorUtility.UnionWithAssetDependenciesPaths(assetPaths, ProjectConfig.activePackageConfig);
 
             // For `.obj` files in dependencies, we need to also manually include the `.mtl` file as a dependency
             // or else when the package extracted into the builder project, the materials will not be the same
             // as they were in the original project.
-            string[] additionalMtlDependencies = dependencies
+            string[] additionalMtlDependencies = assetPaths
                 .Where(d => d.EndsWith(".obj"))
                 .Select(d => d.Replace(".obj", ".mtl"))
                 .Where(d => File.Exists(d))
                 .ToArray();
-            dependencies.UnionWith(additionalMtlDependencies);
-
-            // Remove all unitysdk package references since we already have them in the client
-            dependencies.RemoveWhere(d => d.StartsWith(PackageManagerUtility.PACKAGE_DIRECTORY_PATH));
+            assetPaths.UnionWith(additionalMtlDependencies);
 
             // Include all .cs scripts included in the custom C# assembly
             if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig && spaceConfig.csharpAssembly != null)
             {
                 string assemblyRootDirectory = Path.GetDirectoryName(AssetDatabase.GetAssetPath(spaceConfig.csharpAssembly));
                 string[] csharpScriptPaths = Directory.GetFiles(assemblyRootDirectory, "*.cs", SearchOption.AllDirectories);
-                dependencies.UnionWith(csharpScriptPaths);
+                assetPaths.UnionWith(csharpScriptPaths.Select(path => path.Replace('\\', '/')));
             }
 
-            // Manually add
-            dependencies.Add(NetworkPrefabTable.ASSET_PATH);
+            // Include global assets that might not be referenced directly anywhere.
+            assetPaths.Add(NetworkPrefabTable.ASSET_PATH);
+            AddressablesUtility.AddAssetPathsForExportedPackage(assetPaths);
+
+            // Remove all SDK package references since we already have them in the client
+            assetPaths.RemoveWhere(d => d.StartsWith(PackageManagerUtility.PACKAGE_DIRECTORY_PATH));
 
             // Export all referenced assets from active package as a unity package
             // NOTE: Intentionally not including the ProjectConfig since that includes all packages in this project
-            AssetDatabase.ExportPackage(dependencies.ToArray(), outputPath);
+            AssetDatabase.ExportPackage(assetPaths.ToArray(), PACKAGE_EXPORT_PATH);
         }
 
         public static void PackageActiveScene(string outputPath)
         {
             // Export only the active scene and its dependencies as a package
             AssetDatabase.ExportPackage(
-                new string[] { UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene().path },
+                new string[] { EditorSceneManager.GetActiveScene().path },
                 outputPath,
                 ExportPackageOptions.Recurse | ExportPackageOptions.IncludeDependencies
             );
-        }
-
-        private static void UpdatePackageUploadProgressBar(long transferred, long total, float progress)
-        {
-            UpdateUploadProgressBar("Uploading package for publishing", transferred, total, progress);
-        }
-
-        private static void UpdateUploadProgressBar(string title, long transferred, long total, float progress)
-        {
-            if (progress <= _lastUploadProgress)
-                return;
-
-            _lastUploadProgress = progress;
-
-            long transferredKb = Mathf.FloorToInt(transferred / 1024f);
-            long totalKb = Mathf.FloorToInt(total / 1024f);
-            int secondsElapsed = Mathf.FloorToInt(Time.realtimeSinceStartup - _uploadStartTime);
-            string message = (progress > 0f) ? $"Uploading {EditorUtility.FormatNumber(transferredKb)}kb / {EditorUtility.FormatNumber(totalKb)}kb ({Mathf.FloorToInt(progress * 100f)}%) ({secondsElapsed}sec)" : "Please wait...";
-            UnityEditor.EditorUtility.DisplayProgressBar(title, message, progress);
         }
 
         private static (string, Action) GetExceptionMessageAndCallback(System.Exception exc)
@@ -480,24 +387,42 @@ namespace SpatialSys.UnitySDK.Editor
 
             if (exc is Proyecto26.RequestException requestException)
             {
-                switch (requestException.StatusCode)
+                if (SpatialAPI.TryGetSingleError(requestException.Response, out SpatialAPI.ErrorResponse.Error error))
                 {
-                    case 401:
-                        additionalMessage = $"Invalid or expired SDK token. Follow steps to re-authenticate in the Spatial portal.";
-                        callback = MenuItems.OpenAccount;
-                        break;
-                    case 400:
-                    case 500:
-                        additionalMessage = "Something went wrong. Contact support@spatial.io for assistance.";
-                        break;
+                    switch (error.code)
+                    {
+                        case "USER_PROFILE_NOT_FOUND":
+                            additionalMessage = "Unable to locate your Spatial account. Follow steps to re-authenticate in the Spatial portal.";
+                            callback = MenuItems.OpenAccount;
+                            break;
+                        case "NOT_OWNER_OF_PACKAGE":
+                            additionalMessage = "The package you are trying to upload is owned by another user. Only the user that initially published the package can update it.";
+                            break;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(additionalMessage))
+                {
+                    // Fallback to traditional HTTP error codes.
+                    switch (requestException.StatusCode)
+                    {
+                        case 401:
+                            additionalMessage = "Invalid or expired SDK token. Follow steps to re-authenticate in the Spatial portal.";
+                            callback = MenuItems.OpenAccount;
+                            break;
+                        case 400:
+                        case 500:
+                            additionalMessage = "Something went wrong. Contact support@spatial.io for assistance.";
+                            break;
+                    }
                 }
             }
 
-            string result = exc.Message;
+            string message = exc.Message;
             if (!string.IsNullOrEmpty(additionalMessage))
-                result += "\n\n" + additionalMessage;
+                message += "\n\n" + additionalMessage;
 
-            return (result, callback);
+            return (message, callback);
         }
 
         public static void AssignBundleNamesToPackageAssets()
@@ -579,17 +504,28 @@ namespace SpatialSys.UnitySDK.Editor
             AssetDatabase.Refresh();
         }
 
+        private static void RestoreAssetBackups()
+        {
+            // Restore config file to previous values, if any has changed.
+            EditorUtility.RestoreAssetFromBackup(ProjectConfig.activePackageConfig);
+            EditorUtility.RestoreAssetFromBackup(ProjectConfig.instance);
+
+            if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig && spaceConfig.csharpAssembly != null)
+                EditorUtility.RestoreAssetFromBackup(spaceConfig.csharpAssembly);
+        }
+
         private static bool CompileAssemblyIfExists(bool enforceName = true)
         {
             if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig && spaceConfig.csharpAssembly != null)
             {
-                // Create backup because we're going to modify the assembly name
-                EditorUtility.CreateAssetBackup(spaceConfig.csharpAssembly);
-
                 if (enforceName)
+                {
+                    // Create backup because we're going to modify the assembly name
+                    EditorUtility.CreateAssetBackup(spaceConfig.csharpAssembly);
                     CSScriptingEditorUtility.EnforceCustomAssemblyName(spaceConfig.csharpAssembly, null);
+                }
 
-                return CSScriptingEditorUtility.CompileAssembly(spaceConfig.csharpAssembly, null, true, enforceName);
+                return CSScriptingEditorUtility.CompileAssembly(spaceConfig.csharpAssembly, null, allowExceptions: true, enforceName);
             }
 
             return true;
@@ -745,6 +681,22 @@ namespace SpatialSys.UnitySDK.Editor
             }
 
             return projSettings;
+        }
+
+        /// <summary>
+        /// Returns a string explaining why sandbox and package builds are disabled. Otherwise, returns null.
+        /// </summary>
+        public static string GetBuildDisabledReason()
+        {
+            if (ProjectConfig.activePackageConfig == null)
+                return "There is no active package selected. You must create or select a package in the configuration window.";
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                return "Builds are disabled while in play mode";
+            if (!AuthUtility.isAuthenticated)
+                return "You must be logged into a Spatial account";
+            if (UnityEditor.EditorUtility.scriptCompilationFailed)
+                return "You must fix all script compilation errors";
+            return null;
         }
     }
 }

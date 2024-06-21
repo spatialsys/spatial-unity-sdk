@@ -220,7 +220,7 @@ namespace SpatialSys.UnitySDK.VisualScripting
                 case SpatialCoreGUIType.Backpack:
                     OnBackpackMenuOpenChangedNode.TriggerEvent(open);
                     break;
-                case SpatialCoreGUIType.Shop:
+                case SpatialCoreGUIType.WorldShop:
                     OnShopMenuOpenChangedNode.TriggerEvent(open);
                     break;
             }

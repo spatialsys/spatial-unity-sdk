@@ -71,15 +71,16 @@ namespace SpatialSys.UnitySDK.Editor
         // UPLOAD TO SANDBOX
         //------------------------------------------------
 
-        public static IPromise<UploadSandboxBundleResponse> UploadSandboxBundle(PackageConfig packageConfig, string[] additionalBundles = null)
+        public static IPromise<UploadSandboxBundleResponse> UploadSandboxBundle(PackageConfig packageConfig, bool addressablesEnabled, string[] additionalBundles = null)
         {
             RequestHelper request = CreateRequest();
-            request.Uri = $"{API_ORIGIN}/sdk/v1/sandbox/bundle";
+            request.Uri = $"{API_ORIGIN}/v2/sandbox";
 
             UploadSandboxBundleRequest body = new() {
                 type = PackageTypeToSAPIPackageType(packageConfig.packageType),
                 sku = packageConfig.sku,
-                additionalBundles = additionalBundles
+                additionalBundles = additionalBundles,
+                addressablesEnabled = addressablesEnabled
             };
             if (packageConfig is SpaceConfig spaceConfig)
             {
@@ -103,17 +104,33 @@ namespace SpatialSys.UnitySDK.Editor
             // Space package type only
             public bool spaceInstancingEnabled;
             public int spaceInstanceCapacity; // 0 means platform default
+            public bool addressablesEnabled;
         }
 
         [Serializable]
         public class UploadSandboxBundleResponse
         {
             public string url; // PUT bundle URL
-            public string type;
-            public int version;
-            public ulong expiresAt;
-
             public string[] additionalBundleUrls; // upload URLs for additional bundles
+        }
+
+        public static string GetUploadSandboxAddressableAssetURL(string fileName)
+        {
+            return $"{API_ORIGIN}/v2/sandbox/addressable/{fileName}";
+        }
+
+        public static IPromise<ResponseHelper> UploadSandboxAddressableAsset(string fileName, byte[] data)
+        {
+            FileUploader.WebRequestArgs uploadArgs = new() {
+                url = GetUploadSandboxAddressableAssetURL(fileName),
+                fileBytes = data
+            };
+            return UploadSandboxAddressableAsset(uploadArgs);
+        }
+
+        public static IPromise<ResponseHelper> UploadSandboxAddressableAsset(FileUploader.WebRequestArgs uploadArgs)
+        {
+            return UploadFile(useSpatialHeaders: true, uploadArgs.url, uploadArgs.fileBytes, usePostRequest: true);
         }
 
         //------------------------------------------------
@@ -158,14 +175,24 @@ namespace SpatialSys.UnitySDK.Editor
         // UPLOAD PACKAGE
         //------------------------------------------------
 
-        public static IPromise<UploadPackageResponse> UploadPackage(string sku, int version, byte[] packageFileData, Action<long, long, float> progressCallback = null)
+        public static string GetUploadPackageURL(string sku, int version)
         {
-            string url = $"{API_ORIGIN}/sdk/v1/package/{sku}/{version}";
-            RequestHelper request = CreateUploadFileRequest(useSpatialHeaders: true, url, packageFileData, progressCallback);
+            return $"{API_ORIGIN}/sdk/v1/package/{sku}/{version}";
+        }
 
-            IPromise<UploadPackageResponse> resp = RestClient.Put<UploadPackageResponse>(request);
-            resp.Catch(HandleRequestException);
-            return resp;
+        public static IPromise<UploadPackageResponse> UploadPackage(string sku, int version, byte[] data)
+        {
+            FileUploader.WebRequestArgs uploadArgs = new() {
+                url = GetUploadPackageURL(sku, version),
+                fileBytes = data
+            };
+            return UploadPackage(uploadArgs);
+        }
+
+        public static IPromise<UploadPackageResponse> UploadPackage(FileUploader.WebRequestArgs uploadArgs)
+        {
+            RequestHelper request = CreateUploadFileRequest(useSpatialHeaders: true, uploadArgs.url, uploadArgs.fileBytes);
+            return RestClient.Put<UploadPackageResponse>(request);
         }
 
         [Serializable]
@@ -173,7 +200,6 @@ namespace SpatialSys.UnitySDK.Editor
         {
             public string sku;
             public int version;
-            public string downloadUrl;
         }
 
         //------------------------------------------------
@@ -212,10 +238,15 @@ namespace SpatialSys.UnitySDK.Editor
         // UPLOAD FILE
         //------------------------------------------------
 
-        public static IPromise<ResponseHelper> UploadFile(bool useSpatialHeaders, string url, byte[] data, Action<long, long, float> progressCallback = null)
+        public static IPromise<ResponseHelper> UploadFile(FileUploader.WebRequestArgs uploadArgs)
         {
-            RequestHelper request = CreateUploadFileRequest(useSpatialHeaders, url, data, progressCallback);
-            return RestClient.Put(request);
+            return UploadFile(useSpatialHeaders: false, uploadArgs.url, uploadArgs.fileBytes);
+        }
+
+        public static IPromise<ResponseHelper> UploadFile(bool useSpatialHeaders, string url, byte[] data, bool usePostRequest = false)
+        {
+            RequestHelper request = CreateUploadFileRequest(useSpatialHeaders, url, data);
+            return usePostRequest ? RestClient.Post(request) : RestClient.Put(request);
         }
 
         //------------------------------------------------
@@ -315,21 +346,13 @@ namespace SpatialSys.UnitySDK.Editor
             return request;
         }
 
-        private static RequestHelper CreateUploadFileRequest(bool useSpatialHeaders, string url, byte[] data, Action<long, long, float> progressCallback = null)
+        private static RequestHelper CreateUploadFileRequest(bool useSpatialHeaders, string url, byte[] data)
         {
             RequestHelper request = (useSpatialHeaders) ? CreateRequest() : new RequestHelper();
             request.Uri = url;
             request.BodyRaw = data;
             request.ContentType = "application/octet-stream";
             request.Timeout = 60 * 60; // 1 hour timeout
-            if (progressCallback != null)
-            {
-                request.ProgressCallback += (float p) => {
-                    // Unity web request progress goes from 0 to 0.5 when uploading data. Remap the upload value from 0 to 1.
-                    float uploadProgress = Mathf.Clamp01(p * 2f);
-                    progressCallback((long)(data.Length * uploadProgress), (long)data.Length, uploadProgress);
-                };
-            }
             return request;
         }
 

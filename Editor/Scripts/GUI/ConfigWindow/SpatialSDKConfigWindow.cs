@@ -47,6 +47,9 @@ namespace SpatialSys.UnitySDK.Editor
         private Label _configPackageType;
         private Button _publishPackageButton;
 
+        // Utility tab elements
+        private Button _initAddressablesButton;
+
         // Issue Tab Elements
         private const string _issuesContainerTemplatePath = "Editor/Scripts/GUI/ConfigWindow/IssueElement/SpatialValidatorIssueElement.uxml";
         private VisualTreeAsset issueContainerTemplate
@@ -311,29 +314,14 @@ namespace SpatialSys.UnitySDK.Editor
 
             _publishPackageButton = root.Q<Button>("publishPackageButton");
             _publishPackageButton.clicked += () => {
-                if (EditorApplication.isPlayingOrWillChangePlaymode)
-                {
-                    UnityEditor.EditorUtility.DisplayDialog("Unable to Publish", "Cannot publish package while in play mode.", "OK");
-                    return;
-                }
-
                 if (UnityEditor.EditorUtility.DisplayDialog(
                     "Publishing Package",
                     $"You're about to upload '{ProjectConfig.activePackageConfig.packageName}' to Spatial for publishing.\n\nIt's strongly encouraged that you test this package in the Spatial sandbox, if you haven't done so already.",
                     "Continue",
                     "Cancel"))
                 {
-                    UpgradeUtility.PerformUpgradeIfNecessaryForTestOrPublish()
-                        .Then(() => {
-                            return BuildUtility.PackageForPublishing();
-                        })
-                        .Catch(exc => {
-                            if (exc is RSG.PromiseCancelledException)
-                                return;
-
-                            UnityEditor.EditorUtility.DisplayDialog("Publishing Error", $"An unexpected error occurred while publishing your package.\n\n{exc.Message}", "OK");
-                            Debug.LogException(exc);
-                        });
+                    BuildUtility.BuildAndPublishPackage()
+                        .Catch(ex => Debug.LogException(ex)); // Catch all other unhandled exceptions
                 }
             };
             root.Q<Button>("deletePackageButton").clicked += () => {
@@ -377,6 +365,9 @@ namespace SpatialSys.UnitySDK.Editor
             root.Q<Button>("selectObjectButton").clicked += OpenSelectedIssueGameObject;
 
             // Utilities
+            _initAddressablesButton = root.Q<Button>("initAddressables");
+            _initAddressablesButton.clicked += AddressablesUtility.InitializeNewProject;
+
             root.Q<Button>("optimizeAll").clicked += () => {
                 bool confirmedDialog = UnityEditor.EditorUtility.DisplayDialog(
                     title: "Backup Required",
@@ -391,22 +382,14 @@ namespace SpatialSys.UnitySDK.Editor
                     TextureOptimizer.OptimizeAllTexturedInProjectImmediate();
                 }
             };
-            root.Q<Button>("optimizeAssets").clicked += () => {
-                AssetImportUtility.OptimizeAllAssets();
-            };
-            root.Q<Button>("optimizeAssetsFolder").clicked += () => {
-                AssetImportUtility.OptimizeAssetsInFolder();
-            };
+            root.Q<Button>("optimizeAssets").clicked += AssetImportUtility.OptimizeAllAssets;
+            root.Q<Button>("optimizeAssetsFolder").clicked += AssetImportUtility.OptimizeAssetsInFolder;
             root.Q<Toggle>("disableAssetProcessing").value = EditorPrefs.GetBool("DisableAssetProcessing", false);
             root.Q<Toggle>("disableAssetProcessing").RegisterValueChangedCallback(evt => {
                 EditorPrefs.SetBool("DisableAssetProcessing", evt.newValue);
             });
-            root.Q<Button>("optimizeTextures").clicked += () => {
-                TextureOptimizer.OptimizeAllTexturesInProject();
-            };
-            root.Q<Button>("optimizeTexturesWindow").clicked += () => {
-                TextureOptimizer.OpenTextureOptimizerWindow();
-            };
+            root.Q<Button>("optimizeTextures").clicked += TextureOptimizer.OptimizeAllTexturesInProject;
+            root.Q<Button>("optimizeTexturesWindow").clicked += TextureOptimizer.OpenTextureOptimizerWindow;
 
             // Help
             root.Q<Button>("gotoDocumentation").clicked += () => Application.OpenURL(PackageManagerUtility.documentationUrl);
@@ -427,7 +410,13 @@ namespace SpatialSys.UnitySDK.Editor
         {
             // Constantly refresh every repaint since the config asset can be deleted while the window is open.
             if (_tab == CONFIG_TAB_NAME)
+            {
                 UpdateConfigTabContents();
+            }
+            else if (_tab == UTILITIES_TAB_NAME)
+            {
+                UpdateUtilitiesTabContents();
+            }
         }
 
         public void SetTab(string tab)
@@ -473,6 +462,10 @@ namespace SpatialSys.UnitySDK.Editor
             GetCachedRootVisualElement(PROJECT_CONFIG_ELEMENT_NAME).style.display = (ProjectConfig.instance != null) ? DisplayStyle.Flex : DisplayStyle.None;
             GetCachedRootVisualElement(PACKAGE_CONFIG_ELEMENT_NAME).style.display = (packageConfig != null) ? DisplayStyle.Flex : DisplayStyle.None;
 
+            string publishingDisabledReason = BuildUtility.GetBuildDisabledReason();
+            _publishPackageButton.SetEnabled(string.IsNullOrEmpty(publishingDisabledReason));
+            _publishPackageButton.tooltip = _publishPackageButton.enabledSelf ? "Uploads this package to Spatial servers for publishing" : publishingDisabledReason;
+
             // Active Package
             if (packageConfig != null)
             {
@@ -487,6 +480,14 @@ namespace SpatialSys.UnitySDK.Editor
                 GetCachedRootVisualElement("prefabObjectConfig").style.display = (packageConfig.packageType == PackageType.PrefabObject) ? DisplayStyle.Flex : DisplayStyle.None;
                 GetCachedRootVisualElement("avatarAttachmentConfig").style.display = (packageConfig.packageType == PackageType.AvatarAttachment) ? DisplayStyle.Flex : DisplayStyle.None;
             }
+        }
+
+        private void UpdateUtilitiesTabContents()
+        {
+            _initAddressablesButton.SetEnabled(!AddressablesUtility.isActiveInProject);
+            _initAddressablesButton.tooltip = _initAddressablesButton.enabledSelf ?
+                "Initializes Addressable configuration assets for project-wide use. This will enable building Addressables when uploading to sandbox or publishing your package." :
+               "Already initialized!";
         }
 
         private void UpdateActivePackageDropdown(DropdownField dropdown)
@@ -639,8 +640,6 @@ namespace SpatialSys.UnitySDK.Editor
                 block.style.display = !AuthUtility.isAuthenticated && !AuthUtility.isAuthenticating ? DisplayStyle.Flex : DisplayStyle.None;
             });
             rootVisualElement.Q("loggingInBlock").style.display = AuthUtility.isAuthenticating ? DisplayStyle.Flex : DisplayStyle.None;
-
-            _publishPackageButton.SetEnabled(AuthUtility.isAuthenticated);
 
             if (AuthUtility.isAuthenticated)
             {

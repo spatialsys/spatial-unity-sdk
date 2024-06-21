@@ -57,6 +57,11 @@ namespace SpatialSys.UnitySDK.Editor
         public virtual float thumbnailMinTransparentBgRatio => 0f;
 
         /// <summary>
+        /// If true, then Addressables can be built from this package.
+        /// </summary>
+        public virtual bool supportsAddressables => false;
+
+        /// <summary>
         /// Space or SpaceTemplate
         /// </summary>
         public bool isSpaceBasedPackage => packageType == PackageType.Space || packageType == PackageType.SpaceTemplate;

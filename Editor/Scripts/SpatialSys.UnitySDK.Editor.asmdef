@@ -3,12 +3,12 @@
     "rootNamespace": "SpatialSys.UnitySDK.Editor",
     "references": [
         "SpatialSys.UnitySDK",
-        "ToolbarExtender.Editor",
         "Unity.ScriptableBuildPipeline",
         "Unity.ScriptableBuildPipeline.Editor",
         "CSharpPromise",
         "EditorRestClient",
         "CsvLib",
+        "Unity.Addressables.Editor",
         "Unity.RenderPipelines.Core.Runtime",
         "Unity.RenderPipelines.Universal.Runtime",
         "Unity.VisualScripting.Flow",
