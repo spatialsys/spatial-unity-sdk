@@ -705,7 +705,6 @@ namespace SpatialSys.UnitySDK.Editor
                 _issueListParent.Add(element);
 
                 Button button = element.Q<Button>("issueContainer");
-                button.AddToClassList(response.responseType == TestResponseType.Fail ? "issueContainerError" : "issueContainerWarning");
                 button.clicked += () => SelectIssue(button);
                 button.Q<Label>("issueLabel").text = response.title;
 

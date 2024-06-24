@@ -365,6 +365,10 @@ namespace SpatialSys.UnitySDK.Editor
             // Remove all SDK package references since we already have them in the client
             assetPaths.RemoveWhere(d => d.StartsWith(PackageManagerUtility.PACKAGE_DIRECTORY_PATH));
 
+            // Sanitize invalid paths.
+            assetPaths.Remove(null);
+            assetPaths.Remove(string.Empty);
+
             // Export all referenced assets from active package as a unity package
             // NOTE: Intentionally not including the ProjectConfig since that includes all packages in this project
             AssetDatabase.ExportPackage(assetPaths.ToArray(), PACKAGE_EXPORT_PATH);

@@ -171,32 +171,30 @@ namespace SpatialSys.UnitySDK.Editor
 
             // Verify that there are no addressable scenes referenced.
             AddressableAssetSettings addressableSettings = AddressableAssetSettingsDefaultObject.Settings;
-
+            List<AddressableAssetEntry> sceneEntries = new();
             foreach (AddressableAssetGroup group in addressableSettings.groups)
             {
                 if (group == null)
                     continue;
 
-                // Skip validation on any bundles that won't be included in the build.
+                // Skip validation on any groups that won't be included in the build.
                 BundledAssetGroupSchema schema = group.GetSchema<BundledAssetGroupSchema>();
                 if (schema == null || !schema.IncludeInBuild)
                     continue;
 
-                List<AddressableAssetEntry> sceneEntries = new();
-                foreach (AddressableAssetEntry entry in group.entries)
-                {
-                    if (entry.MainAsset == null)
-                        continue;
+                sceneEntries.Clear();
+                group.GatherAllAssets(sceneEntries, includeSelf: true, recurseAll: true, includeSubObjects: false,
+                    entryFilter: (entry) => entry.MainAsset != null && entry.IsScene
+                );
 
-                    if (entry.IsScene)
-                    {
-                        SpatialValidator.AddResponse(new SpatialTestResponse(
-                            entry.MainAsset,
-                            TestResponseType.Fail,
-                            $"Scene '{entry.MainAsset.name}' from group '{group.Name}' cannot be marked as an Addressable",
-                            $"Loading scenes via Addressables is not supported yet. Either remove the scene entry or disable 'Include in Build' in '{group.Name}'."
-                        ));
-                    }
+                foreach (AddressableAssetEntry entry in sceneEntries)
+                {
+                    SpatialValidator.AddResponse(new SpatialTestResponse(
+                        entry.MainAsset,
+                        TestResponseType.Fail,
+                        $"Scene '{entry.MainAsset.name}' from group '{group.Name}' cannot be marked as an Addressable",
+                        $"Loading scenes via Addressables is not supported yet. Either remove the scene entry or disable 'Include in Build' in '{group.Name}'."
+                    ));
                 }
             }
         }

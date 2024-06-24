@@ -100,16 +100,16 @@
                     </ui:VisualElement>
                     <ui:VisualElement name="packageType" style="flex-direction: row; margin-left: 3px; margin-right: 3px; margin-top: 1px; margin-bottom: 1px;">
                         <ui:Label text="Type" display-tooltip-when-elided="true" enable-rich-text="false" class="unity-base-field__label" />
-                        <ui:Label text="SpaceTemplate" display-tooltip-when-elided="true" enable-rich-text="false" name="packageTypeValue" style="color: rgb(128, 128, 128);" />
+                        <ui:Label text="SpaceTemplate" display-tooltip-when-elided="true" enable-rich-text="false" name="packageTypeValue" class="mutedText" />
                     </ui:VisualElement>
                     <ui:TextField picking-mode="Ignore" label="Name" password="false" multiline="false" binding-path="packageName" name="name" class="textField" />
                     <ui:VisualElement name="packageSKUEmpty" style="flex-direction: row; margin-left: 3px; margin-right: 3px; margin-top: 1px; margin-bottom: 1px;">
                         <ui:Label text="SKU" display-tooltip-when-elided="true" enable-rich-text="false" class="unity-base-field__label" />
-                        <ui:Label text="Will be assigned when package is first published" display-tooltip-when-elided="true" enable-rich-text="false" name="skuValue" style="color: rgb(128, 128, 128);" />
+                        <ui:Label text="Will be assigned when package is first published" display-tooltip-when-elided="true" enable-rich-text="false" name="skuValue" class="mutedText" />
                     </ui:VisualElement>
                     <ui:VisualElement name="packageSKU" style="flex-direction: row; margin-left: 3px; margin-right: 3px; margin-top: 1px; margin-bottom: 1px; display: none;">
                         <ui:Label text="SKU" display-tooltip-when-elided="true" enable-rich-text="false" class="unity-base-field__label" />
-                        <ui:Label display-tooltip-when-elided="true" enable-rich-text="false" name="skuValue" binding-path="sku" style="color: rgb(168, 168, 168); flex-grow: 1;" />
+                        <ui:Label display-tooltip-when-elided="true" enable-rich-text="false" name="skuValue" binding-path="sku" class="mutedText" style="flex-grow: 1;" />
                         <ui:Button text="Copy" display-tooltip-when-elided="true" name="skuCopyButton" style="margin-right: 0; margin-top: 0; margin-bottom: 0;" />
                     </ui:VisualElement>
                     <ui:VisualElement name="spaceConfig" style="margin-top: 10px;">

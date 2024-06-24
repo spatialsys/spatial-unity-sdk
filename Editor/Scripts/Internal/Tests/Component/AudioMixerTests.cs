@@ -47,19 +47,16 @@ namespace SpatialSys.UnitySDK.Editor
                 foreach (string path in AssetDatabase.GetDependencies(AssetDatabase.GetAssetPath(asset), true))
                 {
                     UnityEngine.Object obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
-                    if (obj is AudioMixer)
+                    if (obj is AudioMixer mixer)
                     {
-                        AudioMixer mixer = obj as AudioMixer;
                         mixers.Add(mixer);
                     }
-                    if (obj is SpatialSFX)
+                    else if (obj is SpatialSFX sfxSource)
                     {
-                        SpatialSFX sfxSource = obj as SpatialSFX;
                         sfx.Add(sfxSource);
                     }
-                    if (obj is GameObject)
+                    else if (obj is GameObject prefab)
                     {
-                        GameObject prefab = obj as GameObject;
                         prefabs.Add(prefab);
                     }
                 }

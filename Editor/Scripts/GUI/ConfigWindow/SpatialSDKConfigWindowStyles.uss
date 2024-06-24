@@ -191,3 +191,7 @@
     -unity-font-style: bold;
     color: rgba(255, 255, 255, 0.5);
 }
+
+.mutedText {
+    opacity: 0.5;
+}

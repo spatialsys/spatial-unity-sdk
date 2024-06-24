@@ -54,6 +54,12 @@ namespace SpatialSys.UnitySDK.Editor
                     if (refData.referenceType == NetworkPrefabReferenceType.Prefab && refData.networkObject != null)
                         yield return refData.networkObject;
                 }
+
+                if (supportsAddressables && AddressablesUtility.isActiveInProject)
+                {
+                    foreach (Object asset in AddressablesUtility.GetAllActiveAddressableAssets())
+                        yield return asset;
+                }
             }
         }
 

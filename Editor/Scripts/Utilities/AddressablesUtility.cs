@@ -175,15 +175,6 @@ namespace SpatialSys.UnitySDK.Editor
                 var playerDataSchema = group.GetSchema<PlayerDataGroupSchema>();
                 if (playerDataSchema != null)
                     playerDataSchema.IncludeBuildSettingsScenes = false;
-
-                // Multi-scene support is not available.
-                List<AddressableAssetEntry> sceneEntries = new();
-                foreach (AddressableAssetEntry entry in group.entries)
-                {
-                    // This shouldn't happen since it should have been caught from pre-build validation.
-                    if (entry.IsScene)
-                        throw new System.Exception("Addressable scenes are not supported!");
-                }
             }
 
             // Apply modified settings
@@ -240,7 +231,8 @@ namespace SpatialSys.UnitySDK.Editor
             if (!isActiveInProject || !ProjectConfig.activePackageConfig.supportsAddressables)
                 return;
 
-            if (!HasContentToBuild())
+            IReadOnlyList<Object> activeAddressableAssets = GetAllActiveAddressableAssets();
+            if (activeAddressableAssets == null || activeAddressableAssets.Count == 0)
             {
                 Debug.LogWarning("Skipping package export for Addressable assets because there was no content detected. Ensure you have added at least one asset to a group.");
                 return;
@@ -248,34 +240,25 @@ namespace SpatialSys.UnitySDK.Editor
 
             AddressableAssetSettings addressableSettings = AddressableAssetSettingsDefaultObject.Settings;
 
-            // Only add the asset groups and their schemas. All other assets do not need to be packaged.
-            string[] groupConfigPaths = Directory.GetFiles(addressableSettings.GroupFolder, "*.asset", SearchOption.AllDirectories);
-            assetPaths.UnionWith(groupConfigPaths.Select(path => path.Replace('\\', '/')));
-
-            // Add dependencies of all Addressable asset entries.
+            // Only add the asset groups and their schemas. All other config assets do not need to be packaged.
             foreach (AddressableAssetGroup group in addressableSettings.groups)
             {
                 if (group == null)
                     continue;
 
+                // Skip groups with bundle schemas that aren't included in build.
                 var bundleSchema = group.GetSchema<BundledAssetGroupSchema>();
-                if (bundleSchema == null)
+                if (bundleSchema != null && !bundleSchema.IncludeInBuild)
                     continue;
 
-                if (!bundleSchema.IncludeInBuild)
-                {
-                    assetPaths.Remove(AssetDatabase.GetAssetPath(group));
-                    continue;
-                }
-
-                foreach (AddressableAssetEntry entry in group.entries)
-                {
-                    if (entry.IsScene)
-                        continue;
-
-                    EditorUtility.UnionWithAssetDependenciesPaths(assetPaths, entry.MainAsset);
-                }
+                assetPaths.Add(AssetDatabase.GetAssetPath(group));
+                foreach (AddressableAssetGroupSchema schema in group.Schemas.Where(schema => schema != null))
+                    assetPaths.Add(AssetDatabase.GetAssetPath(schema));
             }
+
+            // Add dependencies of all Addressable asset entries.
+            foreach (Object asset in activeAddressableAssets)
+                EditorUtility.UnionWithAssetDependenciesPaths(assetPaths, asset);
         }
 
         /// <summary>
@@ -303,6 +286,38 @@ namespace SpatialSys.UnitySDK.Editor
             }
 
             return hasSomeContent;
+        }
+
+        /// <summary>
+        /// Returns a list of all Addressable asset entries that are in groups that will be included in build.
+        /// </summary>
+        public static IReadOnlyList<Object> GetAllActiveAddressableAssets()
+        {
+            if (!isActiveInProject)
+                return null;
+
+            AddressableAssetSettings addressableSettings = AddressableAssetSettingsDefaultObject.Settings;
+            List<AddressableAssetEntry> entries = new();
+            List<Object> assets = new();
+            foreach (AddressableAssetGroup group in addressableSettings.groups)
+            {
+                if (group == null)
+                    continue;
+
+                var bundleSchema = group.GetSchema<BundledAssetGroupSchema>();
+                if (bundleSchema == null || !bundleSchema.IncludeInBuild)
+                    continue;
+
+                entries.Clear();
+                group.GatherAllAssets(entries, includeSelf: true, recurseAll: true, includeSubObjects: false,
+                    entryFilter: (entry) => entry.MainAsset != null && !entry.IsScene
+                );
+
+                foreach (AddressableAssetEntry entry in entries)
+                    assets.Add(entry.MainAsset);
+            }
+
+            return assets;
         }
     }
 }
