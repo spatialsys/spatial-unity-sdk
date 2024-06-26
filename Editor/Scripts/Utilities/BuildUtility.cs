@@ -1,4 +1,3 @@
-using Proyecto26;
 using RSG;
 using SpatialSys.UnitySDK.Internal;
 using System;
@@ -88,7 +87,7 @@ namespace SpatialSys.UnitySDK.Editor
                     );
 
                     if (bundleManifest == null)
-                        return Promise.Rejected(new System.Exception("Asset bundle build failed"));
+                        return Promise.Rejected(new System.Exception("Asset bundle build failed for an unknown reason. Check logs for context"));
 
                     // We've built the bundles, we don't need to wait for the upload to finish before we restore the backups.
                     // Since we restore the C# assembly, that will trigger a recompile and VS node regeneration, which will hang the upload process.

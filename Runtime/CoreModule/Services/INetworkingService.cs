@@ -214,7 +214,7 @@ namespace SpatialSys.UnitySDK
         /// </summary>
         /// <param name="maxParticipants">Find a server that matches this maxParticipants count; 0 means "any" and will default to the settings set for the space if no match was found</param>
         /// <param name="serverProperties">Specify the properties that you want to match for</param>
-        /// <param name="serverPropertiesToMatch">Specify which propeties from "serverProperties" that should be used for matchmaking.</param>
+        /// <param name="serverPropertiesToMatch">Specify which properties from "serverProperties" that should be used for matchmaking.</param>
         /// <example><code source="Services/NetworkingServiceExamples.cs" region="LobbyGameplay"/></example>
         void TeleportToBestMatchServer(int maxParticipants = 0, IReadOnlyCollection<KeyValuePair<string, object>> serverProperties = null, IReadOnlyCollection<string> serverPropertiesToMatch = null);
     }

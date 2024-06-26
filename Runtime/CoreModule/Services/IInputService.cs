@@ -7,7 +7,7 @@ namespace SpatialSys.UnitySDK
     /// </summary>
     /// <remarks>To use this service, you must first call <see cref="StartAvatarInputCapture"/>,
     /// <see cref="StartVehicleInputCapture"/>, or <see cref="StartCompleteCustomInputCapture"/>.
-    /// These methods will start capturing input and calling the listener methods when an overriden input event occurs.
+    /// These methods will start capturing input and calling the listener methods when an overridden input event occurs.
     /// </remarks>
     [DocumentationCategory("Services/Input Service")]
     public interface IInputService
@@ -31,7 +31,7 @@ namespace SpatialSys.UnitySDK
         /// <param name="jump">True if you want to override jump input (ignore Spatial jump)</param>
         /// <param name="sprint">True if you want to override spring input (ignore Spatial sprint)</param>
         /// <param name="actionButton">True if you want to override action input (ignore Spatial action)</param>
-        /// <param name="listener">Listener object to capture all overriden avatar input events.</param>
+        /// <param name="listener">Listener object to capture all overridden avatar input events.</param>
         void StartAvatarInputCapture(bool movement, bool jump, bool sprint, bool actionButton, IAvatarInputActionsListener listener);
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace SpatialSys.UnitySDK
     }
 
     /// <summary>
-    /// Interface for listening to avatar input capture events. Only events overriden with <see cref="IInputService.StartAvatarInputCapture"/>
+    /// Interface for listening to avatar input capture events. Only events overridden with <see cref="IInputService.StartAvatarInputCapture"/>
     /// will be triggered.
     /// </summary>
     [DocumentationCategory("Services/Input Service")]
@@ -135,7 +135,7 @@ namespace SpatialSys.UnitySDK
     }
 
     /// <summary>
-    /// Interface for listening to vehicle input capture events. Only events overriden with <see cref="IInputService.StartVehicleInputCapture"/>
+    /// Interface for listening to vehicle input capture events. Only events overridden with <see cref="IInputService.StartVehicleInputCapture"/>
     /// will be triggered.
     /// </summary>
     [DocumentationCategory("Services/Input Service")]

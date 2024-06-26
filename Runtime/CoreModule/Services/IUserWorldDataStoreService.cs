@@ -15,7 +15,7 @@ namespace SpatialSys.UnitySDK
     public interface IUserWorldDataStoreService
     {
         /// <summary>
-        /// Retreives the value of a variable at the given key.
+        /// Retrieves the value of a variable at the given key.
         /// </summary>
         /// <remarks>
         /// The key can be a <c>/</c> separated path to search through dictionaries. For example, the key <c>"player/inventory/loot"</c> will return the variable found at <c>dataStore["player"]["inventory"]["loot"]</c>.
@@ -30,7 +30,7 @@ namespace SpatialSys.UnitySDK
         /// <remarks>
         /// The key can be a <c>/</c> separated path to set the value in a nested dictionary. For example, the key <c>"player/inventory/loot"</c> will set the variable found at <c>dataStore["player"]["inventory"]["loot"]</c>.
         /// </remarks>
-        /// <returns><c>Async</c> Returns a boolean <c>succeeded</c> if the variable was succesfully set or not.</returns>
+        /// <returns><c>Async</c> Returns a boolean <c>succeeded</c> if the variable was successfully set or not.</returns>
         /// <example><code source="Services/DataStoreExamples.cs" region="DataStoreMainExample" lang="csharp"/></example>
         DataStoreOperationRequest SetVariable(string key, object value);
 
@@ -40,7 +40,7 @@ namespace SpatialSys.UnitySDK
         /// <remarks>
         /// The key can be a <c>/</c> separated path to delete a variable in a nested dictionary. For example, the key <c>"player/inventory"</c> will delete the variable found at <c>dataStore["player"]["inventory"]</c> including any child variables.
         /// </remarks>
-        /// <returns><c>Async</c> Returns a boolean <c>succeeded</c> if the variable was succesfully deleted or not.</returns>
+        /// <returns><c>Async</c> Returns a boolean <c>succeeded</c> if the variable was successfully deleted or not.</returns>
         DataStoreOperationRequest DeleteVariable(string key);
 
         /// <summary>

@@ -5,6 +5,58 @@ using Unity.VisualScripting;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
+    [UnitTitle("Spatial Network Object: Spawn Object")]
+    [UnitSurtitle("Spatial Network Object")]
+    [UnitShortTitle("Spawn")]
+    [UnitCategory("Spatial\\Network Object")]
+    [TypeIcon(typeof(SpatialComponentBase))]
+    public class NetworkObject_SpawnObjectNode : Unit
+    {
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlInput inputTrigger { get; private set; }
+        [DoNotSerialize]
+        [PortLabelHidden]
+        public ControlOutput outputTrigger { get; private set; }
+
+        [DoNotSerialize]
+        public ValueInput prefab { get; private set; }
+        [DoNotSerialize]
+        public new ValueInput position { get; private set; }
+        [DoNotSerialize]
+        public ValueInput rotation { get; private set; }
+
+        [DoNotSerialize]
+        public ValueOutput networkObject { get; private set; }
+
+        protected override void Definition()
+        {
+            prefab = ValueInput<GameObject>(nameof(prefab));
+            position = ValueInput<Vector3>(nameof(position), Vector3.zero);
+            rotation = ValueInput<Quaternion>(nameof(rotation), Quaternion.identity);
+
+            networkObject = ValueOutput<SpatialNetworkObject>(nameof(networkObject));
+
+            inputTrigger = ControlInputCoroutine(nameof(inputTrigger), ExecuteAsync);
+            outputTrigger = ControlOutput(nameof(outputTrigger));
+
+            Succession(inputTrigger, outputTrigger);
+        }
+
+        private IEnumerator ExecuteAsync(Flow flow)
+        {
+            SpatialNetworkObject networkObjectPrefab = flow.GetValue<SpatialNetworkObject>(prefab);
+            Vector3 positionValue = flow.GetValue<Vector3>(position);
+            Quaternion rotationValue = flow.GetValue<Quaternion>(rotation);
+
+            SpawnNetworkObjectRequest request = SpatialBridge.spaceContentService.SpawnNetworkObject(networkObjectPrefab, positionValue, rotationValue);
+            yield return request;
+
+            flow.SetValue(networkObject, request.networkObject);
+            yield return outputTrigger;
+        }
+    }
+
     [UnitTitle("Spatial Network Object: Find Object")]
     [UnitSurtitle("Spatial Network Object")]
     [UnitShortTitle("Find")]

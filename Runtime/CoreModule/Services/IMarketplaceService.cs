@@ -12,7 +12,7 @@ namespace SpatialSys.UnitySDK
         /// <summary>
         /// Purchase an item from the shop for the current space.
         /// When the item is priced in Spatial Coins, the user will be prompted to confirm the purchase. If the item is
-        /// priceed in world currency, the purchase will be made immediately without confirmation.
+        /// priced in world currency, the purchase will be made immediately without confirmation.
         /// </summary>
         /// <param name="itemID">The ID of the item to purchase</param>
         /// <param name="amount">The total amount of the same item to purchase in bulk</param>

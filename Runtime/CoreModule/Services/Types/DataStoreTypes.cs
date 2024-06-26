@@ -1,3 +1,4 @@
+using System;
 
 namespace SpatialSys.UnitySDK
 {
@@ -65,17 +66,20 @@ namespace SpatialSys.UnitySDK
         /// Dictionary key type is unsupported.
         /// </summary>
         UnsupportedDictionaryKeyType = 121,
+        /// <exclude />
+        [Obsolete("Use ValueTypeUnknown instead")]
+        ValueTypeUnkown = 122,
         /// <summary>
         /// Value type is unknown.
         /// </summary>
-        ValueTypeUnkown = 122,
+        ValueTypeUnknown = 122,
         #endregion
 
         #endregion
 
         #region 200-299; Errors that are a fault in the client-side code (not user developer error)
         /// <summary>
-        /// Fault in spatial code
+        /// Fault in Spatial code
         /// </summary>
         InternalError = 200, // Fault in spatial code
         /// <summary>

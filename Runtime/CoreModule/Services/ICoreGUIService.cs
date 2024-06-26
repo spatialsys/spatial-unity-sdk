@@ -30,7 +30,7 @@ namespace SpatialSys.UnitySDK
         /// does not disable it, which means the GUI can still be opened by the user via hotkeys.
         /// 
         /// If the GUI is currently disabled and an attempt is made to open the UI, it will not be opened, nor will it be opened if it is eventually enabled.
-        /// However, closing the GUI even when it is disabed will still mark it as closed.
+        /// However, closing the GUI even when it is disabled will still mark it as closed.
         /// </summary>
         /// <example><code source="Services/CoreGUIServiceExamples.cs" region="SetCoreGUIOpen"/></example>
         void SetCoreGUIOpen(SpatialCoreGUITypeFlags guis, bool open);
@@ -63,7 +63,7 @@ namespace SpatialSys.UnitySDK
         void SetMobileControlsGUIEnabled(SpatialMobileControlsGUITypeFlags guis, bool enabled);
 
         /// <summary>
-        /// Display a toast message to the user. This is a basic text based nofification.
+        /// Display a toast message to the user. This is a basic text-based notification.
         /// This can be called every 500ms. If called more frequently, the messages will be ignored.
         /// </summary>
         /// <param name="message">The message to display</param>
@@ -89,12 +89,12 @@ namespace SpatialSys.UnitySDK
         bool isGUIEnabled { get; }
 
         /// <summary>
-        /// Select an item in the Shop GUI. This only works if the shop gui is open.
+        /// Select an item in the Shop GUI. This only works if the shop GUI is open.
         /// </summary>
         void SelectItem(string itemID);
 
         /// <summary>
-        /// Set the enabled state for an item in the shop gui. This can be useful to prevent users from purchasing items
+        /// Set the enabled state for an item in the shop GUI. This can be useful to prevent users from purchasing items
         /// until they have attained a certain XP or Level.
         /// All items in the shop are enabled by default.
         /// </summary>
@@ -104,8 +104,8 @@ namespace SpatialSys.UnitySDK
         void SetItemEnabled(string itemID, bool enabled, string disabledMessage = null);
 
         /// <summary>
-        /// Set the visibility state of an item in the shop gui. This can be useful to only show items in the shop gui that
-        /// the user can currently purchase. This state can be linked to 
+        /// Set the visibility state of an item in the shop GUI. This can be useful to only show items in the shop GUI that
+        /// the user can currently purchase.
         /// </summary>
         /// <param name="itemID"></param>
         /// <param name="visible"></param>
@@ -191,8 +191,8 @@ namespace SpatialSys.UnitySDK
         Enabled = 1 << 0,
 
         /// <summary>
-        /// Whether the GUI is currently open or closed. If a gui is marked as open but also disabled, while the gui
-        /// is disabled it will be temporarily marked as closed. When the gui is re-enabled, it will be restored to
+        /// Whether the GUI is currently open or closed. If a GUI is marked as open but also disabled, while the GUI
+        /// is disabled it will be temporarily marked as closed. When the GUI is re-enabled, it will be restored to
         /// its previous open state.
         /// </summary>
         Open = 1 << 1,

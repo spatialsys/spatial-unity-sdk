@@ -7,9 +7,9 @@ using SpatialSys.UnitySDK.Internal;
 
 namespace SpatialSys.UnitySDK.VisualScripting
 {
-    [UnitTitle("Spatial Input: Set Overriden Avatar Input Capture")]
+    [UnitTitle("Spatial Input: Set Overridden Avatar Input Capture")]
     [UnitSurtitle("Spatial Input")]
-    [UnitShortTitle("Set Overriden Avatar Input Capture")]
+    [UnitShortTitle("Set Overridden Avatar Input Capture")]
     [UnitCategory("Spatial\\Input")]
     [TypeIcon(typeof(InputIcon))]
     public class SetInputOverrides : Unit

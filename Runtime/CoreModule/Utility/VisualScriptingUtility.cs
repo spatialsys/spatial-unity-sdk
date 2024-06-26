@@ -22,7 +22,19 @@ namespace SpatialSys.UnitySDK
         /// <returns>Returns a delegate we can use to later unsubscribe the listener.</returns>
         public static Delegate AddCustomEventListener(GameObject gameObject, Action<string, object[]> handler)
         {
-            Action<CustomEventArgs> intermediateHandler = (ev) => handler(ev.name, ev.arguments);
+            Action<CustomEventArgs> intermediateHandler = (ev) => {
+                try
+                {
+                    handler(ev.name, ev.arguments);
+                }
+                catch (Exception ex)
+                {
+                    if (SpatialBridge.loggingService != null)
+                    {
+                        SpatialBridge.loggingService.LogError("Visual Scripting Custom Event Handler exception", ex);
+                    }
+                }
+            };
             SpatialBridge.eventService.AddVisualScriptEventHandler(new EventHook(EventHooks.Custom, gameObject), intermediateHandler);
             return intermediateHandler;
         }

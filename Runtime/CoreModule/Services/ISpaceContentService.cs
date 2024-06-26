@@ -153,7 +153,7 @@ namespace SpatialSys.UnitySDK
         /// of a space object can be used to retrieve the space object ID.
         /// </summary>
         /// <param name="gameObject">A game object that is the visual representation of a space object</param>
-        /// <param name="objectID">The resulting space onbject id</param>
+        /// <param name="objectID">The resulting space object ID</param>
         /// <returns>True if this game object is a space object</returns>
         bool TryGetSpaceObjectID(GameObject gameObject, out int objectID);
 

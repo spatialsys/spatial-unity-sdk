@@ -30,7 +30,7 @@ namespace SpatialSys.UnitySDK.Internal
         //make sure this stays in sync with the userLayers dictionary
         public static readonly Vector2Int userLayersRange = new Vector2Int(6, 13);
 
-        // spatial layers that users can set gameobjects to use, which won't be overriden when loaded
+        // spatial layers that users can set gameobjects to use, which won't be overridden when loaded
         public static readonly List<int> settableSpatialLayers = new List<int> { 14, 31 };
 
         //names for the layers spatial controls. These are forced.

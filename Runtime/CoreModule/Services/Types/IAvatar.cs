@@ -135,7 +135,7 @@ namespace SpatialSys.UnitySDK
         /// will move directly to the destination in a straight line.
         /// </summary>
         /// <param name="destination">The target position, the closest position on the navmesh or ground will be chosen.</param>
-        /// <param name="sprint">Should the avatar run or walk to the desination</param>
+        /// <param name="sprint">Should the avatar run or walk to the destination</param>
         void SetDestination(Vector3 destination, bool sprint = false);
 
         /// <summary>
@@ -185,7 +185,7 @@ namespace SpatialSys.UnitySDK
         /// - <see cref="AssetType.Package"/>: The packageSKU found in Spatial Studio or Unity
         /// - <see cref="AssetType.EmbeddedAsset"/>: The assetID specified in the <see cref="UnitySDK.Editor.SpaceConfig"/> in Unity Editor
         /// </param>
-        /// <param name="immediately">Play the emote immidiately, without any transitions. Ignored when assetType is <see cref="AssetType.BackpackItem"/></param>
+        /// <param name="immediately">Play the emote immediately, without any transitions. Ignored when assetType is <see cref="AssetType.BackpackItem"/></param>
         /// <param name="loop">Loop the animation until it is stopped. Ignored when assetType is <see cref="AssetType.BackpackItem"/></param>
         /// <example><code source="Services/ActorExamples.cs" region="PlayEmote" lang="csharp"/></example>
         void PlayEmote(AssetType assetType, string assetID, bool immediately = false, bool loop = false);
