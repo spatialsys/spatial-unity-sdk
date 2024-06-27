@@ -117,5 +117,6 @@ UnityEngine.WheelJoint2D,Y,Y,N,N,N,N,N,N,N,N
 UnityEngine.Grid,Y,Y,N,N,N,N,N,N,N,N
 UnityEngine.BuoyancyEffector2D,Y,Y,N,N,N,N,N,N,N,N
 UnityEngine.PlatformEffector2D,Y,Y,N,N,N,N,N,N,N,N
+UnityEngine.Playables.PlayableDirector,Y,Y,N,N,N,N,N,N,N,N
 UnityEngine.PointEffector2D,Y,Y,N,N,N,N,N,N,N,N
 UnityEngine.SurfaceEffector2D,Y,Y,N,N,N,N,N,N,N,N

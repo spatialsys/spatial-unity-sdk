@@ -32,6 +32,11 @@ namespace SpatialSys.UnitySDK
         string displayName { get; }
 
         /// <summary>
+        /// Whether the nametag should be visible to other users.
+        /// </summary>
+        bool nametagVisible { get; }
+
+        /// <summary>
         /// An optional subtext shown in the nametag above the avatar's head.
         /// </summary>
         string nametagSubtext { get; }

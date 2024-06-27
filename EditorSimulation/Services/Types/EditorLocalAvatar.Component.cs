@@ -399,6 +399,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         public bool visibleRemotely { get => _body?.activeSelf ?? false; set => _body?.SetActive(value); }
 
         public string displayName { get; } = "Editor Local Avatar";
+        public bool nametagVisible { get; set; }
         public string nametagSubtext { get; set; }
         public float nametagBarValue { get; set; }
         public bool nametagBarVisible { get; set; }

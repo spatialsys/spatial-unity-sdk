@@ -12,6 +12,11 @@ namespace SpatialSys.UnitySDK
         new bool visibleRemotely { get; set; }
 
         /// <summary>
+        /// Whether the nametag should be visible to other users.
+        /// </summary>
+        new bool nametagVisible { get; set; }
+
+        /// <summary>
         /// An optional subtext shown in the nametag above the avatar's head.
         /// </summary>
         new string nametagSubtext { get; set; }

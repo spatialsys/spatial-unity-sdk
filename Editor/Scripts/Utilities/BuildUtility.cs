@@ -73,6 +73,9 @@ namespace SpatialSys.UnitySDK.Editor
 
                     // Auto-assign necessary bundle names
                     AssignBundleNamesToPackageAssets();
+                    string mainBundleName = GetPackageMainBundleName(ProjectConfig.activePackageConfig);
+                    if (string.IsNullOrEmpty(mainBundleName))
+                        throw new Exception("Internal SDK error: Unable to retrieve the asset bundle name for the main asset of the package");
 
                     string bundleDir = Path.Combine(BUILD_DIR, target.ToString());
                     if (Directory.Exists(bundleDir))
@@ -96,7 +99,7 @@ namespace SpatialSys.UnitySDK.Editor
                     RestoreAssetBackups();
 
                     Promise uploadPromise = new();
-                    EditorCoroutineUtility.StartCoroutineOwnerless(UploadSandboxFilesCoroutine(uploadPromise, ProjectConfig.activePackageConfig, bundleDir));
+                    EditorCoroutineUtility.StartCoroutineOwnerless(UploadSandboxFilesCoroutine(uploadPromise, ProjectConfig.activePackageConfig, bundleDir, mainBundleName));
                     return (IPromise)uploadPromise;
                 })
                 .Then(() => {
@@ -120,7 +123,7 @@ namespace SpatialSys.UnitySDK.Editor
                 });
         }
 
-        private static IEnumerator UploadSandboxFilesCoroutine(Promise promise, PackageConfig packageConfig, string bundleDir)
+        private static string GetPackageMainBundleName(PackageConfig packageConfig)
         {
             // Get main bundle name
             string mainBundleName = packageConfig.bundleName;
@@ -130,20 +133,16 @@ namespace SpatialSys.UnitySDK.Editor
                 SceneAsset currentSceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorSceneManager.GetActiveScene().path);
                 SpaceTemplateConfig.Variant spaceTemplateVariant = spaceTemplateConfig.variants.FirstOrDefault(v => v.scene == currentSceneAsset);
                 if (spaceTemplateVariant == null)
-                {
-                    promise.Reject(new Exception("The current scene isn't one that is assigned to a variant in the package configuration"));
-                    yield break;
-                }
+                    throw new Exception("The current scene isn't one that is assigned to a variant in the package configuration");
 
                 mainBundleName = spaceTemplateVariant.bundleName;
             }
 
-            if (string.IsNullOrEmpty(mainBundleName))
-            {
-                promise.Reject(new Exception("Unable to retrieve the asset bundle name from the prefab. Make sure an asset is assigned in the package configuration."));
-                yield break;
-            }
+            return mainBundleName;
+        }
 
+        private static IEnumerator UploadSandboxFilesCoroutine(Promise promise, PackageConfig packageConfig, string bundleDir, string mainBundleName)
+        {
             // Gather additional bundles (placeholder for future use)
             List<string> additionalBundles = new();
             if (packageConfig is SpaceConfig spaceConfig && spaceConfig.csharpAssembly != null && File.Exists(CSScriptingEditorUtility.OUTPUT_ASSET_PATH))
