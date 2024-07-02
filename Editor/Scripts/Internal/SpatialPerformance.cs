@@ -66,31 +66,6 @@ namespace SpatialSys.UnitySDK.Editor
 
     public class SpatialPerformance
     {
-        // WIP
-        public static void GetActiveScenePackageResponseSlow()
-        {
-            //todo to be removed. Counting files one by one is faster that packaging the scene.
-            PackageSizeResponse response = new PackageSizeResponse();
-            string tempOutputPath = "Temp/SpatialPackage.unitypackage";
-            BuildUtility.PackageActiveScene(tempOutputPath);
-            FileInfo packageInfo = new FileInfo(tempOutputPath);
-            response.packageSizeMB = (int)packageInfo.Length / 1024 / 1024;
-            Debug.LogError("estimated package size: " + response.packageSizeMB + "MB");
-
-            string scenePath = UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene().path;
-            string[] assetPaths = AssetDatabase.GetDependencies(scenePath, true);
-            assetPaths.Append(scenePath);
-
-            long bytes = 0;
-            foreach (string assetPath in assetPaths)
-            {
-                Type type = AssetDatabase.GetMainAssetTypeAtPath(assetPath);
-                UnityEngine.Object asset = AssetDatabase.LoadAssetAtPath(assetPath, type);
-                bytes += Profiler.GetRuntimeMemorySizeLong(asset);
-                //todo we want to estimate the build size of assets here, not runtime size.
-            }
-        }
-
         //Takes usually 1ms or less on sample scene
         public static PerformanceResponse GetActiveScenePerformanceResponse()
         {

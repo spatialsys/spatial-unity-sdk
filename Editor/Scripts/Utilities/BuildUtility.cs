@@ -24,6 +24,18 @@ namespace SpatialSys.UnitySDK.Editor
         public static int MAX_SANDBOX_BUNDLE_SIZE = 1000 * 1024 * 1024; // 1 GB; It's higher than the package size limit because we want to allow people to mess around more in the sandbox
         public static int MAX_PACKAGE_SIZE = 500 * 1024 * 1024; // 500 MB
 
+        // Inclusion of these package assets is redundant and adds unneeded, since they are already dependencies of the package-builder
+        private static readonly HashSet<string> _excludedPackagesFromPublish = new()
+        {
+            PackageManagerUtility.PACKAGE_NAME,
+            "com.unity.render-pipelines.core",
+            "com.unity.render-pipelines.universal",
+            "com.unity.shadergraph",
+            "com.unity.textmeshpro",
+            "com.unity.ugui",
+            "com.unity.visualscripting"
+        };
+
         public static IPromise BuildAndUploadForSandbox(BuildTarget target = BuildTarget.WebGL)
         {
             return UpgradeUtility.PerformUpgradeBeforeBuildIfNecessary()
@@ -165,11 +177,11 @@ namespace SpatialSys.UnitySDK.Editor
             FileUploader fileUploader = new();
             fileUploader.progressBarTitleOverride = "Uploading sandbox assets";
 
-            fileUploader.EnqueueWebRequest(Path.Combine(bundleDir, mainBundleName), sandboxUploadResponse.url, SpatialAPI.UploadFile, maxFileSizeBytes: MAX_SANDBOX_BUNDLE_SIZE);
+            fileUploader.EnqueueWebRequest(Path.Combine(bundleDir, mainBundleName), sandboxUploadResponse.url, SpatialAPI.UploadFile, MAX_SANDBOX_BUNDLE_SIZE);
             for (int i = 0; i < additionalBundles.Count; i++)
             {
                 string bundleName = GetBundleNameForPackageAsset(packageConfig.packageName, additionalBundles[i]);
-                fileUploader.EnqueueWebRequest(Path.Combine(bundleDir, bundleName), sandboxUploadResponse.additionalBundleUrls[i], SpatialAPI.UploadFile, maxFileSizeBytes: MAX_SANDBOX_BUNDLE_SIZE);
+                fileUploader.EnqueueWebRequest(Path.Combine(bundleDir, bundleName), sandboxUploadResponse.additionalBundleUrls[i], SpatialAPI.UploadFile, MAX_SANDBOX_BUNDLE_SIZE);
             }
 
             if (AddressablesUtility.hasBuiltAddressables)
@@ -188,7 +200,7 @@ namespace SpatialSys.UnitySDK.Editor
                 foreach (string bundlePath in Directory.GetFiles(SANDBOX_ADDRESSABLES_BUILD_PATH, "*.bundle", SearchOption.TopDirectoryOnly))
                 {
                     string uploadURL = SpatialAPI.GetUploadSandboxAddressableAssetURL(Path.GetFileName(bundlePath));
-                    fileUploader.EnqueueWebRequest(bundlePath, uploadURL, SpatialAPI.UploadSandboxAddressableAsset, maxFileSizeBytes: 10 * 1024 * 1024);
+                    fileUploader.EnqueueWebRequest(bundlePath, uploadURL, SpatialAPI.UploadSandboxAddressableAsset, MAX_SANDBOX_BUNDLE_SIZE);
                 }
             }
 
@@ -360,8 +372,8 @@ namespace SpatialSys.UnitySDK.Editor
             assetPaths.Add(NetworkPrefabTable.ASSET_PATH);
             AddressablesUtility.AddAssetPathsForExportedPackage(assetPaths);
 
-            // Remove all SDK package references since we already have them in the client
-            assetPaths.RemoveWhere(d => d.StartsWith(PackageManagerUtility.PACKAGE_DIRECTORY_PATH));
+            // Remove all package references that are already included in the package builder
+            assetPaths.RemoveWhere(ShouldExcludePackagePath);
 
             // Sanitize invalid paths.
             assetPaths.Remove(null);
@@ -372,14 +384,19 @@ namespace SpatialSys.UnitySDK.Editor
             AssetDatabase.ExportPackage(assetPaths.ToArray(), PACKAGE_EXPORT_PATH);
         }
 
-        public static void PackageActiveScene(string outputPath)
+        private static bool ShouldExcludePackagePath(string path)
         {
-            // Export only the active scene and its dependencies as a package
-            AssetDatabase.ExportPackage(
-                new string[] { EditorSceneManager.GetActiveScene().path },
-                outputPath,
-                ExportPackageOptions.Recurse | ExportPackageOptions.IncludeDependencies
-            );
+            const string PACKAGES_PREFIX = "Packages/";
+            if (path.Length <= PACKAGES_PREFIX.Length || !path.StartsWith(PACKAGES_PREFIX))
+                return false;
+
+            // Gets the second slash
+            int secondSlashIndex = path.IndexOf('/', startIndex: PACKAGES_PREFIX.Length);
+            if (secondSlashIndex == -1)
+                secondSlashIndex = path.Length;
+
+            string packageName = path.Substring(PACKAGES_PREFIX.Length, secondSlashIndex - PACKAGES_PREFIX.Length);
+            return _excludedPackagesFromPublish.Contains(packageName);
         }
 
         private static (string, Action) GetExceptionMessageAndCallback(System.Exception exc)

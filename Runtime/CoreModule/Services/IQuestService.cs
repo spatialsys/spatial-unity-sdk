@@ -49,8 +49,8 @@ namespace SpatialSys.UnitySDK
         /// <param name="description">Description of the quest.</param>
         /// <param name="startAutomatically">Does quest start automatically?</param>
         /// <param name="saveUserProgress">Should progress be saved?</param>
-        /// <param name="tasksAreOrdered"></param>
-        /// <param name="celebrateOnComplete"></param>
+        /// <param name="tasksAreOrdered">Should tasks be completed one at a time, sequentially?</param>
+        /// <param name="celebrateOnComplete">If true, plays confetti VFX surrounding the local avatar upon quest completion</param>
         /// <returns></returns>
         IQuest CreateQuest(string name, string description, bool startAutomatically, bool saveUserProgress, bool tasksAreOrdered, bool celebrateOnComplete);
     }

@@ -107,8 +107,6 @@ namespace SpatialSys.UnitySDK
         /// Set the visibility state of an item in the shop GUI. This can be useful to only show items in the shop GUI that
         /// the user can currently purchase.
         /// </summary>
-        /// <param name="itemID"></param>
-        /// <param name="visible"></param>
         void SetItemVisibility(string itemID, bool visible);
     }
 

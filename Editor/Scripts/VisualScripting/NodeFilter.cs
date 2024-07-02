@@ -77,6 +77,8 @@ namespace SpatialSys.UnitySDK.Editor
 
             "Unity.RenderPipelines.Core.Runtime",//PP volumes 
 
+            "UnityEngine.InputLegacyModule", // Input.GetKey etc. — preserve these as they're commonly used in the wild.
+
             "mscorlib",
             "netstandard",//collections
             "System",

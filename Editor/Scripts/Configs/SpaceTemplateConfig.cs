@@ -13,7 +13,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         public override PackageType packageType => PACKAGE_TYPE;
         public override Vector2Int thumbnailDimensions => new Vector2Int(1024, 512);
-        public override string bundleName => throw new System.InvalidOperationException("Access the bundle names through the variants array");
+        public override string bundleName => (variants?.Length > 0 && variants[0] != null) ? variants[0].bundleName : null;
         public override string validatorID => GetValidatorID();
         public override Scope validatorUsageContext => Scope.Universal;
 

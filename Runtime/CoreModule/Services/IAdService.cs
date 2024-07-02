@@ -95,7 +95,6 @@ namespace SpatialSys.UnitySDK
         /// Sets the started event, same as setting the event using the started property, but returns
         /// the operation itself.
         /// </summary>
-        /// <param name="callback"></param>
         /// <returns></returns>
         public SpatialAsyncOperation SetStartedEvent(Action<SpatialAsyncOperation> callback)
         {

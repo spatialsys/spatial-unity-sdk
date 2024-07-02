@@ -89,7 +89,6 @@ namespace SpatialSys.UnitySDK.Editor
         private int _numUploadedRequests = 0;
         private long _numEnqueuedBytes = 0;
         private long _numUploadedBytes = 0;
-        private double _firstRequestTime = 0.0;
         private WebRequestInfo _currentRequestInfo = null;
 
         public FileUploader()
@@ -142,9 +141,6 @@ namespace SpatialSys.UnitySDK.Editor
                 WebRequestInfo info = _queuedWebRequests.Dequeue();
                 _currentRequestInfo = info;
 
-                if (_firstRequestTime <= 0.0)
-                    _firstRequestTime = EditorApplication.timeSinceStartup;
-
                 IPromise requestPromise = info.SendWebRequest();
                 requestPromise
                     .Then(() => {
@@ -176,7 +172,6 @@ namespace SpatialSys.UnitySDK.Editor
             _numUploadedRequests = 0;
             _numEnqueuedBytes = 0;
             _numUploadedBytes = 0;
-            _firstRequestTime = 0.0;
             progressBarEnabled = !Application.isBatchMode;
             progressBarTitleOverride = null;
             exception = null;
@@ -194,10 +189,9 @@ namespace SpatialSys.UnitySDK.Editor
             long cumulativeUploadedBytes = _numUploadedBytes + (long)(_currentRequestInfo.fileSizeBytes * progress);
             float totalProgress = Mathf.Clamp01(cumulativeUploadedBytes / (float)_numEnqueuedBytes);
 
-            int secondsElapsed = Mathf.Max(0, (int)(EditorApplication.timeSinceStartup - _firstRequestTime));
             string fileName = EditorUtility.TruncateFromMiddle(Path.GetFileName(_currentRequestInfo.filePath), maxLength: 50);
             UnityEditor.EditorUtility.DisplayProgressBar(
-                (!string.IsNullOrEmpty(progressBarTitleOverride) ? progressBarTitleOverride : "Uploading files") + $" ({secondsElapsed} sec)",
+                !string.IsNullOrEmpty(progressBarTitleOverride) ? progressBarTitleOverride : "Uploading files",
                 $"{cumulativeUploadedBytes / 1024:N0}kb / {_numEnqueuedBytes / 1024:N0}kb ({(totalProgress * 100f):F0}%) - {fileName} ({_numUploadedRequests + 1} of {_numEnqueuedRequests})",
                 totalProgress
             );
