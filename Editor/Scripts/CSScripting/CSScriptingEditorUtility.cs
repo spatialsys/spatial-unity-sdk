@@ -139,9 +139,8 @@ namespace SpatialSys.UnitySDK.Editor
                     if (!Directory.Exists(dllAssetPathOutputDir))
                         Directory.CreateDirectory(dllAssetPathOutputDir);
 
-                    File.Copy(dllPath, OUTPUT_ASSET_PATH, true);
+                    File.Copy(dllPath, OUTPUT_ASSET_PATH, overwrite: true);
                     AssetDatabase.ImportAsset(OUTPUT_ASSET_PATH);
-                    AssetDatabase.Refresh();
 
                     (string[] bannedAPIs, string[] softBannedAPIs) = AssemblyBannedAPIAnalyzer.GetBannedAPIs(File.ReadAllBytes(dllPath), Application.dataPath, allowExceptions);
 

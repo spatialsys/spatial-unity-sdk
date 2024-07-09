@@ -8,9 +8,9 @@ using System.Linq;
 using Unity.EditorCoroutines.Editor;
 using UnityEditor;
 using UnityEditor.Build.Pipeline;
+using UnityEditor.Build.Pipeline.Interfaces;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.Build.Pipeline;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -28,6 +28,7 @@ namespace SpatialSys.UnitySDK.Editor
         private static readonly HashSet<string> _excludedPackagesFromPublish = new()
         {
             PackageManagerUtility.PACKAGE_NAME,
+            "com.unity.cinemachine",
             "com.unity.render-pipelines.core",
             "com.unity.render-pipelines.universal",
             "com.unity.shadergraph",
@@ -94,15 +95,12 @@ namespace SpatialSys.UnitySDK.Editor
                         Directory.Delete(bundleDir, recursive: true);
                     Directory.CreateDirectory(bundleDir);
 
-                    // Compress bundles with LZ4 (ChunkBasedCompression) since web doesn't support LZMA.
-                    CompatibilityAssetBundleManifest bundleManifest = CompatibilityBuildPipeline.BuildAssetBundles(
-                        bundleDir,
-                        BuildAssetBundleOptions.ForceRebuildAssetBundle | BuildAssetBundleOptions.ChunkBasedCompression,
-                        target
-                    );
-
-                    if (bundleManifest == null)
-                        return Promise.Rejected(new System.Exception("Asset bundle build failed for an unknown reason. Check logs for context"));
+                    // Compress bundles with LZ4, since web doesn't support LZMA.
+                    ReturnCode buildStatus = AssetBundleBuildPipeline.Build(bundleDir, BuildCompression.LZ4, target, out IBundleBuildResults buildResults);
+                    if (buildStatus < ReturnCode.Success)
+                        return Promise.Rejected(new System.Exception($"Asset bundle build failed (Code: {buildStatus}). Check logs for more context."));
+                    if (buildResults == null || buildResults.BundleInfos.Count == 0)
+                        return Promise.Rejected(new System.Exception("Asset bundle build failed. No bundles were built!"));
 
                     // We've built the bundles, we don't need to wait for the upload to finish before we restore the backups.
                     // Since we restore the C# assembly, that will trigger a recompile and VS node regeneration, which will hang the upload process.
@@ -516,7 +514,13 @@ namespace SpatialSys.UnitySDK.Editor
             foreach (UnityEngine.Object asset in ProjectConfig.activePackageConfig.assets)
             {
                 if (asset is SpatialPackageAsset packageAsset)
+                {
                     SpatialPackageProcessor.ProcessPackageAsset(packageAsset);
+                }
+                else if (asset is GameObject gameObjectAsset)
+                {
+                    SpatialPackageProcessor.ProcessGameObjectAndChildren(gameObjectAsset);
+                }
             }
 
             AssetDatabase.SaveAssets();

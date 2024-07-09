@@ -61,10 +61,6 @@ namespace SpatialSys.UnitySDK.Editor
             AddressableAssetSettings.CleanPlayerContent();
             AddressableAssetSettings.BuildPlayerContent(out AddressablesPlayerBuildResult buildResult);
             bool success = string.IsNullOrEmpty(buildResult.Error);
-
-            if (!success)
-                Debug.LogError(buildResult.Error);
-
             hasBuiltAddressables = success && buildResult.AssetBundleBuildResults.Count > 0;
             return success;
         }
@@ -110,6 +106,8 @@ namespace SpatialSys.UnitySDK.Editor
         {
             if (!isActiveInProject)
                 throw new System.InvalidOperationException("Addressables should be initialized in the project first");
+
+            BuildTarget targetPlatform = EditorUserBuildSettings.activeBuildTarget;
 
             AddressableAssetSettings addressableSettings = AddressableAssetSettingsDefaultObject.Settings;
             AddressableAssetProfileSettings profileSettings = addressableSettings.profileSettings;
@@ -168,8 +166,24 @@ namespace SpatialSys.UnitySDK.Editor
                     bundleSchema.UseAssetBundleCache = true;
                     bundleSchema.UseAssetBundleCrc = !useBrotliCompression; // CRC breaks when compressing with an unknown format (when downloaded, it's expecting uncompressed CRC).
                     bundleSchema.UseAssetBundleCrcForCachedBundles = false; // Disabled for performance.
-                    // If Brotli is enabled, build uncompressed so that compression can be performed as a post-step. 
-                    bundleSchema.Compression = useBrotliCompression ? BundledAssetGroupSchema.BundleCompressionMode.Uncompressed : BundledAssetGroupSchema.BundleCompressionMode.LZ4;
+
+                    if (targetPlatform == BuildTarget.WebGL)
+                    {
+                        if (useBrotliCompression)
+                        {
+                            // Uncompressed so that Brotli compression can be performed as a post-step.
+                            bundleSchema.Compression = BundledAssetGroupSchema.BundleCompressionMode.Uncompressed;
+                        }
+                        else
+                        {
+                            // LZMA isn't supported on web, so enforce LZ4.
+                            bundleSchema.Compression = BundledAssetGroupSchema.BundleCompressionMode.LZ4;
+                        }
+                    }
+                    else
+                    {
+                        bundleSchema.Compression = BundledAssetGroupSchema.BundleCompressionMode.LZMA;
+                    }
                 }
 
                 var playerDataSchema = group.GetSchema<PlayerDataGroupSchema>();

@@ -836,22 +836,19 @@ namespace SpatialSys.UnitySDK.Editor
                 _openSceneBlock.style.display = !string.IsNullOrEmpty(response.scenePath) ? DisplayStyle.Flex : DisplayStyle.None;
                 _targetSceneName.text = response.scenePath;
 
-                if (response.targetObject != null || response.targetObjectGlobalID.HasValue)
+                string targetObjectName = null;
+                if (response.targetObject != null)
                 {
-                    _selectObjectBlock.style.display = DisplayStyle.Flex;
-                    if (response.targetObject != null)
-                    {
-                        _targetObjectName.text = response.targetObject.name;
-                    }
-                    else
-                    {
-                        _targetObjectName.text = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(response.targetObjectGlobalID.Value).name;
-                    }
+                    targetObjectName = response.targetObject.name;
                 }
-                else
+                else if (response.targetObjectGlobalID.HasValue)
                 {
-                    _selectObjectBlock.style.display = DisplayStyle.None;
+                    UnityEngine.Object globalObj = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(response.targetObjectGlobalID.Value);
+                    targetObjectName = globalObj != null ? globalObj.name : "<object name unavailable>";
                 }
+
+                _targetObjectName.text = targetObjectName;
+                _selectObjectBlock.style.display = targetObjectName != null ? DisplayStyle.Flex : DisplayStyle.None;
 
                 if (response.hasAutoFix)
                 {

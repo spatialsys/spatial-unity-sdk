@@ -41,7 +41,7 @@ namespace SpatialSys.UnitySDK.Editor
             Scene activeScene = SceneManager.GetActiveScene();
             foreach (var rootGO in activeScene.GetRootGameObjects())
             {
-                ProcessRootGameObject(rootGO);
+                ProcessGameObjectAndChildren(rootGO);
             }
 
             ProcessCameras(GameObject.FindObjectsOfType<Camera>(true));
@@ -91,11 +91,6 @@ namespace SpatialSys.UnitySDK.Editor
 
             data.syncedObjects = ProcessSyncedObjects(AssetDatabase.GetAssetPath(activeSceneAsset), GameObject.FindObjectsOfType<SpatialSyncedObject>(true));
 
-            foreach (GameObject g in GameObject.FindObjectsOfType<GameObject>())
-            {
-                ProcessGameObject(g);
-            }
-
             // Embedded package assets
             if (ProjectConfig.activePackageConfig is SpaceConfig spaceConfig2 && spaceConfig2.embeddedPackageAssets != null && spaceConfig2.embeddedPackageAssets.Length > 0)
             {
@@ -133,47 +128,52 @@ namespace SpatialSys.UnitySDK.Editor
             ev.id = list.Count - 1;
         }
 
-        private static void ProcessRootGameObject(GameObject rootGO)
+        public static void ProcessGameObjectAndChildren(GameObject go)
         {
             // Delete all components that are tagged with the EditorOnly attribute or the "EditorOnly" tag
-            foreach (var component in rootGO.GetComponentsInChildren<Component>(true))
+            foreach (var component in go.GetComponentsInChildren<Component>(includeInactive: true))
             {
                 // component can be null if script is missing
-                if (component != null)
+                if (component == null)
+                    continue;
+
+                Type type = component.GetType();
+                if (type.IsEditorOnlyType())
                 {
-                    Type type = component.GetType();
-                    if (type.IsEditorOnlyType())
-                    {
-                        UnityEngine.Object.DestroyImmediate(component);
-                    }
-                    else if (type.IsProBuilderMesh())
-                    {
-                        ProBuilderStripUtility.Strip(component);
-                    }
+                    UnityEngine.Object.DestroyImmediate(component);
+                }
+                else if (type.IsProBuilderMesh())
+                {
+                    ProBuilderStripUtility.Strip(component);
                 }
             }
 
             // Delete all game objects that have the "EditorOnly" tag
-            foreach (var transform in rootGO.GetComponentsInChildren<Transform>(true))
+            foreach (var transform in go.GetComponentsInChildren<Transform>(includeInactive: true))
             {
                 // nullcheck necessary in case game object was already destroyed
-                if (transform != null)
+                if (transform == null)
+                    continue;
+
+                // Remove "EditorOnly" tagged game objects
+                if (transform.gameObject.CompareTag("EditorOnly"))
                 {
-                    // Remove "EditorOnly" tagged game objects
-                    if (transform.gameObject.CompareTag("EditorOnly"))
-                    {
-                        UnityEngine.Object.DestroyImmediate(transform.gameObject);
-                    }
-                    else
-                    {
-                        transform.gameObject.layer = SpatialSDKPhysicsSettings.GetEffectiveLayer(transform.gameObject.layer);
-                        // Remove "missing script components" from game object
-                        // !! NOTE: We always want to remove "missing script" components, removing this logic may cause
-                        //  assets to behave differently as the Spatial runtime available components change over time
-                        GameObjectUtility.RemoveMonoBehavioursWithMissingScript(transform.gameObject);
-                    }
+                    UnityEngine.Object.DestroyImmediate(transform.gameObject);
+                }
+                else
+                {
+                    ProcessGameObjectSelf(transform.gameObject);
                 }
             }
+        }
+
+        private static void ProcessGameObjectSelf(GameObject go)
+        {
+            go.layer = SpatialSDKPhysicsSettings.GetEffectiveLayer(go.layer);
+
+            // Remove missing scripts to prevent assets from behaving differently as the Spatial
+            // runtime available components change over time
+            GameObjectUtility.RemoveMonoBehavioursWithMissingScript(go);
         }
 
         private static void ProcessCameras(Camera[] cameras)
@@ -326,13 +326,8 @@ namespace SpatialSys.UnitySDK.Editor
         private static void ProcessPrefabObject(SpatialPrefabObject prefabObject)
         {
             GameObject gameObject = prefabObject.gameObject;
-            Transform[] transform = gameObject.GetComponentsInChildren<Transform>(true);
-            foreach (Transform t in transform)
-            {
-                ProcessGameObject(t.gameObject);
-            }
 
-            ProcessRootGameObject(gameObject);
+            ProcessGameObjectAndChildren(gameObject);
             ProcessCameras(gameObject.GetComponentsInChildren<Camera>(true));
 
             prefabObject.seats = gameObject.GetComponentsInChildren<SpatialSeatHotspot>(true);
@@ -346,11 +341,6 @@ namespace SpatialSys.UnitySDK.Editor
 
             prefabObject.syncedObjects = ProcessSyncedObjects(AssetDatabase.GetAssetPath(gameObject), gameObject.GetComponentsInChildren<SpatialSyncedObject>(true));
             UnityEditor.EditorUtility.SetDirty(prefabObject);
-        }
-
-        private static void ProcessGameObject(GameObject gameObject)
-        {
-            gameObject.layer = SpatialSDKPhysicsSettings.GetEffectiveLayer(gameObject.layer);
         }
     }
 }

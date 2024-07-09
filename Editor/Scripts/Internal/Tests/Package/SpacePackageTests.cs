@@ -7,6 +7,15 @@ namespace SpatialSys.UnitySDK.Editor
 {
     public static class SpacePackageTests
     {
+        // There's no enum type for these platforms.
+        private static readonly HashSet<string> SUPPORTED_ASMDEF_TARGETS = new() {
+            "Android",
+            "Editor",
+            "iOS",
+            "WebGL",
+            "WindowsStandalone64",
+        };
+
         [PackageTest(PackageType.Space)]
         public static void EnsureSceneIsAssigned(SpaceConfig config)
         {
@@ -215,6 +224,70 @@ namespace SpatialSys.UnitySDK.Editor
                         $"The maximum capacity for a Space should be at between 1 and {SpaceConfig.PLATFORM_MAX_CAPACITY}"
                     )
                 );
+            }
+        }
+
+        [PackageTest(PackageType.Space)]
+        public static void ValidateAssemblyDefinitionSettings(SpaceConfig config)
+        {
+            if (config.csharpAssembly == null)
+                return;
+
+            AssemblyDefinitionData data = new(config.csharpAssembly);
+
+            if (data.allowUnsafeCode)
+            {
+                SpatialValidator.AddResponse(new SpatialTestResponse(
+                    config.csharpAssembly,
+                    TestResponseType.Fail,
+                    "Unsafe code is not allowed",
+                    "The runtime C# assembly cannot have the unsafe code compilation option enabled."
+                ));
+            }
+
+            if (data.defineConstraints?.Length > 0)
+            {
+                SpatialValidator.AddResponse(new SpatialTestResponse(
+                    config.csharpAssembly,
+                    TestResponseType.Fail,
+                    "Define constraints are not allowed",
+                    "The runtime C# assembly must compile unconditionally. Remove all 'Define Constraints' for the assembly."
+                ));
+            }
+
+            // Allowlist is defined
+            if (data.includePlatforms?.Length > 0)
+            {
+                HashSet<string> includedPlatformsSet = new(data.includePlatforms);
+                foreach (string supportedPlatform in SUPPORTED_ASMDEF_TARGETS)
+                {
+                    if (!includedPlatformsSet.Contains(supportedPlatform))
+                    {
+                        SpatialValidator.AddResponse(new SpatialTestResponse(
+                            config.csharpAssembly,
+                            TestResponseType.Fail,
+                            $"{supportedPlatform} is not included in C# assembly compilation",
+                            $"The runtime C# assembly must compile for {supportedPlatform}. Verify that it's included under the 'Platforms' list, or include 'Any Platforms'."
+                        ));
+                    }
+                }
+            }
+            // Blocklist is defined
+            else if (data.excludePlatforms?.Length > 0)
+            {
+                HashSet<string> excludedPlatformsSet = new(data.excludePlatforms);
+                foreach (string supportedPlatform in SUPPORTED_ASMDEF_TARGETS)
+                {
+                    if (excludedPlatformsSet.Contains(supportedPlatform))
+                    {
+                        SpatialValidator.AddResponse(new SpatialTestResponse(
+                            config.csharpAssembly,
+                            TestResponseType.Fail,
+                            $"{supportedPlatform} is excluded from C# assembly compilation",
+                            $"The runtime C# assembly must compile for {supportedPlatform}. Verify that it's not excluded under the 'Platforms' list, or include 'Any Platform'."
+                        ));
+                    }
+                }
             }
         }
     }

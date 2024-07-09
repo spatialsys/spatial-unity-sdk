@@ -9,9 +9,8 @@ namespace SpatialSys.UnitySDK
     public interface ISpaceService
     {
         /// <summary>
-        /// Returns the version of the space package that is currently running. Only makes sense when the current space
-        /// is a unity-based space.
-        /// Does not currently work properly with SpaceTemplate based spaces.
+        /// Returns the package version of the Space package that is loaded. Otherwise, returns 0 if
+        /// the version failed to parse or fetch.
         /// </summary>
         int spacePackageVersion { get; }
 

@@ -65,6 +65,39 @@ namespace SpatialSys.UnitySDK
             public SpatialEvent onStartedEvent;
             public SpatialEvent onCompletedEvent;
             public SpatialEvent onPreviouslyCompleted;
+
+            //------------------------------------------------------------------------------------------------------------
+            // Spatial Bridge shortcuts
+            //------------------------------------------------------------------------------------------------------------
+            // Helper variables
+            internal uint _questID;
+            private IQuestTask _task => SpatialBridge.questService.quests[_questID].tasks.First(t => t.id == id);
+
+            /// <summary>
+            /// Gets the status of the task.
+            /// </summary>
+            public QuestStatus status => _task?.status ?? QuestStatus.None;
+
+            /// <summary>
+            /// The current progress of the task.
+            /// </summary>
+            public int progress { get => _task?.progress ?? 0; set => _task.progress = value; }
+
+            /// <summary>
+            /// Starts the task.
+            /// </summary>
+            public void StartTask()
+            {
+                _task?.Start();
+            }
+
+            /// <summary>
+            /// Completes the task.
+            /// </summary>
+            public void CompleteTask()
+            {
+                _task?.Complete();
+            }
         }
 
 #if UNITY_EDITOR
@@ -109,5 +142,51 @@ namespace SpatialSys.UnitySDK
             }
         }
 #endif
+
+        //------------------------------------------------------------------------------------------------------------
+        // Spatial Bridge shortcuts
+        //------------------------------------------------------------------------------------------------------------
+        /// <summary>
+        /// The quest associated with this component.
+        /// </summary>
+        public IQuest quest => SpatialBridge.questService.quests[id];
+
+        /// <summary>
+        /// The current status of the quest.
+        /// </summary>
+        public QuestStatus status => quest?.status ?? QuestStatus.None;
+
+        private void Awake()
+        {
+            // Initialize tasks with quest id for runtime helper functions.
+            foreach (var t in tasks)
+            {
+                t._questID = id;
+            }
+        }
+
+        /// <summary>
+        /// Starts the quest.
+        /// </summary>
+        public void StartQuest()
+        {
+            quest?.Start();
+        }
+
+        /// <summary>
+        /// Completes the quest.
+        /// </summary>
+        public void CompleteQuest()
+        {
+            quest?.Complete();
+        }
+
+        /// <summary>
+        /// Resets the quest (all tasks are reset and the quest status is marked as None)
+        /// </summary>
+        public void ResetQuest()
+        {
+            quest?.Reset();
+        }
     }
 }

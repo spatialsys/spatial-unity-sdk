@@ -244,7 +244,7 @@ namespace SpatialSys.UnitySDK
         GameObject[] taskMarkers { get; set; }
 
         /// <summary>
-        /// Gets the status of the quest.
+        /// Gets the status of the task.
         /// </summary>
         QuestStatus status { get; }
 
