@@ -57,7 +57,10 @@ namespace SpatialSys.UnitySDK.Editor
                     if (i < activePackageIndex)
                         newActiveIndex--;
                 }
-                activePackageIndex = newActiveIndex;
+
+                if (activePackageIndex != newActiveIndex)
+                    activePackageIndex = newActiveIndex;
+
                 return instance?._packages;
             }
         }
@@ -68,18 +71,20 @@ namespace SpatialSys.UnitySDK.Editor
             {
                 if (!hasPackages)
                     return -1;
-                int rawValue = PlayerPrefs.GetInt(ACTIVE_PACKAGE_INDEX_PREFS_KEY, defaultValue: 0);
-                return Mathf.Clamp(rawValue, 0, instance._packages.Count - 1);
+                int localValue = SessionState.GetInt(ACTIVE_PACKAGE_INDEX_PREFS_KEY, defaultValue: 0);
+                return Mathf.Clamp(localValue, 0, instance._packages.Count - 1);
             }
             set
             {
                 if (!hasPackages)
-                {
-                    PlayerPrefs.DeleteKey(ACTIVE_PACKAGE_INDEX_PREFS_KEY);
                     return;
+                int newLocalValue = Mathf.Clamp(value, 0, instance._packages.Count - 1);
+                if (activePackageIndex != newLocalValue)
+                {
+                    SessionState.SetInt(ACTIVE_PACKAGE_INDEX_PREFS_KEY, newLocalValue);
+                    PlayerPrefs.SetInt(ACTIVE_PACKAGE_INDEX_PREFS_KEY, newLocalValue);
+                    PlayerPrefs.Save();
                 }
-                PlayerPrefs.SetInt(ACTIVE_PACKAGE_INDEX_PREFS_KEY, Mathf.Clamp(value, 0, instance._packages.Count - 1));
-                PlayerPrefs.Save();
             }
         }
 
@@ -91,6 +96,14 @@ namespace SpatialSys.UnitySDK.Editor
             { PackageType.PrefabObject, typeof(PrefabObjectConfig) },
             { PackageType.AvatarAttachment, typeof(AvatarAttachmentConfig) }
         };
+
+        static ProjectConfig()
+        {
+            // Use delayCall since reading from PlayerPrefs is not allowed in the static constructor.
+            EditorApplication.delayCall += () => {
+                activePackageIndex = PlayerPrefs.GetInt(ACTIVE_PACKAGE_INDEX_PREFS_KEY, defaultValue: 0);
+            };
+        }
 
 #pragma warning disable 414
         [SerializeField, HideInInspector] private int _configVersion; // version of this config model; Used for making backwards-compatible changes
