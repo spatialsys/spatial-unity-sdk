@@ -9,6 +9,7 @@ namespace SpatialSys.UnitySDK
         /// <summary>
         /// Whether the avatar is visible in the scene to other remote users.
         /// </summary>
+        /// <example><code source="Services/ActorExamples.cs" region="Visibility examples" lang="csharp"/></example>
         new bool visibleRemotely { get; set; }
 
         /// <summary>

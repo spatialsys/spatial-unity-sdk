@@ -54,6 +54,8 @@ namespace SpatialSys.UnitySDK.EditorSimulation
 
         public bool celebrateOnComplete { get; }
 
+        public bool hideToastMessageOnComplete { get; set; }
+
         public QuestStatus status { get; private set; }
 
         public IReadOnlyList<IReward> rewards => _rewards;

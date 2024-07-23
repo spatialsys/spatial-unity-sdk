@@ -35,6 +35,8 @@ namespace SpatialSys.UnitySDK
 
         [Tooltip("Plays a confetti animation when the quest is completed")]
         public bool celebrateOnComplete = true;
+        [Tooltip("Affects VR devices only. If true, toast messages will not be displayed when the quest or its tasks are completed.")]
+        public bool hideToastMessageOnComplete = false;
         public Reward[] questRewards;
         public Task[] tasks = new Task[0];
 

@@ -92,6 +92,11 @@ namespace SpatialSys.UnitySDK
         bool celebrateOnComplete { get; }
 
         /// <summary>
+        /// Affects VR devices only. If true, toast messages will not be displayed when the quest or its tasks are completed.
+        /// </summary>
+        bool hideToastMessageOnComplete { get; set; }
+
+        /// <summary>
         /// Gets the status of the quest.
         /// </summary>
         QuestStatus status { get; }
