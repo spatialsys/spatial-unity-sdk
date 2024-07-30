@@ -71,8 +71,8 @@ namespace SpatialSys.UnitySDK.Internal
         public Vector2 cascade3Split = new Vector2(0.1f, 0.3f);
         public Vector3 cascade4Split = new Vector3(0.067f, 0.2f, 0.467f);
         public float cascadeBorder = 0.2f;
-        public float shadowDepthBias = 1.0f;
-        public float shadowNormalBias = 1.0f;
+        public float shadowDepthBias = 0.1f;
+        public float shadowNormalBias = 0.02f;
         // public bool supportsSoftShadows = true;
         // public bool conservativeEnclosingSphere = true;
 

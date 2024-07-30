@@ -12,6 +12,9 @@ namespace SpatialSys.UnitySDK
         [Tooltip("When checked, avatars will always face a specified direction along the blue axis. Disable this for chairs that you can sit on in any orientation like stools")]
         public bool forceAvatarOrientation = true;
 
+        [Tooltip("The priority of this seat hotspot. Lower priority seats will be filled by avatars when they are automatically assigned seating.")]
+        public int priority;
+
         private void Start()
         {
             SpatialBridge.spatialComponentService.InitializeSeatHotspot(this);
