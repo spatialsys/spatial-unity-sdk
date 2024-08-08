@@ -10,7 +10,7 @@ namespace SpatialSys.UnitySDK
     [RequireComponent(typeof(Collider))]
     public class SpatialTriggerEvent : SpatialComponentBase
     {
-        public const int LATEST_VERSION = 1;
+        public const int LATEST_VERSION = 2;
 
         public override string prettyName => "Trigger Event";
         public override string tooltip =>
@@ -25,14 +25,17 @@ namespace SpatialSys.UnitySDK
         public override string documentationURL => "https://toolkit.spatial.io/docs/components/trigger-event";
         public override bool isExperimental => false;
 
+        [Flags]
         public enum ListenFor
         {
-            LocalAvatar,
+            None = 0,
+            LocalAvatar = 1 << 0,
+            LocalNPC = 1 << 1,
         }
 
         [HideInInspector]
         public int version;
-        public ListenFor listenFor;
+        public ListenFor listenFor = ListenFor.LocalAvatar;
         public SpatialEvent onEnterEvent;
         public SpatialEvent onExitEvent;
 
@@ -43,6 +46,8 @@ namespace SpatialSys.UnitySDK
 
         private void Start()
         {
+            if (version == 1)
+                listenFor = ListenFor.LocalAvatar;
             SpatialBridge.spatialComponentService.InitializeTriggerEvent(this);
         }
 
@@ -60,5 +65,27 @@ namespace SpatialSys.UnitySDK
         {
             version = LATEST_VERSION;
         }
+
+#if UNITY_EDITOR
+        protected override void OnValidate()
+        {
+            base.OnValidate();
+
+            UpgradeDataIfNecessary();
+        }
+
+        public void UpgradeDataIfNecessary()
+        {
+            if (version == LATEST_VERSION)
+                return;
+
+            if (version == 1)
+            {
+                listenFor = ListenFor.LocalAvatar; // for any v1 triggers, default value 0 was LocalAvatar. Set explicitly.
+                version = 2;
+            }
+        }
+#endif
+
     }
 }
