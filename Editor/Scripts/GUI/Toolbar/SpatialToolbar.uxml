@@ -1,16 +1,26 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
     <Style src="project://database/Packages/io.spatial.unitysdk/Editor/Scripts/GUI/Toolbar/SpatialToolbarStyle.uss?fileID=7433441132597879392&amp;guid=df0e2d56ecc454494a842b073d712970&amp;type=3#SpatialToolbarStyle" />
-    <ui:VisualElement name="Container" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; justify-content: space-around;">
-        <uie:ToolbarSpacer />
-        <uie:ToolbarButton display-tooltip-when-elided="true" name="HelpButton" class="ButtonSpacing HelpButton" style="flex-direction: row; align-items: center; justify-content: space-around;">
-            <ui:VisualElement style="background-image: url(&apos;project://database/Packages/io.spatial.unitysdk/Editor/Textures/GUI/SpatialLogoSmall.png?fileID=2800000&amp;guid=1bb1e35af9bce44f2bb845a92dba8056&amp;type=3#SpatialLogoSmall&apos;); width: 14px; height: 14px; -unity-background-image-tint-color: rgba(0, 255, 119, 0.85); margin-right: 4px;" />
-            <ui:Label text="Help" display-tooltip-when-elided="true" />
-        </uie:ToolbarButton>
-        <uie:ToolbarSpacer style="width: 8px;" />
-        <ui:IMGUIContainer name="IMGUI" style="flex-direction: row; flex-grow: 1;" />
-        <ui:VisualElement style="flex-grow: 1; flex-shrink: 0;" />
+    <ui:VisualElement name="Container" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; align-items: stretch;">
+        <ui:VisualElement style="flex-direction: row-reverse; background-color: rgb(0, 0, 0); border-left-width: 1px; border-right-width: 1px; border-top-width: 1px; border-bottom-width: 1px; border-top-left-radius: 5px; border-bottom-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; padding-right: 2px; padding-left: 2px; margin-right: 10px; padding-top: 2px; padding-bottom: 2px; margin-top: -3px; margin-bottom: 3px; align-items: stretch; justify-content: flex-start;">
+            <uie:ToolbarButton display-tooltip-when-elided="true" name="HelpButton" style="flex-direction: row; align-items: center; justify-content: center; padding-left: 4px; padding-right: 1px; padding-top: 0; padding-bottom: 0; flex-grow: 0; flex-shrink: 0; width: 18px; min-width: 22px; max-width: 18px; border-left-width: 0; border-right-width: 0;">
+                <ui:VisualElement class="HelpButtonIcon IconColor" style="width: 16px; height: 16px; flex-shrink: 0;" />
+            </uie:ToolbarButton>
+            <uie:ToolbarButton display-tooltip-when-elided="true" name="ConfigButton" style="flex-direction: row; align-items: center; justify-content: space-around;">
+                <ui:Label text="Portal" display-tooltip-when-elided="true" style="padding-left: 3px;" />
+            </uie:ToolbarButton>
+            <uie:ToolbarButton display-tooltip-when-elided="true" name="PackageDropdown" class="unity-toolbar-menu" style="-unity-text-align: middle-left; width: 13px; padding-left: 0; padding-right: 2px; padding-top: 0; padding-bottom: 0; margin-left: -2px; margin-right: 0; margin-top: 0; margin-bottom: 0; max-width: 13px; flex-shrink: 0; min-width: 13px; flex-grow: 0;">
+                <ui:VisualElement class="unity-toolbar-menu__arrow" />
+            </uie:ToolbarButton>
+            <uie:ToolbarButton text="▶ Test Scene" display-tooltip-when-elided="true" name="TestButton" style="-unity-text-align: middle-left; white-space: normal; padding-right: 4px; flex-wrap: nowrap; flex-shrink: 0; flex-grow: 1;" />
+            <uie:ToolbarButton display-tooltip-when-elided="true" name="PlatformDropdown" class="unity-toolbar-menu" style="-unity-text-align: middle-left;">
+                <ui:VisualElement name="PlatformIcon" class="IconColor" style="width: 12px; height: 12px;" />
+                <ui:VisualElement class="unity-toolbar-menu__arrow" />
+            </uie:ToolbarButton>
+            <ui:VisualElement style="background-image: url(&apos;project://database/Packages/io.spatial.unitysdk/Editor/Textures/GUI/toolkit-logo.png?fileID=2800000&amp;guid=a419ad40b2f134b7eb30d07102accd78&amp;type=3#toolkit-logo&apos;); -unity-background-scale-mode: scale-to-fit; margin-right: 5px; width: 55px; padding-right: 5px; height: 20px; align-items: stretch;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="Spacer" style="flex-shrink: 1; flex-grow: 1;" />
         <uie:ToolbarButton display-tooltip-when-elided="true" name="PlaymodeWarning" tooltip="Spatial does not fully support testing spaces in-editor. Click to read more about the differences between testing in editor vs sandbox." class="ButtonSpacing PlaymodeWarning" style="flex-direction: row; align-items: center; justify-content: space-around; overflow: visible; visibility: visible; flex-grow: 0; flex-shrink: 0; display: none;">
-            <ui:VisualElement class="WarningIcon" style="background-image: url(&apos;project://database/Packages/io.spatial.unitysdk/Editor/Textures/GUI/icon_warningLarge.png?fileID=2800000&amp;guid=46041aba597134349a62275ed84e7d65&amp;type=3#icon_warningLarge&apos;); width: 12px; height: 12px; display: flex; margin-right: 4px;" />
+            <ui:VisualElement name="VisualElement" class="WarningIcon" style="background-image: url(&apos;project://database/Packages/io.spatial.unitysdk/Editor/Textures/GUI/icon_warningLarge.png?fileID=2800000&amp;guid=46041aba597134349a62275ed84e7d65&amp;type=3#icon_warningLarge&apos;); width: 12px; height: 12px; display: flex; margin-right: 4px;" />
             <ui:Label text="Limited Editor Simulation" display-tooltip-when-elided="true" enable-rich-text="false" />
             <ui:VisualElement class="WarningIcon" style="background-image: url(&apos;project://database/Packages/io.spatial.unitysdk/Editor/Textures/GUI/icon_warningLarge.png?fileID=2800000&amp;guid=46041aba597134349a62275ed84e7d65&amp;type=3#icon_warningLarge&apos;); width: 12px; height: 12px; display: flex; margin-right: 0; margin-left: 4px;" />
         </uie:ToolbarButton>

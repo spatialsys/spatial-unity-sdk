@@ -36,6 +36,8 @@ namespace SpatialSys.UnitySDK.Editor
         // Addressables API can only be accessed through C# scripting.
         public override bool supportsAddressables => csharpAssembly != null;
 
+        public override bool hasDynamicPackageSizeLimit => true;
+
         public override IEnumerable<Object> assets
         {
             get

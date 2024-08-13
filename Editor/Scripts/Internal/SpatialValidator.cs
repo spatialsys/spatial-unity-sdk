@@ -330,7 +330,7 @@ namespace SpatialSys.UnitySDK.Editor
             _initialized = true;
         }
 
-        private static SpatialValidationSummary CreateValidationSummary(PackageConfig targetPackage)
+        public static SpatialValidationSummary CreateValidationSummary(PackageConfig targetPackage)
         {
             SpatialTestResponse[] tips = allResponses
                 .Where(resp => resp.responseType == TestResponseType.Tip)

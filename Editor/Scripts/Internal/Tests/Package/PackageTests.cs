@@ -1,3 +1,4 @@
+using Proyecto26;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -64,48 +65,121 @@ namespace SpatialSys.UnitySDK.Editor
         }
 
         [PackageTest]
-        public static void CheckPackageFileSizeLimit(PackageConfig config)
+        public static RSG.IPromise CheckPackageFileSizeLimit(PackageConfig config)
         {
-            string[] dependencies = GetPackageDependencies(config);
-            int maxPackageSize = BuildUtility.MAX_PACKAGE_SIZE;
+            // Package file size calculation is slow, and package limits should not be enforced on sandbox.
+            // For publishing, validation will be run manually right before the package upload, since there can be extra asset processing that can affect final size.
+            if (SpatialValidator.runContext != ValidationRunContext.ManualRun)
+                return RSG.Promise.Resolved();
+
+            // Do not run on package builder. It will have its own validation process.
             if (Application.isBatchMode)
-                maxPackageSize += 5 * 1024 * 1024; // Add 5MB to the limit in batch mode to account for file size differences between operating systems
+                return RSG.Promise.Resolved();
 
-            // Get size of each dependency
-            IEnumerable<Tuple<string, FileInfo>> dependencyInfos = dependencies.Select(d => new Tuple<string, FileInfo>(d, new FileInfo(d)));
-            long totalSize = dependencyInfos.Sum(d => d.Item2.Length);
-            if (totalSize > maxPackageSize)
-            {
-                IEnumerable<string> orderedDependencies = dependencyInfos
-                    .OrderByDescending(d => d.Item2.Length)
-                    .Take(100)
-                    .Select(d => $"{d.Item2.Length / 1024 / 1024f:0.000}MB - {d.Item1}");
+            return ValidatePackageSize(config, SpatialValidator.runContext);
+        }
 
-                SpatialTestResponse resp = new SpatialTestResponse(
-                    null,
-                    SpatialValidator.runContext == ValidationRunContext.UploadingToSandbox ? TestResponseType.Warning : TestResponseType.Fail,
-                    "Package is too large to publish to Spatial",
-                    $"The package is {totalSize / 1024f / 1024f:0.00}MB, but the maximum size is {maxPackageSize / 1024 / 1024}MB. " +
-                    "The size of the package is equal to the raw file size of all your assets which get uploaded to Spatial. Import settings will not change this. " +
-                    "Sometimes, texture and audio source assets can be very large on disk, and it can help to downscale them or re-export them in a different format." +
-                    $"\nHere's a list of the largest assets:\n - {string.Join("\n - ", orderedDependencies)}"
-                );
+        public static RSG.IPromise ValidatePackageSize(PackageConfig config, ValidationRunContext validationContext, string packagePath = null)
+        {
+            // If the package path is defined, a temporary package will not be generated, and will instead validate the file stored at `packagePath`.
+            string tempExportPath = Path.Combine(Path.GetTempPath(), Path.ChangeExtension(Path.GetRandomFileName(), ".unitypackage"));
+            SpatialAPI.GetPackageLimitsResponse packageLimits = new SpatialAPI.GetPackageLimitsResponse() {
+                currentPlan = "",
+                packageSizeLimit = BuildUtility.DEFAULT_MAX_PACKAGE_SIZE
+            };
+            RSG.IPromise<SpatialAPI.GetPackageLimitsResponse> getLimitsPromise = config.hasDynamicPackageSizeLimit
+                ? SpatialAPI.GetPackageLimits(string.IsNullOrWhiteSpace(config.sku) ? "null" : config.sku)
+                : RSG.Promise<SpatialAPI.GetPackageLimitsResponse>.Resolved(default);
 
-                resp.SetAutoFix(false, "Optimize associated textures",
-                    (target) => {
-                        List<Texture2D> textures = new List<Texture2D>();
-                        foreach (var dep in dependencies)
-                        {
-                            if (AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(dep) is Texture2D texture)
-                            {
-                                textures.Add(texture);
-                            }
-                        }
-                        TextureOptimizer.OptimizeTextures(textures);
+            return getLimitsPromise
+                .Then(resp => {
+                    if (config.hasDynamicPackageSizeLimit)
+                        packageLimits = resp;
+
+                    // Only create the package if no existing package path was supplied.
+                    FileInfo packageInfo;
+                    if (string.IsNullOrEmpty(packagePath))
+                    {
+                        BuildUtility.PackageProject(tempExportPath);
+                        packageInfo = new(tempExportPath);
                     }
-                );
-                SpatialValidator.AddResponse(resp);
-            }
+                    else
+                    {
+                        packageInfo = new(packagePath);
+                    }
+
+                    if (!packageInfo.Exists)
+                    {
+                        SpatialValidator.AddResponse(new SpatialTestResponse(
+                            targetObject: null,
+                            TestResponseType.Fail,
+                            "Cannot validate package file size - file does not exist",
+                            "Failed to locate the unitypackage file for validation. This should not happen."
+                        ));
+                        return;
+                    }
+
+                    if (packageInfo.Length > packageLimits.packageSizeLimit)
+                    {
+                        string[] dependencies = GetPackageDependencies(config);
+                        // Get size of each dependency
+                        IEnumerable<string> orderedDependencies = dependencies
+                            .Select(d => new System.Tuple<string, FileInfo>(d, new FileInfo(d)))
+                            .OrderByDescending(d => d.Item2.Length)
+                            .Take(100)
+                            .Select(d => $"{d.Item2.Length / 1024 / 1024f:0.000}MB - {d.Item1}");
+
+                        SpatialTestResponse testResp = new SpatialTestResponse(
+                            targetObject: null,
+                            TestResponseType.Fail,
+                            "Package size limit exceeded - file size is too large.",
+                            $"The package size is {packageInfo.Length / 1024f / 1024f:0.00}MB, but the limit is {packageLimits.packageSizeLimit / 1024 / 1024}MB. " +
+                            "The size of the package is equivalent to the .unitypackage file that gets uploaded to Spatial. The Unity package is a zipped file that " +
+                            "contains the files stored within the project, so changing the import settings will not affect this. Some texture and audio files can be " +
+                            "very large (e.g. WAV, TGA, TIF, etc.), so it can help to downscale them or re-export them in a different format (JPG, PNG, MP3, etc.)." +
+                            $"\nHere's a list of the largest assets:\n - {string.Join("\n - ", orderedDependencies)}"
+                        );
+
+                        testResp.SetAutoFix(
+                            isSafe: false,
+                            "Optimize associated textures",
+                            (target) => {
+                                List<Texture2D> textures = new List<Texture2D>();
+                                foreach (var dep in dependencies)
+                                {
+                                    Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(dep);
+                                    if (tex != null)
+                                        textures.Add(tex);
+                                }
+                                TextureOptimizer.OptimizeTextures(textures);
+                            }
+                        );
+                        SpatialValidator.AddResponse(testResp);
+                    }
+                })
+                .Catch(ex => {
+                    if (ex is RequestException requestEx)
+                    {
+                        bool isPublishing = validationContext == ValidationRunContext.PublishingPackage;
+                        string responseDescription = $"Make sure that you are signed in with a stable network connection.\n{requestEx.Message}";
+                        if (!isPublishing)
+                            responseDescription += "\n\nThis will be escalated to an error when publishing.";
+                        SpatialValidator.AddResponse(new SpatialTestResponse(
+                            targetObject: null,
+                            responseType: isPublishing ? TestResponseType.Fail : TestResponseType.Warning,
+                            title: "Failed to fetch package size limits",
+                            description: responseDescription
+                        ));
+                        Debug.LogException(ex);
+                        return; // Exception handled.
+                    }
+
+                    // Internal exception. Rethrow to bubble up the exception to the validator.
+                    throw ex;
+                })
+                .Finally(() => {
+                    File.Delete(tempExportPath);
+                });
         }
 
         [PackageTest]

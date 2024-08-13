@@ -21,8 +21,8 @@ namespace SpatialSys.UnitySDK.Editor
         public const string BUILD_DIR = "Exports";
         public static readonly string PACKAGE_EXPORT_PATH = Path.Combine(BUILD_DIR, "spaces.unitypackage");
         public static readonly string[] INVALID_BUNDLE_NAME_CHARS = new string[] { " ", "_", ".", ",", "(", ")", "[", "]", "{", "}", "!", "@", "#", "$", "%", "^", "&", "*", "+", "=", "|", "\\", "/", "?", "<", ">", "`", "~", "'", "\"", ":", ";", "\n", "\t" };
-        public static int MAX_SANDBOX_BUNDLE_SIZE = 1000 * 1024 * 1024; // 1 GB; It's higher than the package size limit because we want to allow people to mess around more in the sandbox
-        public static int MAX_PACKAGE_SIZE = 500 * 1024 * 1024; // 500 MB
+        public static long MAX_SANDBOX_BUNDLE_SIZE = 1000 * 1024 * 1024; // 1 GB; It's higher than the package size limit because we want to allow people to mess around more in the sandbox
+        public static long DEFAULT_MAX_PACKAGE_SIZE = 500 * 1024 * 1024; // 500 MB
 
         // Inclusion of these package assets is redundant and adds unneeded, since they are already dependencies of the package-builder
         private static readonly HashSet<string> _excludedPackagesFromPublish = new()
@@ -59,8 +59,9 @@ namespace SpatialSys.UnitySDK.Editor
                         validationPromise = SpatialValidator.RunTestsOnPackage(ValidationRunContext.UploadingToSandbox);
                     }
 
-                    return CheckValidationPromise(validationPromise);
+                    return validationPromise;
                 })
+                .Then(summary => CheckValidationSummary(summary))
                 .Then(() => {
                     ProcessAndSavePackageAssets();
 
@@ -116,6 +117,10 @@ namespace SpatialSys.UnitySDK.Editor
                     bool openBrowser = target == BuildTarget.WebGL;
                     if (openBrowser)
                         EditorUtility.OpenSandboxInBrowser();
+#if !SPATIAL_UNITYSDK_INTERNAL
+                    if (!openBrowser)
+                        UnityEditor.EditorUtility.DisplayDialog("Upload complete!", $"Your package was successfully uploaded to the sandbox ({target}).", "OK");
+#endif
                 })
                 .Catch(exc => {
                     if (exc is RSG.PromiseCancelledException)
@@ -214,20 +219,19 @@ namespace SpatialSys.UnitySDK.Editor
             promise.Resolve();
         }
 
-        private static IPromise CheckValidationPromise(IPromise<SpatialValidationSummary> validatorPromise)
+        private static IPromise CheckValidationSummary(SpatialValidationSummary summary)
         {
-            return validatorPromise.Then((SpatialValidationSummary validationSummary) => {
-                if (validationSummary == null)
-                    return Promise.Rejected(new Exception("Package validation failed to run"));
+            if (summary == null)
+                return Promise.Rejected(new Exception("Package validation failed to run"));
 
-                if (validationSummary.failed || validationSummary.passedWithWarnings)
-                {
-                    SpatialSDKConfigWindow.OpenIssuesTabWithSummary(validationSummary);
-                    if (validationSummary.failed)
-                        return Promise.Rejected(new Exception("Package has errors"));
-                }
-                return Promise.Resolved();
-            });
+            if (summary.failed || summary.passedWithWarnings)
+            {
+                SpatialSDKConfigWindow.OpenIssuesTabWithSummary(summary);
+                if (summary.failed)
+                    return Promise.Rejected(new Exception("Package has errors"));
+            }
+
+            return Promise.Resolved();
         }
 
         public static IPromise BuildAndPublishPackage()
@@ -243,7 +247,8 @@ namespace SpatialSys.UnitySDK.Editor
                     if (!CompileAssemblyIfExists(enforceName: false))
                         throw new System.Exception("Failed to compile custom C# scripts");
                 })
-                .Then(() => CheckValidationPromise(SpatialValidator.RunTestsOnPackage(ValidationRunContext.PublishingPackage)))
+                .Then(() => SpatialValidator.RunTestsOnPackage(ValidationRunContext.PublishingPackage))
+                .Then(summary => CheckValidationSummary(summary))
                 .Then(() => {
                     ProcessAndSavePackageAssets();
 
@@ -268,15 +273,7 @@ namespace SpatialSys.UnitySDK.Editor
 
                     return createWorldPromise;
                 })
-                .Then(() => SpatialAPI.CreateOrUpdatePackage(ProjectConfig.activePackageConfig.sku, ProjectConfig.activePackageConfig.packageType))
-                .Then(resp => {
-                    PackageConfig config = ProjectConfig.activePackageConfig;
-                    if (config.sku != resp.sku)
-                    {
-                        config.sku = resp.sku;
-                        EditorUtility.SaveAssetImmediately(config);
-                    }
-
+                .Then(() => {
                     // Create a new backup to the package config asset in case we modify it, so it's easy to revert any changes made to it.
                     EditorUtility.CreateAssetBackup(ProjectConfig.instance);
                     EditorUtility.CreateAssetBackup(ProjectConfig.activePackageConfig);
@@ -287,13 +284,36 @@ namespace SpatialSys.UnitySDK.Editor
                     // Before we package up the project, we need to save all assets so that the package has the latest changes
                     AssetDatabase.SaveAssets();
 
-                    // Package it after SKU is assigned or else the config inside the package will not have the SKU
                     // Export all scenes and dependencies as a package
-                    if (!Directory.Exists(BUILD_DIR))
-                        Directory.CreateDirectory(BUILD_DIR);
-                    PackageProject();
+                    Directory.CreateDirectory(BUILD_DIR);
+                    PackageProject(PACKAGE_EXPORT_PATH);
+                })
+                // Since package size validation isn't automatically run in PublishingPackage validation context, we do so here after the package size has been finalized.
+                // Validation will run on the package that we have just created during this flow.
+                .Then(() => PackageTests.ValidatePackageSize(ProjectConfig.activePackageConfig, ValidationRunContext.PublishingPackage, packagePath: PACKAGE_EXPORT_PATH))
+                .Then(() => CheckValidationSummary(SpatialValidator.CreateValidationSummary(ProjectConfig.activePackageConfig)))
+                .Then(() => {
+                    FileInfo packageFile = new(PACKAGE_EXPORT_PATH);
+                    if (!packageFile.Exists)
+                        throw new System.Exception("Failed to read exported package's file info");
 
-                    // We've created the package, we don't need to wait for the upload to finish before we restore the backups
+                    return SpatialAPI.CreateOrUpdatePackage(
+                        ProjectConfig.activePackageConfig.sku,
+                        ProjectConfig.activePackageConfig.packageType,
+                        packageSizeBytes: packageFile.Length > 0 ? (ulong)packageFile.Length : 0
+                    );
+                })
+                .Then(resp => {
+                    // Update the SKU if necessary. This value doesn't need to be set in the exported package
+                    // since the value is automatically set in the builder's config.
+                    PackageConfig config = ProjectConfig.activePackageConfig;
+                    if (config.sku != resp.sku)
+                    {
+                        config.sku = resp.sku;
+                        EditorUtility.SaveAssetImmediately(config);
+                    }
+
+                    // Don't need to wait for the upload to finish before we restore the backups
                     RestoreAssetBackups();
 
                     Promise uploadPromise = new();
@@ -330,7 +350,7 @@ namespace SpatialSys.UnitySDK.Editor
         {
             FileUploader fileUploader = new();
             fileUploader.progressBarTitleOverride = "Uploading package";
-            fileUploader.EnqueueWebRequest(PACKAGE_EXPORT_PATH, SpatialAPI.GetUploadPackageURL(sku, version), SpatialAPI.UploadPackage, maxFileSizeBytes: MAX_PACKAGE_SIZE);
+            fileUploader.EnqueueWebRequest(PACKAGE_EXPORT_PATH, SpatialAPI.GetUploadPackageURL(sku, version), SpatialAPI.UploadPackage);
             yield return fileUploader;
 
             if (fileUploader.exception != null)
@@ -342,7 +362,7 @@ namespace SpatialSys.UnitySDK.Editor
             promise.Resolve();
         }
 
-        private static void PackageProject()
+        public static void PackageProject(string exportPath)
         {
             // TODO: we can also exclude dependencies from packages that are included in the builder project by default
             HashSet<string> assetPaths = new();
@@ -379,7 +399,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             // Export all referenced assets from active package as a unity package
             // NOTE: Intentionally not including the ProjectConfig since that includes all packages in this project
-            AssetDatabase.ExportPackage(assetPaths.ToArray(), PACKAGE_EXPORT_PATH);
+            AssetDatabase.ExportPackage(assetPaths.ToArray(), exportPath);
         }
 
         private static bool ShouldExcludePackagePath(string path)
@@ -404,16 +424,19 @@ namespace SpatialSys.UnitySDK.Editor
 
             if (exc is Proyecto26.RequestException requestException)
             {
-                if (SpatialAPI.TryGetSingleError(requestException.Response, out SpatialAPI.ErrorResponse.Error error))
+                if (SAPIErrorHelper.TryParse(requestException, out SAPIErrorResponse error))
                 {
-                    switch (error.code)
+                    switch (error.firstErrorCode)
                     {
-                        case "USER_PROFILE_NOT_FOUND":
+                        case SAPIErrorCode.USER_PROFILE_NOT_FOUND:
                             additionalMessage = "Unable to locate your Spatial account. Follow steps to re-authenticate in the Spatial portal.";
                             callback = MenuItems.OpenAccount;
                             break;
-                        case "NOT_OWNER_OF_PACKAGE":
+                        case SAPIErrorCode.NOT_OWNER_OF_PACKAGE:
                             additionalMessage = "The package you are trying to upload is owned by another user. Only the user that initially published the package can update it.";
+                            break;
+                        case SAPIErrorCode.PACKAGE_UPLOAD_LIMIT_REACHED:
+                            additionalMessage = "The package size exceeds the package upload limit for your space's plan. Visit spatial.io/pricing to see available plans and increase the package upload limit.";
                             break;
                     }
                 }

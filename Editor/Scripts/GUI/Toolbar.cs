@@ -12,21 +12,28 @@ namespace SpatialSys.UnitySDK.Editor
     public static class Toolbar
     {
         private const string SANDBOX_TARGET_BUILD_PLATFORM_KEY = "SpatialSDK_TargetBuildPlatform";
-        private static bool styleInitialized;
-        private static Texture2D _helpButtonTexture;
-        private static Texture2D _helpButtonHoveredTexture;
 
-        private static GUIStyle _helpButtonStyle;
+        private static Button _playmodeWarning;
+        private static ScriptableObject _currentToolbar;
+        private static VisualElement _toolbarRoot;
+        private static VisualElement _toolbarElement;
+        private static Type _toolbarType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.Toolbar");
 
-        static Button playmodeWarning;
-        static ScriptableObject m_currentToolbar;
-        static VisualElement toolbarRoot;
-        static VisualElement toolbarElement;
-        static Type m_toolbarType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.Toolbar");
+        private enum TargetPlatform
+        {
+            Web,
+            iOS,
+            Android,
+#if SPATIAL_UNITYSDK_INTERNAL
+            Windows
+#endif
+        }
+
+        private static TargetPlatform _selectedTarget = TargetPlatform.Web;
+
 
         static Toolbar()
         {
-            styleInitialized = false;
             EditorApplication.update -= OnUpdate;
 
             // Disable toolbar in certain environments
@@ -37,165 +44,182 @@ namespace SpatialSys.UnitySDK.Editor
 
         private static void OnUpdate()
         {
-            if (playmodeWarning != null)
-                playmodeWarning.style.display = EditorApplication.isPlaying ? DisplayStyle.Flex : DisplayStyle.None;
+            if (_playmodeWarning != null)
+                _playmodeWarning.style.display = EditorApplication.isPlaying ? DisplayStyle.Flex : DisplayStyle.None;
 
             // Catches a bug where our toolbar gets lost when changing OS resolution while unity is open.
-            bool missingParent = toolbarRoot == null || toolbarRoot.parent == null || toolbarRoot.parent.parent == null || toolbarRoot.parent.parent.parent == null || toolbarRoot.parent.parent.parent.parent == null;
+            bool missingParent = _toolbarRoot == null || _toolbarRoot.parent == null || _toolbarRoot.parent.parent == null || _toolbarRoot.parent.parent.parent == null || _toolbarRoot.parent.parent.parent.parent == null;
 
             // Relying on the fact that toolbar is ScriptableObject and gets deleted when layout changes 
-            if (m_currentToolbar == null || toolbarElement == null || missingParent)
+            if (_currentToolbar == null || _toolbarElement == null || missingParent)
             {
                 // Find toolbar
-                var toolbars = Resources.FindObjectsOfTypeAll(m_toolbarType);
-                m_currentToolbar = toolbars.Length > 0 ? (ScriptableObject)toolbars[0] : null;
-                if (m_currentToolbar != null)
+                var toolbars = Resources.FindObjectsOfTypeAll(_toolbarType);
+                _currentToolbar = toolbars.Length > 0 ? (ScriptableObject)toolbars[0] : null;
+                if (_currentToolbar != null)
                 {
-                    var root = m_currentToolbar.GetType().GetField("m_Root", BindingFlags.NonPublic | BindingFlags.Instance);
-                    var rawRoot = root.GetValue(m_currentToolbar);
-                    VisualElement mRoot = rawRoot as VisualElement;
-                    var toolbarZone = mRoot.Q("ToolbarZoneRightAlign");
+                    FieldInfo root = _currentToolbar.GetType().GetField("m_Root", BindingFlags.NonPublic | BindingFlags.Instance);
+                    VisualElement mRoot = root.GetValue(_currentToolbar) as VisualElement;
+                    VisualElement toolbarZone = mRoot.Q("ToolbarZoneRightAlign");
 
                     var uiAsset = EditorUtility.LoadAssetFromPackagePath<VisualTreeAsset>("Editor/Scripts/GUI/Toolbar/SpatialToolbar.uxml");
                     VisualElement ui = uiAsset.Instantiate();
-                    toolbarElement = ui;
-                    toolbarRoot = toolbarZone;
+                    _toolbarElement = ui;
+                    _toolbarRoot = toolbarZone;
                     toolbarZone.Add(ui);
-                    ui.Q<IMGUIContainer>("IMGUI").onGUIHandler = () => OnToolbarGUI();
 
-                    playmodeWarning = ui.Q<Button>("PlaymodeWarning");
+                    _playmodeWarning = ui.Q<Button>("PlaymodeWarning");
 
-                    playmodeWarning.clicked += () => {
-                        PlaymodePopup.InitWindow(false);
-                    };
+                    _playmodeWarning.clicked += HandlePlayModeWarningClicked;
 
-                    ui.Q<Button>("HelpButton").clicked += () => {
-                        GenericMenu menu = new GenericMenu();
-                        // The separator with text is styles identically to Items on windows so we don't use them there. On Mac they look nice.
-                        void AddSeparator(string header)
-                        {
-                            menu.AddSeparator("");
-                            if (Application.platform == RuntimePlatform.OSXEditor)
-                                menu.AddSeparator(header);
-                        }
+                    ui.Q<Button>("HelpButton").clicked += HandleHelpButtonClicked;
 
-                        AddSeparator("Read Docs & Tutorials");
-                        menu.AddItem(new GUIContent("Documentation"), false, () => Application.OpenURL("https://toolkit.spatial.io/"));
-                        menu.AddItem(new GUIContent("Scripting API"), false, () => Application.OpenURL("https://cs.spatial.io/reference"));
+                    ui.Q<Button>("TestButton").clicked += HandleTestButtonClicked;
 
-                        AddSeparator("Ask for Help");
-                        menu.AddItem(new GUIContent("Help and Discussion Forum"), false, () => Application.OpenURL("https://github.com/spatialsys/spatial-unity-sdk/discussions"));
+                    ui.Q<Button>("ConfigButton").clicked += HandleConfigButtonClicked;
 
-                        AddSeparator("Ask the Community");
-                        menu.AddItem(new GUIContent("Community Discord"), false, () => Application.OpenURL("https://discord.gg/spatial"));
-                        menu.ShowAsContext();
-                    };
+                    ui.Q<Button>("PlatformDropdown").clicked += HandlePlatformDropdownClicked;
+
+                    ui.Q<Button>("PackageDropdown").clicked += HandlePackageDropdownClicked;
                 }
             }
-        }
-
-        private static void InitStyle()
-        {
-            _helpButtonTexture = SpatialGUIUtility.LoadGUITexture("GUI/HelpButtonTexture.png");
-            _helpButtonHoveredTexture = SpatialGUIUtility.LoadGUITexture("GUI/HelpButtonTextureSelected.png");
-
-            _helpButtonStyle = new GUIStyle(GUI.skin.button) {
-                border = new RectOffset(3, 3, 3, 3),
-                //Something internally messes with padding on dark vs light skin...
-                padding = new RectOffset(6, 6, EditorGUIUtility.isProSkin ? 4 : 3, EditorGUIUtility.isProSkin ? 0 : 1),
-            };
-            _helpButtonStyle.normal.background = _helpButtonTexture;
-            _helpButtonStyle.hover.background = _helpButtonHoveredTexture;
-            if (ColorUtility.TryParseHtmlString("#00FF77", out Color color))
+            else
             {
-                _helpButtonStyle.normal.textColor = color;
-                _helpButtonStyle.active.textColor = color;
-                _helpButtonStyle.hover.textColor = color;
-            }
-        }
+                // Update Test button text and tooltip
+                string disabledReason = GetBuildDisabledReason();
+                bool disabled = !string.IsNullOrEmpty(disabledReason);
 
-        private static int _selectedTarget = 0;
-        private static string[] _targetOptions = new string[]
-        {
-            "WebGL", "iOS", "Android", "Windows",
-        };
-
-        static void OnToolbarGUI()
-        {
-            if (!styleInitialized)
-            {
-                styleInitialized = true;
-                InitStyle();
-            }
-            GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-
-            GUI.color = Color.white * 0.75f;
-            GUI.contentColor = Color.white * 1.15f;
-
-            string disabledReason = GetBuildDisabledReason();
-            using (new EditorGUI.DisabledScope(disabled: !string.IsNullOrEmpty(disabledReason)))
-            {
-                PackageConfig activeConfig = ProjectConfig.activePackageConfig;
                 string buttonText, buttonTooltipText;
-
-#if SPATIAL_UNITYSDK_STAGING
-                _selectedTarget = SessionState.GetInt(SANDBOX_TARGET_BUILD_PLATFORM_KEY, 0);
-                int newSelection = EditorGUILayout.Popup(_selectedTarget, _targetOptions, GUILayout.Width(80));
-                if (_selectedTarget != newSelection)
-                {
-                    _selectedTarget = newSelection;
-                    SessionState.SetInt(SANDBOX_TARGET_BUILD_PLATFORM_KEY, _selectedTarget);
-                }
-#endif
+                PackageConfig activeConfig = ProjectConfig.activePackageConfig;
                 if (activeConfig == null || activeConfig.isSpaceBasedPackage)
                 {
                     Scene scene = EditorSceneManager.GetActiveScene();
-                    buttonText = "Test Active Scene";
+                    buttonText = "▶ Test Scene";
                     buttonTooltipText = $"Builds the active scene ({scene.name}) for testing in the Spatial web app";
                 }
                 else
                 {
-                    buttonText = "Test Active Package";
+                    buttonText = "▶ Test Package";
                     buttonTooltipText = $"Builds the active package ({activeConfig?.packageName}) for testing in the Spatial web app";
                 }
 
-                if (GUILayout.Button(new GUIContent(
-                        $"▶️ {buttonText}",
-                        !string.IsNullOrEmpty(disabledReason) ? disabledReason : buttonTooltipText
-                    )))
-                {
-                    BuildTarget target = BuildTarget.WebGL;
-                    switch (_selectedTarget)
-                    {
-                        case 1:
-                            target = BuildTarget.iOS; // iOS bundle can be run on OSX
-                            break;
-                        case 2:
-                            target = BuildTarget.Android;
-                            break;
-                        case 3:
-                            target = BuildTarget.StandaloneWindows64;
-                            break;
-                    }
+                Button testButton = _toolbarElement.Q<Button>("TestButton");
 
-                    BuildUtility.BuildAndUploadForSandbox(target)
-                        .Catch(ex => Debug.LogException(ex)); // Catch all other unhandled exceptions
-                }
+                testButton.text = buttonText;
+                testButton.tooltip = disabled ? disabledReason : buttonTooltipText;
+                testButton.SetEnabled(!disabled);
+
+                Button platformDropdown = _toolbarElement.Q<Button>("PlatformDropdown");
+                platformDropdown.tooltip = disabled ? disabledReason : "Change Spatial platform";
+                platformDropdown.SetEnabled(!disabled);
+
+                Button packageDropdown = _toolbarElement.Q<Button>("PackageDropdown");
+                packageDropdown.tooltip = disabled ? disabledReason : "Change active package";
+                packageDropdown.SetEnabled(!disabled);
+
+                // Update platform icon
+                VisualElement platformIcon = _toolbarElement.Q<VisualElement>("PlatformIcon");
+                platformIcon.style.backgroundImage = _selectedTarget switch {
+                    TargetPlatform.Web => (Texture2D)EditorGUIUtility.IconContent("BuildSettings.Web.Small").image,
+                    TargetPlatform.iOS => (Texture2D)EditorGUIUtility.IconContent("BuildSettings.iPhone On").image,
+                    TargetPlatform.Android => (Texture2D)EditorGUIUtility.IconContent("BuildSettings.Android On").image,
+#if SPATIAL_UNITYSDK_INTERNAL
+                    TargetPlatform.Windows => (Texture2D)EditorGUIUtility.IconContent("BuildSettings.Standalone On").image,
+#endif
+                    _ => (Texture2D)EditorGUIUtility.IconContent("BuildSettings.WebGL On").image,
+
+                };
             }
+        }
 
-            if (GUILayout.Button("Publishing"))
+        private static void HandlePlayModeWarningClicked()
+        {
+            PlaymodePopup.InitWindow(false);
+        }
+
+        private static void HandleHelpButtonClicked()
+        {
+            GenericMenu menu = new GenericMenu();
+            // The separator with text is styles identically to Items on windows so we don't use them there. On Mac they look nice.
+            void AddSeparator(string header)
             {
-                SpatialSDKConfigWindow.OpenWindow(SpatialSDKConfigWindow.CONFIG_TAB_NAME);
+                menu.AddSeparator("");
+                if (Application.platform == RuntimePlatform.OSXEditor)
+                    menu.AddSeparator(header);
             }
 
-            if (GUILayout.Button(EditorGUIUtility.IconContent(EditorGUIUtility.isProSkin ? "d_SettingsIcon" : "SettingsIcon")))
+            AddSeparator("Read Docs & Tutorials");
+            menu.AddItem(new GUIContent("Documentation"), false, () => Application.OpenURL("https://toolkit.spatial.io/"));
+            menu.AddItem(new GUIContent("Scripting API"), false, () => Application.OpenURL("https://cs.spatial.io/reference"));
+            menu.AddItem(new GUIContent("Templates"), false, () => Application.OpenURL("https://toolkit.spatial.io/templates"));
+
+            AddSeparator("Ask for Help");
+            menu.AddItem(new GUIContent("Help and Discussion Forum"), false, () => Application.OpenURL("https://github.com/spatialsys/spatial-unity-sdk/discussions"));
+
+            AddSeparator("Ask the Community");
+            menu.AddItem(new GUIContent("Community Discord"), false, () => Application.OpenURL("https://discord.gg/spatial"));
+            menu.ShowAsContext();
+        }
+
+        private static void HandleTestButtonClicked()
+        {
+            BuildTarget target = BuildTarget.WebGL;
+            switch (_selectedTarget)
             {
-                SpatialSDKConfigWindow.OpenWindow(SpatialSDKConfigWindow.CONFIG_TAB_NAME);
+                case TargetPlatform.iOS:
+                    target = BuildTarget.iOS; // iOS bundle can be run on OSX
+                    break;
+                case TargetPlatform.Android:
+                    target = BuildTarget.Android;
+                    break;
+#if SPATIAL_UNITYSDK_INTERNAL
+                case TargetPlatform.Windows:
+                    target = BuildTarget.StandaloneWindows64;
+                    break;
+#endif
             }
 
-            GUI.color = Color.white;
-            GUILayout.EndHorizontal();
+
+            BuildUtility.BuildAndUploadForSandbox(target)
+                .Catch(ex => Debug.LogException(ex)); // Catch all other unhandled exceptions
+        }
+
+        private static void HandleConfigButtonClicked()
+        {
+            SpatialSDKConfigWindow.OpenWindow(SpatialSDKConfigWindow.CONFIG_TAB_NAME);
+        }
+
+        private static void HandlePlatformDropdownClicked()
+        {
+            GenericMenu menu = new GenericMenu();
+            void SetTarget(TargetPlatform target)
+            {
+                _selectedTarget = target;
+                SessionState.SetInt(SANDBOX_TARGET_BUILD_PLATFORM_KEY, (int)_selectedTarget);
+            }
+
+            if (Application.platform == RuntimePlatform.OSXEditor)
+                menu.AddSeparator("Target Platform");
+
+            foreach (TargetPlatform target in Enum.GetValues(typeof(TargetPlatform)))
+            {
+                menu.AddItem(new GUIContent(target.ToString()), _selectedTarget == target, () => SetTarget(target));
+            }
+            menu.ShowAsContext();
+        }
+
+        private static void HandlePackageDropdownClicked()
+        {
+            GenericMenu menu = new GenericMenu();
+
+            if (Application.platform == RuntimePlatform.OSXEditor)
+                menu.AddSeparator("Active package");
+
+            foreach (PackageConfig package in ProjectConfig.packages)
+            {
+                menu.AddItem(new GUIContent($"{package.packageType} - {package.packageName}"), ProjectConfig.activePackageConfig == package, () => ProjectConfig.SetActivePackage(package));
+            }
+            menu.ShowAsContext();
         }
 
         private static string GetBuildDisabledReason()

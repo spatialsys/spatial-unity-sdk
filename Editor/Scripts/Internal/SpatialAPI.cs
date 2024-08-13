@@ -137,7 +137,7 @@ namespace SpatialSys.UnitySDK.Editor
         // CREATE PACKAGE
         //------------------------------------------------
 
-        public static IPromise<CreateOrUpdatePackageResponse> CreateOrUpdatePackage(string sku, PackageType packageType)
+        public static IPromise<CreateOrUpdatePackageResponse> CreateOrUpdatePackage(string sku, PackageType packageType, ulong packageSizeBytes)
         {
             RequestHelper request = CreateRequest();
             request.Uri = $"{API_ORIGIN}/sdk/v1/package/";
@@ -146,7 +146,8 @@ namespace SpatialSys.UnitySDK.Editor
                 unityVersion = Application.unityVersion,
                 spatialSdkVersion = PackageManagerUtility.currentVersion,
                 packageSource = PackageSourceToSAPIPackageSource(PackageSource.Unity),
-                packageType = PackageTypeToSAPIPackageType(packageType)
+                packageType = PackageTypeToSAPIPackageType(packageType),
+                packageSize = packageSizeBytes
             };
 
             IPromise<CreateOrUpdatePackageResponse> resp = RestClient.Post<CreateOrUpdatePackageResponse>(request);
@@ -162,6 +163,7 @@ namespace SpatialSys.UnitySDK.Editor
             public string spatialSdkVersion;
             public string packageSource;
             public string packageType;
+            public ulong packageSize;
         }
 
         [Serializable]
@@ -232,6 +234,27 @@ namespace SpatialSys.UnitySDK.Editor
             // Only for space packages
             public string worldID;
             public string spaceID;
+        }
+
+        //------------------------------------------------
+        // GET PACKAGE LIMITS
+        //------------------------------------------------
+
+        public static IPromise<GetPackageLimitsResponse> GetPackageLimits(string sku)
+        {
+            RequestHelper request = CreateRequest();
+            request.Uri = $"{API_ORIGIN}/sdk/v1/package/{sku}/limits";
+
+            IPromise<GetPackageLimitsResponse> resp = RestClient.Get<GetPackageLimitsResponse>(request);
+            resp.Catch(HandleRequestException);
+            return resp;
+        }
+
+        [Serializable]
+        public struct GetPackageLimitsResponse
+        {
+            public string currentPlan;
+            public long packageSizeLimit;
         }
 
         //------------------------------------------------
@@ -375,23 +398,6 @@ namespace SpatialSys.UnitySDK.Editor
             return type.ToString();
         }
 
-        public static bool TryGetSingleError(string response, out ErrorResponse.Error error)
-        {
-            try
-            {
-                ErrorResponse errResp = JsonUtility.FromJson<ErrorResponse>(response);
-                if (errResp.errors.Length > 0)
-                {
-                    error = errResp.errors[0];
-                    return true;
-                }
-            }
-            catch { }
-
-            error = new ErrorResponse.Error();
-            return false;
-        }
-
         //--------------------------------------------------------------------------------------------------------------
         // GENERIC MODELS
         //--------------------------------------------------------------------------------------------------------------
@@ -399,30 +405,6 @@ namespace SpatialSys.UnitySDK.Editor
         public enum PackageSource
         {
             Unity
-        }
-
-        [Serializable]
-        public struct ErrorResponse
-        {
-            [Serializable]
-            public struct Error
-            {
-                public string code;
-                public string message;
-                public int statusCode;
-                public bool display;
-                public ErrorField[] fields;
-            }
-
-            [Serializable]
-            public struct ErrorField
-            {
-                public string field;
-                public string error;
-            }
-
-            public Error[] errors;
-            public string trace;
         }
     }
 }

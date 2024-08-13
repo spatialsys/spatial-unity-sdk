@@ -62,6 +62,11 @@ namespace SpatialSys.UnitySDK.Editor
         public virtual bool supportsAddressables => false;
 
         /// <summary>
+        /// If true, then package size limits should be fetched from SAPI.
+        /// </summary>
+        public virtual bool hasDynamicPackageSizeLimit => false;
+
+        /// <summary>
         /// Space or SpaceTemplate
         /// </summary>
         public bool isSpaceBasedPackage => packageType == PackageType.Space || packageType == PackageType.SpaceTemplate;
