@@ -288,8 +288,8 @@ namespace SpatialSys.UnitySDK.Editor
                     Directory.CreateDirectory(BUILD_DIR);
                     PackageProject(PACKAGE_EXPORT_PATH);
                 })
-                // Since package size validation isn't automatically run in PublishingPackage validation context, we do so here after the package size has been finalized.
-                // Validation will run on the package that we have just created during this flow.
+                // Since package size validation isn't automatically run in PublishingPackage validation context, we do so here after the package size has been mostly finalized.
+                // Validation will run on the package that we have just created above.
                 .Then(() => PackageTests.ValidatePackageSize(ProjectConfig.activePackageConfig, ValidationRunContext.PublishingPackage, packagePath: PACKAGE_EXPORT_PATH))
                 .Then(() => CheckValidationSummary(SpatialValidator.CreateValidationSummary(ProjectConfig.activePackageConfig)))
                 .Then(() => {
@@ -304,17 +304,24 @@ namespace SpatialSys.UnitySDK.Editor
                     );
                 })
                 .Then(resp => {
-                    // Update the SKU if necessary. This value doesn't need to be set in the exported package
-                    // since the value is automatically set in the builder's config.
-                    PackageConfig config = ProjectConfig.activePackageConfig;
-                    if (config.sku != resp.sku)
+                    void AssignSKUFromSAPIResponse()
                     {
-                        config.sku = resp.sku;
-                        EditorUtility.SaveAssetImmediately(config);
+                        if (ProjectConfig.activePackageConfig.sku != resp.sku)
+                        {
+                            ProjectConfig.activePackageConfig.sku = resp.sku;
+                            EditorUtility.SaveAssetImmediately(ProjectConfig.activePackageConfig);
+                        }
                     }
+
+                    // Export package again after SKU assignment since it's required for the package builder to parse.
+                    // The only asset change from the validated package file should be the SKU.
+                    AssignSKUFromSAPIResponse();
+                    PackageProject(PACKAGE_EXPORT_PATH);
 
                     // Don't need to wait for the upload to finish before we restore the backups
                     RestoreAssetBackups();
+                    // Updated SKU is not included in the backup, so re-assign it after restoring
+                    AssignSKUFromSAPIResponse();
 
                     Promise uploadPromise = new();
                     EditorCoroutineUtility.StartCoroutineOwnerless(UploadPackageCoroutine(uploadPromise, resp.sku, resp.version));
