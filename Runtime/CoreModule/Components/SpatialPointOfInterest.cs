@@ -48,7 +48,7 @@ namespace SpatialSys.UnitySDK
 
         private void OnDisable()
         {
-            SpatialBridge.spatialComponentService.PointOfInterestEnabledChanged(this, false);
+            SpatialBridge.spatialComponentService?.PointOfInterestEnabledChanged(this, false);
         }
 
 #if UNITY_EDITOR

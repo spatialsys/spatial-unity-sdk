@@ -37,6 +37,12 @@ namespace SpatialSys.UnitySDK.Editor
             "com.unity.visualscripting"
         };
 
+        // Used for displaying build errors
+        static BuildUtility()
+        {
+            BuildLogUtility.PrintPreviousBuildLogs();
+        }
+
         public static IPromise BuildAndUploadForSandbox(BuildTarget target = BuildTarget.WebGL)
         {
             return UpgradeUtility.PerformUpgradeBeforeBuildIfNecessary()
@@ -578,7 +584,15 @@ namespace SpatialSys.UnitySDK.Editor
                     CSScriptingEditorUtility.EnforceCustomAssemblyName(spaceConfig.csharpAssembly, null);
                 }
 
-                return CSScriptingEditorUtility.CompileAssembly(spaceConfig.csharpAssembly, null, allowExceptions: true, enforceName);
+                try
+                {
+                    BuildLogUtility.BeginCapturingBuildLogs();
+                    return CSScriptingEditorUtility.CompileAssembly(spaceConfig.csharpAssembly, null, allowExceptions: true, enforceName);
+                }
+                finally
+                {
+                    BuildLogUtility.EndCapturingBuildLogs();
+                }
             }
 
             return true;

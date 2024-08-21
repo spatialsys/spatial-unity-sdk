@@ -58,7 +58,7 @@ namespace SpatialSys.UnitySDK
 
         private void OnDisable()
         {
-            SpatialBridge.spatialComponentService.TriggerEventEnabledChanged(this, false);
+            SpatialBridge.spatialComponentService?.TriggerEventEnabledChanged(this, false);
         }
 
         private void Reset()

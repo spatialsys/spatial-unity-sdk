@@ -69,6 +69,9 @@ namespace SpatialSys.UnitySDK
 
         private void OnDisable()
         {
+            if (SpatialBridge.spatialComponentService == null)
+                return;
+
             SpatialBridge.spatialComponentService.onSyncedObjectInitialized -= HandleSyncedObjectInitialized;
             SpatialBridge.spatialComponentService.onSyncedObjectOwnerChanged -= HandleSyncedObjectOwnerChanged;
             SpatialBridge.spatialComponentService.onNetworkVariableChanged -= HandleSyncedObjectVariableChanged;

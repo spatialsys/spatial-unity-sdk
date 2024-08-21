@@ -32,6 +32,18 @@ namespace SpatialSys.UnitySDK.Editor
         public bool noEngineReferences;
 
         public AssemblyDefinitionData() { }
+        public AssemblyDefinitionData(string name)
+        {
+            this.name = name;
+            references = new string[0];
+            includePlatforms = new string[0];
+            excludePlatforms = new string[0];
+            precompiledReferences = new string[0];
+            autoReferenced = true;
+            defineConstraints = new string[0];
+            versionDefines = new AssemblyDefinitionData.VersionDefine[0];
+        }
+
         public AssemblyDefinitionData(AssemblyDefinitionAsset asset)
         {
             FromAsset(asset);
@@ -50,7 +62,7 @@ namespace SpatialSys.UnitySDK.Editor
         public override string ToString() => ToJSON();
         public string ToJSON()
         {
-            return JsonUtility.ToJson(this);
+            return JsonUtility.ToJson(this, prettyPrint: true);
         }
     }
 }
