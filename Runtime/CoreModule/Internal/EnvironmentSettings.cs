@@ -28,6 +28,9 @@ namespace SpatialSys.UnitySDK.Internal
         [Tooltip("When defined all colliders without a movement material surface will use this movement material.")]
         public SpatialMovementMaterial defaultMovementMaterial = null;
 
+        [Tooltip("Disable the Spatial tutorial for users joining for the first time.")]
+        public bool disableFirstTutorial = false;
+
         [Header("XR")]
         public XRCameraMode initialXRCameraMode = XRCameraMode.Default;
         public bool allowPlayerToSwitchXRCameraMode = true;
