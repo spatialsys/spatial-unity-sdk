@@ -96,6 +96,9 @@ namespace SpatialSys.UnitySDK.Editor
                     if (config.hasDynamicPackageSizeLimit)
                         packageLimits = resp;
 
+                    if (packageLimits.packageSizeLimit <= 0)
+                        return;
+
                     // Only create the package if no existing package path was supplied.
                     FileInfo packageInfo;
                     if (string.IsNullOrEmpty(packagePath))
