@@ -24,7 +24,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Rendering;
@@ -92,31 +91,21 @@ namespace SpatialSys.UnitySDK.Editor
             return false;
         }
 
-        private static SceneAsset _currentScene;
-        private static bool _useReflectionProbeBoxProjection = false;
-        private static bool _useReflectionProbeBlend = false;
+        // FIXME: Stripping reflection keywords breaks lighting
+        // private static string _currentScenePath;
+        // private static bool _useReflectionProbeBoxProjection = false;
+        // private static bool _useReflectionProbeBlend = false;
 
         public int callbackOrder { get { return 0; } }
 
         public void OnProcessShader(Shader shader, ShaderSnippetData snippet, IList<ShaderCompilerData> data)
         {
+            PackageConfig packageConfig = ProjectConfig.activePackageConfig;
             // Strip Creator Toolkit package shaders only.
-            if (ProjectConfig.activePackageConfig == null)
+            if (packageConfig == null)
                 return;
 
-            // Strip ReflectionProbe related keywords
-            SceneAsset activeSceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(SceneManager.GetActiveScene().path);
-            if (_currentScene != activeSceneAsset)
-            {
-                _currentScene = activeSceneAsset;
-                ReflectionProbe[] reflectionProbes = GameObject.FindObjectsOfType<ReflectionProbe>();
-
-                // Assume the scene is using reflection probe blending if there are more than one reflection probes.
-                _useReflectionProbeBlend = reflectionProbes.Length > 1;
-                _useReflectionProbeBoxProjection = reflectionProbes.Any(p => p.boxProjection);
-            }
-
-            // Don't strip essential shaders
+            // Don't strip essential shaders.
             string shaderName = shader.name;
             if (shaderName.StartsWith("Hidden/") || shaderName.StartsWith("Unlit/"))
                 return;
@@ -125,7 +114,21 @@ namespace SpatialSys.UnitySDK.Editor
             if (SKIPPED_SHADER_PASS_TYPE.Contains(snippet.passType))
             {
                 data.Clear();
+                return;
             }
+
+            // FIXME: Stripping reflection keywords breaks lighting
+            // Strip ReflectionProbe related keywords
+            // string activeScenePath = SceneManager.GetActiveScene().path;
+            // if (_currentScenePath != activeScenePath)
+            // {
+            //     _currentScenePath = activeScenePath;
+            //     ReflectionProbe[] reflectionProbes = GameObject.FindObjectsOfType<ReflectionProbe>();
+
+            //     // Assume the scene is using reflection probe blending if there are more than one reflection probes.
+            //     _useReflectionProbeBlend = reflectionProbes.Length > 1;
+            //     _useReflectionProbeBoxProjection = reflectionProbes.Any(p => p.boxProjection);
+            // }
 
             // Skip variants
             for (int i = data.Count - 1; i >= 0; --i)
@@ -135,20 +138,21 @@ namespace SpatialSys.UnitySDK.Editor
 
                 skip |= ContainsKeyword(data[i].shaderKeywordSet, SKIPPED_VARIANTS_SPATIAL_DISABLED);
 
+                // FIXME: Stripping reflection keywords breaks lighting
                 // TODO: Render settings in Spatial should match this.
                 // Strip reflection related variants if it's a space-based package.
-                if (ProjectConfig.activePackageConfig.isSpaceBasedPackage)
-                {
-                    if (!_useReflectionProbeBoxProjection)
-                    {
-                        // skip |= data[i].shaderKeywordSet.IsEnabled(new ShaderKeyword("_REFLECTION_PROBE_BOX_PROJECTION"));
-                    }
+                // if (packageConfig.isSpaceBasedPackage)
+                // {
+                //     if (!_useReflectionProbeBoxProjection)
+                //     {
+                //         skip |= data[i].shaderKeywordSet.IsEnabled(new ShaderKeyword("_REFLECTION_PROBE_BOX_PROJECTION"));
+                //     }
 
-                    if (!_useReflectionProbeBlend)
-                    {
-                        // skip |= data[i].shaderKeywordSet.IsEnabled(new ShaderKeyword("_REFLECTION_PROBE_BLENDING"));
-                    }
-                }
+                //     if (!_useReflectionProbeBlend)
+                //     {
+                //         skip |= data[i].shaderKeywordSet.IsEnabled(new ShaderKeyword("_REFLECTION_PROBE_BLENDING"));
+                //     }
+                // }
 
                 if (skip)
                 {
