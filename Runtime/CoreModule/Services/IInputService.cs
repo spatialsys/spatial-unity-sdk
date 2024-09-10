@@ -46,7 +46,7 @@ namespace SpatialSys.UnitySDK
         /// <summary>
         /// Disables default Spatial player input including camera control and mobile on-screen controls
         /// </summary>
-        /// <param name="listener">Listener to capture when input capture has stopped</param>
+        /// <param name="listener">Listener to capture when input capture has started</param>
         void StartCompleteCustomInputCapture(IInputActionsListener listener);
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace SpatialSys.UnitySDK
     public interface IInputActionsListener
     {
         /// <summary>
-        /// Called when input capture has stopped.
+        /// Called when input capture has started.
         /// </summary>
         void OnInputCaptureStarted(InputCaptureType type);
 
