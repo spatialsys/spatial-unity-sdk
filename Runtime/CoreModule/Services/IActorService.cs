@@ -67,7 +67,8 @@ namespace SpatialSys.UnitySDK
 
         /// <summary>
         /// Event that is triggered when an actor leaves the server (this can be for any reason, including
-        /// disconnecting, timing out, or being kicked)
+        /// disconnecting, timing out, or being kicked). The actor will still be available on the <see cref="actors"/>
+        /// collection while this event is triggered.
         /// </summary>
         /// <example><code source="Services/ActorExamples.cs" region="Custom Properties" lang="csharp"/></example>
         event ActorLeftDelegate onActorLeft;
