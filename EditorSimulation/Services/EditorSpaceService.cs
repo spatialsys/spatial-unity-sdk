@@ -22,5 +22,9 @@ namespace SpatialSys.UnitySDK.EditorSimulation
         public void EnableAvatarToAvatarCollisions(bool enabled)
         {
         }
+
+        public void TeleportToSpace(string spaceID, bool showPopup = true)
+        {
+        }
     }
 }

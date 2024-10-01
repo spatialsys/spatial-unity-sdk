@@ -46,5 +46,11 @@ namespace SpatialSys.UnitySDK
         /// Enable or disable avatar to avatar collisions
         /// </summary>
         void EnableAvatarToAvatarCollisions(bool enabled);
+
+        /// <summary>
+        /// Teleport user to a space.
+        /// </summary>
+        /// <param name="spaceID">Space ID where to travel to</param>
+        void TeleportToSpace(string spaceID, bool showPopup = true);
     }
 }

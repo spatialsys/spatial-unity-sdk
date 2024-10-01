@@ -401,6 +401,9 @@ namespace SpatialSys.UnitySDK.Editor
 
             //Rendering
             typeof(GraphicsSettings).GetMember(nameof(GraphicsSettings.videoShadersIncludeMode)),
+
+            //Input
+            typeof(UnityEngine.Input).GetMember(nameof(UnityEngine.Input.IsJoystickPreconfigured)),
         };
 
         private static HashSet<Type> supportedTypes = new HashSet<Type>();
