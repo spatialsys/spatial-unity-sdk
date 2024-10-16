@@ -51,6 +51,7 @@ namespace SpatialSys.UnitySDK
         /// Teleport user to a space.
         /// </summary>
         /// <param name="spaceID">Space ID where to travel to</param>
+        /// <example><code source="Services/SpaceServiceExamples.cs" region="OpenSpace" lang="csharp"/></example>
         void TeleportToSpace(string spaceID, bool showPopup = true);
     }
 }
