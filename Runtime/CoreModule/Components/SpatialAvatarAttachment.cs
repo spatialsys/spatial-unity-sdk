@@ -154,12 +154,10 @@ namespace SpatialSys.UnitySDK
         {
             base.OnValidate();
 
-#if UNITY_EDITOR
             // Root level transform should always be identity
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
             transform.localScale = Vector3.one;
-#endif
 
             UpgradeDataIfNecessary();
 
@@ -171,7 +169,7 @@ namespace SpatialSys.UnitySDK
                 Array.Resize(ref avatarAnimSettings.customActions, customActionCountActual);
         }
 
-        public void UpgradeDataIfNecessary()
+        private void UpgradeDataIfNecessary()
         {
             if (version == LATEST_VERSION)
                 return;

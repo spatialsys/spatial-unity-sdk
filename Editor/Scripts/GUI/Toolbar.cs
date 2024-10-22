@@ -1,10 +1,12 @@
 using System;
-using UnityEngine;
-using UnityEngine.SceneManagement;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using UnityEditor;
 using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
-using System.Reflection;
 
 namespace SpatialSys.UnitySDK.Editor
 {
@@ -30,7 +32,7 @@ namespace SpatialSys.UnitySDK.Editor
         }
 
         private static TargetPlatform _selectedTarget = TargetPlatform.Web;
-
+        private static string _unsupportedUnityVersionTooltip;
 
         static Toolbar()
         {
@@ -39,6 +41,18 @@ namespace SpatialSys.UnitySDK.Editor
             // Disable toolbar in certain environments
 #if !SPATIAL_UNITYSDK_INTERNAL
             EditorApplication.update += OnUpdate;
+
+            // Compute unsupported tooltip string once.
+            IEnumerable<string> versionRangesEnumerator = EditorUtility.SUPPORTED_UNITY_VERSION_RANGES
+                .Select(range => {
+                    if (range.Item1 == range.Item2)
+                        return $"- {range.Item1}";
+
+                    return $"- {range.Item1} to {range.Item2}";
+                });
+            string versionRangesStr = string.Join('\n', versionRangesEnumerator);
+            _unsupportedUnityVersionTooltip = $"This Unity version is unsupported. You must use one of the following Unity versions to test in Spatial:\n{versionRangesStr}" +
+                $"\n(Currently: {EditorUtility.GetSemanticUnityVersion(Application.unityVersion)})";
 #endif
         }
 
@@ -225,7 +239,7 @@ namespace SpatialSys.UnitySDK.Editor
         private static string GetBuildDisabledReason()
         {
             if (!EditorUtility.isUsingSupportedUnityVersion)
-                return $"Unity version must be between {EditorUtility.MIN_UNITY_VERSION_STR} and {EditorUtility.MAX_UNITY_VERSION_STR} to test in Spatial (currently using {Application.unityVersion})";
+                return _unsupportedUnityVersionTooltip;
             return BuildUtility.GetBuildDisabledReason();
         }
     }

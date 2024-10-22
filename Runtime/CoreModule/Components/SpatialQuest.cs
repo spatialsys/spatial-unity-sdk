@@ -132,7 +132,7 @@ namespace SpatialSys.UnitySDK
             }
         }
 
-        public void UpgradeDataIfNecessary()
+        private void UpgradeDataIfNecessary()
         {
             if (version == LATEST_VERSION)
                 return;

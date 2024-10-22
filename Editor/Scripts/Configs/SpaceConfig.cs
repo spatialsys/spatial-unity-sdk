@@ -75,6 +75,7 @@ namespace SpatialSys.UnitySDK.Editor
             return PACKAGE_TYPE.ToString();
         }
 
+#if UNITY_EDITOR
         private void OnValidate()
         {
             UpgradeDataIfNecessary();
@@ -87,7 +88,7 @@ namespace SpatialSys.UnitySDK.Editor
             }
         }
 
-        public void UpgradeDataIfNecessary()
+        private void UpgradeDataIfNecessary()
         {
             if (version == LATEST_VERSION)
                 return;
@@ -107,6 +108,7 @@ namespace SpatialSys.UnitySDK.Editor
 
             // Add future upgrade paths here
         }
+#endif
     }
 
     [System.Serializable]
