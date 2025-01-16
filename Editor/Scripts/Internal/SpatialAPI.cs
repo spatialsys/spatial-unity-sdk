@@ -46,7 +46,7 @@ namespace SpatialSys.UnitySDK.Editor
         public static IPromise<GetFeatureFlagsResponse> GetFeatureFlags()
         {
             RequestHelper request = CreateRequest();
-            request.Uri = $"{API_ORIGIN}/feature-flags/v1";
+            request.Uri = $"{API_ORIGIN}/v2/feature-flags";
             request.Retries = 1;
             request.RetrySecondsDelay = 1f;
 
