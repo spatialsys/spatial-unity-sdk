@@ -11,6 +11,7 @@ using UnityEngine;
 
 namespace SpatialSys.UnitySDK.Editor
 {
+    [InitializeOnLoad]
     public static class AddressablesUtility
     {
         private const string DEFAULT_ADDRESSABLES_BUILD_PATH = BuildUtility.SANDBOX_ADDRESSABLES_BUILD_PATH;
@@ -33,6 +34,20 @@ namespace SpatialSys.UnitySDK.Editor
         public static bool isActiveInProject => Directory.Exists(DATA_FOLDER_PATH) &&
             AddressableAssetSettingsDefaultObject.SettingsExists &&
             Directory.Exists(AddressableAssetSettingsDefaultObject.Settings.GroupFolder);
+
+        static AddressablesUtility()
+        {
+            SetEditorPlayModeDataBuilder();
+
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+        }
+
+        private static void OnPlayModeStateChanged(PlayModeStateChange state)
+        {
+            if (state == PlayModeStateChange.EnteredPlayMode)
+                SetEditorPlayModeDataBuilder();
+        }
 
         /// <summary>
         /// Builds Addressables for the active build target.
@@ -332,6 +347,25 @@ namespace SpatialSys.UnitySDK.Editor
             }
 
             return assets;
+        }
+
+        private static void SetEditorPlayModeDataBuilder()
+        {
+            if (!isActiveInProject)
+                return;
+
+            // Enforce "Asset Database" to be used during editor play mode, otherwise there can be loading issues.
+            AddressableAssetSettings addressableSettings = AddressableAssetSettingsDefaultObject.Settings;
+            int targetPlayModeBuilderIndex = addressableSettings.DataBuilders.FindIndex(x => x is BuildScriptFastMode);
+            if (targetPlayModeBuilderIndex >= 0)
+            {
+                // This isn't stored or serialized to the asset, so no need to set dirty or refresh asset DB.
+                addressableSettings.ActivePlayModeDataBuilderIndex = targetPlayModeBuilderIndex;
+            }
+            else
+            {
+                Debug.LogError($"Failed to find {nameof(BuildScriptFastMode)} in data builders list. Addressables may fail to load in editor.");
+            }
         }
     }
 }

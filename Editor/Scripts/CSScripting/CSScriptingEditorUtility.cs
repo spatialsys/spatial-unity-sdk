@@ -95,6 +95,10 @@ namespace SpatialSys.UnitySDK.Editor
                     return "Placeholder19";
                 case "0c9df2d7b86a9d205e2172590810987cb6ffd476adc396c9c5c89711dad77cd0":
                     return "Placeholder20";
+                case "2d64ddf3b62c3b7619579fed3773b0f20b69ccce65748b344c9a85ea35e8dbd2":
+                    return "Placeholder21";
+                case "f5e8bdd186ff11f148fce4fdd4c4af8ebf87c61afb4cf9128e40af7c973c57d1":
+                    return "Placeholder21";
                 default:
                     return CSScriptingUtility.DEFAULT_CSHARP_ASSEMBLY_NAME;
             }
