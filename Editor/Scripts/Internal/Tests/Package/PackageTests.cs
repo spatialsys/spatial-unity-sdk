@@ -14,8 +14,6 @@ namespace SpatialSys.UnitySDK.Editor
     public static class PackageTests
     {
         public static readonly HashSet<string> UNSUPPORTED_MODEL_FILE_FORMATS = new HashSet<string>(new string[] {
-            // We don't have a GLTF importer on the build side
-            ".glb", ".gltf",
             // We can't support these unless we have licensed Maya, Max or Cinema 4D licenses on the build side
             ".ma", ".mb", ".max", ".c4d"
         });
