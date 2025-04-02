@@ -18,9 +18,9 @@ namespace SpatialSys.UnitySDK
         /// <param name="force">Impulse force of the object once it appears</param>
         /// <param name="color">Text color</param>
         /// <param name="gravity">Use gravity?</param>
-        /// <param name="scaleCurve">Animation curve for scaling</param>
-        /// <param name="alphaCurve">Animation curve for alpha</param>
-        /// <param name="lifetime">Time to keep text visible</param>
+        /// <param name="scaleCurve">Animation curve for scaling. Only applicable when style is <see cref="FloatingTextAnimStyle.Custom"/> </param>
+        /// <param name="alphaCurve">Animation curve for alpha. Only applicable when style is <see cref="FloatingTextAnimStyle.Custom"/> </param>
+        /// <param name="lifetime">Time to keep text visible. Only applicable when style is <see cref="FloatingTextAnimStyle.Custom"/> </param>
         /// <example><code source="Services/VFXServiceExamples.cs" region="CreateFloatingText" lang="csharp"/></example>
         void CreateFloatingText(string text, FloatingTextAnimStyle style, Vector3 position, Vector3 force, Color color, bool gravity = false, AnimationCurve scaleCurve = null, AnimationCurve alphaCurve = null, float lifetime = 1);
     }
