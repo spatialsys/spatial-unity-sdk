@@ -3,9 +3,24 @@ using UnityEngine.Rendering.Universal;
 
 namespace SpatialSys.UnitySDK.EditorSimulation
 {
+    // Helper class used to run coroutines in the editor. By placing this class on a shared file, Unity
+    // doesn't detect this file as an 'Editor' file and lets us attach it to a GameObject.
+    public class EditorCameraServiceHelper : MonoBehaviour
+    {
+        public EditorCameraService service;
+
+        private void Update()
+        {
+            service.Update();
+        }
+    }
+
     public class EditorCameraService : ICameraService
     {
         private CameraFollow _cameraFollow;
+        private Camera _activeCamera;
+
+        public Camera activeCamera => _activeCamera ?? Camera.main;
 
         public EditorCameraService()
         {
@@ -17,6 +32,7 @@ namespace SpatialSys.UnitySDK.EditorSimulation
             g.name = "[Spatial SDK] Main Camera";
             g.tag = "MainCamera";
             var camera = g.AddComponent<Camera>();
+            g.AddComponent<EditorCameraServiceHelper>().service = this;
 
             _cameraFollow = g.AddComponent<CameraFollow>();
             _cameraFollow.camera = camera;
@@ -41,13 +57,40 @@ namespace SpatialSys.UnitySDK.EditorSimulation
                 }
             }
         }
+
+        // This update loop keeps track of the camera that's currently rendering. Other alternatives do not work:
+        // - Camera.main just returns the first enabled game object that has the MainCamera tag
+        // - Camera.current does not give us the proper camera and is sometimes null
+        // Ideally, the EditorCameraService uses the cinemachine library like Spatial does, so there's really only one camera
+        // and can be safely accessed via Camera.main
+        public void Update()
+        {
+            float priority = -1;
+            if (_activeCamera != null && _activeCamera.gameObject.activeInHierarchy && _activeCamera.enabled)
+            {
+                priority = _activeCamera.depth;
+            }
+            else
+            {
+                _activeCamera = null;
+            }
+
+            foreach (Camera c in Camera.allCameras)
+            {
+                if (c.gameObject.activeInHierarchy && c.enabled && c.depth > priority)
+                {
+                    _activeCamera = c;
+                    priority = c.depth;
+                }
+            }
+        }
         //----------------------------------------------------------------------------------------------------
         // ICameraService implementation
         //----------------------------------------------------------------------------------------------------
 
-        public Vector3 position => Camera.main.transform.position;
-        public Quaternion rotation => Camera.main.transform.rotation;
-        public Vector3 forward => Camera.main.transform.forward;
+        public Vector3 position => activeCamera.transform.position;
+        public Quaternion rotation => activeCamera.transform.rotation;
+        public Vector3 forward => activeCamera.transform.forward;
 
         // Customization
         public Vector3 thirdPersonOffset { get; set; }
@@ -103,37 +146,37 @@ namespace SpatialSys.UnitySDK.EditorSimulation
                 camera.CopyFrom(UnityEditor.SceneView.currentDrawingSceneView.camera);
             }
         }
-        public Matrix4x4 cameraToWorldMatrix => Camera.main.cameraToWorldMatrix;
-        public int pixelHeight => Camera.main.pixelHeight;
-        public int pixelWidth => Camera.main.pixelWidth;
-        public int scaledPixelHeight => Camera.main.scaledPixelHeight;
-        public int scaledPixelWidth => Camera.main.scaledPixelWidth;
-        public Rect rect => Camera.main.rect;
-        public Vector3 velocity => Camera.main.velocity;
-        public Matrix4x4 worldToCameraMatrix => Camera.main.worldToCameraMatrix;
-        public Matrix4x4 projectionMatrix => Camera.main.projectionMatrix;
-        public Matrix4x4 GetStereoViewMatrix(Camera.StereoscopicEye eye) => Camera.main.GetStereoViewMatrix(eye);
-        public Matrix4x4 GetStereoProjectionMatrix(Camera.StereoscopicEye eye) => Camera.main.GetStereoProjectionMatrix(eye);
+        public Matrix4x4 cameraToWorldMatrix => activeCamera.cameraToWorldMatrix;
+        public int pixelHeight => activeCamera.pixelHeight;
+        public int pixelWidth => activeCamera.pixelWidth;
+        public int scaledPixelHeight => activeCamera.scaledPixelHeight;
+        public int scaledPixelWidth => activeCamera.scaledPixelWidth;
+        public Rect rect => activeCamera.rect;
+        public Vector3 velocity => activeCamera.velocity;
+        public Matrix4x4 worldToCameraMatrix => activeCamera.worldToCameraMatrix;
+        public Matrix4x4 projectionMatrix => activeCamera.projectionMatrix;
+        public Matrix4x4 GetStereoViewMatrix(Camera.StereoscopicEye eye) => activeCamera.GetStereoViewMatrix(eye);
+        public Matrix4x4 GetStereoProjectionMatrix(Camera.StereoscopicEye eye) => activeCamera.GetStereoProjectionMatrix(eye);
 
         public void CalculateFrustumCorners(Rect viewport, float z, Camera.MonoOrStereoscopicEye eye, Vector3[] outCorners)
         {
-            Camera.main.CalculateFrustumCorners(viewport, z, eye, outCorners);
+            activeCamera.CalculateFrustumCorners(viewport, z, eye, outCorners);
         }
-        public Matrix4x4 CalculateObliqueMatrix(Vector4 clipPlane) => Camera.main.CalculateObliqueMatrix(clipPlane);
-        public Ray ScreenPointToRay(Vector3 pos) => Camera.main.ScreenPointToRay(pos);
-        public Ray ScreenPointToRay(Vector3 pos, Camera.MonoOrStereoscopicEye eye) => Camera.main.ScreenPointToRay(pos, eye);
-        public Vector3 ScreenToViewportPoint(Vector3 pos) => Camera.main.ScreenToViewportPoint(pos);
-        public Vector3 ScreenToWorldPoint(Vector3 pos) => Camera.main.ScreenToWorldPoint(pos);
-        public Vector3 ScreenToWorldPoint(Vector3 pos, Camera.MonoOrStereoscopicEye eye) => Camera.main.ScreenToWorldPoint(pos, eye);
-        public Ray ViewportPointToRay(Vector3 pos) => Camera.main.ViewportPointToRay(pos);
-        public Ray ViewportPointToRay(Vector3 pos, Camera.MonoOrStereoscopicEye eye) => Camera.main.ViewportPointToRay(pos, eye);
-        public Vector3 ViewportToScreenPoint(Vector3 pos) => Camera.main.ViewportToScreenPoint(pos);
-        public Vector3 ViewportToWorldPoint(Vector3 pos) => Camera.main.ViewportToWorldPoint(pos);
-        public Vector3 WorldToScreenPoint(Vector3 pos) => Camera.main.WorldToScreenPoint(pos);
-        public Vector3 WorldToScreenPoint(Vector3 pos, Camera.MonoOrStereoscopicEye eye) => Camera.main.WorldToScreenPoint(pos, eye);
-        public Vector3 WorldToViewportPoint(Vector3 pos) => Camera.main.WorldToViewportPoint(pos);
-        public Vector3 WorldToViewportPoint(Vector3 pos, Camera.MonoOrStereoscopicEye eye) => Camera.main.WorldToViewportPoint(pos, eye);
-        public Plane[] CalculateFrustumPlanes() => GeometryUtility.CalculateFrustumPlanes(Camera.main);
+        public Matrix4x4 CalculateObliqueMatrix(Vector4 clipPlane) => activeCamera.CalculateObliqueMatrix(clipPlane);
+        public Ray ScreenPointToRay(Vector3 pos) => activeCamera.ScreenPointToRay(pos);
+        public Ray ScreenPointToRay(Vector3 pos, Camera.MonoOrStereoscopicEye eye) => activeCamera.ScreenPointToRay(pos, eye);
+        public Vector3 ScreenToViewportPoint(Vector3 pos) => activeCamera.ScreenToViewportPoint(pos);
+        public Vector3 ScreenToWorldPoint(Vector3 pos) => activeCamera.ScreenToWorldPoint(pos);
+        public Vector3 ScreenToWorldPoint(Vector3 pos, Camera.MonoOrStereoscopicEye eye) => activeCamera.ScreenToWorldPoint(pos, eye);
+        public Ray ViewportPointToRay(Vector3 pos) => activeCamera.ViewportPointToRay(pos);
+        public Ray ViewportPointToRay(Vector3 pos, Camera.MonoOrStereoscopicEye eye) => activeCamera.ViewportPointToRay(pos, eye);
+        public Vector3 ViewportToScreenPoint(Vector3 pos) => activeCamera.ViewportToScreenPoint(pos);
+        public Vector3 ViewportToWorldPoint(Vector3 pos) => activeCamera.ViewportToWorldPoint(pos);
+        public Vector3 WorldToScreenPoint(Vector3 pos) => activeCamera.WorldToScreenPoint(pos);
+        public Vector3 WorldToScreenPoint(Vector3 pos, Camera.MonoOrStereoscopicEye eye) => activeCamera.WorldToScreenPoint(pos, eye);
+        public Vector3 WorldToViewportPoint(Vector3 pos) => activeCamera.WorldToViewportPoint(pos);
+        public Vector3 WorldToViewportPoint(Vector3 pos, Camera.MonoOrStereoscopicEye eye) => activeCamera.WorldToViewportPoint(pos, eye);
+        public Plane[] CalculateFrustumPlanes() => GeometryUtility.CalculateFrustumPlanes(activeCamera);
         public void SetXRCameraMode(XRCameraMode cameraMode) { }
     }
 }
