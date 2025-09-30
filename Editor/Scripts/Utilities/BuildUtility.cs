@@ -22,7 +22,10 @@ namespace SpatialSys.UnitySDK.Editor
         public static readonly string PACKAGE_EXPORT_PATH = Path.Combine(BUILD_DIR, "spaces.unitypackage");
         public static readonly string[] INVALID_BUNDLE_NAME_CHARS = new string[] { " ", "_", ".", ",", "(", ")", "[", "]", "{", "}", "!", "@", "#", "$", "%", "^", "&", "*", "+", "=", "|", "\\", "/", "?", "<", ">", "`", "~", "'", "\"", ":", ";", "\n", "\t" };
         public static long MAX_SANDBOX_BUNDLE_SIZE = 1000 * 1024 * 1024; // 1 GB; It's higher than the package size limit because we want to allow people to mess around more in the sandbox
-        public static long DEFAULT_MAX_PACKAGE_SIZE = 500 * 1024 * 1024; // 500 MB
+        // Quick fix for a bug where NEW_ENTERPRISE and EDUCATION plans are not able to upload over 500MB packages when uploading their first package to a space, when the 
+        // Rok and Benji believe this is due to the space being created at the time of publishing the package and the space limits not being set yet for that space; defaulting the upload limit to this variable which was previously 500MB
+
+        public static long DEFAULT_MAX_PACKAGE_SIZE = 1 * 1024 * 1024; // 1 GB
 
         // Inclusion of these package assets is redundant and adds unneeded, since they are already dependencies of the package-builder
         private static readonly HashSet<string> _excludedPackagesFromPublish = new()

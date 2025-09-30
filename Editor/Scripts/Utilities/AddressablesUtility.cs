@@ -39,8 +39,26 @@ namespace SpatialSys.UnitySDK.Editor
         {
             SetEditorPlayModeDataBuilder();
 
+            EditorApplication.update += TrySetEditorPlayModeDataBuilder;
             EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+        }
+
+        static void TrySetEditorPlayModeDataBuilder() {
+            if (EditorApplication.isCompiling || EditorApplication.isUpdating)
+                return;
+
+            if (!isActiveInProject) {
+                EditorApplication.update -= TrySetEditorPlayModeDataBuilder;
+                return;
+            }
+
+            if (AddressableAssetSettingsDefaultObject.Settings == null) {
+                Debug.LogError("ERROR: AddressableAssetSettingsDefaultObject.SettingsExists but AddressableAssetSettingsDefaultObject.Settings is Null!!!");
+            }
+
+            SetEditorPlayModeDataBuilder();
+            EditorApplication.update -= TrySetEditorPlayModeDataBuilder;
         }
 
         private static void OnPlayModeStateChanged(PlayModeStateChange state)
@@ -351,6 +369,7 @@ namespace SpatialSys.UnitySDK.Editor
 
         private static void SetEditorPlayModeDataBuilder()
         {
+            Debug.Log($"XXX AddressableAssetSettingsDefaultObject.Settings: {AddressableAssetSettingsDefaultObject.Settings}");
             if (!isActiveInProject)
                 return;
 
