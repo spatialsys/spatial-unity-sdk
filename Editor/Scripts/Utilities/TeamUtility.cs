@@ -20,7 +20,7 @@ namespace SpatialSys.UnitySDK.Editor
         {
             get
             {
-                if (ProjectConfig.defaultTeamID == null)
+                if (string.IsNullOrEmpty(ProjectConfig.defaultTeamID))
                     return true;
 
                 return teams.FirstOrDefault(t => t.id == ProjectConfig.defaultTeamID).isPrivateTeam;
