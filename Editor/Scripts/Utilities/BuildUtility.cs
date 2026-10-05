@@ -277,13 +277,20 @@ namespace SpatialSys.UnitySDK.Editor
                         {
                             spaceConfig.teamID = ProjectConfig.defaultTeamID;
                             spaceConfig.worldID = ProjectConfig.defaultTeamID;
+                            // These are plain fields, so assigning them does not mark the asset dirty. The package is
+                            // exported from disk (AssetDatabase.ExportPackage), and the config backup taken right after
+                            // this is a copy of the file on disk, so without saving here the exported package carries an
+                            // empty worldID/teamID and the build server rejects it ("worldID is required").
+                            EditorUtility.SaveAssetImmediately(spaceConfig);
                         }
                         else
                         {
                             createWorldPromise = WorldUtility.AssignDefaultWorldToProjectIfNecessary()
                                 .Then(() =>
                                 {
-                                    // Make sure that the space package has a worldID assigned
+                                    // Make sure that the space package has a worldID assigned, and that it does not
+                                    // keep a team from a previous team-based publish of this same project.
+                                    spaceConfig.teamID = null;
                                     spaceConfig.worldID = ProjectConfig.defaultWorldID;
                                     EditorUtility.SaveAssetImmediately(spaceConfig);
                                 });
